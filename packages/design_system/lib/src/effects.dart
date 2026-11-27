@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'package:design_system/src/motion_preference.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Visual effects switches every blurring or animating component reads.
@@ -50,10 +51,16 @@ class ConsolarrEffects {
   int get hashCode => Object.hash(useGlass, animate);
 }
 
-class _EffectsInherited extends InheritedWidget {
+/// An [InheritedTheme] so that routes pushed from below a scope (sheets,
+/// dialogs) keep the effects of the place they were opened from.
+class _EffectsInherited extends InheritedTheme {
   const _EffectsInherited({required this.effects, required super.child});
 
   final ConsolarrEffects effects;
+
+  @override
+  Widget wrap(BuildContext context, Widget child) =>
+      _EffectsInherited(effects: effects, child: child);
 
   @override
   bool updateShouldNotify(_EffectsInherited old) => old.effects != effects;
@@ -64,6 +71,7 @@ class ConsolarrEffectsScope extends StatelessWidget {
   const ConsolarrEffectsScope({
     required this.child,
     this.reduceMotion = false,
+    this.motion = MotionPreference.system,
     this.reduceTransparency = false,
     this.lowEnd = false,
     super.key,
@@ -71,6 +79,10 @@ class ConsolarrEffectsScope extends StatelessWidget {
 
   /// In-app "reduce motion" override (on top of the system setting).
   final bool reduceMotion;
+
+  /// The user's motion preference; [MotionPreference.reduced] is the same as
+  /// `reduceMotion: true`.
+  final MotionPreference motion;
 
   /// In-app "reduce transparency" override.
   final bool reduceTransparency;
@@ -84,7 +96,7 @@ class ConsolarrEffectsScope extends StatelessWidget {
   Widget build(BuildContext context) => _EffectsInherited(
     effects: ConsolarrEffects._fromMediaQuery(
       context,
-      reduceMotion: reduceMotion,
+      reduceMotion: reduceMotion || motion.reducesMotion,
       reduceTransparency: reduceTransparency,
       lowEnd: lowEnd,
     ),

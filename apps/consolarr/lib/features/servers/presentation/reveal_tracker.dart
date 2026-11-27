@@ -28,7 +28,7 @@ class RevealTracker {
     final want = _revealed.isNotEmpty;
     if (want == _secure) return;
     _secure = want;
-    _screen.setSecure(secure: want);
+    _screen.setSecure(secure: want, owner: this);
   }
 
   void dispose() {

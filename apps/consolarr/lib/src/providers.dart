@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'dart:async';
+
+import 'package:consolarr/features/settings/application/settings_providers.dart';
+import 'package:consolarr/features/settings/data/settings_store.dart';
 import 'package:consolarr/src/cache/payload_cache.dart';
 import 'package:consolarr/src/database/app_database.dart';
+import 'package:consolarr/src/first_frame.dart';
 import 'package:consolarr/src/platform/secure_screen.dart';
 import 'package:consolarr/src/storage/flutter_secure_secret_store.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,18 +14,64 @@ import 'package:material_ui/material_ui.dart';
 import 'package:observability/observability.dart';
 import 'package:security/security.dart';
 
-/// Crash reporting seam. No-op in the foss app; the Play entry point may
-/// override it after the user opts in.
-final crashReporterProvider = Provider<CrashReporter>(
+/// The raw crash reporter. No-op in the foss app; the Play entry point may
+/// override it. Never read it directly: [crashReporterProvider] is the
+/// consent-gated one.
+final rawCrashReporterProvider = Provider<CrashReporter>(
   (ref) => const NoopCrashReporter(),
 );
 
-/// Analytics seam. No-op in the foss app.
-final analyticsProvider = Provider<Analytics>((ref) => const NoopAnalytics());
+/// The raw analytics sink. No-op in the foss app; the Play entry point may
+/// override it. Never read it directly: [analyticsProvider] is consent-gated.
+final rawAnalyticsProvider = Provider<Analytics>(
+  (ref) => const NoopAnalytics(),
+);
 
 /// Breadcrumb trail (navigation and API error categories), shared by the
 /// tracker and any crash reporter the Play entry point wires in.
 final breadcrumbsProvider = Provider<Breadcrumbs>((ref) => Breadcrumbs());
+
+/// Consent seam (SET-03): everything off by default, kept in the settings
+/// table. Read lazily, never before the first frame. It shares the one read of
+/// the settings rows with the settings themselves.
+final consentStoreProvider = Provider<ConsentStore>(
+  (ref) => StoredConsentStore(
+    rows: () => ref.read(storedRowsProvider.future),
+    store: () => ref.read(settingsStoreProvider),
+  ),
+);
+
+/// Owns the consent state and the gated sinks below. Right after the first
+/// frame it loads the stored choice, so consent applies from startup and not
+/// only once the Settings tab has been opened.
+final consentManagerProvider = Provider<ConsentManager>((ref) {
+  final manager = ConsentManager(
+    store: ref.watch(consentStoreProvider),
+    analytics: ref.watch(rawAnalyticsProvider),
+    crashReporter: ref.watch(rawCrashReporterProvider),
+    breadcrumbs: ref.watch(breadcrumbsProvider),
+  );
+  // An unreadable store leaves every consent off, which is the safe state.
+  void load() => unawaited(manager.load().catchError((Object _) {}));
+  if (ref.read(firstFrameDoneProvider)) {
+    Future.microtask(load);
+  } else {
+    ref.listen<bool>(firstFrameDoneProvider, (_, done) {
+      if (done) load();
+    });
+  }
+  return manager;
+});
+
+/// Crash reporting seam: forwards only while the user has opted in.
+final crashReporterProvider = Provider<CrashReporter>(
+  (ref) => ref.watch(consentManagerProvider).crashReporter,
+);
+
+/// Analytics seam: forwards only while the user has opted in.
+final analyticsProvider = Provider<Analytics>(
+  (ref) => ref.watch(consentManagerProvider).analytics,
+);
 
 /// The single entry point for typed analytics events. Closed-set parameters
 /// only; sends nothing unless the (opt-in) analytics seam is replaced.
@@ -31,17 +82,16 @@ final eventTrackerProvider = Provider<EventTracker>(
   ),
 );
 
-/// The redacting logger. Messages must carry counts and categories only.
-final loggerProvider = Provider<AppLogger>((ref) => AppLogger());
-
-/// Consent seam: everything off by default. Read lazily, never before the
-/// first frame.
-final consentStoreProvider = Provider<ConsentStore>(
-  (ref) => const NoopConsentStore(),
+/// The redacting logger. Messages must carry counts and categories only. It
+/// also feeds the opt-in in-app log (SET-04) while that is on.
+final loggerProvider = Provider<AppLogger>(
+  (ref) => AppLogger(diagnostics: ref.watch(diagnosticsLogProvider)),
 );
 
-/// Dark is the default identity; a follow-system setting will override this.
-final themeModeProvider = Provider<ThemeMode>((ref) => ThemeMode.dark);
+/// Theme: dark by default, light, or follow the system (SET-07).
+final themeModeProvider = Provider<ThemeMode>(
+  (ref) => ref.watch(settingsProvider.select((s) => s.themeMode)),
+);
 
 // --- Infrastructure seams ---------------------------------------------------
 // All lazy: nothing below is read before the first frame. Tests and the Play
@@ -49,6 +99,14 @@ final themeModeProvider = Provider<ThemeMode>((ref) => ThemeMode.dark);
 
 /// Current time. Override in tests for stable ages and expiry.
 final clockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
+
+/// Monotonic time since an arbitrary start: unaffected by the user changing
+/// the wall clock. The app lock measures the time away with it (together
+/// with the wall clock, so a longer absence on either clock locks).
+final monotonicClockProvider = Provider<Duration Function()>((ref) {
+  final watch = Stopwatch()..start();
+  return () => watch.elapsed;
+});
 
 /// The app database. Opens its file on the first query, not on creation.
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -77,7 +135,8 @@ final secureHttpClientFactoryProvider = Provider<SecureHttpClientFactory>(
   (ref) => DefaultSecureHttpClientFactory(pins: ref.watch(pinStoreProvider)),
 );
 
-/// Window secure flag, set while secrets are visible.
+/// Window secure flag (reference counted by owner): set while secrets are
+/// visible, while the app lock is on and while screenshots are blocked.
 final secureScreenProvider = Provider<SecureScreen>(
-  (ref) => const PlatformSecureScreen(),
+  (ref) => PlatformSecureScreen(),
 );

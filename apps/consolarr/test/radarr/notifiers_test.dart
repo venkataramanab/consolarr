@@ -147,7 +147,7 @@ void main() {
         SearchPhase.searching,
         SearchPhase.done,
       ]);
-      final e = capture.events.singleWhere((e) => e.$1 == 'search_started');
+      final e = capture.events.singleWhere((e) => e.$1 == 'radarr_search_started');
       expect(e.$2, {'kind': 'movie'});
     });
 
@@ -194,7 +194,7 @@ void main() {
         c.read(searchStatusProvider)[SearchStatusNotifier.allMissingKey],
         SearchPhase.done,
       );
-      expect(capture.events.singleWhere((e) => e.$1 == 'search_started').$2, {
+      expect(capture.events.singleWhere((e) => e.$1 == 'radarr_search_started').$2, {
         'kind': 'all_missing',
       });
     });
@@ -240,13 +240,13 @@ void main() {
       }
       expect(
         capture.events.map((e) => e.$1),
-        containsAll(['queue_item_removed', 'release_grabbed']),
+        containsAll(['radarr_queue_item_removed', 'release_grabbed']),
       );
       expect(
-        capture.events.singleWhere((e) => e.$1 == 'queue_item_removed').$2,
+        capture.events.singleWhere((e) => e.$1 == 'radarr_queue_item_removed').$2,
         {'removal': 'blocklist_only'},
       );
-      expect(capture.events.singleWhere((e) => e.$1 == 'release_grabbed').$2, {
+      expect(capture.events.singleWhere((e) => e.$1 == 'radarr_release_grabbed').$2, {
         'was_rejected': true,
       });
     });

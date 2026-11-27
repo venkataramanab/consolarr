@@ -167,6 +167,7 @@ void main() {
       expect(bar.destinations.map((d) => d.label), [
         'Home',
         'Series',
+        'Settings',
         'Servers',
       ]);
       expect(bar.selectedIndex, 1);

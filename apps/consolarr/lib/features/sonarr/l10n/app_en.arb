@@ -28,9 +28,9 @@
   "@sonarrEmptyMessage": {
     "description": "Hint under the empty series library headline."
   },
-  "sonarrEmptyAction": "Refresh",
+  "sonarrEmptyAction": "Add a series",
   "@sonarrEmptyAction": {
-    "description": "Primary action of the empty series library state; reloads the list."
+    "description": "Primary action of the empty series library state; opens the add-series flow."
   },
   "sonarrNoServerHeadline": "No Sonarr server",
   "@sonarrNoServerHeadline": {
@@ -147,6 +147,14 @@
   "sonarrErrorGenericHint": "Try again, and check the server settings if it keeps happening.",
   "@sonarrErrorGenericHint": {
     "description": "Likely fix shown under the cause in the series library error state (Generic)."
+  },
+  "sonarrErrorRequestTooLargeMessage": "This Sonarr version cannot change that many episodes at once.",
+  "@sonarrErrorRequestTooLargeMessage": {
+    "description": "Cause shown when a bulk monitor change covers more episodes than an older Sonarr can take."
+  },
+  "sonarrErrorRequestTooLargeHint": "Change a season or a few episodes at a time, or update Sonarr.",
+  "@sonarrErrorRequestTooLargeHint": {
+    "description": "Likely fix shown under the cause when a bulk monitor change is too large for an older Sonarr."
   },
   "sonarrOfflineMessage": "Offline. Showing your saved series.",
   "@sonarrOfflineMessage": {
@@ -329,6 +337,1554 @@
       "details": {
         "type": "String",
         "description": "Status, monitoring and episode summary."
+      }
+    }
+  },
+  "sonarrSearchEpisode": "Search for this episode",
+  "@sonarrSearchEpisode": {
+    "description": "Tooltip and accessible name of the button that asks Sonarr to search for one episode automatically."
+  },
+  "sonarrSearchSearching": "Searching…",
+  "@sonarrSearchSearching": {
+    "description": "Inline status while Sonarr searches for an episode."
+  },
+  "sonarrSearchGrabbed": "Found, downloading",
+  "@sonarrSearchGrabbed": {
+    "description": "Inline status after an automatic search found a release and sent it to the download client."
+  },
+  "sonarrSearchNothingFound": "Nothing found",
+  "@sonarrSearchNothingFound": {
+    "description": "Inline status after an automatic search finished without finding a release."
+  },
+  "sonarrSearchFailed": "Search failed",
+  "@sonarrSearchFailed": {
+    "description": "Inline status when the search command could not be started or its progress could not be read."
+  },
+  "sonarrSearchRetry": "Search again",
+  "@sonarrSearchRetry": {
+    "description": "Tooltip and accessible name of the button that repeats an automatic search."
+  },
+  "sonarrTabQueue": "Queue",
+  "@sonarrTabQueue": {
+    "description": "Label of the Queue tab inside the Sonarr area."
+  },
+  "sonarrQueueLoadingLabel": "Loading queue",
+  "@sonarrQueueLoadingLabel": {
+    "description": "Accessible label of the skeleton shown while the queue loads."
+  },
+  "sonarrQueueEmptyHeadline": "The queue is empty",
+  "@sonarrQueueEmptyHeadline": {
+    "description": "Headline of the empty queue state."
+  },
+  "sonarrQueueEmptyMessage": "Nothing is downloading or waiting to be imported right now.",
+  "@sonarrQueueEmptyMessage": {
+    "description": "Hint under the empty queue headline."
+  },
+  "sonarrQueueErrorTitle": "Couldn't load the queue",
+  "@sonarrQueueErrorTitle": {
+    "description": "Headline of the queue error state."
+  },
+  "sonarrQueueOfflineMessage": "Can't reach Sonarr. Showing the last known queue.",
+  "@sonarrQueueOfflineMessage": {
+    "description": "Message of the banner above a stale queue."
+  },
+  "sonarrQueueRemoveOffline": "Removing needs a connection to Sonarr",
+  "@sonarrQueueRemoveOffline": {
+    "description": "Explanation (tooltip) of the disabled remove button while the queue is offline."
+  },
+  "sonarrQueueEpisodeCode": "S{season}E{episode}",
+  "@sonarrQueueEpisodeCode": {
+    "description": "Season and episode code of a queue row.",
+    "placeholders": {
+      "season": {
+        "type": "int",
+        "description": "Season number.",
+        "format": "decimalPattern"
+      },
+      "episode": {
+        "type": "int",
+        "description": "Episode number.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "sonarrQueueEpisodeLabel": "{code} · {title}",
+  "@sonarrQueueEpisodeLabel": {
+    "description": "Episode code followed by the episode title in a queue row.",
+    "placeholders": {
+      "code": {
+        "type": "String",
+        "description": "Season and episode code."
+      },
+      "title": {
+        "type": "String",
+        "description": "Episode title (server text)."
+      }
+    }
+  },
+  "sonarrQueueRemoved": "Removed from the queue",
+  "@sonarrQueueRemoved": {
+    "description": "Confirmation shown after a queue item was removed."
+  },
+  "sonarrDetailEdit": "Edit series",
+  "@sonarrDetailEdit": {
+    "description": "Tooltip and accessible name of the button on the series detail screen that opens the edit sheet."
+  },
+  "sonarrDetailMenu": "More actions",
+  "@sonarrDetailMenu": {
+    "description": "Tooltip of the overflow menu button on the series detail screen."
+  },
+  "sonarrDetailOfflineMessage": "Offline. Showing saved details. Changes are unavailable until Sonarr can be reached.",
+  "@sonarrDetailOfflineMessage": {
+    "description": "Message of the banner above cached series details; also explains why every change action is disabled."
+  },
+  "sonarrDetailWritesDisabled": "Unavailable while offline",
+  "@sonarrDetailWritesDisabled": {
+    "description": "Tooltip of a change or search action that is disabled because Sonarr cannot be reached."
+  },
+  "sonarrDetailLoading": "Loading series details",
+  "@sonarrDetailLoading": {
+    "description": "Accessible label of the skeleton shown while the series detail loads."
+  },
+  "sonarrDetailGoneHeadline": "This series no longer exists",
+  "@sonarrDetailGoneHeadline": {
+    "description": "Headline shown when a linked series was removed from Sonarr."
+  },
+  "sonarrDetailGoneMessage": "It may have been deleted from Sonarr since the link was made.",
+  "@sonarrDetailGoneMessage": {
+    "description": "Hint under the headline shown when a linked series no longer exists."
+  },
+  "sonarrDetailGoneAction": "Back to series",
+  "@sonarrDetailGoneAction": {
+    "description": "Action on the series-no-longer-exists state; returns to the series library."
+  },
+  "sonarrDetailNoServerHeadline": "No Sonarr server",
+  "@sonarrDetailNoServerHeadline": {
+    "description": "Headline of the series detail screen when no Sonarr server is configured."
+  },
+  "sonarrDetailOverview": "Overview",
+  "@sonarrDetailOverview": {
+    "description": "Section heading above the series overview text."
+  },
+  "sonarrDetailInfo": "Details",
+  "@sonarrDetailInfo": {
+    "description": "Section heading above the series facts such as status, network and path."
+  },
+  "sonarrDetailSeasons": "Seasons",
+  "@sonarrDetailSeasons": {
+    "description": "Section heading above the list of seasons."
+  },
+  "sonarrDetailLinks": "More information",
+  "@sonarrDetailLinks": {
+    "description": "Section heading above the external information links."
+  },
+  "sonarrDetailFieldStatus": "Status",
+  "@sonarrDetailFieldStatus": {
+    "description": "Label of the status fact on the series detail screen."
+  },
+  "sonarrDetailFieldNetwork": "Network",
+  "@sonarrDetailFieldNetwork": {
+    "description": "Label of the network fact on the series detail screen."
+  },
+  "sonarrDetailFieldPath": "Path",
+  "@sonarrDetailFieldPath": {
+    "description": "Label of the storage path fact on the series detail screen."
+  },
+  "sonarrDetailFieldProfile": "Quality profile",
+  "@sonarrDetailFieldProfile": {
+    "description": "Label of the quality profile fact on the series detail screen."
+  },
+  "sonarrDetailFieldTags": "Tags",
+  "@sonarrDetailFieldTags": {
+    "description": "Label of the tags fact on the series detail screen."
+  },
+  "sonarrDetailFieldNextAiring": "Next airing",
+  "@sonarrDetailFieldNextAiring": {
+    "description": "Label of the next airing fact on the series detail screen."
+  },
+  "sonarrDetailFieldRating": "Rating",
+  "@sonarrDetailFieldRating": {
+    "description": "Label of the rating fact on the series detail screen."
+  },
+  "sonarrDetailFieldRuntime": "Runtime",
+  "@sonarrDetailFieldRuntime": {
+    "description": "Label of the episode runtime fact on the series detail screen."
+  },
+  "sonarrDetailFieldCertification": "Certification",
+  "@sonarrDetailFieldCertification": {
+    "description": "Label of the age certification fact on the series detail screen."
+  },
+  "sonarrDetailFieldGenres": "Genres",
+  "@sonarrDetailFieldGenres": {
+    "description": "Label of the genres fact on the series detail screen."
+  },
+  "sonarrDetailFieldCast": "Cast",
+  "@sonarrDetailFieldCast": {
+    "description": "Label of the cast fact on the series detail screen, shown only when the server reports cast."
+  },
+  "sonarrDetailFieldAirTime": "Airs at",
+  "@sonarrDetailFieldAirTime": {
+    "description": "Label of the broadcast time fact on the series detail screen."
+  },
+  "sonarrDetailRuntimeMinutes": "{minutes} min",
+  "@sonarrDetailRuntimeMinutes": {
+    "description": "Episode runtime in minutes.",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "description": "Minutes."
+      }
+    }
+  },
+  "sonarrDetailRatingValue": "{value} out of 10 ({votes, plural, =1{1 vote} other{{votes} votes}})",
+  "@sonarrDetailRatingValue": {
+    "description": "Series rating on a ten point scale with the vote count.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Rating.",
+        "format": "decimalPatternDigits",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      },
+      "votes": {
+        "type": "int",
+        "description": "Number of votes."
+      }
+    }
+  },
+  "sonarrDetailSeasonTitle": "Season {number}",
+  "@sonarrDetailSeasonTitle": {
+    "description": "Title of a season row.",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "description": "Season number."
+      }
+    }
+  },
+  "sonarrDetailSpecials": "Specials",
+  "@sonarrDetailSpecials": {
+    "description": "Title of the season row that holds special episodes (season zero)."
+  },
+  "sonarrDetailMonitorSeason": "Monitor {season}",
+  "@sonarrDetailMonitorSeason": {
+    "description": "Accessible name of the monitor switch of a season.",
+    "placeholders": {
+      "season": {
+        "type": "String",
+        "description": "The season title."
+      }
+    }
+  },
+  "sonarrDetailMonitorEpisode": "Monitor {episode}",
+  "@sonarrDetailMonitorEpisode": {
+    "description": "Accessible name of the monitor switch of an episode.",
+    "placeholders": {
+      "episode": {
+        "type": "String",
+        "description": "The episode title."
+      }
+    }
+  },
+  "sonarrDetailShowEpisodes": "Show episodes of {season}",
+  "@sonarrDetailShowEpisodes": {
+    "description": "Tooltip and accessible name of the control that expands a season.",
+    "placeholders": {
+      "season": {
+        "type": "String",
+        "description": "The season title."
+      }
+    }
+  },
+  "sonarrDetailHideEpisodes": "Hide episodes of {season}",
+  "@sonarrDetailHideEpisodes": {
+    "description": "Tooltip and accessible name of the control that collapses a season.",
+    "placeholders": {
+      "season": {
+        "type": "String",
+        "description": "The season title."
+      }
+    }
+  },
+  "sonarrDetailEpisodeTitle": "{number}. {title}",
+  "@sonarrDetailEpisodeTitle": {
+    "description": "Episode row title: episode number and its name.",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "description": "Episode number."
+      },
+      "title": {
+        "type": "String",
+        "description": "Episode name (server text)."
+      }
+    }
+  },
+  "sonarrDetailEpisodeUntitled": "Episode {number}",
+  "@sonarrDetailEpisodeUntitled": {
+    "description": "Episode row title when the server gives no name.",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "description": "Episode number."
+      }
+    }
+  },
+  "sonarrDetailEpisodeDownloaded": "Downloaded",
+  "@sonarrDetailEpisodeDownloaded": {
+    "description": "Status text of an episode that has a file."
+  },
+  "sonarrDetailEpisodeDownloading": "Downloading",
+  "@sonarrDetailEpisodeDownloading": {
+    "description": "Status text of an episode that is in the download queue."
+  },
+  "sonarrDetailEpisodeMissing": "Missing",
+  "@sonarrDetailEpisodeMissing": {
+    "description": "Status text of an aired episode without a file."
+  },
+  "sonarrDetailEpisodeUnaired": "Not aired yet",
+  "@sonarrDetailEpisodeUnaired": {
+    "description": "Status text of an episode that has not aired yet."
+  },
+  "sonarrDetailAirDate": "Air date {date}",
+  "@sonarrDetailAirDate": {
+    "description": "Air date line of an episode.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd",
+        "description": "Air date."
+      }
+    }
+  },
+  "sonarrDetailNoEpisodes": "No episodes in this season yet.",
+  "@sonarrDetailNoEpisodes": {
+    "description": "Shown inside an expanded season that has no episodes."
+  },
+  "sonarrDetailNoEpisodesAtAll": "No episodes yet",
+  "@sonarrDetailNoEpisodesAtAll": {
+    "description": "Headline of the seasons section when the series has no episodes."
+  },
+  "sonarrDetailEpisodesErrorTitle": "Couldn't load the episodes",
+  "@sonarrDetailEpisodesErrorTitle": {
+    "description": "Headline of the inline error when the episode list fails to load."
+  },
+  "sonarrDetailRowFailed": "Couldn't save the change",
+  "@sonarrDetailRowFailed": {
+    "description": "Per-row error when a monitor toggle could not be saved."
+  },
+  "sonarrDetailSearchSeason": "Search this season",
+  "@sonarrDetailSearchSeason": {
+    "description": "Menu action that asks Sonarr to search for the whole season."
+  },
+  "sonarrDetailSearchMissing": "Search all missing episodes",
+  "@sonarrDetailSearchMissing": {
+    "description": "Menu action that asks Sonarr to search for every missing episode of the series."
+  },
+  "sonarrDetailSearchManually": "Search manually",
+  "@sonarrDetailSearchManually": {
+    "description": "Menu action that opens the interactive release search."
+  },
+  "sonarrDetailCancel": "Cancel",
+  "@sonarrDetailCancel": {
+    "description": "Cancel button of the confirm and edit dialogs on the series detail screen."
+  },
+  "sonarrDetailSearchConfirmAction": "Search",
+  "@sonarrDetailSearchConfirmAction": {
+    "description": "Confirm button of the season and series search dialogs."
+  },
+  "sonarrDetailSearchSeasonTitle": "Search this season?",
+  "@sonarrDetailSearchSeasonTitle": {
+    "description": "Title of the confirm dialog for a season search."
+  },
+  "sonarrDetailSearchSeasonMessage": "Sonarr will search your indexers for the monitored episodes of this season that are missing. This can put a lot of load on your indexers.",
+  "@sonarrDetailSearchSeasonMessage": {
+    "description": "Consequences stated in the confirm dialog for a season search."
+  },
+  "sonarrDetailSearchSeriesTitle": "Search all missing episodes?",
+  "@sonarrDetailSearchSeriesTitle": {
+    "description": "Title of the confirm dialog for a series-wide search."
+  },
+  "sonarrDetailSearchSeriesMessage": "Sonarr will search your indexers for every monitored episode of this series that is missing. This can put a lot of load on your indexers and may start many downloads.",
+  "@sonarrDetailSearchSeriesMessage": {
+    "description": "Consequences stated in the confirm dialog for a series-wide search."
+  },
+  "sonarrDetailEditTitle": "Edit series",
+  "@sonarrDetailEditTitle": {
+    "description": "Title of the edit sheet."
+  },
+  "sonarrDetailEditMonitored": "Monitored",
+  "@sonarrDetailEditMonitored": {
+    "description": "Label of the monitored switch in the edit sheet."
+  },
+  "sonarrDetailEditProfile": "Quality profile",
+  "@sonarrDetailEditProfile": {
+    "description": "Heading of the quality profile choices in the edit sheet."
+  },
+  "sonarrDetailEditTags": "Tags",
+  "@sonarrDetailEditTags": {
+    "description": "Heading of the tag choices in the edit sheet."
+  },
+  "sonarrDetailEditNoTags": "No tags yet. Create one below.",
+  "@sonarrDetailEditNoTags": {
+    "description": "Shown in the edit sheet when the server has no tags."
+  },
+  "sonarrDetailEditNewTag": "New tag",
+  "@sonarrDetailEditNewTag": {
+    "description": "Label of the text field that creates a tag in the edit sheet."
+  },
+  "sonarrDetailEditAddTag": "Add tag",
+  "@sonarrDetailEditAddTag": {
+    "description": "Button that creates the typed tag in the edit sheet."
+  },
+  "sonarrDetailEditTagFailed": "Couldn't create the tag",
+  "@sonarrDetailEditTagFailed": {
+    "description": "Error under the new tag field when creating a tag failed."
+  },
+  "sonarrDetailEditSave": "Save",
+  "@sonarrDetailEditSave": {
+    "description": "Save button of the edit sheet."
+  },
+  "sonarrDetailEditSaving": "Saving…",
+  "@sonarrDetailEditSaving": {
+    "description": "Save button label while the changes are being saved."
+  },
+  "sonarrDetailEditFailed": "Couldn't save your changes",
+  "@sonarrDetailEditFailed": {
+    "description": "Error shown in the edit sheet when saving failed; the save button then retries."
+  },
+  "sonarrDetailEditSaved": "Changes saved",
+  "@sonarrDetailEditSaved": {
+    "description": "Confirmation shown after the edit sheet saved successfully."
+  },
+  "sonarrDetailEditClose": "Close",
+  "@sonarrDetailEditClose": {
+    "description": "Close button of the edit sheet."
+  },
+  "sonarrDetailEditOptionsFailed": "Couldn't load profiles and tags",
+  "@sonarrDetailEditOptionsFailed": {
+    "description": "Headline of the edit sheet error when profiles and tags could not be loaded."
+  },
+  "sonarrDetailLinkImdb": "IMDb",
+  "@sonarrDetailLinkImdb": {
+    "description": "Name of the IMDb link."
+  },
+  "sonarrDetailLinkTvdb": "TheTVDB",
+  "@sonarrDetailLinkTvdb": {
+    "description": "Name of the TheTVDB link."
+  },
+  "sonarrDetailLinkTmdb": "TMDB",
+  "@sonarrDetailLinkTmdb": {
+    "description": "Name of the TMDB link."
+  },
+  "sonarrDetailLinkTvMaze": "TVmaze",
+  "@sonarrDetailLinkTvMaze": {
+    "description": "Name of the TVmaze link."
+  },
+  "sonarrDetailLinkSemantics": "{name}, opens in your browser",
+  "@sonarrDetailLinkSemantics": {
+    "description": "Accessible name of an external link button.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Site name."
+      }
+    }
+  },
+  "sonarrDetailLinkFailed": "Couldn't open the link",
+  "@sonarrDetailLinkFailed": {
+    "description": "Message when no app could open an external link."
+  },
+  "sonarrTabCalendar": "Calendar",
+  "@sonarrTabCalendar": {
+    "description": "Label of the Sonarr tab that shows upcoming episodes."
+  },
+  "sonarrTabMissing": "Missing",
+  "@sonarrTabMissing": {
+    "description": "Label of the Sonarr tab that lists wanted and missing episodes."
+  },
+  "sonarrCalendarLoading": "Loading calendar",
+  "@sonarrCalendarLoading": {
+    "description": "Accessible label of the skeleton shown while the calendar loads."
+  },
+  "sonarrCalendarErrorTitle": "Couldn't load the calendar",
+  "@sonarrCalendarErrorTitle": {
+    "description": "Headline of the calendar error state."
+  },
+  "sonarrCalendarShowUnmonitored": "Show unmonitored episodes",
+  "@sonarrCalendarShowUnmonitored": {
+    "description": "Tooltip of the calendar top bar button that adds unmonitored episodes to the calendar."
+  },
+  "sonarrCalendarHideUnmonitored": "Hide unmonitored episodes",
+  "@sonarrCalendarHideUnmonitored": {
+    "description": "Tooltip of the calendar top bar button that removes unmonitored episodes from the calendar."
+  },
+  "sonarrCalendarToday": "Jump to today",
+  "@sonarrCalendarToday": {
+    "description": "Tooltip of the calendar top bar button that returns to today."
+  },
+  "sonarrCalendarShowMonth": "Month view",
+  "@sonarrCalendarShowMonth": {
+    "description": "Tooltip of the calendar top bar button that switches to the month grid."
+  },
+  "sonarrCalendarShowList": "List view",
+  "@sonarrCalendarShowList": {
+    "description": "Tooltip of the calendar top bar button that switches to the day list."
+  },
+  "sonarrCalendarEarlier": "Earlier",
+  "@sonarrCalendarEarlier": {
+    "description": "Button that moves the calendar list to the previous two weeks."
+  },
+  "sonarrCalendarLater": "Later",
+  "@sonarrCalendarLater": {
+    "description": "Button that moves the calendar list to the next two weeks."
+  },
+  "sonarrCalendarPreviousMonth": "Previous month",
+  "@sonarrCalendarPreviousMonth": {
+    "description": "Button that shows the previous month in the calendar month view."
+  },
+  "sonarrCalendarNextMonth": "Next month",
+  "@sonarrCalendarNextMonth": {
+    "description": "Button that shows the next month in the calendar month view."
+  },
+  "sonarrCalendarRange": "{start} – {end}",
+  "@sonarrCalendarRange": {
+    "description": "Date range shown by the calendar list, for example Mar 3 – Mar 16.",
+    "placeholders": {
+      "start": {
+        "type": "DateTime",
+        "format": "MMMd",
+        "description": "First day."
+      },
+      "end": {
+        "type": "DateTime",
+        "format": "MMMd",
+        "description": "Last day."
+      }
+    }
+  },
+  "sonarrCalendarMonthTitle": "{month}",
+  "@sonarrCalendarMonthTitle": {
+    "description": "Month and year heading of the calendar month view.",
+    "placeholders": {
+      "month": {
+        "type": "DateTime",
+        "format": "yMMMM",
+        "description": "A date."
+      }
+    }
+  },
+  "sonarrCalendarDayHeader": "{date}",
+  "@sonarrCalendarDayHeader": {
+    "description": "Heading of one day group in the calendar list.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "MMMEd",
+        "description": "A date."
+      }
+    }
+  },
+  "sonarrCalendarTodayHeader": "Today · {date}",
+  "@sonarrCalendarTodayHeader": {
+    "description": "Heading of today's group in the calendar list.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "MMMEd",
+        "description": "A date."
+      }
+    }
+  },
+  "sonarrCalendarEmptyRangeHeadline": "Nothing airs in this period",
+  "@sonarrCalendarEmptyRangeHeadline": {
+    "description": "Headline of the calendar when no episodes air in the shown range."
+  },
+  "sonarrCalendarEmptyRangeMessage": "Try another period, or show unmonitored episodes.",
+  "@sonarrCalendarEmptyRangeMessage": {
+    "description": "Hint under the empty calendar range headline."
+  },
+  "sonarrCalendarEmptyDay": "Nothing airs on this day.",
+  "@sonarrCalendarEmptyDay": {
+    "description": "Text under the month grid when the selected day has no episodes."
+  },
+  "sonarrCalendarPickDay": "Pick a day to see its episodes.",
+  "@sonarrCalendarPickDay": {
+    "description": "Text under the month grid when no day is selected."
+  },
+  "sonarrCalendarEpisodeCount": "{count, plural, =1{1 episode} other{{count} episodes}}",
+  "@sonarrCalendarEpisodeCount": {
+    "description": "Number of episodes airing on a day or in a series list.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "A whole number."
+      }
+    }
+  },
+  "sonarrCalendarDaySemantics": "{date}, {count, plural, =0{no episodes} =1{1 episode} other{{count} episodes}}",
+  "@sonarrCalendarDaySemantics": {
+    "description": "Accessible label of a day cell in the calendar month grid.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "MMMEd",
+        "description": "The day."
+      },
+      "count": {
+        "type": "int",
+        "description": "Episodes on that day."
+      }
+    }
+  },
+  "sonarrCalendarEpisodeCode": "S{season}E{episode}",
+  "@sonarrCalendarEpisodeCode": {
+    "description": "Season and episode number of an episode, for example S1E4.",
+    "placeholders": {
+      "season": {
+        "type": "int",
+        "format": "decimalPattern",
+        "description": "Season number."
+      },
+      "episode": {
+        "type": "int",
+        "format": "decimalPattern",
+        "description": "Episode number."
+      }
+    }
+  },
+  "sonarrCalendarTagPremiere": "Premiere",
+  "@sonarrCalendarTagPremiere": {
+    "description": "Tag on an episode that is the first of its season."
+  },
+  "sonarrCalendarTagFinale": "Finale",
+  "@sonarrCalendarTagFinale": {
+    "description": "Tag on an episode that ends a season or the series."
+  },
+  "sonarrCalendarStatusDownloaded": "Downloaded",
+  "@sonarrCalendarStatusDownloaded": {
+    "description": "Episode status: the file is on disk."
+  },
+  "sonarrCalendarStatusMissing": "Missing",
+  "@sonarrCalendarStatusMissing": {
+    "description": "Episode status: it has aired but no file exists."
+  },
+  "sonarrCalendarStatusUnaired": "Not aired yet",
+  "@sonarrCalendarStatusUnaired": {
+    "description": "Episode status: it has not aired yet."
+  },
+  "sonarrCalendarUnmonitoredTag": "Unmonitored",
+  "@sonarrCalendarUnmonitoredTag": {
+    "description": "Tag on an episode that Sonarr does not monitor."
+  },
+  "sonarrWantedLoading": "Loading episodes",
+  "@sonarrWantedLoading": {
+    "description": "Accessible label of the skeleton shown while the missing list loads."
+  },
+  "sonarrWantedErrorTitle": "Couldn't load the episodes",
+  "@sonarrWantedErrorTitle": {
+    "description": "Headline of the missing list error state."
+  },
+  "sonarrWantedScopeWanted": "Wanted",
+  "@sonarrWantedScopeWanted": {
+    "description": "Scope of the missing tab: missing episodes plus episodes below the quality cutoff."
+  },
+  "sonarrWantedScopeMissing": "Missing",
+  "@sonarrWantedScopeMissing": {
+    "description": "Scope of the missing tab: episodes that aired and have no file."
+  },
+  "sonarrWantedScopeUpcoming": "Upcoming",
+  "@sonarrWantedScopeUpcoming": {
+    "description": "Scope of the missing tab: episodes airing in the next two weeks."
+  },
+  "sonarrWantedScopeLabel": "Show",
+  "@sonarrWantedScopeLabel": {
+    "description": "Accessible label of the scope selector in the missing tab."
+  },
+  "sonarrWantedFilterHint": "Filter by series",
+  "@sonarrWantedFilterHint": {
+    "description": "Hint of the field that filters the missing list by series title."
+  },
+  "sonarrWantedFilterClear": "Clear filter",
+  "@sonarrWantedFilterClear": {
+    "description": "Tooltip and action that clears the series filter in the missing list."
+  },
+  "sonarrWantedEmptyGoodHeadline": "Nothing missing",
+  "@sonarrWantedEmptyGoodHeadline": {
+    "description": "Headline of the missing list when every monitored episode is present."
+  },
+  "sonarrWantedEmptyGoodMessage": "Every monitored episode that has aired is in your library.",
+  "@sonarrWantedEmptyGoodMessage": {
+    "description": "Hint under the nothing-missing headline."
+  },
+  "sonarrWantedEmptyUpcomingHeadline": "Nothing airs soon",
+  "@sonarrWantedEmptyUpcomingHeadline": {
+    "description": "Headline of the upcoming scope when no episode airs in the next two weeks."
+  },
+  "sonarrWantedEmptyUpcomingMessage": "Monitored episodes airing in the next two weeks appear here.",
+  "@sonarrWantedEmptyUpcomingMessage": {
+    "description": "Hint under the nothing-airs-soon headline."
+  },
+  "sonarrWantedFilterEmptyHeadline": "No series match",
+  "@sonarrWantedFilterEmptyHeadline": {
+    "description": "Headline when the series filter hides every episode of the missing list."
+  },
+  "sonarrWantedFilterEmptyMessage": "No missing episode belongs to a series with that name.",
+  "@sonarrWantedFilterEmptyMessage": {
+    "description": "Hint under the no-series-match headline."
+  },
+  "sonarrWantedSearchAll": "Search all missing",
+  "@sonarrWantedSearchAll": {
+    "description": "Button that asks Sonarr to search for every missing episode."
+  },
+  "sonarrWantedSearchAllTitle": "Search for all missing episodes?",
+  "@sonarrWantedSearchAllTitle": {
+    "description": "Title of the confirmation dialog for searching all missing episodes."
+  },
+  "sonarrWantedSearchAllBody": "Sonarr will search your indexers for every monitored missing episode in your library. This can put heavy load on your indexers and may start many downloads.",
+  "@sonarrWantedSearchAllBody": {
+    "description": "Body of the confirmation dialog for searching all missing episodes; states the consequences."
+  },
+  "sonarrWantedSearchAllConfirm": "Search all",
+  "@sonarrWantedSearchAllConfirm": {
+    "description": "Confirm button of the search-all-missing dialog."
+  },
+  "sonarrWantedCancel": "Cancel",
+  "@sonarrWantedCancel": {
+    "description": "Cancel button of the search-all-missing dialog."
+  },
+  "sonarrWantedSearchAllRunning": "Searching for missing episodes…",
+  "@sonarrWantedSearchAllRunning": {
+    "description": "Status line while the search-all-missing command runs."
+  },
+  "sonarrWantedSearchAllDone": "Search finished. New downloads appear in the queue.",
+  "@sonarrWantedSearchAllDone": {
+    "description": "Status line after the search-all-missing command finished."
+  },
+  "sonarrWantedSearchAllNothing": "Search finished. Nothing new was added to the queue.",
+  "@sonarrWantedSearchAllNothing": {
+    "description": "Status line after the search-all-missing command finished and no new download appeared."
+  },
+  "sonarrWantedSearchAllTimedOut": "Sonarr is still searching. New downloads appear in the queue.",
+  "@sonarrWantedSearchAllTimedOut": {
+    "description": "Status line when the search-all-missing command did not finish while the app was watching."
+  },
+  "sonarrWantedSearchAllFailed": "The search could not be completed.",
+  "@sonarrWantedSearchAllFailed": {
+    "description": "Status line when the search-all-missing command failed."
+  },
+  "sonarrWantedSearchAllRetry": "Try again",
+  "@sonarrWantedSearchAllRetry": {
+    "description": "Retry button after a failed search-all-missing command."
+  },
+  "sonarrWantedOfflineWrites": "Searching is unavailable while the server can't be reached.",
+  "@sonarrWantedOfflineWrites": {
+    "description": "Explanation shown when search actions are disabled because the server is unreachable."
+  },
+  "sonarrWantedOfflineMessage": "Showing the last loaded list.",
+  "@sonarrWantedOfflineMessage": {
+    "description": "Message of the banner shown when the missing list could not be refreshed."
+  },
+  "sonarrWantedManualSearch": "Choose a release manually",
+  "@sonarrWantedManualSearch": {
+    "description": "Tooltip and accessible name of the button that opens the manual release search for an episode."
+  },
+  "sonarrWantedLoadMore": "Load more",
+  "@sonarrWantedLoadMore": {
+    "description": "Button that loads the next page of the missing list."
+  },
+  "sonarrWantedLoadMoreFailed": "Couldn't load more episodes.",
+  "@sonarrWantedLoadMoreFailed": {
+    "description": "Message shown when the next page of the missing list failed to load."
+  },
+  "sonarrWantedExpandGroup": "Show episodes of {series}",
+  "@sonarrWantedExpandGroup": {
+    "description": "Accessible label of a series group header in the missing list.",
+    "placeholders": {
+      "series": {
+        "type": "String",
+        "description": "Series title (plain text)."
+      }
+    }
+  },
+  "sonarrWantedAired": "Aired {date}",
+  "@sonarrWantedAired": {
+    "description": "Air date of a missing episode.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd",
+        "description": "A date."
+      }
+    }
+  },
+  "sonarrWantedAirs": "Airs {date}",
+  "@sonarrWantedAirs": {
+    "description": "Air date of an upcoming episode.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd",
+        "description": "A date."
+      }
+    }
+  },
+  "sonarrWantedNoAirDate": "Air date unknown",
+  "@sonarrWantedNoAirDate": {
+    "description": "Shown for an episode without an air date."
+  },
+  "sonarrTabLibrary": "Library",
+  "@sonarrTabLibrary": {
+    "description": "Label of the library tab in the Sonarr area's tab strip."
+  },
+  "sonarrTabsLabel": "Sonarr sections",
+  "@sonarrTabsLabel": {
+    "description": "Accessible name of the tab strip that switches between library, calendar, queue and missing."
+  },
+  "sonarrLibrarySearchHint": "Search your series",
+  "@sonarrLibrarySearchHint": {
+    "description": "Hint of the search field above the series library."
+  },
+  "sonarrLibrarySearchClear": "Clear search",
+  "@sonarrLibrarySearchClear": {
+    "description": "Tooltip of the button that clears the library search field."
+  },
+  "sonarrLibraryAddTooltip": "Add a series",
+  "@sonarrLibraryAddTooltip": {
+    "description": "Tooltip of the top bar button that opens the add-series flow."
+  },
+  "sonarrLibrarySortChip": "Sort: {key}",
+  "@sonarrLibrarySortChip": {
+    "description": "Label of the sort button above the library; shows the current sort key.",
+    "placeholders": {
+      "key": {
+        "type": "String",
+        "description": "Localized sort key name."
+      }
+    }
+  },
+  "sonarrLibrarySortChipSemantics": "Sort by {key}, {direction}. Opens the sort options.",
+  "@sonarrLibrarySortChipSemantics": {
+    "description": "Accessible name of the sort button: current key and direction.",
+    "placeholders": {
+      "key": {
+        "type": "String",
+        "description": "Sort key."
+      },
+      "direction": {
+        "type": "String",
+        "description": "Ascending or descending."
+      }
+    }
+  },
+  "sonarrLibraryFilterChip": "{count, plural, =0{Filter} other{Filter ({count})}}",
+  "@sonarrLibraryFilterChip": {
+    "description": "Label of the filter button above the library; shows how many criteria are active.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of items."
+      }
+    }
+  },
+  "sonarrLibraryFilterChipSemantics": "{count, plural, =0{Filter. Opens the filter options.} =1{Filter, 1 filter active. Opens the filter options.} other{Filter, {count} filters active. Opens the filter options.}}",
+  "@sonarrLibraryFilterChipSemantics": {
+    "description": "Accessible name of the filter button including the number of active filters.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of items."
+      }
+    }
+  },
+  "sonarrLibrarySortSheetTitle": "Sort",
+  "@sonarrLibrarySortSheetTitle": {
+    "description": "Title of the sort sheet."
+  },
+  "sonarrLibrarySortAscending": "Ascending",
+  "@sonarrLibrarySortAscending": {
+    "description": "Sort direction option: smallest or oldest first."
+  },
+  "sonarrLibrarySortDescending": "Descending",
+  "@sonarrLibrarySortDescending": {
+    "description": "Sort direction option: largest or newest first."
+  },
+  "sonarrLibrarySaveDefault": "Save as default",
+  "@sonarrLibrarySaveDefault": {
+    "description": "Switch in the sort and filter sheets that stores the choice as the default for this server."
+  },
+  "sonarrLibraryApply": "Apply",
+  "@sonarrLibraryApply": {
+    "description": "Button that applies the sort or filter choice."
+  },
+  "sonarrLibrarySortTitle": "Title",
+  "@sonarrLibrarySortTitle": {
+    "description": "Sort key: series title."
+  },
+  "sonarrLibrarySortYear": "Year",
+  "@sonarrLibrarySortYear": {
+    "description": "Sort key: release year."
+  },
+  "sonarrLibrarySortAdded": "Date added",
+  "@sonarrLibrarySortAdded": {
+    "description": "Sort key: when the series was added."
+  },
+  "sonarrLibrarySortNextAiring": "Next airing",
+  "@sonarrLibrarySortNextAiring": {
+    "description": "Sort key: date of the next episode."
+  },
+  "sonarrLibrarySortNetwork": "Network",
+  "@sonarrLibrarySortNetwork": {
+    "description": "Sort key: broadcast network."
+  },
+  "sonarrLibrarySortSize": "Size on disk",
+  "@sonarrLibrarySortSize": {
+    "description": "Sort key: disk space used."
+  },
+  "sonarrLibrarySortRating": "Rating",
+  "@sonarrLibrarySortRating": {
+    "description": "Sort key: rating."
+  },
+  "sonarrLibrarySortProfile": "Quality profile",
+  "@sonarrLibrarySortProfile": {
+    "description": "Sort key: quality profile name."
+  },
+  "sonarrLibrarySortGenre": "Genre",
+  "@sonarrLibrarySortGenre": {
+    "description": "Sort key: first genre."
+  },
+  "sonarrLibraryFilterSheetTitle": "Filter",
+  "@sonarrLibraryFilterSheetTitle": {
+    "description": "Title of the filter sheet."
+  },
+  "sonarrLibraryFilterClearAll": "Clear all",
+  "@sonarrLibraryFilterClearAll": {
+    "description": "Button that removes every active filter."
+  },
+  "sonarrLibraryFilterMonitoring": "Monitoring",
+  "@sonarrLibraryFilterMonitoring": {
+    "description": "Filter section: monitored or not."
+  },
+  "sonarrLibraryFilterStatus": "Status",
+  "@sonarrLibraryFilterStatus": {
+    "description": "Filter section: continuing or ended."
+  },
+  "sonarrLibraryFilterType": "Series type",
+  "@sonarrLibraryFilterType": {
+    "description": "Filter section: standard, daily or anime."
+  },
+  "sonarrLibraryFilterProfile": "Quality profile",
+  "@sonarrLibraryFilterProfile": {
+    "description": "Filter section: quality profiles."
+  },
+  "sonarrLibraryFilterTags": "Tags",
+  "@sonarrLibraryFilterTags": {
+    "description": "Filter section: tags."
+  },
+  "sonarrLibraryTypeStandard": "Standard",
+  "@sonarrLibraryTypeStandard": {
+    "description": "Series type option."
+  },
+  "sonarrLibraryTypeDaily": "Daily",
+  "@sonarrLibraryTypeDaily": {
+    "description": "Series type option."
+  },
+  "sonarrLibraryTypeAnime": "Anime",
+  "@sonarrLibraryTypeAnime": {
+    "description": "Series type option."
+  },
+  "sonarrLibraryRemoveFilter": "Remove filter: {name}",
+  "@sonarrLibraryRemoveFilter": {
+    "description": "Accessible name of the remove button on an active filter chip.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Filter name."
+      }
+    }
+  },
+  "sonarrLibraryFilterEmptyHeadline": "No series match your filters",
+  "@sonarrLibraryFilterEmptyHeadline": {
+    "description": "Headline when filters hide every series."
+  },
+  "sonarrLibraryFilterEmptyMessage": "Remove a filter to see more of your library.",
+  "@sonarrLibraryFilterEmptyMessage": {
+    "description": "Hint under the filter-empty headline."
+  },
+  "sonarrLibraryFilterEmptyAction": "Clear filters",
+  "@sonarrLibraryFilterEmptyAction": {
+    "description": "Action of the filter-empty state."
+  },
+  "sonarrLibraryNoMatchHeadline": "No series match “{term}”",
+  "@sonarrLibraryNoMatchHeadline": {
+    "description": "Headline when the search text matches nothing in the library.",
+    "placeholders": {
+      "term": {
+        "type": "String",
+        "description": "Text typed by the user."
+      }
+    }
+  },
+  "sonarrLibraryNoMatchMessage": "It may not be in your library yet.",
+  "@sonarrLibraryNoMatchMessage": {
+    "description": "Hint under the no-match headline."
+  },
+  "sonarrLibraryNoMatchAction": "Search to add “{term}”",
+  "@sonarrLibraryNoMatchAction": {
+    "description": "Action of the no-match state: opens the add flow with the typed text.",
+    "placeholders": {
+      "term": {
+        "type": "String",
+        "description": "Text typed by the user."
+      }
+    }
+  },
+  "sonarrLibraryPartialBanner": "{count, plural, =1{1 series couldn't be read and is not shown.} other{{count} series couldn't be read and are not shown.}}",
+  "@sonarrLibraryPartialBanner": {
+    "description": "Notice shown when some series rows from the server were unreadable and skipped.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of items."
+      }
+    }
+  },
+  "sonarrLibraryGroupUnknown": "Unknown",
+  "@sonarrLibraryGroupUnknown": {
+    "description": "Group header for series without the value being sorted by."
+  },
+  "sonarrLibraryGroupScheduled": "Airing scheduled",
+  "@sonarrLibraryGroupScheduled": {
+    "description": "Group header: series with a next airing date."
+  },
+  "sonarrLibraryGroupNotScheduled": "No airing date",
+  "@sonarrLibraryGroupNotScheduled": {
+    "description": "Group header: series without a next airing date."
+  },
+  "sonarrLibraryGroupSizeSmall": "Under 10 GB",
+  "@sonarrLibraryGroupSizeSmall": {
+    "description": "Group header for the size sort: small."
+  },
+  "sonarrLibraryGroupSizeMedium": "10 to 50 GB",
+  "@sonarrLibraryGroupSizeMedium": {
+    "description": "Group header for the size sort: medium."
+  },
+  "sonarrLibraryGroupSizeLarge": "50 GB and more",
+  "@sonarrLibraryGroupSizeLarge": {
+    "description": "Group header for the size sort: large."
+  },
+  "sonarrLibraryGroupRating": "Rated {rating} and up",
+  "@sonarrLibraryGroupRating": {
+    "description": "Group header for the rating sort.",
+    "placeholders": {
+      "rating": {
+        "type": "int",
+        "description": "Whole rating."
+      }
+    }
+  },
+  "sonarrLibraryJumpTooltip": "Jump to section",
+  "@sonarrLibraryJumpTooltip": {
+    "description": "Tooltip of the button that opens the section list."
+  },
+  "sonarrLibraryJumpTitle": "Jump to",
+  "@sonarrLibraryJumpTitle": {
+    "description": "Title of the jump-to-section sheet."
+  },
+  "sonarrLibraryClose": "Close",
+  "@sonarrLibraryClose": {
+    "description": "Accessible name of the close button of the library sheets."
+  },
+  "sonarrLibraryComputing": "Updating list",
+  "@sonarrLibraryComputing": {
+    "description": "Accessible label shown while a big list is filtered in the background."
+  },
+  "sonarrLibraryGroupHeaderSemantics": "Section {name}",
+  "@sonarrLibraryGroupHeaderSemantics": {
+    "description": "Accessible name of a sticky group header.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Group name."
+      }
+    }
+  },
+  "sonarrReleaseClose": "Close",
+  "@sonarrReleaseClose": {
+    "description": "Tooltip and accessible name of the close button of the release search sheet."
+  },
+  "sonarrReleaseLoading": "Searching for releases",
+  "@sonarrReleaseLoading": {
+    "description": "Accessible label of the skeleton shown while the interactive release search runs."
+  },
+  "sonarrReleaseErrorHeadline": "Couldn't search for releases",
+  "@sonarrReleaseErrorHeadline": {
+    "description": "Headline of the release search error state."
+  },
+  "sonarrReleaseSearchAgain": "Search again",
+  "@sonarrReleaseSearchAgain": {
+    "description": "Button that repeats the interactive release search."
+  },
+  "sonarrReleaseNoneHeadline": "No releases found",
+  "@sonarrReleaseNoneHeadline": {
+    "description": "Headline when the interactive search returned no releases."
+  },
+  "sonarrReleaseNoneMessage": "None of your indexers returned a release for this search.",
+  "@sonarrReleaseNoneMessage": {
+    "description": "Hint under the no releases headline."
+  },
+  "sonarrReleaseNoMatchHeadline": "No releases match your filters",
+  "@sonarrReleaseNoMatchHeadline": {
+    "description": "Headline when filters hide every release of the search."
+  },
+  "sonarrReleaseNoMatchMessage": "Clear the filters to see all releases.",
+  "@sonarrReleaseNoMatchMessage": {
+    "description": "Hint under the filter-empty headline of the release sheet."
+  },
+  "sonarrReleaseClearFilters": "Clear filters",
+  "@sonarrReleaseClearFilters": {
+    "description": "Button that clears all release filters."
+  },
+  "sonarrReleaseDownload": "Download",
+  "@sonarrReleaseDownload": {
+    "description": "Button that sends a release to the download client."
+  },
+  "sonarrReleaseDownloadAgain": "Download again",
+  "@sonarrReleaseDownloadAgain": {
+    "description": "Button that repeats a failed or uncertain release download."
+  },
+  "sonarrReleaseGrabbing": "Sending to download client…",
+  "@sonarrReleaseGrabbing": {
+    "description": "Status of a release row while the grab request is in progress."
+  },
+  "sonarrReleaseGrabbed": "Sent to download client",
+  "@sonarrReleaseGrabbed": {
+    "description": "Status of a release row after Sonarr accepted the grab."
+  },
+  "sonarrReleaseFailed": "Download failed",
+  "@sonarrReleaseFailed": {
+    "description": "Status of a release row when the grab was refused or failed."
+  },
+  "sonarrReleaseMaybeSent": "May have been sent. Check the queue before trying again.",
+  "@sonarrReleaseMaybeSent": {
+    "description": "Status of a release row when the connection dropped and it is unclear whether the grab arrived."
+  },
+  "sonarrReleaseRejected": "Rejected",
+  "@sonarrReleaseRejected": {
+    "description": "Badge and filter name for releases that Sonarr rejected."
+  },
+  "sonarrReleaseAccepted": "Accepted",
+  "@sonarrReleaseAccepted": {
+    "description": "Filter name for releases that Sonarr accepted."
+  },
+  "sonarrReleaseExpand": "Show details",
+  "@sonarrReleaseExpand": {
+    "description": "Tooltip of the button that expands a release row."
+  },
+  "sonarrReleaseCollapse": "Hide details",
+  "@sonarrReleaseCollapse": {
+    "description": "Tooltip of the button that collapses a release row."
+  },
+  "sonarrReleaseRejectionsHeading": "Why it was rejected",
+  "@sonarrReleaseRejectionsHeading": {
+    "description": "Heading of the rejection reasons list of a release."
+  },
+  "sonarrReleaseCustomFormatsHeading": "Custom formats",
+  "@sonarrReleaseCustomFormatsHeading": {
+    "description": "Heading of the custom formats list of a release."
+  },
+  "sonarrReleaseLanguagesHeading": "Languages",
+  "@sonarrReleaseLanguagesHeading": {
+    "description": "Heading of the languages list of a release."
+  },
+  "sonarrReleaseSortButton": "Sort: {key}",
+  "@sonarrReleaseSortButton": {
+    "description": "Name of the sort menu button; says which key is active.",
+    "placeholders": {
+      "key": {
+        "type": "String",
+        "description": "Name of the active sort key."
+      }
+    }
+  },
+  "sonarrReleaseSortBestMatch": "Best match",
+  "@sonarrReleaseSortBestMatch": {
+    "description": "Release sort key: server ranking."
+  },
+  "sonarrReleaseSortAge": "Age",
+  "@sonarrReleaseSortAge": {
+    "description": "Release sort key: age, newest first."
+  },
+  "sonarrReleaseSortSize": "Size",
+  "@sonarrReleaseSortSize": {
+    "description": "Release sort key: size, biggest first."
+  },
+  "sonarrReleaseSortSeeders": "Seeders",
+  "@sonarrReleaseSortSeeders": {
+    "description": "Release sort key: seeders, most first."
+  },
+  "sonarrReleaseSortIndexer": "Indexer",
+  "@sonarrReleaseSortIndexer": {
+    "description": "Release sort key: indexer name."
+  },
+  "sonarrReleaseSortQuality": "Quality",
+  "@sonarrReleaseSortQuality": {
+    "description": "Release sort key: resolution, highest first."
+  },
+  "sonarrReleaseReverseSort": "Reverse sort order",
+  "@sonarrReleaseReverseSort": {
+    "description": "Tooltip of the button that reverses the sort direction."
+  },
+  "sonarrReleaseFilters": "{count, plural, =0{Filters} other{Filters ({count})}}",
+  "@sonarrReleaseFilters": {
+    "description": "Filter panel toggle; shows how many filters are active.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole number."
+      }
+    }
+  },
+  "sonarrReleaseGroupStatus": "Status",
+  "@sonarrReleaseGroupStatus": {
+    "description": "Filter group name: accepted or rejected."
+  },
+  "sonarrReleaseGroupProtocol": "Protocol",
+  "@sonarrReleaseGroupProtocol": {
+    "description": "Filter group name: torrent or usenet."
+  },
+  "sonarrReleaseGroupResolution": "Resolution",
+  "@sonarrReleaseGroupResolution": {
+    "description": "Filter group name for video resolution."
+  },
+  "sonarrReleaseGroupSource": "Source",
+  "@sonarrReleaseGroupSource": {
+    "description": "Filter group name for the quality source."
+  },
+  "sonarrReleaseResolution": "{resolution}p",
+  "@sonarrReleaseResolution": {
+    "description": "Resolution filter chip, for example 1080p.",
+    "placeholders": {
+      "resolution": {
+        "type": "String",
+        "description": "Vertical resolution digits."
+      }
+    }
+  },
+  "sonarrReleaseProtocolTorrent": "Torrent",
+  "@sonarrReleaseProtocolTorrent": {
+    "description": "Name of the torrent protocol."
+  },
+  "sonarrReleaseProtocolUsenet": "Usenet",
+  "@sonarrReleaseProtocolUsenet": {
+    "description": "Name of the usenet protocol."
+  },
+  "sonarrReleaseAgeMinutes": "{count, plural, =1{1 minute old} other{{count} minutes old}}",
+  "@sonarrReleaseAgeMinutes": {
+    "description": "Age of a release in minutes.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole number."
+      }
+    }
+  },
+  "sonarrReleaseAgeHours": "{count, plural, =1{1 hour old} other{{count} hours old}}",
+  "@sonarrReleaseAgeHours": {
+    "description": "Age of a release in hours.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole number."
+      }
+    }
+  },
+  "sonarrReleaseAgeDays": "{count, plural, =1{1 day old} other{{count} days old}}",
+  "@sonarrReleaseAgeDays": {
+    "description": "Age of a release in days.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole number."
+      }
+    }
+  },
+  "sonarrReleaseSeeders": "{count, plural, =1{1 seeder} other{{count} seeders}}",
+  "@sonarrReleaseSeeders": {
+    "description": "Number of seeders of a torrent release.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole number."
+      }
+    }
+  },
+  "sonarrReleaseSemantics": "{title}. {details}",
+  "@sonarrReleaseSemantics": {
+    "description": "Screen reader label of a release row: its name, then facts and state.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Release name."
+      },
+      "details": {
+        "type": "String",
+        "description": "Comma separated facts and state."
+      }
+    }
+  },
+  "sonarrReleaseRejectedTitle": "Download a rejected release?",
+  "@sonarrReleaseRejectedTitle": {
+    "description": "Title of the confirm dialog for a rejected release."
+  },
+  "sonarrReleaseRejectedMessage": "Sonarr rejected this release for the reasons below. Downloading it anyway sends it to your download client and may replace or conflict with files you already have.",
+  "@sonarrReleaseRejectedMessage": {
+    "description": "Consequences text of the confirm dialog for a rejected release."
+  },
+  "sonarrReleaseRejectedConfirm": "Download anyway",
+  "@sonarrReleaseRejectedConfirm": {
+    "description": "Confirm button for downloading a rejected release."
+  },
+  "sonarrReleaseCancel": "Cancel",
+  "@sonarrReleaseCancel": {
+    "description": "Cancel button of the rejected release dialog."
+  },
+  "sonarrReleaseResendTitle": "Send again?",
+  "@sonarrReleaseResendTitle": {
+    "description": "Title of the confirm dialog shown before a release that may already have been sent is sent again."
+  },
+  "sonarrReleaseResendMessage": "This release may already have been sent. Send again?",
+  "@sonarrReleaseResendMessage": {
+    "description": "Body of the confirm dialog shown before a release that may already have been sent is sent again."
+  },
+  "sonarrReleaseResendConfirm": "Send again",
+  "@sonarrReleaseResendConfirm": {
+    "description": "Confirm button that sends a release that may already have been sent once more."
+  },
+  "sonarrAddTitle": "Add series",
+  "@sonarrAddTitle": {
+    "description": "Title of the add series screen."
+  },
+  "sonarrAddSearchLabel": "Search by title or ID",
+  "@sonarrAddSearchLabel": {
+    "description": "Label of the add series search field."
+  },
+  "sonarrAddSearchHint": "Title, tvdb:12345 or imdb:tt1234567",
+  "@sonarrAddSearchHint": {
+    "description": "Hint text of the add series search field; the ID forms are literal."
+  },
+  "sonarrAddClearSearch": "Clear search",
+  "@sonarrAddClearSearch": {
+    "description": "Tooltip of the button that clears the add series search field."
+  },
+  "sonarrAddIdleHeadline": "Find a series to add",
+  "@sonarrAddIdleHeadline": {
+    "description": "Headline of the add series screen before searching."
+  },
+  "sonarrAddIdleMessage": "Search by title, or by an ID such as tvdb:12345 or imdb:tt1234567.",
+  "@sonarrAddIdleMessage": {
+    "description": "Hint of the add series screen before searching."
+  },
+  "sonarrAddSearching": "Searching for series",
+  "@sonarrAddSearching": {
+    "description": "Accessible label of the skeleton shown while the series lookup runs."
+  },
+  "sonarrAddNoResultsHeadline": "No series found",
+  "@sonarrAddNoResultsHeadline": {
+    "description": "Headline when the series lookup returned nothing."
+  },
+  "sonarrAddNoResultsMessage": "Check the spelling, or search by an ID such as tvdb:12345.",
+  "@sonarrAddNoResultsMessage": {
+    "description": "Hint under the no series found headline."
+  },
+  "sonarrAddErrorHeadline": "Couldn't search for series",
+  "@sonarrAddErrorHeadline": {
+    "description": "Headline of the add series search error state."
+  },
+  "sonarrAddRetry": "Try again",
+  "@sonarrAddRetry": {
+    "description": "Retry button of the add series screen and options sheet."
+  },
+  "sonarrAddInLibrary": "In library",
+  "@sonarrAddInLibrary": {
+    "description": "Badge on a lookup result that is already in the library."
+  },
+  "sonarrAddResultSemantics": "{title}, {details}",
+  "@sonarrAddResultSemantics": {
+    "description": "Screen reader label of a lookup result.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Series title."
+      },
+      "details": {
+        "type": "String",
+        "description": "Comma separated facts."
+      }
+    }
+  },
+  "sonarrAddClose": "Close",
+  "@sonarrAddClose": {
+    "description": "Tooltip of the close button of the add options sheet."
+  },
+  "sonarrAddOptionsLoading": "Loading options",
+  "@sonarrAddOptionsLoading": {
+    "description": "Accessible label of the skeleton shown while the add options load."
+  },
+  "sonarrAddOptionsErrorHeadline": "Couldn't load the options",
+  "@sonarrAddOptionsErrorHeadline": {
+    "description": "Headline when quality profiles or root folders could not be loaded."
+  },
+  "sonarrAddUnusableHeadline": "Sonarr isn't ready to add series",
+  "@sonarrAddUnusableHeadline": {
+    "description": "Headline when Sonarr has no quality profile or no root folder."
+  },
+  "sonarrAddUnusableMessage": "Create a quality profile and a root folder in Sonarr first.",
+  "@sonarrAddUnusableMessage": {
+    "description": "Hint under the not-ready headline."
+  },
+  "sonarrAddOptionProfile": "Quality profile",
+  "@sonarrAddOptionProfile": {
+    "description": "Label of the quality profile field."
+  },
+  "sonarrAddOptionRootFolder": "Root folder",
+  "@sonarrAddOptionRootFolder": {
+    "description": "Label of the root folder field."
+  },
+  "sonarrAddOptionSeriesType": "Series type",
+  "@sonarrAddOptionSeriesType": {
+    "description": "Label of the series type field."
+  },
+  "sonarrAddOptionMonitor": "Monitor",
+  "@sonarrAddOptionMonitor": {
+    "description": "Label of the field that chooses which episodes to monitor."
+  },
+  "sonarrAddOptionSeasonFolders": "Use season folders",
+  "@sonarrAddOptionSeasonFolders": {
+    "description": "Label of the season folders switch."
+  },
+  "sonarrAddOptionMonitored": "Monitored",
+  "@sonarrAddOptionMonitored": {
+    "description": "Label of the monitored switch."
+  },
+  "sonarrAddOptionMonitoredHint": "Unmonitored series are added but never searched.",
+  "@sonarrAddOptionMonitoredHint": {
+    "description": "Explanation under the monitored switch."
+  },
+  "sonarrAddOptionTags": "Tags",
+  "@sonarrAddOptionTags": {
+    "description": "Heading of the tags section of the add options."
+  },
+  "sonarrAddOptionNoTags": "No tags yet.",
+  "@sonarrAddOptionNoTags": {
+    "description": "Shown when Sonarr has no tags."
+  },
+  "sonarrAddOptionNewTag": "New tag",
+  "@sonarrAddOptionNewTag": {
+    "description": "Label of the field to create a tag."
+  },
+  "sonarrAddOptionCreateTag": "Create tag",
+  "@sonarrAddOptionCreateTag": {
+    "description": "Tooltip of the button that creates the typed tag."
+  },
+  "sonarrAddTagFailed": "Couldn't create the tag. Try a different name.",
+  "@sonarrAddTagFailed": {
+    "description": "Error under the new tag field."
+  },
+  "sonarrAddTypeStandard": "Standard",
+  "@sonarrAddTypeStandard": {
+    "description": "Series type: standard."
+  },
+  "sonarrAddTypeDaily": "Daily",
+  "@sonarrAddTypeDaily": {
+    "description": "Series type: daily."
+  },
+  "sonarrAddTypeAnime": "Anime",
+  "@sonarrAddTypeAnime": {
+    "description": "Series type: anime."
+  },
+  "sonarrAddMonitorAll": "All episodes",
+  "@sonarrAddMonitorAll": {
+    "description": "Monitor preset: all episodes."
+  },
+  "sonarrAddMonitorFuture": "Future episodes",
+  "@sonarrAddMonitorFuture": {
+    "description": "Monitor preset: future episodes."
+  },
+  "sonarrAddMonitorMissing": "Missing episodes",
+  "@sonarrAddMonitorMissing": {
+    "description": "Monitor preset: missing episodes."
+  },
+  "sonarrAddMonitorExisting": "Existing episodes",
+  "@sonarrAddMonitorExisting": {
+    "description": "Monitor preset: existing episodes."
+  },
+  "sonarrAddMonitorFirstSeason": "First season",
+  "@sonarrAddMonitorFirstSeason": {
+    "description": "Monitor preset: first season."
+  },
+  "sonarrAddMonitorLastSeason": "Last season",
+  "@sonarrAddMonitorLastSeason": {
+    "description": "Monitor preset: last season."
+  },
+  "sonarrAddMonitorLatestSeason": "Latest season",
+  "@sonarrAddMonitorLatestSeason": {
+    "description": "Monitor preset: latest season."
+  },
+  "sonarrAddMonitorPilot": "Pilot episode",
+  "@sonarrAddMonitorPilot": {
+    "description": "Monitor preset: pilot only."
+  },
+  "sonarrAddMonitorNone": "None",
+  "@sonarrAddMonitorNone": {
+    "description": "Monitor preset: nothing."
+  },
+  "sonarrAddButton": "Add series",
+  "@sonarrAddButton": {
+    "description": "Button that adds the series."
+  },
+  "sonarrAddAndSearchButton": "Add and search",
+  "@sonarrAddAndSearchButton": {
+    "description": "Button that adds the series and searches for missing episodes."
+  },
+  "sonarrAddAdding": "Adding series…",
+  "@sonarrAddAdding": {
+    "description": "Status while the series is being added."
+  },
+  "sonarrAddFailedHeadline": "Couldn't add the series",
+  "@sonarrAddFailedHeadline": {
+    "description": "Headline of the add failure shown in the options sheet."
+  },
+  "sonarrAddSuccessHeadline": "Series added",
+  "@sonarrAddSuccessHeadline": {
+    "description": "Headline of the add confirmation."
+  },
+  "sonarrAddSuccessMessage": "It's now in your library.",
+  "@sonarrAddSuccessMessage": {
+    "description": "Message of the add confirmation."
+  },
+  "sonarrAddSuccessSearching": "It's in your library and Sonarr is searching for missing episodes.",
+  "@sonarrAddSuccessSearching": {
+    "description": "Message of the add confirmation after add and search."
+  },
+  "sonarrAddOpenSeries": "Open series",
+  "@sonarrAddOpenSeries": {
+    "description": "Button that opens the added series."
+  },
+  "sonarrAddAnother": "Add another",
+  "@sonarrAddAnother": {
+    "description": "Button that closes the confirmation to add another series."
+  },
+  "sonarrCalendarDayNumber": "{day}",
+  "@sonarrCalendarDayNumber": {
+    "description": "A day of the month shown in a calendar month cell, formatted with the locale's digits.",
+    "placeholders": {
+      "day": {
+        "type": "int",
+        "format": "decimalPattern",
+        "description": "Day of month."
       }
     }
   }

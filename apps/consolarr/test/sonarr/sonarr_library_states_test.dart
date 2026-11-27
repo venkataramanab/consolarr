@@ -252,15 +252,14 @@ void main() {
       expect(opened, 1);
     });
 
-    testWidgets('empty library offers a refresh', (tester) async {
+    testWidgets('empty library offers to add a series', (tester) async {
       final v = _phone();
       applyVariantView(tester, v);
       final notifier = _states()['empty']!();
       await tester.pumpWidget(libraryApp(v, notifier: notifier));
       await tester.pumpAndSettle();
       expect(find.text('No series yet'), findsOneWidget);
-      await tester.tap(find.text('Refresh'));
-      expect(notifier.refreshCalls, 1);
+      expect(find.text('Add a series'), findsWidgets);
     });
 
     testWidgets('loading shows a layout-matching skeleton', (tester) async {

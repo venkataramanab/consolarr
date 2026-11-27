@@ -3,6 +3,7 @@
 import 'package:consolarr/features/home/home_routes.dart';
 import 'package:consolarr/features/radarr/radarr_routes.dart';
 import 'package:consolarr/features/servers/domain/server_models.dart';
+import 'package:consolarr/features/settings/settings_routes.dart';
 import 'package:consolarr/features/servers/presentation/servers_routes.dart';
 import 'package:consolarr/features/sonarr/sonarr_routes.dart';
 import 'package:consolarr/features/torrents/torrents_routes.dart';
@@ -18,7 +19,7 @@ final List<AppDestination> appDestinations = [
   sonarrDestination,
   radarrDestination,
   torrentsDestination,
-  // settingsDestination, (W4 Design + Settings)
+  settingsDestination,
   serversDestination,
 ];
 

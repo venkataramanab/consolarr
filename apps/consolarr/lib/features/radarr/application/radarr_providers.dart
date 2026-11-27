@@ -562,7 +562,7 @@ class QueueNotifier extends SnapshotNotifier<List<RadarrQueueItem>> {
       ref
           .read(eventTrackerProvider)
           .track(
-            QueueItemRemovedEvent(
+            RadarrQueueItemRemovedEvent(
               removal: removalParam(removeFromClient, blocklist),
             ),
           ),
@@ -656,7 +656,7 @@ class SearchStatusNotifier extends Notifier<Map<int, SearchPhase>> {
       return;
     }
     unawaited(
-      ref.read(eventTrackerProvider).track(SearchStartedEvent(kind: kind)),
+      ref.read(eventTrackerProvider).track(RadarrSearchStartedEvent(kind: kind)),
     );
     var command = started.valueOrNull!;
     _set(key, _phase(command.status));
@@ -732,7 +732,7 @@ class GrabNotifier extends Notifier<Map<String, GrabPhase>> {
       unawaited(
         ref
             .read(eventTrackerProvider)
-            .track(ReleaseGrabbedEvent(wasRejected: release.rejected)),
+            .track(RadarrReleaseGrabbedEvent(wasRejected: release.rejected)),
       );
     }
   }
@@ -829,7 +829,7 @@ Future<AppError?> addMovie(WidgetRef ref, AddMovieRequest request) async {
     ref
         .read(eventTrackerProvider)
         .track(
-          MovieAddedEvent(
+          RadarrMovieAddedEvent(
             searchAfterAdd: request.searchForMovie,
             withCollection:
                 request.addCollection && request.lookup.collectionTitle != null,

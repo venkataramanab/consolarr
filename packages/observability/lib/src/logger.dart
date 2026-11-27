@@ -2,6 +2,7 @@
 
 import 'dart:developer' as developer;
 
+import 'package:observability/src/diagnostics.dart';
 import 'package:observability/src/redactor.dart';
 
 enum LogLevel {
@@ -26,11 +27,15 @@ class AppLogger {
     LogSink? sink,
     this.redactor = const Redactor(),
     this.minLevel = LogLevel.info,
+    this.diagnostics,
   }) : _sink = sink ?? _defaultSink;
 
   final Redactor redactor;
   final LogLevel minLevel;
   final LogSink _sink;
+
+  /// The opt-in in-app log (SET-04); it applies its own level.
+  final DiagnosticsLog? diagnostics;
 
   static void _defaultSink(LogLevel level, String message) {
     developer.log(message, name: 'consolarr', level: level.value);
@@ -44,9 +49,12 @@ class AppLogger {
       _log(LogLevel.error, message, error: error);
 
   void _log(LogLevel level, String message, {Object? error}) {
-    if (level.index < minLevel.index) return;
+    final captured = diagnostics?.enabled ?? false;
+    if (level.index < minLevel.index && !captured) return;
     final buffer = StringBuffer(message);
     if (error != null) buffer.write(': $error');
-    _sink(level, redactor.redactText(buffer.toString()));
+    final text = redactor.redactText(buffer.toString());
+    diagnostics?.add(level, text);
+    if (level.index >= minLevel.index) _sink(level, text);
   }
 }

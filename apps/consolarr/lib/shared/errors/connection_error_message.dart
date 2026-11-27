@@ -111,5 +111,9 @@ ErrorMessage connectionErrorMessage(AppLocalizations l10n, AppError error) {
       message: l10n.connErrorResponseTooLargeMessage,
       hint: l10n.connErrorResponseTooLargeHint,
     ),
+    ErrorCategory.requestTooLarge => ErrorMessage(
+      message: l10n.connErrorRequestTooLargeMessage,
+      hint: l10n.connErrorRequestTooLargeHint,
+    ),
   };
 }

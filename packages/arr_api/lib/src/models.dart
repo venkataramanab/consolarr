@@ -123,6 +123,8 @@ class SonarrSeries {
     this.tags = const [],
     this.images = const [],
     this.statistics = const SeriesStatistics(),
+    this.rating = 0,
+    this.genres = const [],
   });
 
   /// Throws [FormatException] when `id` or `title` is missing or mistyped.
@@ -154,6 +156,11 @@ class SonarrSeries {
       statistics: stats == null
           ? const SeriesStatistics()
           : SeriesStatistics.fromJson(stats),
+      rating: _ratingValue(json),
+      genres: [
+        for (final g in JsonRead.list(json, 'genres'))
+          if (g is String && g.isNotEmpty) g,
+      ],
     );
   }
 
@@ -172,6 +179,10 @@ class SonarrSeries {
   final List<SonarrImage> images;
   final SeriesStatistics statistics;
 
+  /// Rating 0..10 (0 when unknown).
+  final double rating;
+  final List<String> genres;
+
   /// Cache format; parsed back by [SonarrSeries.fromJson].
   Map<String, Object?> toJson() => {
     'id': id,
@@ -188,6 +199,8 @@ class SonarrSeries {
     'tags': tags,
     'images': [for (final i in images) i.toJson()],
     'statistics': statistics.toJson(),
+    'ratings': {'value': rating},
+    'genres': genres,
   };
 
   @override
@@ -229,6 +242,11 @@ class SonarrSeries {
   /// Omits the title so logs never carry media titles.
   @override
   String toString() => 'SonarrSeries($id)';
+}
+
+double _ratingValue(Map<String, Object?> json) {
+  final r = JsonRead.map(json['ratings']);
+  return r == null ? 0 : JsonRead.decimal(r, 'value');
 }
 
 bool _listEq<T>(List<T> a, List<T> b) {

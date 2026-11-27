@@ -111,6 +111,14 @@
   "@connErrorResponseTooLargeHint": {
     "description": "Fix hint shown under the message for a connection problem: response over the size limit."
   },
+  "connErrorRequestTooLargeMessage": "يشمل هذا التغيير عددًا كبيرًا جدًا من العناصر لا يستطيع الخادم قبوله دفعة واحدة.",
+  "@connErrorRequestTooLargeMessage": {
+    "description": "Plain-language message for a problem: the request was refused locally because it would touch too many items for this server."
+  },
+  "connErrorRequestTooLargeHint": "غيّر عددًا أقل من العناصر في كل مرة، أو حدّث الخادم.",
+  "@connErrorRequestTooLargeHint": {
+    "description": "Fix hint shown under the message for a problem: the request would touch too many items."
+  },
   "connErrorInvalidInputMessage": "العنوان أو المسار غير صالح.",
   "@connErrorInvalidInputMessage": {
     "description": "Plain-language message for a connection problem: form input rejected locally (credentials or query in address, bad path)."

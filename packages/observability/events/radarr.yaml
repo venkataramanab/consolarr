@@ -19,20 +19,20 @@ enums:
     dart: RadarrRemovalParam
     values: [keep_in_client_no_blocklist, remove_no_blocklist, blocklist_and_search, blocklist_only]
 events:
-  movie_added:
+  radarr_movie_added:
     description: A movie was added to Radarr.
     params:
       search_after_add: {type: bool}
       with_collection: {type: bool}
-  release_grabbed:
+  radarr_release_grabbed:
     description: A release from the interactive search was sent to the download client.
     params:
       was_rejected: {type: bool}
-  search_started:
+  radarr_search_started:
     description: An automatic movie search command was started.
     params:
       kind: {type: radarr_search_kind_param}
-  queue_item_removed:
+  radarr_queue_item_removed:
     description: A queue item was removed.
     params:
       removal: {type: radarr_removal_param}

@@ -20,6 +20,7 @@ void main() {
         'tls_expired',
         'redirect_refused',
         'response_too_large',
+        'request_too_large',
       ]);
     });
 
