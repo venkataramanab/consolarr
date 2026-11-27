@@ -32,6 +32,7 @@ Widget _grid(
         selected: selected,
         todayMarker: 'today',
         dayLabel: (d, c) => 'day $d, $c items',
+        dayText: (d) => '$d',
         onSelect: onSelect ?? (_) {},
       ),
     ),

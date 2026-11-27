@@ -371,6 +371,7 @@ class _Grid extends StatelessWidget {
       todayMarker: l10n.sonarrCalendarToday,
       dayLabel: (day, count) =>
           l10n.sonarrCalendarDaySemantics(DateTime(y, m, day), count),
+      dayText: l10n.sonarrCalendarDayNumber,
       onSelect: onSelect,
     );
   }

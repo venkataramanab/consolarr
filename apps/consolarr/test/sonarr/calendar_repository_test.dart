@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import 'package:arr_api/arr_api.dart';
 import 'package:consolarr/features/sonarr/data/calendar_repository.dart';
 import 'package:core/core.dart';
 import 'package:flutter_test/flutter_test.dart';

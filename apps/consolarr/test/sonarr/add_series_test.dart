@@ -9,7 +9,6 @@ import 'package:consolarr/features/sonarr/application/sonarr_session.dart';
 import 'package:consolarr/features/sonarr/data/sonarr_prefs_store.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
-import 'package:flutter/widgets.dart' show Image;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';

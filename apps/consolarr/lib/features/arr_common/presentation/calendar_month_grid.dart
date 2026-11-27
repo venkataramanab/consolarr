@@ -19,6 +19,7 @@ class ArrMonthGrid extends StatelessWidget {
     required this.weekdayLabels,
     required this.counts,
     required this.dayLabel,
+    required this.dayText,
     required this.onSelect,
     this.today,
     this.selected,
@@ -41,6 +42,9 @@ class ArrMonthGrid extends StatelessWidget {
 
   /// Accessible label of a day, including its count.
   final String Function(int day, int count) dayLabel;
+
+  /// The day number as shown (locale digits).
+  final String Function(int day) dayText;
   final ValueChanged<int> onSelect;
 
   /// Day of month that is today, when it is in this month.
@@ -152,7 +156,7 @@ class ArrMonthGrid extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        '$day',
+                        dayText(day),
                         style: theme.textTheme.bodyMedium?.copyWith(
                           fontWeight: isSelected ? FontWeight.w700 : null,
                         ),

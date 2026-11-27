@@ -147,11 +147,11 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('HD-1080p'), findsOneWidget);
     expect(find.text('kids'), findsOneWidget);
-    await tester.tap(
+    await _tap(
+      tester,
       find.byKey(const ValueKey('filter-monitored-unmonitored')),
     );
-    await tester.tap(find.text('Apply'));
-    await tester.pumpAndSettle();
+    await _tap(tester, find.text('Apply'));
     expect(
       find.byKey(const ValueKey('active-filter-monitored')),
       findsOneWidget,

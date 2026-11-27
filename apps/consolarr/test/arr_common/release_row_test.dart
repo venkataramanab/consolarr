@@ -38,8 +38,13 @@ ReleaseRowData _data({
   grab: grab,
 );
 
-Widget _host(HarnessVariant v, Widget child) =>
-    harnessApp(v, Scaffold(body: SingleChildScrollView(child: child)));
+Widget _host(HarnessVariant v, Widget child) => harnessApp(
+  v,
+  ConsolarrEffectsScope(
+    reduceMotion: true,
+    child: Scaffold(body: SingleChildScrollView(child: child)),
+  ),
+);
 
 void main() {
   for (final grab in ReleaseGrabState.values) {

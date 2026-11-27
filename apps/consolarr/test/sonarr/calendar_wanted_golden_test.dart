@@ -5,7 +5,6 @@ import 'package:consolarr/features/sonarr/application/calendar_providers.dart';
 import 'package:consolarr/features/sonarr/presentation/calendar/calendar_tab.dart';
 import 'package:consolarr/features/sonarr/presentation/wanted/wanted_body.dart';
 import 'package:core/core.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:test_harness/test_harness.dart';

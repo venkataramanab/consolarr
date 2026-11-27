@@ -1848,5 +1848,16 @@
   "sonarrAddAnother": "Add another",
   "@sonarrAddAnother": {
     "description": "Button that closes the confirmation to add another series."
+  },
+  "sonarrCalendarDayNumber": "{day}",
+  "@sonarrCalendarDayNumber": {
+    "description": "A day of the month shown in a calendar month cell, formatted with the locale's digits.",
+    "placeholders": {
+      "day": {
+        "type": "int",
+        "format": "decimalPattern",
+        "description": "Day of month."
+      }
+    }
   }
 }
