@@ -47,7 +47,7 @@ const forbiddenTlsIdentifiers = {
 /// Reports any use of TLS-trust-altering APIs outside the one file that
 /// implements trust-on-first-use pinning: `badCertificateCallback`,
 /// `onBadCertificate`, `HttpOverrides`, `setTrustedCertificates(Bytes)` and
-/// `SecurityContext(withTrustedRoots: false)`.
+/// `SecurityContext(withTrustedRoots: <anything but literal true>)`.
 class NoBadCertificateCallback extends AnalysisRule {
   NoBadCertificateCallback()
     : super(
@@ -124,8 +124,9 @@ class _Visitor extends SimpleAstVisitor<void> {
     if (_forbidden(name)) {
       rule.reportAtNode(node);
     } else if (name == 'withTrustedRoots' &&
-        value is BooleanLiteral &&
-        !value.value) {
+        !(value is BooleanLiteral && value.value)) {
+      // Anything but the literal `true` (false, a variable, `!true`, ...)
+      // can disable the platform trust store.
       rule.reportAtNode(node);
     }
   }

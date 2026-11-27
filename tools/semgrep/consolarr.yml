@@ -5,10 +5,10 @@ rules:
     severity: ERROR
     message: >-
       TLS trust may only be customised (badCertificateCallback,
-      onBadCertificate, setTrustedCertificates, withTrustedRoots: false) in
+      onBadCertificate, setTrustedCertificates, withTrustedRoots: <anything but literal true>) in
       packages/security/lib/src/http/secure_http_client_factory.dart.
     # Applies to every Dart file, generated (*.g.dart) ones included.
-    pattern-regex: \b(?:badCertificateCallback|onBadCertificate|setTrustedCertificates(?:Bytes)?)\b|withTrustedRoots\s*:\s*false
+    pattern-regex: \b(?:badCertificateCallback|onBadCertificate|setTrustedCertificates(?:Bytes)?)\b|withTrustedRoots\s*:(?!\s*true\b)
     paths:
       include:
         - "apps/"

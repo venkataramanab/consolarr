@@ -3,15 +3,16 @@
 # Project rules (consolarr_no_ui_string, consolarr_bad_certificate_callback,
 # consolarr_no_print) are reported at info severity by the analyzer plugin API,
 # so CI runs `dart analyze --fatal-infos` to make them (and every other lint)
-# fail the build. Generated files (*.g.dart) are deliberately NOT excluded from
-# analysis so the certificate-bypass rule also covers them.
+# fail the build. Generated files (*.g.dart, *.freezed.dart) are deliberately NOT
+# excluded from analysis so the certificate-bypass rule also covers them;
+# tools/ci/repo_guard.sh rejects tracked ones outside an allowlist, and any
+# .dart file over 512 KB. Changes here need code-owner review (CODEOWNERS).
 plugins:
   consolarr_lints:
     path: tools/consolarr_lints
 
 analyzer:
   exclude:
-    - "**/*.freezed.dart"
     - "packages/l10n/lib/src/generated/**"
     # Real build output only. Never `**/build/**`: a source directory named
     # `build/` (e.g. apps/consolarr/lib/build/) is compiled into the app and

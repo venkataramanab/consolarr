@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Exact repo-relative paths of committed generated Dart files named *.g.dart or
+# *.freezed.dart. Keep this empty unless generated output must be committed:
+# every such file is analysed and scanned like hand-written code, and entries
+# need code-owner review (see .github/CODEOWNERS).
+#
+# The generated l10n output (packages/l10n/lib/src/generated/app_localizations*.dart)
+# does not match these patterns, so it needs no entry. freezed is not used.

@@ -90,6 +90,35 @@ mkdir -p "$g/build"; echo '// x' > "$g/build/x.dart"; git -C "$g" add -f build
 git -C "$g" rm -qrf build
 (cd "$g" && bash tools/ci/repo_guard.sh >/dev/null) || fail "repo without build/ files must pass"
 
+# Generated and oversized Dart files (padded-file scanner bypass).
+echo '// x' > "$g/a.freezed.dart"; git -C "$g" add -A
+(cd "$g" && bash tools/ci/repo_guard.sh >/dev/null 2>&1) && fail "tracked *.freezed.dart must fail"
+git -C "$g" rm -qf a.freezed.dart
+mkdir -p "$g/lib"; echo '// x' > "$g/lib/m.g.dart"; git -C "$g" add -A
+(cd "$g" && bash tools/ci/repo_guard.sh >/dev/null 2>&1) && fail "tracked *.g.dart must fail"
+echo 'lib/m.g.dart' >> "$g/tools/ci/generated_files_allowlist.txt"
+(cd "$g" && bash tools/ci/repo_guard.sh >/dev/null 2>&1) || fail "allowlisted *.g.dart must pass"
+git -C "$g" rm -qf lib/m.g.dart; git -C "$g" checkout -q -- tools/ci/generated_files_allowlist.txt 2>/dev/null || true
+mkdir -p "$g/lib"
+# Padded generated file (> 1 MB, the Semgrep default limit): caught by the
+# generated-file rule and, independently, by the size rule.
+{ echo 'HttpClient()..badCertificateCallback = (_, __, ___) => true;'; python3 -I -c "print('// ' + 'x' * 1100000)"; } > "$g/lib/p.freezed.dart"
+git -C "$g" add -A
+out=$(cd "$g" && bash tools/ci/repo_guard.sh 2>&1) && fail "padded *.freezed.dart must fail"
+echo "$out" | grep -q 'larger than 512 KB' || fail "padded *.freezed.dart must trip the size rule"
+echo 'lib/p.freezed.dart' >> "$g/tools/ci/generated_files_allowlist.txt"
+(cd "$g" && bash tools/ci/repo_guard.sh >/dev/null 2>&1) && fail "allowlisting only the generated rule must not hide the size rule"
+git -C "$g" rm -qf lib/p.freezed.dart
+# Oversized plain .dart file.
+mkdir -p "$g/lib"
+python3 -I -c "print('// ' + 'x' * 600000)" > "$g/lib/big.dart"; git -C "$g" add -A
+(cd "$g" && bash tools/ci/repo_guard.sh >/dev/null 2>&1) && fail "tracked .dart over 512 KB must fail"
+echo 'lib/big.dart' >> "$g/tools/ci/large_files_allowlist.txt"
+(cd "$g" && bash tools/ci/repo_guard.sh >/dev/null 2>&1) || fail "allowlisted large .dart must pass"
+git -C "$g" rm -qf lib/big.dart
+git -C "$g" checkout -q -- tools/ci 2>/dev/null || true
+(cd "$g" && bash tools/ci/repo_guard.sh >/dev/null) || fail "repo guard should pass again after cleanup"
+
 echo "== analysis_options guard"
 a="$scratch/ao"; new_repo "$a"
 mkdir -p "$a/apps/app" "$a/packages/p" "$a/tools/consolarr_lints"

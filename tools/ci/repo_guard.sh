@@ -10,7 +10,14 @@
 #     `build/` directories, so a source file hidden in a `lib/build/` folder
 #     would otherwise be compiled but could not be hidden from scanners: it
 #     must simply not exist);
-#  3. fails if any term from $CLEANROOM_TERMS (newline-separated, supplied by
+#  3. fails if any tracked/unignored *.g.dart or *.freezed.dart file is not in
+#     tools/ci/generated_files_allowlist.txt (generated code is committed only
+#     deliberately: the analyzer no longer excludes it, but a padded generated
+#     file was the vehicle for a scanner bypass);
+#  4. fails if any tracked/unignored .dart file exceeds 512 KB and is not in
+#     tools/ci/large_files_allowlist.txt (Semgrep and other scanners have size
+#     limits; no legitimate hand-written source is that big);
+#  5. fails if any term from $CLEANROOM_TERMS (newline-separated, supplied by
 #     the CLEANROOM_TERMS repository *secret*) appears in file contents or
 #     paths. Skips cleanly when the secret is unavailable (pull requests from
 #     forks never receive secrets).
@@ -66,7 +73,41 @@ if [ -n "$build_hits" ]; then
   fail=1
 fi
 
-# --- 3. clean-room terms -----------------------------------------------------
+# --- 3./4. generated and oversized Dart files -------------------------------
+read_allowlist() { # read_allowlist <file>: exact repo-relative paths
+  [ -f "$1" ] && sed -e 's/#.*//' -e 's/[[:space:]]*$//' -e '/^$/d' "$1" || true
+}
+dart_files=$(git ls-files --cached --others --exclude-standard | grep -E '\.dart$' || true)
+
+gen_allowed=$(mktemp)
+big_allowed=$(mktemp)
+trap 'rm -f "$allowed_paths" "$terms_file" "$gen_allowed" "$big_allowed"' EXIT
+read_allowlist tools/ci/generated_files_allowlist.txt > "$gen_allowed"
+read_allowlist tools/ci/large_files_allowlist.txt > "$big_allowed"
+
+gen_hits=$(printf '%s\n' "$dart_files" | grep -iE '\.(g|freezed)\.dart$' | grep -Fxv -f "$gen_allowed" || true)
+if [ -n "$gen_hits" ]; then
+  echo "::error::Generated Dart files (*.g.dart, *.freezed.dart) are committed outside tools/ci/generated_files_allowlist.txt:"
+  printf '%s\n' "$gen_hits"
+  fail=1
+fi
+
+max_dart_bytes=524288
+big_hits=""
+while IFS= read -r f; do
+  [ -n "$f" ] && [ -f "$f" ] || continue
+  size=$(wc -c < "$f" | tr -d ' ')
+  if [ "$size" -gt "$max_dart_bytes" ]; then
+    big_hits="${big_hits}${f} (${size} bytes)"$'\n'
+  fi
+done < <(printf '%s\n' "$dart_files" | grep -Fxv -f "$big_allowed" || true)
+if [ -n "$big_hits" ]; then
+  echo "::error::Dart files larger than 512 KB (scanner size limits; split or allowlist in tools/ci/large_files_allowlist.txt):"
+  printf '%s' "$big_hits"
+  fail=1
+fi
+
+# --- 5. clean-room terms -----------------------------------------------------
 if [ ! -s "$terms_file" ]; then
   echo "CLEANROOM_TERMS secret not available (fork pull request or not configured): clean-room term check skipped."
 else

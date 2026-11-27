@@ -230,6 +230,22 @@ void f() {
     ]);
   }
 
+  Future<void> test_trusted_roots_non_true_reported() async {
+    const src = '''
+class SecurityContext {
+  SecurityContext({bool withTrustedRoots = false});
+}
+void f(bool b) {
+  SecurityContext(withTrustedRoots: b);
+  SecurityContext(withTrustedRoots: !true);
+}
+''';
+    await assertDiagnostics(src, [
+      lint(src.indexOf('withTrustedRoots: b'), 19),
+      lint(src.indexOf('withTrustedRoots: !true'), 23),
+    ]);
+  }
+
   Future<void> test_trusted_roots_true_ok() async {
     await assertNoDiagnostics('''
 class SecurityContext {
