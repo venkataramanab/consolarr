@@ -100,9 +100,12 @@ void main() {
         // dependency of `file_selector` (the torrent file picker), never as a
         // direct one.
         expect(read('$root/pubspec.yaml'), isNot(contains('cross_file')));
-        if (lock.contains('cross_file:')) {
-          final entry = lock.split('  cross_file:').last.split('\n  ').first;
-          expect(entry, contains('dependency: transitive'));
+        final entry = RegExp(
+          r'^  cross_file:\n((?:    .*\n)+)',
+          multiLine: true,
+        ).firstMatch(lock);
+        if (entry != null) {
+          expect(entry.group(1), contains('dependency: transitive'));
         }
       });
 
