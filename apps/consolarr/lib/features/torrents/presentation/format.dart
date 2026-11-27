@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:l10n/l10n.dart';
+import 'package:torrent_clients/torrent_clients.dart';
 
 /// Human-readable size, locale-aware (digits and separators come from the
 /// ARB number formats). Binary multiples (1 KB = 1024 B).
@@ -30,3 +31,23 @@ String formatDuration(AppLocalizations l10n, Duration d) {
   }
   return l10n.torDurationDaysHours(hours ~/ 24, hours % 24);
 }
+
+/// The ratio as a value: "–" when unknown, "∞" when infinite, else the number.
+String ratioValue(AppLocalizations l10n, Torrent t) => t.ratioUnknown
+    ? l10n.torRatioUnknown
+    : t.ratioInfinite
+    ? l10n.torRatioInfinite
+    : l10n.torDetailRatio(t.ratio);
+
+/// The ratio's spoken form ("Unknown", "Infinite" instead of the symbols).
+String ratioSpoken(AppLocalizations l10n, Torrent t) => t.ratioUnknown
+    ? l10n.torRatioUnknownSpoken
+    : t.ratioInfinite
+    ? l10n.torRatioInfiniteSpoken
+    : l10n.torDetailRatio(t.ratio);
+
+/// The ratio as a row detail (`Ratio 1.50`, `Ratio –`, `Ratio ∞`).
+String ratioDetail(AppLocalizations l10n, Torrent t) =>
+    t.ratioUnknown || t.ratioInfinite
+    ? l10n.torDetailRatioValue(ratioValue(l10n, t))
+    : l10n.torDetailRatio(t.ratio);

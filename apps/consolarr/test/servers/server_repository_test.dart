@@ -199,6 +199,33 @@ void main() {
     expect(await repo.watchAll().first, hasLength(1));
   });
 
+  test(
+    'delete also removes the server-scoped state (Deluge daemon host)',
+    () async {
+      final id = (await repo.save(sonarr())).valueOrNull!.profile.id;
+      final other = (await repo.save(sonarr(name: 'Other')))
+          .valueOrNull!
+          .profile
+          .id;
+      for (final sid in [id, other]) {
+        await db
+            .into(db.appStateRows)
+            .insertOnConflictUpdate(
+              AppStateRowsCompanion.insert(
+                key: 'torrents.deluge_host.$sid',
+                value: 'host-of-$sid',
+              ),
+            );
+      }
+      await repo.delete(id);
+      final keys = [
+        for (final r in await db.select(db.appStateRows).get()) r.key,
+      ];
+      expect(keys, isNot(contains('torrents.deluge_host.$id')));
+      expect(keys, contains('torrents.deluge_host.$other'));
+    },
+  );
+
   test('order: new servers append; reorder persists', () async {
     final a = (await repo.save(sonarr(name: 'A'))).valueOrNull!.profile.id;
     final b = (await repo.save(sonarr(name: 'B'))).valueOrNull!.profile.id;

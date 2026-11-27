@@ -26,6 +26,7 @@ class AppDestination {
     this.kinds,
     this.screen,
     this.switcherKind,
+    this.switcherKinds,
     this.children = const [],
   });
 
@@ -57,6 +58,14 @@ class AppDestination {
   /// The service kind whose servers the top bar's switcher offers here.
   final ServiceKind? switcherKind;
 
+  /// Several kinds whose servers the switcher lists together (torrents). When
+  /// set it wins over [switcherKind].
+  final Set<ServiceKind>? switcherKinds;
+
+  /// The kinds the switcher offers here (empty: no switcher).
+  Set<ServiceKind> get effectiveSwitcherKinds =>
+      switcherKinds ?? {if (switcherKind != null) switcherKind!};
+
   /// Child routes of this branch. Paths are relative to [route] (for example
   /// `series/:id`). A child renders inside the shell with the bar visible; a
   /// full-screen flow sets `parentNavigatorKey: rootNavigatorKey`.
@@ -65,3 +74,9 @@ class AppDestination {
   /// Whether this destination serves servers of [kind].
   bool servesKind(ServiceKind kind) => kinds?.contains(kind) ?? false;
 }
+
+/// The `AppStateRows` key under which the server switcher of the destination
+/// [destinationId] remembers the chosen kind. The shell and the feature that
+/// reads the choice both use this.
+String selectedKindKeyFor(String destinationId) =>
+    '$destinationId.selected_kind';

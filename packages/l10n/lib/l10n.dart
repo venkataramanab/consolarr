@@ -7,6 +7,7 @@ library;
 
 import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter/widgets.dart';
+import 'package:intl/intl.dart' show NumberFormat;
 import 'package:l10n/src/generated/app_localizations.dart';
 import 'package:material_ui/material_ui.dart' show GlobalMaterialLocalizations;
 
@@ -44,3 +45,17 @@ List<Locale> supportedLocalesFor({required bool includePseudo}) => [
 final List<Locale> appSupportedLocales = supportedLocalesFor(
   includePseudo: !kReleaseMode,
 );
+
+/// Number formats the generated messages cannot express.
+extension AppLocalizationsNumbers on AppLocalizations {
+  /// [value] in the locale's digits (Arabic-Indic for `ar`) without a
+  /// thousands separator: for a port or an id, where grouping would change the
+  /// meaning. Falls back to plain digits for a locale intl does not know.
+  String plainInt(int value) {
+    try {
+      return NumberFormat('0', localeName).format(value);
+    } on Object {
+      return '$value';
+    }
+  }
+}
