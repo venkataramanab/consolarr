@@ -31,8 +31,9 @@ jobs:
           # Open-source provider (plain actions/cache); the default "enhanced"
           # provider is a proprietary download we do not run.
           cache-provider: basic
-          # Only pushes to main write the cache; PRs (forks included) read only.
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          # Nightly never writes the shared cache: it runs a third-party emulator
+          # action in the same job. Only CI pushes to main write the cache.
+          cache-read-only: true
           # No build scans, no terms-of-use acceptance, no dependency submission.
           build-scan-publish: false
           dependency-graph: disabled
@@ -76,8 +77,9 @@ jobs:
           # Open-source provider (plain actions/cache); the default "enhanced"
           # provider is a proprietary download we do not run.
           cache-provider: basic
-          # Only pushes to main write the cache; PRs (forks included) read only.
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          # Nightly never writes the shared cache: it runs a third-party emulator
+          # action in the same job. Only CI pushes to main write the cache.
+          cache-read-only: true
           # No build scans, no terms-of-use acceptance, no dependency submission.
           build-scan-publish: false
           dependency-graph: disabled
