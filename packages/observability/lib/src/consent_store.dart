@@ -28,6 +28,10 @@ class ConsentState {
 /// Persists [ConsentState]. Loaded lazily, never before the first frame.
 abstract interface class ConsentStore {
   Future<ConsentState> load();
+
+  /// Writes the whole state. Implementations must store both flags in **one**
+  /// transaction, so a crash can never leave one purpose on and the other
+  /// stale.
   Future<void> save(ConsentState state);
 }
 

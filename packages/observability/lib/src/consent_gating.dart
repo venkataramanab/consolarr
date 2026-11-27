@@ -26,9 +26,15 @@ class ConsentGatedAnalytics implements Analytics {
   final Analytics inner;
   final bool Function() _isAllowed;
 
+  /// Enabling is forwarded only while consent is on. Disabling is never
+  /// forwarded from here: the owning [ConsentManager] tells the sink once, on
+  /// the real on-to-off transition, so a sink whose consent was never given
+  /// sees no call at all.
   @override
-  Future<void> setEnabled({required bool enabled}) =>
-      inner.setEnabled(enabled: enabled && _isAllowed());
+  Future<void> setEnabled({required bool enabled}) async {
+    if (!enabled || !_isAllowed()) return;
+    await inner.setEnabled(enabled: true);
+  }
 
   @override
   Future<void> logEvent(
@@ -48,9 +54,15 @@ class ConsentGatedCrashReporter implements CrashReporter {
   final CrashReporter inner;
   final bool Function() _isAllowed;
 
+  /// Enabling is forwarded only while consent is on. Disabling is never
+  /// forwarded from here: the owning [ConsentManager] tells the sink once, on
+  /// the real on-to-off transition, so a sink whose consent was never given
+  /// sees no call at all.
   @override
-  Future<void> setEnabled({required bool enabled}) =>
-      inner.setEnabled(enabled: enabled && _isAllowed());
+  Future<void> setEnabled({required bool enabled}) async {
+    if (!enabled || !_isAllowed()) return;
+    await inner.setEnabled(enabled: true);
+  }
 
   @override
   Future<void> recordError(
@@ -120,16 +132,43 @@ class ConsentManager {
 
   Future<void> _apply(ConsentState next, {required bool persist}) async {
     final previous = _state;
+    if (previous == next) return;
     // Gate first: from this line on, nothing is forwarded for a purpose that
     // was withdrawn, whatever the sinks do next.
     _state = next;
     if (previous.crashReports && !next.crashReports) breadcrumbs.clear();
-    await _rawAnalytics.setEnabled(enabled: next.analytics);
-    await _rawCrash.setEnabled(enabled: next.crashReports);
-    if (persist && previous != next) await store.save(next);
-    if (previous != next) {
-      for (final l in List.of(_listeners)) {
-        l();
+    try {
+      // Only a purpose whose value changed reaches its raw sink, so a sink
+      // that never had consent never sees a call. A failure of one sink does
+      // not stop the other.
+      Object? failure;
+      StackTrace? failureTrace;
+      Future<void> tell(Future<void> Function() call) async {
+        try {
+          await call();
+        } on Object catch (e, st) {
+          failure ??= e;
+          failureTrace ??= st;
+        }
+      }
+
+      if (previous.analytics != next.analytics) {
+        await tell(() => _rawAnalytics.setEnabled(enabled: next.analytics));
+      }
+      if (previous.crashReports != next.crashReports) {
+        await tell(() => _rawCrash.setEnabled(enabled: next.crashReports));
+      }
+      if (failure != null) {
+        Error.throwWithStackTrace(failure!, failureTrace ?? StackTrace.empty);
+      }
+    } finally {
+      // The choice is stored and announced even when a sink failed.
+      try {
+        if (persist) await store.save(next);
+      } finally {
+        for (final l in List.of(_listeners)) {
+          l();
+        }
       }
     }
   }

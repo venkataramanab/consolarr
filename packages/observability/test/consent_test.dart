@@ -164,4 +164,49 @@ void main() {
     await tracker.track(const ScreenViewedEvent(screen: ScreenName.settings));
     expect(analytics.events, ['screen_viewed']);
   });
+
+  group('strict zero calls while consent is off (L2)', () {
+    test('loading all-off or withdrawing an already-off purpose calls nothing',
+        () async {
+      await manager.load();
+      await manager.set(ConsentPurpose.analytics, enabled: false);
+      await manager.set(ConsentPurpose.crashReports, enabled: false);
+      await manager.analytics.setEnabled(enabled: false);
+      await manager.crashReporter.setEnabled(enabled: false);
+      await manager.analytics.setEnabled(enabled: true);
+      expect(analytics.enabledCalls, isEmpty);
+      expect(analytics.events, isEmpty);
+      expect(crash.enabledCalls, isEmpty);
+    });
+
+    test('only the changed purpose reaches its sink', () async {
+      await manager.set(ConsentPurpose.analytics, enabled: true);
+      expect(analytics.enabledCalls, [true]);
+      expect(crash.enabledCalls, isEmpty);
+      await manager.set(ConsentPurpose.analytics, enabled: false);
+      expect(analytics.enabledCalls, [true, false]);
+      expect(crash.enabledCalls, isEmpty);
+    });
+
+    test('a throwing sink cannot skip the save', () async {
+      final boom = ConsentManager(
+        store: store,
+        analytics: _ThrowingAnalytics(),
+        crashReporter: crash,
+        breadcrumbs: crumbs,
+      );
+      await expectLater(
+        boom.set(ConsentPurpose.analytics, enabled: true),
+        throwsStateError,
+      );
+      expect(await store.load(), const ConsentState(analytics: true));
+      expect(boom.state.analytics, isTrue);
+    });
+  });
+}
+
+class _ThrowingAnalytics extends _Analytics {
+  @override
+  Future<void> setEnabled({required bool enabled}) async =>
+      throw StateError('sink down');
 }
