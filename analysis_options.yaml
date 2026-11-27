@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Project rules (consolarr_no_ui_string, consolarr_bad_certificate_callback,
+# consolarr_no_print) are reported at info severity by the analyzer plugin API,
+# so CI runs `dart analyze --fatal-infos` to make them (and every other lint)
+# fail the build.
+plugins:
+  consolarr_lints:
+    path: tools/consolarr_lints
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "packages/l10n/lib/src/generated/**"
+    - "**/build/**"
+    - "tools/consolarr_lints/**"
+  errors:
+    # Generated/third-party-shaped code is excluded above; everything else
+    # must be clean.
+    invalid_annotation_target: ignore
+
+linter:
+  rules:
+    public_member_api_docs: false
+    lines_longer_than_80_chars: false

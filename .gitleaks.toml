@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+title = "Consolarr gitleaks configuration"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Obviously fake fixture keys and reserved example data."
+# Fixtures use keys like test-key-0000... and RFC 5737 / .example / .invalid
+# hosts only. Real secrets must never match this pattern.
+regexes = [
+  '''test-key-0{4,}[0-9A-Za-z_-]*''',
+  '''0123456789abcdef0123456789abcdef''',
+]
+paths = [
+  '''(^|/)dart_defines\.example\.json$''',
+]
