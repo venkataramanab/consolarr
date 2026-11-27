@@ -214,24 +214,40 @@ class ReleaseGrabNotifier extends Notifier<Map<String, GrabStatus>> {
 
   final InteractiveSearchTarget target;
 
+  /// Bumped by every build, which a server switch triggers. Work started for
+  /// an earlier build drops its result: a grab started on server A never
+  /// shows up against the same-numbered release of server B.
+  int _generation = 0;
+
   @override
-  Map<String, GrabStatus> build() => const {};
+  Map<String, GrabStatus> build() {
+    _generation++;
+    ref.watch(sonarrSessionProvider.select((s) => s.value?.serverId));
+    return const {};
+  }
 
   /// Sends [release] to the download client once. Ignored while it is being
   /// grabbed or after it was grabbed: no automatic retry exists, so a dropped
   /// connection can never submit twice without a new explicit tap.
   /// [confirmedRejected] records that the user accepted a rejected release.
+  ///
+  /// A release in the [GrabStatus.maybeSent] state is only sent again with
+  /// [confirmedResend], which the caller sets after [confirmQueued] found
+  /// nothing and the user said "send again".
   Future<void> grab(
     ArrRelease release, {
     bool confirmedRejected = false,
+    bool confirmedResend = false,
   }) async {
     final key = grabKey(release);
     final current = state[key];
     if (current == GrabStatus.grabbing || current == GrabStatus.grabbed) {
       return;
     }
+    if (current == GrabStatus.maybeSent && !confirmedResend) return;
     final session = ref.read(sonarrSessionProvider).value;
     if (session == null) return;
+    final generation = _generation;
     final tracker = ref.read(eventTrackerProvider);
     if (confirmedRejected) {
       tracker.track(
@@ -250,7 +266,7 @@ class ReleaseGrabNotifier extends Notifier<Map<String, GrabStatus>> {
             : SonarrGrabOutcomeParam.failed,
       ),
     );
-    if (!ref.mounted) return;
+    if (!ref.mounted || generation != _generation) return;
     state = {
       ...state,
       key: error == null
@@ -262,5 +278,25 @@ class ReleaseGrabNotifier extends Notifier<Map<String, GrabStatus>> {
               _ => GrabStatus.failed,
             },
     };
+  }
+
+  /// For a [GrabStatus.maybeSent] release: looks for it in the download queue.
+  /// Found means the first request did arrive; it is then shown as grabbed
+  /// and `true` is returned. Not found, or the queue could not be read, is
+  /// `false`: the caller must ask before sending again.
+  Future<bool> confirmQueued(ArrRelease release) async {
+    final key = grabKey(release);
+    if (state[key] != GrabStatus.maybeSent) return false;
+    final session = ref.read(sonarrSessionProvider).value;
+    if (session == null) return false;
+    final generation = _generation;
+    final result = await session.api.queue();
+    if (!ref.mounted || generation != _generation) return false;
+    final items = result.valueOrNull;
+    if (items == null || !items.any((i) => i.title == release.title)) {
+      return false;
+    }
+    state = {...state, key: GrabStatus.grabbed};
+    return true;
   }
 }

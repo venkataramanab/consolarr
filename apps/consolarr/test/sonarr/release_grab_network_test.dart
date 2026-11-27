@@ -66,7 +66,7 @@ void main() {
   );
 
   test(
-    'a timeout is "maybe sent"; the explicit retry sends once more',
+    'a timeout is "maybe sent"; a plain second grab sends nothing',
     () async {
       final adapter = FaultInjectingAdapter(
         inner: StubAdapter((_) => _ok()),
@@ -76,7 +76,30 @@ void main() {
       );
       final c = containerOver(adapter);
       expect(await grab(c), GrabStatus.maybeSent);
-      expect(await grab(c), GrabStatus.grabbed);
+      // No queue check and no confirmation yet: nothing may be sent.
+      expect(await grab(c), GrabStatus.maybeSent);
+      expect(adapter.requestCount, 1);
+    },
+  );
+
+  test(
+    'after a confirmed resend a maybe-sent release is sent once more',
+    () async {
+      final adapter = FaultInjectingAdapter(
+        inner: StubAdapter((_) => _ok()),
+        faults: const [
+          TimeoutFault(kind: TimeoutKind.receive, firstAttempts: 1),
+        ],
+      );
+      final c = containerOver(adapter);
+      expect(await grab(c), GrabStatus.maybeSent);
+      await c
+          .read(releaseGrabProvider(_target).notifier)
+          .grab(release, confirmedResend: true);
+      expect(
+        c.read(releaseGrabProvider(_target))[grabKey(release)],
+        GrabStatus.grabbed,
+      );
       expect(adapter.requestCount, 2);
     },
   );

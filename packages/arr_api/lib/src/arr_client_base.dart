@@ -33,6 +33,17 @@ Future<T> decodeOffIsolate<T>(
     ? runner(() => parse(body))
     : Future.value(parse(body));
 
+/// Parses a JSON array body into rows with [parse], off the UI isolate when
+/// the body is large. Same rules as [decodeOffIsolate]: top level, [parse]
+/// must be a static tear-off.
+Future<ParsedRows<T>> decodeRowsOffIsolate<T>(
+  ParseRunner runner,
+  String body,
+  T Function(Map<String, Object?> json) parse,
+) => body.length > arrIsolateThresholdBytes
+    ? runner(() => parseArrList(jsonDecode(body), parse))
+    : Future.value(parseArrList(jsonDecode(body), parse));
+
 /// What Sonarr and Radarr clients share: URL building under a path prefix,
 /// the GET helper, artwork URLs and the profile/folder/tag lists (the `v3`
 /// APIs of both services are identical there).
@@ -88,7 +99,11 @@ abstract class ArrClientBase implements ArrApi {
     String path,
     T Function(Map<String, Object?> json) parse,
   ) => guard(() async {
-    final parsed = parseArrList(jsonDecode(await getText(path)), parse);
+    final parsed = await decodeRowsOffIsolate(
+      runner,
+      await getText(path),
+      parse,
+    );
     return parsed.items;
   });
 

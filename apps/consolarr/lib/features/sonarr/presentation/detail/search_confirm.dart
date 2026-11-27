@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'package:consolarr/features/sonarr/application/search_progress.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -37,4 +39,18 @@ Future<bool> confirmSearch(BuildContext context, SearchConfirmKind kind) async {
     ),
   );
   return result ?? false;
+}
+
+/// Confirms, then starts the automatic search for [target]. Every entry point
+/// of a season or series search (menu and the retry after a failure) goes
+/// through here, so a retry can never skip the dialog.
+Future<void> confirmAndSearch(
+  BuildContext context,
+  WidgetRef ref,
+  SearchConfirmKind kind,
+  SearchTarget target,
+) async {
+  if (await confirmSearch(context, kind) && context.mounted) {
+    await ref.read(searchProgressProvider(target).notifier).start();
+  }
 }

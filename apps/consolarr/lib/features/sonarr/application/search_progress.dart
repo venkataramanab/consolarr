@@ -131,9 +131,17 @@ final searchPollDelaysProvider = Provider<List<Duration>>(
 /// Polling failures in a row before the search is reported as failed.
 const _maxConsecutivePollErrors = 3;
 
+/// How the loop waits while the app is in the background: the step, and the
+/// most steps before the search is reported as timed out. Override in tests.
+final searchBackgroundPauseProvider = Provider<({Duration step, int maxSteps})>(
+  (ref) => (step: const Duration(milliseconds: 500), maxSteps: 240),
+);
+
 /// The progress of one search target. Auto-disposed: leaving the screen ends
 /// the polling (a disposed notifier stops after the current wait), and the
-/// loop also pauses while the app is in the background.
+/// loop also pauses while the app is in the background. A server switch
+/// rebuilds it: a search started on one server never reports its result for
+/// the same-numbered item of another.
 final searchProgressProvider = NotifierProvider.autoDispose
     .family<SearchProgressNotifier, SearchProgress, SearchTarget>(
       SearchProgressNotifier.new,
@@ -144,32 +152,57 @@ class SearchProgressNotifier extends Notifier<SearchProgress> {
 
   final SearchTarget target;
 
+  /// Bumped by every build (server switch). Work for an earlier build drops
+  /// its result after each await.
+  int _generation = 0;
+
   @override
-  SearchProgress build() => const SearchIdle();
+  SearchProgress build() {
+    _generation++;
+    ref.watch(sonarrSessionProvider.select((s) => s.value?.serverId));
+    return const SearchIdle();
+  }
 
   /// Starts the search once; ignored while one is already running.
   Future<void> start() async {
     if (state is SearchRunning) return;
     final session = ref.read(sonarrSessionProvider).value;
     if (session == null) return;
+    final generation = _generation;
+    bool stale() => !ref.mounted || generation != _generation;
     state = const SearchRunning();
     final tracker = ref.read(eventTrackerProvider)
       ..track(SearchStartedEvent(scope: target.scope));
-    final started = await session.api.startCommand(target.request);
-    if (!ref.mounted) return;
-    final command = started.valueOrNull;
-    if (command == null) {
-      state = SearchFailed(started.errorOrNull!);
+
+    SearchProgress failed(AppError error) {
       tracker.track(
         SearchFinishedEvent(
           scope: target.scope,
           outcome: SonarrSearchOutcomeParam.failed,
         ),
       );
+      return SearchFailed(error);
+    }
+
+    // What is in the queue before the search: only items that appear after
+    // it count as found. Nothing has been sent yet, so a failure here is safe
+    // to retry.
+    final before = await session.api.queue();
+    if (stale()) return;
+    final knownIds = before.valueOrNull?.map((i) => i.id).toSet();
+    if (knownIds == null) {
+      state = failed(before.errorOrNull!);
       return;
     }
-    final result = await _poll(session.api, command.id);
-    if (!ref.mounted) return;
+    final started = await session.api.startCommand(target.request);
+    if (stale()) return;
+    final command = started.valueOrNull;
+    if (command == null) {
+      state = failed(started.errorOrNull!);
+      return;
+    }
+    final result = await _poll(session.api, command.id, knownIds, stale);
+    if (stale()) return;
     state = result;
     tracker.track(
       SearchFinishedEvent(
@@ -189,16 +222,25 @@ class SearchProgressNotifier extends Notifier<SearchProgress> {
     if (state is! SearchRunning) state = const SearchIdle();
   }
 
-  Future<SearchProgress> _poll(SonarrApi api, int commandId) async {
+  Future<SearchProgress> _poll(
+    SonarrApi api,
+    int commandId,
+    Set<int> knownIds,
+    bool Function() stale,
+  ) async {
     final delays = ref.read(searchPollDelaysProvider);
+    final pause = ref.read(searchBackgroundPauseProvider);
     var errors = 0;
     for (final delay in delays) {
       await Future<void>.delayed(delay);
-      // Stop when the screen is gone; pause while the app is in background.
-      while (ref.mounted && !_isForeground()) {
-        await Future<void>.delayed(const Duration(milliseconds: 500));
+      // Stop when the screen is gone; pause while the app is in background,
+      // but not forever.
+      var waited = 0;
+      while (!stale() && !_isForeground()) {
+        if (++waited > pause.maxSteps) return const SearchTimedOut();
+        await Future<void>.delayed(pause.step);
       }
-      if (!ref.mounted) return const SearchIdle();
+      if (stale()) return const SearchIdle();
       final result = await api.command(commandId);
       final command = result.valueOrNull;
       if (command == null) {
@@ -215,7 +257,7 @@ class SearchProgressNotifier extends Notifier<SearchProgress> {
       if (!command.isSuccess) {
         return const SearchFailed(AppError(ErrorCategory.serverError));
       }
-      return _outcome(api);
+      return _outcome(api, knownIds);
     }
     return const SearchTimedOut();
   }
@@ -225,22 +267,27 @@ class SearchProgressNotifier extends Notifier<SearchProgress> {
     return state == null || state == AppLifecycleState.resumed;
   }
 
-  /// A finished command does not say what it found: something in the queue
-  /// for the target means a release was grabbed.
-  Future<SearchProgress> _outcome(SonarrApi api) async {
+  /// A finished command does not say what it found: an item that was not in
+  /// the queue before the search ([knownIds]) and belongs to the target means
+  /// a release was grabbed. Items that were already queued never count.
+  Future<SearchProgress> _outcome(SonarrApi api, Set<int> knownIds) async {
     final queue = await api.queue();
     final items = queue.valueOrNull;
-    if (items == null)
+    if (items == null) {
       return const SearchFailed(AppError(ErrorCategory.parseError));
+    }
     final grabbed = items.any(
-      (i) => switch (target.scope) {
-        SonarrSearchScopeParam.episode => i.episodeId == target.episodeId,
-        SonarrSearchScopeParam.season =>
-          i.seriesId == target.seriesId &&
-              i.seasonNumber == target.seasonNumber,
-        SonarrSearchScopeParam.series => i.seriesId == target.seriesId,
-        SonarrSearchScopeParam.missing => false,
-      },
+      (i) =>
+          !knownIds.contains(i.id) &&
+          switch (target.scope) {
+            SonarrSearchScopeParam.episode => i.episodeId == target.episodeId,
+            SonarrSearchScopeParam.season =>
+              i.seriesId == target.seriesId &&
+                  i.seasonNumber == target.seasonNumber,
+            SonarrSearchScopeParam.series => i.seriesId == target.seriesId,
+            // Across the library: anything new is a result of this search.
+            SonarrSearchScopeParam.missing => true,
+          },
     );
     return grabbed ? const SearchGrabbed() : const SearchNothingFound();
   }

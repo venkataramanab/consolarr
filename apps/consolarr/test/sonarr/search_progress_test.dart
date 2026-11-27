@@ -8,6 +8,7 @@ import 'package:consolarr/features/sonarr/application/sonarr_session.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:test_harness/test_harness.dart';
@@ -54,7 +55,10 @@ void main() {
         Result.ok(_cmd(ArrCommandStatus.started)),
         Result.ok(_cmd(ArrCommandStatus.completed)),
       ]
-      ..queueResult = Result.ok([fakeQueueItem(5)]);
+      ..queueSequence = [
+        const Result.ok([]),
+        Result.ok([fakeQueueItem(5)]),
+      ];
     final c = containerFor(api);
     final states = <SearchProgress>[];
     c.listen(searchProgressProvider(_episode), (_, n) => states.add(n));
@@ -76,7 +80,10 @@ void main() {
 
   test('season and series scopes match on the series and season', () async {
     final api = ScriptedSonarrApi()
-      ..queueResult = Result.ok([fakeQueueItem(1)]);
+      ..queueSequence = [
+        const Result.ok([]),
+        Result.ok([fakeQueueItem(1)]),
+      ];
     expect(
       await run(
         containerFor(api),
@@ -84,10 +91,112 @@ void main() {
       ),
       isA<SearchGrabbed>(),
     );
+    api.queueSequence = [
+      const Result.ok([]),
+      Result.ok([fakeQueueItem(1)]),
+    ];
     expect(
       await run(containerFor(api), const SearchTarget.series(2)),
       isA<SearchNothingFound>(),
     );
+  });
+
+  test('an item that was already queued is not a fresh grab', () async {
+    final api = ScriptedSonarrApi()
+      ..queueResult = Result.ok([fakeQueueItem(5)]);
+    expect(await run(containerFor(api)), isA<SearchNothingFound>());
+    // Same queue before and after, for every scope.
+    for (final target in const [
+      SearchTarget.season(seriesId: 1, seasonNumber: 1),
+      SearchTarget.series(1),
+      SearchTarget.missing(),
+    ]) {
+      expect(await run(containerFor(api), target), isA<SearchNothingFound>());
+    }
+  });
+
+  test('search all missing reports both outcomes', () async {
+    const missing = SearchTarget.missing();
+    final found = ScriptedSonarrApi()
+      ..queueSequence = [
+        Result.ok([fakeQueueItem(1)]),
+        Result.ok([fakeQueueItem(1), fakeQueueItem(2, seriesId: 9)]),
+      ];
+    expect(await run(containerFor(found), missing), isA<SearchGrabbed>());
+    final none = ScriptedSonarrApi()
+      ..queueResult = Result.ok([fakeQueueItem(1)]);
+    expect(await run(containerFor(none), missing), isA<SearchNothingFound>());
+  });
+
+  test('a queue that cannot be read first fails without starting', () async {
+    final api = ScriptedSonarrApi()
+      ..queueResult = const Result.err(AppError(ErrorCategory.timeout));
+    expect(await run(containerFor(api)), isA<SearchFailed>());
+    expect(api.count('startCommand'), 0);
+  });
+
+  test('a server switch mid-search drops the result', () async {
+    final gate = Completer<void>();
+    final first = ScriptedSonarrApi()
+      ..commandResults = [Result.ok(_cmd(ArrCommandStatus.completed))]
+      ..queueSequence = [
+        const Result.ok([]),
+        Result.ok([fakeQueueItem(5)]),
+      ]
+      ..hook = (n) => n == 'startCommand' ? gate.future : Future.value();
+    final second = ScriptedSonarrApi();
+    final servers = SwitchableSonarr(first, second);
+    final c = ProviderContainer(
+      retry: (_, _) => null,
+      overrides: [
+        ...servers.overrides,
+        searchPollDelaysProvider.overrideWithValue([Duration.zero]),
+      ],
+    );
+    addTearDown(c.dispose);
+    c.listen(searchProgressProvider(_episode), (_, _) {});
+    await c.read(sonarrSessionProvider.future);
+    final run = c.read(searchProgressProvider(_episode).notifier).start();
+    await Future<void>.delayed(Duration.zero);
+    servers.switchToSecond(c);
+    await c.read(sonarrSessionProvider.future);
+    gate.complete();
+    await run;
+    // The other server's same-numbered episode shows no result and the old
+    // server is not polled.
+    expect(c.read(searchProgressProvider(_episode)), isA<SearchIdle>());
+    expect(first.count('command'), 0);
+    expect(second.count('startCommand'), 0);
+  });
+
+  testWidgets('the background pause is bounded', (tester) async {
+    final api = ScriptedSonarrApi()
+      ..commandResults = [Result.ok(_cmd(ArrCommandStatus.started))];
+    final c = ProviderContainer(
+      retry: (_, _) => null,
+      overrides: [
+        ...sonarrTestOverrides(api),
+        searchPollDelaysProvider.overrideWithValue([Duration.zero]),
+        searchBackgroundPauseProvider.overrideWithValue((
+          step: Duration.zero,
+          maxSteps: 3,
+        )),
+      ],
+    );
+    addTearDown(c.dispose);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    addTearDown(
+      () => tester.binding.handleAppLifecycleStateChanged(
+        AppLifecycleState.resumed,
+      ),
+    );
+    c.listen(searchProgressProvider(_episode), (_, _) {});
+    await c.read(sonarrSessionProvider.future);
+    await tester.runAsync(
+      () => c.read(searchProgressProvider(_episode).notifier).start(),
+    );
+    expect(c.read(searchProgressProvider(_episode)), isA<SearchTimedOut>());
+    expect(api.count('command'), 0);
   });
 
   test('a command that never finishes times out after the poll cap', () async {
@@ -211,6 +320,11 @@ void main() {
       final inner = StubAdapter((o) {
         if (o.method == 'POST') {
           return json('{"id":1,"status":"queued"}');
+        }
+        if (o.uri.path.endsWith('/queue')) {
+          return json(
+            '{"page":1,"pageSize":200,"totalRecords":0,"records":[]}',
+          );
         }
         polls++;
         throw DioException.connectionError(requestOptions: o, reason: 'drop');

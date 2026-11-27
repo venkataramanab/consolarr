@@ -183,6 +183,59 @@ void main() {
       expect(find.text('Nothing found'), findsWidgets);
     });
 
+    testWidgets('retrying a season search asks again before sending', (
+      tester,
+    ) async {
+      final api = detailApi();
+      await pump(tester, api);
+      await reveal(tester, find.byKey(const ValueKey('season-2')));
+      await tester.tap(seasonMenu(2));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Search this season'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Search'));
+      await tester.pumpAndSettle();
+      expect(api.count('startCommand'), 1);
+      // The inline "Nothing found / search again" control is the retry.
+      final retry = find.descendant(
+        of: find.byKey(const ValueKey('season-2')),
+        matching: find.byTooltip('Search again'),
+      );
+      await tester.tap(retry);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('load on your indexers'), findsOneWidget);
+      expect(api.count('startCommand'), 1);
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(api.count('startCommand'), 1);
+      await tester.tap(retry);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Search'));
+      await tester.pumpAndSettle();
+      expect(api.count('startCommand'), 2);
+    });
+
+    testWidgets('retrying a series search asks again before sending', (
+      tester,
+    ) async {
+      final api = detailApi();
+      await pump(tester, api);
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Search all missing episodes'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Search'));
+      await tester.pumpAndSettle();
+      expect(api.count('startCommand'), 1);
+      await tester.tap(find.byTooltip('Search again').first);
+      await tester.pumpAndSettle();
+      expect(find.text('Search all missing episodes?'), findsOneWidget);
+      expect(api.count('startCommand'), 1);
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(api.count('startCommand'), 1);
+    });
+
     testWidgets('search all missing is confirmed and runs once', (
       tester,
     ) async {

@@ -45,6 +45,56 @@ class SeriesDetailScreen extends ConsumerWidget {
   }
 }
 
+/// What a link to a series that cannot exist shows: an id that is not a
+/// positive number. Makes no request at all.
+class SeriesNotFoundScreen extends StatelessWidget {
+  const SeriesNotFoundScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final top = MediaQuery.paddingOf(context).top;
+    return TrackScreen(
+      screen: ScreenName.sonarrSeriesDetail,
+      child: Scaffold(
+        backgroundColor: context.roles.page,
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: Padding(
+                padding: EdgeInsets.only(top: top + ConsolarrSpacing.xxl),
+                child: EmptyState(
+                  icon: Icons.link_off,
+                  headline: l10n.sonarrDetailGoneHeadline,
+                  message: l10n.sonarrDetailGoneMessage,
+                  actionLabel: l10n.sonarrDetailGoneAction,
+                  onAction: () => _leaveDetail(context),
+                ),
+              ),
+            ),
+            PositionedDirectional(
+              top: top + ConsolarrSpacing.xs,
+              start: ConsolarrSpacing.xs,
+              child: const BackButton(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+void _leaveDetail(BuildContext context) {
+  final router = GoRouter.maybeOf(context);
+  if (router != null && router.canPop()) {
+    router.pop();
+  } else if (router != null) {
+    router.go('/sonarr');
+  } else {
+    Navigator.maybeOf(context)?.maybePop();
+  }
+}
+
 class _DetailBody extends ConsumerWidget {
   const _DetailBody({required this.seriesId});
 
@@ -93,7 +143,7 @@ class _DetailBody extends ConsumerWidget {
             headline: l10n.sonarrDetailGoneHeadline,
             message: l10n.sonarrDetailGoneMessage,
             actionLabel: l10n.sonarrDetailGoneAction,
-            onAction: () => _leave(context),
+            onAction: () => _leaveDetail(context),
           ),
         ),
         DetailNoServer() || null => Padding(
@@ -102,7 +152,7 @@ class _DetailBody extends ConsumerWidget {
             icon: Icons.dns_outlined,
             headline: l10n.sonarrDetailNoServerHeadline,
             actionLabel: l10n.sonarrDetailGoneAction,
-            onAction: () => _leave(context),
+            onAction: () => _leaveDetail(context),
           ),
         ),
       };
@@ -128,17 +178,6 @@ class _DetailBody extends ConsumerWidget {
         ),
       ],
     );
-  }
-
-  static void _leave(BuildContext context) {
-    final router = GoRouter.maybeOf(context);
-    if (router != null && router.canPop()) {
-      router.pop();
-    } else if (router != null) {
-      router.go('/sonarr');
-    } else {
-      Navigator.maybeOf(context)?.maybePop();
-    }
   }
 }
 
@@ -179,17 +218,12 @@ class _TopActions extends ConsumerWidget {
               : l10n.sonarrDetailWritesDisabled,
           enabled: writes,
           icon: const Icon(Icons.more_vert),
-          onSelected: (_) async {
-            if (await confirmSearch(context, SearchConfirmKind.series) &&
-                context.mounted) {
-              await ref
-                  .read(
-                    searchProgressProvider(SearchTarget.series(seriesId))
-                        .notifier,
-                  )
-                  .start();
-            }
-          },
+          onSelected: (_) => confirmAndSearch(
+            context,
+            ref,
+            SearchConfirmKind.series,
+            SearchTarget.series(seriesId),
+          ),
           itemBuilder: (context) => [
             PopupMenuItem(
               value: 0,
@@ -306,13 +340,13 @@ class _DetailContentState extends ConsumerState<DetailContent> {
                   child: ArrSearchButton(
                     status: seriesStatus,
                     labels: searchLabels(l10n),
-                    onSearch: () => ref
-                        .read(
-                          searchProgressProvider(
-                            SearchTarget.series(widget.seriesId),
-                          ).notifier,
-                        )
-                        .start(),
+                    // The retry asks again, like the menu entry does.
+                    onSearch: () => confirmAndSearch(
+                      context,
+                      ref,
+                      SearchConfirmKind.series,
+                      SearchTarget.series(widget.seriesId),
+                    ),
                   ),
                 ),
               ),
@@ -388,21 +422,15 @@ class _DetailContentState extends ConsumerState<DetailContent> {
               : set.add(item.season.number);
           _expanded = set;
         }),
-        onSearchSeason: () async {
-          if (await confirmSearch(context, SearchConfirmKind.season) &&
-              context.mounted) {
-            await ref
-                .read(
-                  searchProgressProvider(
-                    SearchTarget.season(
-                      seriesId: widget.seriesId,
-                      seasonNumber: item.season.number,
-                    ),
-                  ).notifier,
-                )
-                .start();
-          }
-        },
+        onSearchSeason: () => confirmAndSearch(
+          context,
+          ref,
+          SearchConfirmKind.season,
+          SearchTarget.season(
+            seriesId: widget.seriesId,
+            seasonNumber: item.season.number,
+          ),
+        ),
         onSearchManually: () => _manual(
           InteractiveSearchTarget.season(
             seriesId: widget.seriesId,

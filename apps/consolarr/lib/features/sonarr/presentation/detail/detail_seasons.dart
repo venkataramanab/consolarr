@@ -224,16 +224,8 @@ class SeasonHeaderRow extends ConsumerWidget {
                     ArrSearchButton(
                       status: status,
                       labels: searchLabels(l10n),
-                      onSearch: () => ref
-                          .read(
-                            searchProgressProvider(
-                              SearchTarget.season(
-                                seriesId: seriesId,
-                                seasonNumber: number,
-                              ),
-                            ).notifier,
-                          )
-                          .start(),
+                      // The retry asks again, like the menu entry does.
+                      onSearch: onSearchSeason,
                     ),
                   PopupMenuButton<int>(
                     tooltip: writes

@@ -145,6 +145,81 @@ void main() {
     expect(api.count('grabRelease'), 2);
   });
 
+  group('a maybe-sent release', () {
+    ScriptedSonarrApi maybeSentApi() => ScriptedSonarrApi()
+      ..releasesResult = Result.ok([fakeRelease(1)])
+      ..grabResult = const Result.err(AppError(ErrorCategory.timeout));
+
+    testWidgets('found in the queue is shown as grabbed, nothing is sent', (
+      tester,
+    ) async {
+      final api = maybeSentApi();
+      await pumpEn(tester, api);
+      await tester.tap(find.text('Download'));
+      await tester.pumpAndSettle();
+      expect(api.count('grabRelease'), 1);
+      api.queueResult = Result.ok([
+        ArrQueueItem(id: 5, title: fakeRelease(1).title),
+      ]);
+      await tester.tap(find.text('Download again'));
+      await tester.pumpAndSettle();
+      expect(api.count('queue'), 1);
+      expect(api.count('grabRelease'), 1);
+      expect(find.text('Sent to download client'), findsOneWidget);
+      expect(find.text('Send again?'), findsNothing);
+    });
+
+    testWidgets('not in the queue asks first; cancel sends nothing', (
+      tester,
+    ) async {
+      final api = maybeSentApi();
+      await pumpEn(tester, api);
+      await tester.tap(find.text('Download'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Download again'));
+      await tester.pumpAndSettle();
+      expect(api.count('queue'), 1);
+      expect(find.text('Send again?'), findsOneWidget);
+      expect(
+        find.text('This release may already have been sent. Send again?'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(api.count('grabRelease'), 1);
+    });
+
+    testWidgets('confirming sends it once more', (tester) async {
+      final api = maybeSentApi();
+      await pumpEn(tester, api);
+      await tester.tap(find.text('Download'));
+      await tester.pumpAndSettle();
+      api.grabResult = const Result.ok(null);
+      await tester.tap(find.text('Download again'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Send again'));
+      await tester.pumpAndSettle();
+      expect(api.count('grabRelease'), 2);
+      expect(find.text('Sent to download client'), findsOneWidget);
+    });
+
+    testWidgets('a failed queue check still asks before sending', (
+      tester,
+    ) async {
+      final api = maybeSentApi();
+      await pumpEn(tester, api);
+      await tester.tap(find.text('Download'));
+      await tester.pumpAndSettle();
+      api.queueResult = const Result.err(
+        AppError(ErrorCategory.networkUnreachable),
+      );
+      await tester.tap(find.text('Download again'));
+      await tester.pumpAndSettle();
+      expect(find.text('Send again?'), findsOneWidget);
+      expect(api.count('grabRelease'), 1);
+    });
+  });
+
   testWidgets('rejected release needs a confirm that lists the reasons', (
     tester,
   ) async {

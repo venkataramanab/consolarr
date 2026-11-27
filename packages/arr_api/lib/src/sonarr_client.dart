@@ -20,6 +20,10 @@ import 'package:security/security.dart';
 
 // Parse entry points for [decodeOffIsolate]. Top level, so nothing but the body
 // and (static) parser functions is ever sent to another isolate.
+int _languageId(Map<String, Object?> json) =>
+    JsonRead.intOrNull(json, 'id') ??
+    (throw const FormatException('language profile without an id'));
+
 ParsedRows<SonarrSeries> _parseSeries(String body) => parseSeriesList(body);
 
 ArrPage<ArrQueueItem> _parseQueuePage(String body) =>
@@ -383,12 +387,9 @@ class SonarrClient extends ArrClientBase implements SonarrApi {
 
   Future<int?> _languageProfileId() async {
     try {
-      final decoded = jsonDecode(await _get('api/v3/languageprofile'));
-      if (decoded is! List) return null;
-      for (final e in decoded) {
-        final id = JsonRead.map(e)?['id'];
-        if (id is int) return id;
-      }
+      final body = await _get('api/v3/languageprofile');
+      final parsed = await decodeRowsOffIsolate(runner, body, _languageId);
+      return parsed.items.isEmpty ? null : parsed.items.first;
     } on DioException catch (e) {
       final code = e.response?.statusCode;
       if (code == 404 || code == 405) return null;
@@ -396,7 +397,6 @@ class SonarrClient extends ArrClientBase implements SonarrApi {
     } on FormatException {
       return null;
     }
-    return null;
   }
 
   @override

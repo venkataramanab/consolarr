@@ -133,7 +133,10 @@ void main() {
   testWidgets('per-episode automatic search runs inline', (tester) async {
     final api = ScriptedSonarrApi()
       ..wantedResult = Result.ok(_page([_missing(1)]))
-      ..queueResult = Result.ok([fakeQueueItem(1)]);
+      ..queueSequence = [
+        const Result.ok([]),
+        Result.ok([fakeQueueItem(1)]),
+      ];
     await pumpMatrix(tester, (v) => _wanted(v, api), variants: [plainVariant]);
     await tester.tap(find.text('Example Show 1'));
     await tester.pumpAndSettle();
@@ -298,7 +301,11 @@ void main() {
       tester,
     ) async {
       final api = ScriptedSonarrApi()
-        ..wantedResult = Result.ok(_page([_missing(1)]));
+        ..wantedResult = Result.ok(_page([_missing(1)]))
+        ..queueSequence = [
+          const Result.ok([]),
+          Result.ok([fakeQueueItem(7)]),
+        ];
       applyVariantView(tester, plainVariant);
       await tester.pumpWidget(_wanted(plainVariant, api));
       await tester.pumpAndSettle();
@@ -312,6 +319,21 @@ void main() {
         'MissingEpisodeSearch',
       );
       expect(find.text(_l10n.sonarrWantedSearchAllDone), findsOneWidget);
+    });
+
+    testWidgets('nothing new in the queue says so', (tester) async {
+      final api = ScriptedSonarrApi()
+        ..wantedResult = Result.ok(_page([_missing(1)]))
+        ..queueResult = Result.ok([fakeQueueItem(7)]);
+      applyVariantView(tester, plainVariant);
+      await tester.pumpWidget(_wanted(plainVariant, api));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(_l10n.sonarrWantedSearchAll));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(_l10n.sonarrWantedSearchAllConfirm));
+      await tester.pumpAndSettle();
+      expect(find.text(_l10n.sonarrWantedSearchAllNothing), findsOneWidget);
+      expect(find.text(_l10n.sonarrWantedSearchAllDone), findsNothing);
     });
 
     testWidgets('failure offers a retry', (tester) async {

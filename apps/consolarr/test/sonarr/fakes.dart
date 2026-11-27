@@ -8,6 +8,7 @@ import 'package:consolarr/features/sonarr/data/sonarr_prefs_store.dart';
 import 'package:consolarr/src/cache/payload_cache.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 
 import 'support.dart';
@@ -52,6 +53,10 @@ class ScriptedSonarrApi extends FakeSonarrApi {
   Result<void> monitorResult = const Result.ok(null);
   Result<List<SonarrEpisode>> calendarResult = const Result.ok([]);
   Result<List<ArrQueueItem>> queueResult = const Result.ok([]);
+
+  /// When set, consumed one per `queue()` call (the last one repeats) instead
+  /// of [queueResult].
+  List<Result<List<ArrQueueItem>>>? queueSequence;
   Result<void> removeResult = const Result.ok(null);
   Result<ArrCommand> startResult = const Result.ok(
     ArrCommand(id: 1, status: ArrCommandStatus.queued),
@@ -121,7 +126,18 @@ class ScriptedSonarrApi extends FakeSonarrApi {
     bool includeUnmonitored = false,
   }) => _run('calendar', calendarResult, (start, end, includeUnmonitored));
   @override
-  Future<Result<List<ArrQueueItem>>> queue() => _run('queue', queueResult);
+  Future<Result<List<ArrQueueItem>>> queue() {
+    final sequence = queueSequence;
+    if (sequence == null || sequence.isEmpty) {
+      return _run('queue', queueResult);
+    }
+    final n = count('queue');
+    return _run(
+      'queue',
+      sequence[n < sequence.length ? n : sequence.length - 1],
+    );
+  }
+
   @override
   Future<Result<void>> removeQueueItem(
     int id, {
@@ -195,6 +211,45 @@ List<Override> sonarrTestOverrides(
     ),
     clockProvider.overrideWithValue(() => clockNow),
   ];
+}
+
+/// Two Sonarr servers behind the one session provider; [switchToSecond] makes
+/// the second one the active server, as the server switcher does.
+class SwitchableSonarr {
+  SwitchableSonarr(this.first, this.second);
+
+  final ScriptedSonarrApi first;
+  final ScriptedSonarrApi second;
+
+  late final NotifierProvider<_ActiveServer, (String, ScriptedSonarrApi)>
+  _active = NotifierProvider<_ActiveServer, (String, ScriptedSonarrApi)>(
+    () => _ActiveServer(('srvA', first)),
+  );
+
+  List<Override> get overrides => [
+    sonarrSessionProvider.overrideWith((ref) {
+      final (id, api) = ref.watch(_active);
+      return SonarrSession(
+        api: api,
+        serverId: id,
+        cache: MemoryPayloadCache(),
+        clock: DateTime.now,
+      );
+    }),
+    sonarrPrefsStoreProvider.overrideWithValue(MemorySonarrPrefsStore()),
+    clockProvider.overrideWithValue(DateTime.now),
+  ];
+
+  void switchToSecond(ProviderContainer c) =>
+      c.read(_active.notifier).set(('srvB', second));
+}
+
+class _ActiveServer extends Notifier<(String, ScriptedSonarrApi)> {
+  _ActiveServer(this.initial);
+  final (String, ScriptedSonarrApi) initial;
+  @override
+  (String, ScriptedSonarrApi) build() => initial;
+  void set((String, ScriptedSonarrApi) v) => state = v;
 }
 
 // --- sample data (fictional) ----------------------------------------------------

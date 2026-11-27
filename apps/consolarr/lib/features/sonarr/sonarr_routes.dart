@@ -16,6 +16,14 @@ const sonarrRoute = '/sonarr';
 const sonarrSeriesChildPath = 'series/:id';
 const sonarrAddChildPath = 'add';
 
+/// The series id of a deep link: a plain positive decimal number that fits
+/// 32 bits, otherwise `null`. No sign, spaces, hex or leading zeros.
+int? parseSeriesId(String? raw) {
+  if (raw == null || !RegExp(r'^[1-9][0-9]{0,9}$').hasMatch(raw)) return null;
+  final id = int.parse(raw);
+  return id <= 0x7fffffff ? id : null;
+}
+
 /// In-app deep link to a series (NAV-05): `/sonarr/series/<id>`.
 String sonarrSeriesLocation(int id) => '$sonarrRoute/series/$id';
 
@@ -31,9 +39,13 @@ final List<RouteBase> sonarrChildRoutes = [
   GoRoute(
     path: sonarrSeriesChildPath,
     parentNavigatorKey: rootNavigatorKey,
-    builder: (context, state) => SeriesDetailScreen(
-      seriesId: int.tryParse(state.pathParameters['id'] ?? '') ?? -1,
-    ),
+    builder: (context, state) {
+      final id = parseSeriesId(state.pathParameters['id']);
+      // A malformed id never reaches the server: it is "not found" at once.
+      return id == null
+          ? const SeriesNotFoundScreen()
+          : SeriesDetailScreen(seriesId: id);
+    },
   ),
   GoRoute(
     path: sonarrAddChildPath,

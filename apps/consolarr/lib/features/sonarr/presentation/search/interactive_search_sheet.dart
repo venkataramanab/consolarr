@@ -230,6 +230,21 @@ class _ReleaseList extends ConsumerWidget {
     ArrRelease release,
   ) async {
     final notifier = ref.read(releaseGrabProvider(target).notifier);
+    if (ref.read(releaseGrabProvider(target))[grabKey(release)] ==
+        GrabStatus.maybeSent) {
+      // The first request may have arrived: look in the queue, and otherwise
+      // ask, before anything is sent again.
+      if (await notifier.confirmQueued(release)) return;
+      if (!context.mounted) return;
+      final again = await showDialog<bool>(
+        context: context,
+        builder: (context) => const _ResendConfirm(),
+      );
+      if (again ?? false) {
+        await notifier.grab(release, confirmedResend: true);
+      }
+      return;
+    }
     if (!release.isRejected) {
       await notifier.grab(release);
       return;
@@ -309,6 +324,29 @@ class _ReleaseList extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _ResendConfirm extends StatelessWidget {
+  const _ResendConfirm();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return AlertDialog(
+      title: Text(l10n.sonarrReleaseResendTitle),
+      content: Text(l10n.sonarrReleaseResendMessage),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Text(l10n.sonarrReleaseCancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: Text(l10n.sonarrReleaseResendConfirm),
+        ),
+      ],
     );
   }
 }

@@ -1063,6 +1063,14 @@
   "@sonarrWantedSearchAllDone": {
     "description": "Status line after the search-all-missing command finished."
   },
+  "sonarrWantedSearchAllNothing": "Search finished. Nothing new was added to the queue.",
+  "@sonarrWantedSearchAllNothing": {
+    "description": "Status line after the search-all-missing command finished and no new download appeared."
+  },
+  "sonarrWantedSearchAllTimedOut": "Sonarr is still searching. New downloads appear in the queue.",
+  "@sonarrWantedSearchAllTimedOut": {
+    "description": "Status line when the search-all-missing command did not finish while the app was watching."
+  },
   "sonarrWantedSearchAllFailed": "The search could not be completed.",
   "@sonarrWantedSearchAllFailed": {
     "description": "Status line when the search-all-missing command failed."
@@ -1642,6 +1650,18 @@
   "sonarrReleaseCancel": "Cancel",
   "@sonarrReleaseCancel": {
     "description": "Cancel button of the rejected release dialog."
+  },
+  "sonarrReleaseResendTitle": "Send again?",
+  "@sonarrReleaseResendTitle": {
+    "description": "Title of the confirm dialog shown before a release that may already have been sent is sent again."
+  },
+  "sonarrReleaseResendMessage": "This release may already have been sent. Send again?",
+  "@sonarrReleaseResendMessage": {
+    "description": "Body of the confirm dialog shown before a release that may already have been sent is sent again."
+  },
+  "sonarrReleaseResendConfirm": "Send again",
+  "@sonarrReleaseResendConfirm": {
+    "description": "Confirm button that sends a release that may already have been sent once more."
   },
   "sonarrAddTitle": "Add series",
   "@sonarrAddTitle": {

@@ -156,9 +156,9 @@ class _SearchAllStatus extends StatelessWidget {
       SearchIdle() => null,
       SearchRunning() => l10n.sonarrWantedSearchAllRunning,
       SearchFailed() => l10n.sonarrWantedSearchAllFailed,
-      SearchGrabbed() ||
-      SearchNothingFound() ||
-      SearchTimedOut() => l10n.sonarrWantedSearchAllDone,
+      SearchGrabbed() => l10n.sonarrWantedSearchAllDone,
+      SearchNothingFound() => l10n.sonarrWantedSearchAllNothing,
+      SearchTimedOut() => l10n.sonarrWantedSearchAllTimedOut,
     };
     if (text == null) return const SizedBox.shrink();
     return Semantics(
