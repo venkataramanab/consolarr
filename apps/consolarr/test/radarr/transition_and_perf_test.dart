@@ -151,7 +151,7 @@ void main() {
           api,
           Consumer(
             builder: (context, ref, _) {
-              ref.watch(searchStatusProvider);
+              ref.watch(grabStatusProvider);
               return const RadarrScreen();
             },
           ),
@@ -163,8 +163,11 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.byType(RadarrScreen)),
       );
-      // Unrelated provider traffic (a search on another movie).
-      unawaited(container.read(searchStatusProvider.notifier).searchMovie(3));
+      // Unrelated provider traffic (a grab). A finished search refreshes the
+      // library on purpose, so a search is not "unrelated".
+      unawaited(
+        container.read(grabStatusProvider.notifier).grab(fakeRelease('x')),
+      );
       await tester.pumpAndSettle();
       expect(builds - before, lessThan(5));
     });
