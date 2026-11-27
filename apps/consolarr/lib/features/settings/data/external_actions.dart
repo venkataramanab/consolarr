@@ -1,37 +1,58 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'dart:convert';
+import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// The most text handed to the system share sheet, in UTF-8 bytes. Intents
-/// travel through the Binder, whose transaction buffer is about 1 MB for the
-/// whole process, so the text is capped well below that.
-const int shareTextMaxBytes = 500 * 1024;
+/// The most text handed to the system share sheet, in UTF-8 bytes. The text
+/// travels in the chooser intent as UTF-16 (up to twice this size when it is
+/// ASCII), and Binder transactions share a buffer of about 1 MB for the whole
+/// process, so the cap stays far below that.
+const int shareTextMaxBytes = 150 * 1024;
 
-/// [text] cut to at most [maxBytes] UTF-8 bytes (on a character boundary),
-/// with [note] appended on its own line when it was cut. The result,
-/// note included, stays within [maxBytes].
+/// The part at the start of a long text that is always kept (the bundle
+/// header and section titles), in UTF-8 bytes.
+const int _shareHeadMaxBytes = 4 * 1024;
+
+bool _isContinuation(int byte) => (byte & 0xC0) == 0x80;
+
+/// [text] cut to at most [maxBytes] UTF-8 bytes, always on a character
+/// boundary. When it is cut, the start of the text and its newest end (whole
+/// lines where possible) are kept, with [note] between them. The result, note
+/// included, stays within [maxBytes].
 ({String text, bool truncated}) capShareText(
   String text,
   String note, {
   int maxBytes = shareTextMaxBytes,
 }) {
-  if (utf8.encode(text).length <= maxBytes) {
-    return (text: text, truncated: false);
+  final bytes = utf8.encode(text);
+  if (bytes.length <= maxBytes) return (text: text, truncated: false);
+  final separator = utf8.encode('\n\n$note\n\n');
+  final budget = math.max(0, maxBytes - separator.length);
+
+  var headEnd = math.min(_shareHeadMaxBytes, budget ~/ 4);
+  while (headEnd > 0 && _isContinuation(bytes[headEnd])) {
+    headEnd--;
   }
-  final suffix = '\n\n$note';
-  final budget = maxBytes - utf8.encode(suffix).length;
-  final kept = StringBuffer();
-  var used = 0;
-  for (final rune in text.runes) {
-    final size = utf8.encode(String.fromCharCode(rune)).length;
-    if (used + size > budget) break;
-    used += size;
-    kept.writeCharCode(rune);
+  final headNewline = bytes.lastIndexOf(10, math.max(0, headEnd - 1));
+  if (headNewline > 0 && headNewline < headEnd) headEnd = headNewline;
+
+  var tailStart = math.min(bytes.length, bytes.length - (budget - headEnd));
+  while (tailStart < bytes.length && _isContinuation(bytes[tailStart])) {
+    tailStart++;
   }
-  return (text: '$kept$suffix', truncated: true);
+  final lineStart = bytes.indexOf(10, tailStart);
+  if (lineStart != -1 && lineStart + 1 < bytes.length) {
+    tailStart = lineStart + 1;
+  }
+  final out = BytesBuilder(copy: false)
+    ..add(bytes.sublist(0, headEnd))
+    ..add(separator)
+    ..add(bytes.sublist(tailStart));
+  return (text: utf8.decode(out.takeBytes()), truncated: true);
 }
 
 /// Things the app asks the system to do on an explicit tap: open an address in
@@ -42,7 +63,7 @@ abstract interface class ExternalActions {
   Future<bool> openHttps(Uri uri);
 
   /// Shares [text] as plain text through the system share sheet. Text over
-  /// [shareTextMaxBytes] is cut and [truncationNote] appended. Returns whether
+  /// [shareTextMaxBytes] is cut (newest end kept) and [truncationNote] added. Returns whether
   /// it was cut. Throws when the share sheet cannot be shown.
   Future<bool> shareText({
     required String text,

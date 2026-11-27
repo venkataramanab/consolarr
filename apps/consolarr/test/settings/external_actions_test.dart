@@ -37,22 +37,61 @@ void main() {
       expect(r.truncated, isFalse);
     });
 
+    String logText(int lines) => [
+      'Consolarr diagnostics',
+      '## Log',
+      for (var i = 0; i < lines; i++) 'line $i',
+    ].join('\n');
+
     test('long text is cut within the cap and carries the note', () {
-      final r = capShareText('a' * 1000, '[cut]', maxBytes: 100);
+      final r = capShareText(logText(500), '[cut]', maxBytes: 200);
       expect(r.truncated, isTrue);
+      expect(utf8.encode(r.text).length, lessThanOrEqualTo(200));
+      expect(r.text, contains('\n\n[cut]\n\n'));
+    });
+
+    test('keeps the header and the newest lines, not the oldest', () {
+      final r = capShareText(logText(500), '[cut]', maxBytes: 200);
+      expect(r.text, startsWith('Consolarr diagnostics\n## Log'));
+      expect(r.text, endsWith('line 499'));
+      expect(r.text, isNot(contains('line 100\n')));
+      // The tail starts on a whole line.
+      final tail = r.text.split('[cut]\n\n').last;
+      expect(tail, matches(RegExp(r'^line \d+(\nline \d+)*$')));
+    });
+
+    test('the cap is measured in bytes, at the exact boundary', () {
+      const max = 100;
+      final fits = 'a' * max;
+      expect(capShareText(fits, '[cut]', maxBytes: max).truncated, isFalse);
+      final over = capShareText('${fits}a', '[cut]', maxBytes: max);
+      expect(over.truncated, isTrue);
+      expect(utf8.encode(over.text).length, lessThanOrEqualTo(max));
+      // 60 two-byte characters are 120 bytes: over, though under in characters.
+      expect(capShareText('ع' * 60, '[cut]', maxBytes: max).truncated, isTrue);
+    });
+
+    test('never splits a multi-byte character (Arabic, emoji)', () {
+      for (final unit in ['ع', '😀', 'سجل 😀 ']) {
+        for (final max in [101, 102, 103, 104, 150]) {
+          final text = List.generate(300, (i) => '$unit$i').join('\n');
+          final r = capShareText(text, '[cut]', maxBytes: max);
+          expect(r.truncated, isTrue, reason: '$unit $max');
+          expect(utf8.encode(r.text).length, lessThanOrEqualTo(max));
+          expect(r.text, isNot(contains('\uFFFD')), reason: '$unit $max');
+        }
+      }
+    });
+
+    test('a single huge line keeps its newest part', () {
+      final r = capShareText('${'x' * 1000}END', '[cut]', maxBytes: 100);
+      expect(r.truncated, isTrue);
+      expect(r.text, endsWith('xxEND'));
       expect(utf8.encode(r.text).length, lessThanOrEqualTo(100));
-      expect(r.text, endsWith('\n\n[cut]'));
     });
 
-    test('never splits a multi-byte character', () {
-      final r = capShareText('ع' * 500, '[cut]', maxBytes: 101);
-      expect(r.truncated, isTrue);
-      expect(utf8.encode(r.text).length, lessThanOrEqualTo(101));
-      expect(r.text, isNot(contains('�')));
-    });
-
-    test('the default cap is about 500 KB', () {
-      expect(shareTextMaxBytes, 500 * 1024);
+    test('the default cap is 150 KB of UTF-8', () {
+      expect(shareTextMaxBytes, 150 * 1024);
     });
   });
 
@@ -94,14 +133,14 @@ void main() {
         return null;
       });
       final cut = await actions.shareText(
-        text: 'x' * (shareTextMaxBytes + 10),
+        text: 'ع' * shareTextMaxBytes,
         subject: 's',
         truncationNote: '[short]',
       );
       expect(cut, isTrue);
       final sent = (calls.single.arguments as Map)['text'] as String;
       expect(utf8.encode(sent).length, lessThanOrEqualTo(shareTextMaxBytes));
-      expect(sent, endsWith('[short]'));
+      expect(sent, contains('[short]'));
     });
 
     test('a failing share sheet surfaces as an error', () async {
