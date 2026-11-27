@@ -171,7 +171,7 @@ class ServerFormController extends ChangeNotifier {
 
   /// Whether the address is plain http.
   bool get addressIsHttp =>
-      address.text.trim().toLowerCase().startsWith('http://');
+      Uri.tryParse(address.text.trim())?.scheme.toLowerCase() == 'http';
 
   /// Validates the form with the same rules the repository applies.
   FormIssues validate() {
