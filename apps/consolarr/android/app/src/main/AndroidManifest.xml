@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- The only permission the app requests. Anything else must be asked for
          at the point of use with a rationale. -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -39,6 +40,13 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- AndroidX profileinstaller ships an exported broadcast receiver
+             (guarded only by the DUMP permission). Remove it so the launcher
+             activity is the only exported component; profiles are still
+             installed at start-up by the non-exported initializer. -->
+        <receiver
+            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+            tools:node="remove" />
     </application>
     <queries>
         <intent>

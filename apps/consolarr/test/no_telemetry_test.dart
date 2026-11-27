@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// The foss app (and every workspace package it depends on) must not depend
-// on any telemetry / crash-reporting SDK. Those may only be added to
-// apps/consolarr_play.
+// The foss app must not depend, directly or transitively, on any telemetry /
+// crash-reporting SDK. Those may only be added to apps/consolarr_play. The
+// check walks the resolved graph from `dart pub deps --json`.
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -16,51 +17,84 @@ final _banned = RegExp(
   caseSensitive: false,
 );
 
-Set<String> dependencyNames(File pubspec, {bool includeDev = false}) {
-  final names = <String>{};
-  String? section;
-  for (final line in pubspec.readAsLinesSync()) {
-    if (RegExp(r'^\S').hasMatch(line)) {
-      final key = line.split(':').first;
-      section =
-          (key == 'dependencies' || (includeDev && key == 'dev_dependencies'))
-          ? key
-          : null;
-      continue;
-    }
-    final m = RegExp(r'^  ([a-z0-9_]+):').firstMatch(line);
-    if (section != null && m != null) names.add(m.group(1)!);
+/// Names reachable from [root] in a `dart pub deps --json` style [packages]
+/// list (each entry has `name` and `dependencies`), including [root].
+Set<String> dependencyClosure(List<Object?> packages, String root) {
+  final graph = {
+    for (final p in packages.cast<Map<String, Object?>>())
+      p['name']! as String: [
+        ...?(p['dependencies'] as List<Object?>?)?.cast<String>(),
+      ],
+  };
+  final seen = <String>{};
+  final queue = [root];
+  while (queue.isNotEmpty) {
+    final name = queue.removeLast();
+    if (!seen.add(name)) continue;
+    queue.addAll(graph[name] ?? const []);
   }
-  return names;
+  return seen;
+}
+
+/// Banned packages in the closure of [root], as `name` strings.
+List<String> telemetryOffenders(List<Object?> packages, String root) => [
+  for (final name in dependencyClosure(packages, root))
+    if (_banned.hasMatch(name)) name,
+]..sort();
+
+List<Object?> resolvedPackages() {
+  final result = Process.runSync('dart', [
+    'pub',
+    'deps',
+    '--json',
+  ], workingDirectory: Directory.current.path);
+  if (result.exitCode != 0) {
+    fail('dart pub deps --json failed:\n${result.stderr}');
+  }
+  final json = jsonDecode(result.stdout as String) as Map<String, Object?>;
+  return json['packages']! as List<Object?>;
 }
 
 void main() {
-  test(
-    'foss app and its workspace packages have no telemetry dependencies',
-    () {
-      final root = Directory.current.parent.parent; // apps/consolarr -> repo
-      final packages = {
-        for (final d in Directory('${root.path}/packages').listSync())
-          if (d is Directory) d.path.split('/').last: d,
-      };
-      final seen = <String>{};
-      final queue = ['consolarr'];
-      final offenders = <String>[];
-      while (queue.isNotEmpty) {
-        final name = queue.removeLast();
-        if (!seen.add(name)) continue;
-        final pubspec = name == 'consolarr'
-            ? File('${Directory.current.path}/pubspec.yaml')
-            : File('${packages[name]!.path}/pubspec.yaml');
-        for (final dep in dependencyNames(pubspec, includeDev: true)) {
-          if (_banned.hasMatch(dep)) offenders.add('$name -> $dep');
-          if (packages.containsKey(dep)) queue.add(dep);
-        }
-      }
-      expect(offenders, isEmpty);
-      expect(seen, containsAll(['consolarr', 'design_system', 'l10n']));
-    },
-  );
+  test('resolved dependency graph of the foss app has no telemetry', () {
+    // The full resolved graph (direct and transitive, dev included), not just
+    // the pubspec's direct dependencies: a telemetry SDK pulled in by another
+    // package must fail too.
+    final packages = resolvedPackages();
+    final closure = dependencyClosure(packages, 'consolarr');
+    expect(
+      closure,
+      containsAll(['consolarr', 'design_system', 'l10n', 'flutter', 'dio']),
+      reason: 'closure traversal must reach transitive packages',
+    );
+    expect(telemetryOffenders(packages, 'consolarr'), isEmpty);
+  });
+
+  test('a transitive telemetry dependency is detected', () {
+    final graph = <Object?>[
+      {
+        'name': 'app',
+        'dependencies': ['lib_a'],
+      },
+      {
+        'name': 'lib_a',
+        'dependencies': ['lib_b'],
+      },
+      {
+        'name': 'lib_b',
+        'dependencies': ['firebase_core'],
+      },
+      {'name': 'firebase_core', 'dependencies': <String>[]},
+      {
+        'name': 'other_app',
+        'dependencies': ['sentry_flutter'],
+      },
+      {'name': 'sentry_flutter', 'dependencies': <String>[]},
+    ];
+    expect(telemetryOffenders(graph, 'app'), ['firebase_core']);
+    expect(telemetryOffenders(graph, 'other_app'), ['sentry_flutter']);
+    expect(telemetryOffenders(graph, 'lib_a'), ['firebase_core']);
+  });
 
   test('banned-name matcher catches the usual suspects', () {
     for (final n in [

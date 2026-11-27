@@ -29,6 +29,12 @@ void main() {
           expect(xml, contains('<exclude domain="sharedpref"'));
           expect(xml, contains('<exclude domain="database"'));
           expect(xml, isNot(contains('<include')));
+          // Every exclude names a path so it cannot be read as a no-op.
+          final excludes = RegExp(r'<exclude [^>]*>').allMatches(xml);
+          expect(excludes, isNotEmpty);
+          for (final e in excludes) {
+            expect(e.group(0), contains('path="."'));
+          }
         }
       });
 
@@ -52,6 +58,14 @@ void main() {
         expect('android:exported="true"'.allMatches(manifest), hasLength(1));
       });
 
+      test('library receivers that are exported by default are removed', () {
+        expect(
+          manifest,
+          contains('androidx.profileinstaller.ProfileInstallReceiver'),
+        );
+        expect(manifest, contains('tools:node="remove"'));
+      });
+
       test('minSdk 26, placeholder application id, R8 and shrinking on', () {
         expect(gradle, contains('minSdk = 26'));
         expect(gradle, contains('applicationId = "org.consolarr.app"'));
@@ -59,13 +73,28 @@ void main() {
         expect(gradle, contains('isShrinkResources = true'));
       });
 
-      test(
-        'release falls back to the debug key when key.properties is absent',
-        () {
-          expect(gradle, contains('hasReleaseKeystore'));
-          expect(gradle, contains('signingConfigs.getByName("debug")'));
-        },
-      );
+      test('release without key.properties fails unless debug signing is '
+          'explicitly allowed', () {
+        expect(gradle, contains('hasReleaseKeystore'));
+        expect(gradle, contains('consolarr.allowDebugSigning'));
+        expect(gradle, contains('throw GradleException'));
+        expect(gradle, contains('assembleRelease'));
+      });
+
+      test('gradle wrapper distribution is checksum-pinned', () {
+        final props = read(
+          '$root/android/gradle/wrapper/gradle-wrapper.properties',
+        );
+        expect(props, matches(RegExp(r'distributionSha256Sum=[0-9a-f]{64}')));
+      });
+
+      test('application id suffix distinguishes the Play build', () {
+        if (name == 'consolarr_play') {
+          expect(gradle, contains('applicationIdSuffix = ".play"'));
+        } else {
+          expect(gradle, isNot(contains('applicationIdSuffix')));
+        }
+      });
     });
   });
 }

@@ -7,11 +7,15 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-// Optional release signing. `key.properties` is git-ignored and absent in CI
-// pull requests and local builds; without it release builds use the debug key
-// so every build succeeds with no secrets.
+// Release signing. `key.properties` is git-ignored. Without it a release
+// build FAILS, so an APK signed with the public debug key can never be shipped
+// by accident. CI (which has no secrets) and local experiments opt in to the
+// debug key explicitly with `-Pconsolarr.allowDebugSigning=true`, or the
+// `ORG_GRADLE_PROJECT_consolarr.allowDebugSigning=true` environment variable.
 val keystorePropertiesFile = rootProject.file("key.properties")
 val hasReleaseKeystore = keystorePropertiesFile.exists()
+val allowDebugSigning =
+    providers.gradleProperty("consolarr.allowDebugSigning").orNull == "true"
 val keystoreProperties = Properties()
 if (hasReleaseKeystore) {
     keystorePropertiesFile.inputStream().use { keystoreProperties.load(it) }
@@ -30,6 +34,8 @@ android {
 
     defaultConfig {
         applicationId = "org.consolarr.app"
+        // Distinct id so the Play build can be installed beside the foss build.
+        applicationIdSuffix = ".play"
         minSdk = 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -56,6 +62,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            // Debug signing is only reachable with the explicit opt-in above
+            // (the task-graph check refuses the build otherwise).
             signingConfig =
                 if (hasReleaseKeystore) {
                     signingConfigs.getByName("release")
@@ -63,6 +71,23 @@ android {
                     signingConfigs.getByName("debug")
                 }
         }
+    }
+}
+
+gradle.taskGraph.whenReady {
+    val releaseRequested =
+        allTasks.any {
+            it.name == "assembleRelease" ||
+                it.name == "bundleRelease" ||
+                it.name == "packageRelease"
+        }
+    if (releaseRequested && !hasReleaseKeystore && !allowDebugSigning) {
+        throw GradleException(
+            "Release build refused: key.properties is missing, so the APK would " +
+                "be signed with the public debug key. Provide key.properties, or " +
+                "pass -Pconsolarr.allowDebugSigning=true for a non-distributable " +
+                "build (CI does this)."
+        )
     }
 }
 

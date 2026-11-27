@@ -5,13 +5,11 @@ title = "Consolarr gitleaks configuration"
 useDefault = true
 
 [allowlist]
-description = "Obviously fake fixture keys and reserved example data."
-# Fixtures use keys like test-key-0000... and RFC 5737 / .example / .invalid
-# hosts only. Real secrets must never match this pattern.
+description = "Obviously fake fixture keys."
+# Anchored: only a secret whose entire value is a fake fixture key is ignored.
+# There is deliberately no path allowlist, so a real secret hidden in any file
+# (including example files) is still reported.
 regexes = [
-  '''test-key-0{4,}[0-9A-Za-z_-]*''',
-  '''0123456789abcdef0123456789abcdef''',
-]
-paths = [
-  '''(^|/)dart_defines\.example\.json$''',
+  '''^test-key-0{4,}$''',
+  '''^0123456789abcdef0123456789abcdef$''',
 ]

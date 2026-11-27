@@ -64,6 +64,34 @@ class _Parser {
     while (i < s.length) {
       final c = s[i];
       if (c == '}' && inClause) break;
+      if (c == "'") {
+        // ICU apostrophe quoting: `''` is a literal apostrophe and `'{'` /
+        // `'}'` (a quoted run) are literal braces, not expressions.
+        if (i + 1 < s.length && s[i + 1] == "'") {
+          literal.write("''");
+          i += 2;
+          continue;
+        }
+        if (i + 1 < s.length && (s[i + 1] == '{' || s[i + 1] == '}')) {
+          literal.write("'");
+          i++;
+          while (i < s.length) {
+            if (s[i] == "'") {
+              if (i + 1 < s.length && s[i + 1] == "'") {
+                literal.write("''");
+                i += 2;
+                continue;
+              }
+              literal.write("'");
+              i++;
+              break;
+            }
+            literal.write(s[i]);
+            i++;
+          }
+          continue;
+        }
+      }
       if (c == '{') {
         flush();
         out.write(_parseExpression());

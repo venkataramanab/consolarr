@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Security-critical paths need a review from the project owner. Enable
+# "Require review from Code Owners" in the branch protection rules for main.
+/packages/security/**  @venkataramanab
+/tools/**              @venkataramanab
+/.github/**            @venkataramanab
+/.gitleaks.toml        @venkataramanab
+/.semgrepignore        @venkataramanab

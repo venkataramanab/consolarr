@@ -10,6 +10,16 @@ import 'package:flutter_test/flutter_test.dart';
 /// Database layers cannot be intercepted generically, so fakes and thin
 /// wrappers report through [recordDatabase]. File-backed databases are also
 /// detected by file name (see [AccessRecorder.looksLikeDatabase]).
+///
+/// Limits (this is a tripwire for accidental eager work, not a sandbox):
+///  * only `HttpClient`s created through `HttpOverrides` while the guard is
+///    active are seen. Clients created earlier, in other isolates, raw
+///    `Socket`/`RawSocket`/`WebSocket` use, platform channels and FFI are not;
+///  * database access is detected by file name or explicit reports only;
+///  * it covers the first `pumpWidget` only, not work scheduled afterwards.
+/// The guard observes and never changes certificate validation, which is why
+/// it is the one place outside `package:security` allowed to name
+/// `HttpOverrides`.
 class AccessRecorder {
   final List<String> events = [];
 

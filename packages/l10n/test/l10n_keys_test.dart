@@ -3,7 +3,8 @@
 // Key hygiene for the localization pipeline:
 //  * every key has an @description,
 //  * no missing or extra keys between locales,
-//  * every key is used in source code (no dead strings),
+//  * every key is used through a real accessor in source code (no dead
+//    strings; see tool/src/unused_keys.dart and its self-tests),
 //  * merged/generated ARB files are in sync with the per-feature sources,
 //    so the pseudo-locale can never be hand-edited.
 
@@ -12,6 +13,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../tool/src/merge.dart';
+import '../tool/src/unused_keys.dart';
 
 Directory findRepoRoot() {
   var dir = Directory.current.absolute;
@@ -110,11 +112,7 @@ void main() {
         sources.add(entity.readAsStringSync());
       }
     }
-    final all = sources.join('\n');
-    final unused = [
-      for (final key in keysOf(merged))
-        if (!RegExp('\\.$key\\b').hasMatch(all)) key,
-    ];
+    final unused = findUnusedKeys(keysOf(merged), sources);
     expect(unused, isEmpty, reason: 'Unused localization keys: $unused');
   });
 

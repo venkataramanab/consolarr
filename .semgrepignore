@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Explicit so Semgrep's built-in defaults (which skip test/ directories and
+# other paths) do not apply: tests and generated files are scanned too.
+.git/
+.dart_tool/
+build/

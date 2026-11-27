@@ -1,0 +1,4 @@
+# Paths (repo-relative, exact) that may be committed although they look like
+# credential, keystore or certificate files. Keep this empty unless a file is
+# provably public and inert. Certificates for tests are generated at test time
+# into **/test/.generated/ (git-ignored) and never committed.

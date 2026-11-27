@@ -171,6 +171,39 @@ void f(C c) { c.badCertificateCallback = () {}; }
     ]);
   }
 
+  Future<void> test_http_overrides_allowed_only_in_access_guard() async {
+    const src =
+        'class HttpOverrides { static HttpOverrides? global; }\n'
+        'class G extends HttpOverrides {}\n'
+        'void f() { HttpOverrides.global = null; }';
+    const root = '/home/test/packages/test_harness';
+    newPubspecYamlFile(root, 'name: test_harness');
+    final path = '$root/lib/src/access_guard.dart';
+    newFile(path, src);
+    await assertNoDiagnosticsInFile(path);
+
+    final other = '$root/lib/src/other.dart';
+    newFile(other, src);
+    await assertDiagnosticsInFile(other, [
+      lint(src.indexOf('HttpOverrides? global'), 14),
+      lint(src.indexOf('extends HttpOverrides') + 8, 13),
+      lint(src.indexOf('HttpOverrides.global'), 13),
+    ]);
+  }
+
+  Future<void> test_access_guard_may_not_use_other_trust_apis() async {
+    const src =
+        'class C { void Function()? badCertificateCallback; }\n'
+        'void f(C c) { c.badCertificateCallback = () {}; }';
+    const root = '/home/test/packages/test_harness';
+    newPubspecYamlFile(root, 'name: test_harness');
+    final path = '$root/lib/src/access_guard.dart';
+    newFile(path, src);
+    await assertDiagnosticsInFile(path, [
+      lint(src.indexOf('badCertificateCallback = '), 22),
+    ]);
+  }
+
   Future<void> test_other_trust_apis_reported() async {
     const src = '''
 class HttpOverrides {}

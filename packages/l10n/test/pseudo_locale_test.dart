@@ -42,4 +42,29 @@ void main() {
     expect(pseudoLocalize('123'), pseudoLocalize('123'));
     expect(pseudoLocalize('123'), contains('123'));
   });
+
+  test('ICU apostrophes: doubled quote and quoted braces are preserved', () {
+    final out = pseudoLocalize("Don''t use '{'braces'}' for {name}");
+    expect(out, contains("''"));
+    expect(out, contains("'{'"));
+    expect(out, contains("'}'"));
+    expect(out, contains('{name}'));
+    // Only the real placeholder is an expression: braces outside quotes
+    // balance.
+    final unquoted = out.replaceAll("'{'", '').replaceAll("'}'", '');
+    expect(
+      '{'.allMatches(unquoted),
+      hasLength('}'.allMatches(unquoted).length),
+    );
+    expect(out, isNot(contains('braces')));
+  });
+
+  test('quoted braces inside plural clauses survive', () {
+    final out = pseudoLocalize(
+      "{count, plural, =0{None '{'x'}'} other{{count} '{'items'}'}}",
+    );
+    expect(out, startsWith('{count,plural,'));
+    expect(out, contains("'{'"));
+    expect(out, contains('other{{count} '));
+  });
 }

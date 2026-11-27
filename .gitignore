@@ -38,3 +38,10 @@ GoogleService-Info.plist
 # Local tooling output
 .melos_tool/
 debug-info/
+
+# Golden test failure artefacts (uploaded by CI on failure, never committed)
+**/test/failures/
+
+# Certificates and keys for tests are generated at test time into this
+# directory and never committed (see tools/ci/repo_guard.sh)
+**/test/.generated/

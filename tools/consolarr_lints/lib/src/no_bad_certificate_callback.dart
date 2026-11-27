@@ -8,14 +8,32 @@ import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/error/error.dart';
 import 'package:consolarr_lints/src/paths.dart';
 
-/// The package that owns TLS trust decisions.
-const allowedTlsPackage = 'security';
+/// A file (identified by package name and package-relative path) allowed to
+/// use some TLS-trust identifiers. [identifiers] `null` means all of them.
+class AllowedTlsFile {
+  const AllowedTlsFile(this.package, this.relativePath, [this.identifiers]);
 
-/// The only file (relative to [allowedTlsPackage]) allowed to touch TLS trust.
-const allowedTlsFile = 'lib/src/http/secure_http_client_factory.dart';
+  final String package;
+  final String relativePath;
+  final Set<String>? identifiers;
+}
 
-/// Repo-relative form of the allowed file, for messages.
-const allowedBadCertificateFile = 'packages/security/$allowedTlsFile';
+/// The only exemptions. The factory owns TLS trust; the test harness's access
+/// guard only *observes* `HttpClient` creation through `HttpOverrides` and
+/// never changes certificate validation.
+const allowedTlsFiles = [
+  AllowedTlsFile('security', 'lib/src/http/secure_http_client_factory.dart'),
+  AllowedTlsFile('test_harness', 'lib/src/access_guard.dart', {
+    'HttpOverrides',
+  }),
+  AllowedTlsFile('test_harness', 'test/access_guard_test.dart', {
+    'HttpOverrides',
+  }),
+];
+
+/// Repo-relative form of the main allowed file, for messages.
+const allowedBadCertificateFile =
+    'packages/security/lib/src/http/secure_http_client_factory.dart';
 
 /// Identifiers that can weaken or replace certificate validation.
 const forbiddenTlsIdentifiers = {
@@ -55,15 +73,20 @@ class NoBadCertificateCallback extends AnalysisRule {
     RuleVisitorRegistry registry,
     RuleContext context,
   ) {
-    if (isFileInPackage(
-      filePath: context.definingUnit.file.path,
-      packageRoot: context.package?.root.path,
-      packageName: allowedTlsPackage,
-      relativePath: allowedTlsFile,
-    )) {
-      return;
+    var allowed = <String>{};
+    for (final file in allowedTlsFiles) {
+      if (isFileInPackage(
+        filePath: context.definingUnit.file.path,
+        packageRoot: context.package?.root.path,
+        packageName: file.package,
+        relativePath: file.relativePath,
+      )) {
+        final ids = file.identifiers;
+        if (ids == null) return;
+        allowed = ids;
+      }
     }
-    final visitor = _Visitor(this);
+    final visitor = _Visitor(this, allowed);
     registry
       ..addSimpleIdentifier(this, visitor)
       ..addNamedType(this, visitor)
@@ -72,20 +95,24 @@ class NoBadCertificateCallback extends AnalysisRule {
 }
 
 class _Visitor extends SimpleAstVisitor<void> {
-  _Visitor(this.rule);
+  _Visitor(this.rule, this.allowed);
 
   final AnalysisRule rule;
+  final Set<String> allowed;
+
+  bool _forbidden(String name) =>
+      forbiddenTlsIdentifiers.contains(name) && !allowed.contains(name);
 
   @override
   void visitSimpleIdentifier(SimpleIdentifier node) {
-    if (forbiddenTlsIdentifiers.contains(node.name)) {
+    if (_forbidden(node.name)) {
       rule.reportAtNode(node);
     }
   }
 
   @override
   void visitNamedType(NamedType node) {
-    if (forbiddenTlsIdentifiers.contains(node.name.lexeme)) {
+    if (_forbidden(node.name.lexeme)) {
       rule.reportAtNode(node);
     }
   }
@@ -94,7 +121,7 @@ class _Visitor extends SimpleAstVisitor<void> {
   void visitNamedArgument(NamedArgument node) {
     final name = node.name.lexeme;
     final value = node.argumentExpression;
-    if (forbiddenTlsIdentifiers.contains(name)) {
+    if (_forbidden(name)) {
       rule.reportAtNode(node);
     } else if (name == 'withTrustedRoots' &&
         value is BooleanLiteral &&

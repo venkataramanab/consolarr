@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Exact `<repo-relative file> | <rule>` pairs where a project lint may be
+# suppressed. Only the UI-string rule appears here, and only where a test
+# fixture is deliberately not user-facing text. The certificate and print
+# rules, and `nosemgrep`, must never be listed.
+packages/test_harness/test/accessibility_test.dart | consolarr_no_ui_string
+packages/test_harness/test/matrix_test.dart | consolarr_no_ui_string
+tools/consolarr_lints/test/rules_test.dart | consolarr_no_ui_string
