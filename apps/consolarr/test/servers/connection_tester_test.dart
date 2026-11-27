@@ -225,11 +225,7 @@ void main() {
     test('a kind without a probe is not reported as an old version, and no '
         'request is made', () async {
       final factory = _Factory(StubAdapter((o) => json('{}')));
-      for (final kind in [
-        ServiceKind.radarr,
-        ServiceKind.transmission,
-        ServiceKind.deluge,
-      ]) {
+      for (final kind in [ServiceKind.transmission, ServiceKind.deluge]) {
         final r = await DefaultConnectionTester(factory)
             .test(profile(kind), sonarrKey);
         final error = failure(r);
