@@ -1,0 +1,7 @@
+{
+  "@@locale": "ar",
+  "appTitle": "كونسولار",
+  "@appTitle": {
+    "description": "The app name, shown in the task switcher and as the accessible name of the app."
+  }
+}

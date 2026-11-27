@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+name: consolarr_play
+description: Consolarr Play Store entry point. The only app allowed to add telemetry SDKs.
+publish_to: none
+version: 0.1.0+1
+resolution: workspace
+
+environment:
+  sdk: ^3.14.0
+
+dependencies:
+  # The shared package: all UI and logic live in apps/consolarr's library.
+  consolarr:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^3.5.0
+  observability:
+
+dev_dependencies:
+  material_ui: ^1.11.1
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

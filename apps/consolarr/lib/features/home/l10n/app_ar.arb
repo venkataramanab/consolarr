@@ -1,0 +1,29 @@
+{
+  "@@locale": "ar",
+  "homeTitle": "الرئيسية",
+  "@homeTitle": {
+    "description": "Title of the home screen app bar."
+  },
+  "homeEmptyHeading": "لا شيء هنا بعد",
+  "@homeEmptyHeading": {
+    "description": "Headline of the placeholder state on the home screen before any server is configured."
+  },
+  "homeEmptyBody": "أضف خادم وسائط أو عميل تنزيل للبدء. هذه الشاشة مؤقتة.",
+  "@homeEmptyBody": {
+    "description": "One-line hint under the placeholder headline on the home screen."
+  },
+  "homeServerCount": "{count, plural, =0{لا توجد خوادم} =1{خادم واحد} =2{خادمان} few{{count} خوادم} many{{count} خادمًا} other{{count} خادم}}",
+  "@homeServerCount": {
+    "description": "Number of configured servers shown on the home screen.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "How many servers are configured."
+      }
+    }
+  },
+  "homeAboutTooltip": "حول كونسولار",
+  "@homeAboutTooltip": {
+    "description": "Tooltip and accessible label of the app bar button that opens the About screen."
+  }
+}

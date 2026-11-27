@@ -1,0 +1,7 @@
+{
+  "@@locale": "en",
+  "appTitle": "Consolarr",
+  "@appTitle": {
+    "description": "The app name, shown in the task switcher and as the accessible name of the app."
+  }
+}

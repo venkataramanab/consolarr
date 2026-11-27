@@ -1,0 +1,15 @@
+{
+  "@@locale": "ar",
+  "aboutTitle": "حول",
+  "@aboutTitle": {
+    "description": "Title of the About screen app bar."
+  },
+  "aboutLicense": "كونسولار برنامج حر، مرخّص بموجب GPL-3.0-or-later.",
+  "@aboutLicense": {
+    "description": "Licensing statement on the About screen."
+  },
+  "aboutIndependence": "كونسولار مشروع مستقل وليس تابعًا لـ Sonarr أو Radarr أو مشروع Servarr أو أي تطبيق آخر.",
+  "@aboutIndependence": {
+    "description": "Disclaimer on the About screen stating that the project is independent."
+  }
+}

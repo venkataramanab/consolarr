@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+    <!-- Matches the dark page surface token in package:design_system. -->
+    <color name="splash_background">#181B21</color>
+    <color name="ic_launcher_background">#181B21</color>
+    <color name="ic_launcher_accent">#5CC8D7</color>
+</resources>
