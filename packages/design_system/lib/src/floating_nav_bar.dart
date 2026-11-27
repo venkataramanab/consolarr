@@ -4,7 +4,6 @@ import 'package:design_system/src/glass_bar.dart';
 import 'package:design_system/src/radii.dart';
 import 'package:design_system/src/roles_context.dart';
 import 'package:design_system/src/spacing.dart';
-import 'package:design_system/src/type_scale.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// One destination of a [FloatingNavBar].
@@ -133,10 +132,13 @@ class _NavItem extends StatelessWidget {
                   children: [
                     DecoratedBox(
                       decoration: BoxDecoration(
-                        color: selected
-                            ? roles.accent.withValues(alpha: 0.2)
-                            : const Color(0x00000000),
                         borderRadius: ConsolarrRadii.chip,
+                        border: Border.all(
+                          color: selected
+                              ? roles.accent
+                              : const Color(0x00000000),
+                          width: 2,
+                        ),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(

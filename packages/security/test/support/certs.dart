@@ -23,7 +23,7 @@ class TestCert {
 
   List<int> get pemBytes => File(certPath).readAsBytesSync();
 
-  SecurityContext serverContext() => SecurityContext(withTrustedRoots: false)
+  SecurityContext serverContext() => SecurityContext()
     ..useCertificateChain(certPath)
     ..usePrivateKey(keyPath);
 }
@@ -54,7 +54,7 @@ class CertFactory {
     if (dir.existsSync()) dir.deleteSync(recursive: true);
   }
 
-  static void _run(List<String> args, {String? stdin}) {
+  static void _run(List<String> args) {
     final ProcessResult r;
     try {
       r = Process.runSync('openssl', args);

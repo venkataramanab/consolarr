@@ -136,7 +136,10 @@ void main() {
         handler: (r) {
           r.response
             ..statusCode = 302
-            ..headers.set('location', '${target.origin}/landing');
+            ..headers.set(
+              'location',
+              'http://localhost:${target.port}/landing',
+            );
         },
       );
       final dio = factory().create(s.profile(allowCleartext: true));
