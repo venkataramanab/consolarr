@@ -66,7 +66,14 @@ class _AppShellState extends ConsumerState<AppShell> {
     return PopScope(
       canPop: current == 0,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) shell.goBranch(0);
+        if (didPop) return;
+        // A pushed child route pops first; only the branch root goes Home.
+        final router = GoRouter.of(context);
+        if (router.canPop()) {
+          router.pop();
+        } else {
+          shell.goBranch(0);
+        }
       },
       child: Scaffold(
         extendBody: true,

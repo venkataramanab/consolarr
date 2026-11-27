@@ -78,6 +78,37 @@ void main() {
     expect(bad.message, isNot(parse.message));
   });
 
+  test('invalid port and non-ascii host get dedicated copy', () async {
+    for (final locale in const [Locale('en'), Locale('ar')]) {
+      final l10n = await AppLocalizations.delegate.load(locale);
+      final generic = connectionErrorMessage(
+        l10n,
+        const AppError(ErrorCategory.parseError),
+      );
+      final input = connectionErrorMessage(
+        l10n,
+        const AppError(
+          ErrorCategory.parseError,
+          debugDetail: 'invalid address',
+        ),
+      );
+      final port = connectionErrorMessage(
+        l10n,
+        const AppError(ErrorCategory.parseError, debugDetail: 'invalid port'),
+      );
+      final host = connectionErrorMessage(
+        l10n,
+        const AppError(
+          ErrorCategory.parseError,
+          debugDetail: 'host must be ascii',
+        ),
+      );
+      final all = {generic.message, input.message, port.message, host.message};
+      expect(all, hasLength(4), reason: '$locale');
+      expect(port.hint, isNot(host.hint));
+    }
+  });
+
   test('messages never echo debug details', () async {
     final l10n = await AppLocalizations.delegate.load(const Locale('en'));
     final m = connectionErrorMessage(

@@ -154,5 +154,21 @@
   "commonRetry": "إعادة المحاولة",
   "@commonRetry": {
     "description": "Button label: repeat a failed action."
+  },
+  "connErrorInvalidPortMessage": "رقم المنفذ غير صالح.",
+  "@connErrorInvalidPortMessage": {
+    "description": "Plain-language message for a connection problem: the port number is outside 1-65535."
+  },
+  "connErrorInvalidPortHint": "أدخل رقم منفذ بين 1 و65535.",
+  "@connErrorInvalidPortHint": {
+    "description": "Fix hint shown under the message for a connection problem: the port number is outside 1-65535."
+  },
+  "connErrorNonAsciiHostMessage": "اسم المضيف يحتوي على أحرف غير مدعومة.",
+  "@connErrorNonAsciiHostMessage": {
+    "description": "Plain-language message for a connection problem: the host contains non-ASCII characters."
+  },
+  "connErrorNonAsciiHostHint": "أدخل صيغة punycode لاسم المضيف (تبدأ بـ xn--).",
+  "@connErrorNonAsciiHostHint": {
+    "description": "Fix hint shown under the message for a connection problem: the host contains non-ASCII characters; enter the punycode form."
   }
 }
