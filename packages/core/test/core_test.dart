@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 
 void main() {
   group('ErrorCategory', () {
-    test('has the nine documented categories with stable codes', () {
+    test('has the documented categories with stable codes', () {
       expect(ErrorCategory.values.map((c) => c.code), [
         'auth_failed',
         'timeout',
@@ -16,6 +16,10 @@ void main() {
         'server_error',
         'network_unreachable',
         'parse_error',
+        'tls_untrusted',
+        'tls_expired',
+        'redirect_refused',
+        'response_too_large',
       ]);
     });
 
@@ -176,6 +180,79 @@ void main() {
           Uri.parse('https://b.example/y'),
         ),
         isFalse,
+      );
+    });
+  });
+
+  group('ServerProfile extended fields', () {
+    ServerProfile? build({
+      String address = 'https://sonarr.example',
+      String pathPrefix = '',
+      AuthMode authMode = AuthMode.apiKey,
+      List<String> headerNames = const [],
+      String? alternateAddress,
+    }) => ServerProfile.parse(
+      id: 'p1',
+      name: 'Test',
+      kind: ServiceKind.sonarr,
+      address: address,
+      pathPrefix: pathPrefix,
+      authMode: authMode,
+      headerNames: headerNames,
+      alternateAddress: alternateAddress,
+    ).valueOrNull;
+
+    test('defaults: no prefix, api key, no headers, no alternate', () {
+      final p = build()!;
+      expect(p.pathPrefix, '');
+      expect(p.authMode, AuthMode.apiKey);
+      expect(p.headerNames, isEmpty);
+      expect(p.alternateAddress, isNull);
+      expect(p.baseUri.toString(), 'https://sonarr.example');
+    });
+
+    test('normalises the path prefix and builds baseUri', () {
+      expect(build(pathPrefix: 'sonarr/')!.pathPrefix, '/sonarr');
+      expect(build(pathPrefix: '/a/b//')!.pathPrefix, '/a/b');
+      expect(
+        build(pathPrefix: '/sonarr')!.baseUri.toString(),
+        'https://sonarr.example/sonarr',
+      );
+    });
+
+    test('a path inside the address is folded into the prefix', () {
+      final p = build(address: 'https://nas.example/tv/')!;
+      expect(p.pathPrefix, '/tv');
+      expect(p.address.path, isEmpty);
+      expect(p.baseUri.toString(), 'https://nas.example/tv');
+    });
+
+    test('rejects traversal, queries and whitespace in the prefix', () {
+      for (final bad in ['/../x', '/a?key=1', '/a#b', '/a b', r'/a\b']) {
+        expect(build(pathPrefix: bad), isNull, reason: bad);
+      }
+    });
+
+    test('validates header names (tokens only, bounded, no duplicates)', () {
+      expect(build(headerNames: ['X-Gateway-Token'])!.headerNames, [
+        'X-Gateway-Token',
+      ]);
+      expect(build(headerNames: ['bad name']), isNull);
+      expect(build(headerNames: ['A', 'a']), isNull);
+      expect(build(headerNames: List.generate(21, (i) => 'H$i')), isNull);
+    });
+
+    test('alternate address obeys the same address rules', () {
+      final p = build(alternateAddress: 'http://192.0.2.10:8989')!;
+      expect(p.alternateAddress!.host, '192.0.2.10');
+      expect(build(alternateAddress: 'https://u:p@x.example'), isNull);
+      expect(build(alternateAddress: 'https://x.example/?k=1'), isNull);
+    });
+
+    test('toString still omits the address', () {
+      expect(
+        '${build(pathPrefix: '/secret-prefix')}',
+        isNot(contains('prefix')),
       );
     });
   });

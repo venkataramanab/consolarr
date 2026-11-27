@@ -13,7 +13,11 @@ enum ErrorCategory {
   notFound('not_found'),
   serverError('server_error'),
   networkUnreachable('network_unreachable'),
-  parseError('parse_error');
+  parseError('parse_error'),
+  tlsUntrusted('tls_untrusted'),
+  tlsExpired('tls_expired'),
+  redirectRefused('redirect_refused'),
+  responseTooLarge('response_too_large');
 
   const ErrorCategory(this.code);
 
