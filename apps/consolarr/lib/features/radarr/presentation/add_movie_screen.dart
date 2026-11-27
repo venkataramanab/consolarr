@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+// TODO(arr_common): the add-options pieces are local copies; swap them for the
+// shared ones from `features/arr_common` once W4a merges.
+
 import 'dart:async';
 
 import 'package:arr_api/arr_api.dart';

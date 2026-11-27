@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+// TODO(arr_common): the release row and sheet shell are local copies; swap
+// them for the shared ones from `features/arr_common` once W4a merges.
+
 import 'package:arr_api/arr_api.dart';
 import 'package:consolarr/features/radarr/application/radarr_providers.dart';
 import 'package:consolarr/features/radarr/domain/release_query.dart';

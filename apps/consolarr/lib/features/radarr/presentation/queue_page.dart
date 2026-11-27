@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+// TODO(arr_common): the queue row and the removal dialog are local copies;
+// swap them for the shared ones from `features/arr_common` once W4a merges.
+
 import 'package:arr_api/arr_api.dart';
 import 'package:consolarr/features/radarr/application/radarr_providers.dart';
 import 'package:consolarr/features/radarr/presentation/common.dart';
