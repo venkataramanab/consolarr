@@ -96,11 +96,30 @@ void main() {
   group('applyQuery', () {
     final movies = [
       fakeMovie(1, title: 'Beta', year: 2001, rating: 5),
-      fakeMovie(2, title: 'alpha', year: 1999, monitored: false, hasFile: false),
-      fakeMovie(3, title: 'Gamma', year: 2010, collection: 'Example Saga', profile: 2),
-      fakeMovie(4, title: 'Delta', tags: [7], min: MinimumAvailability.announced),
+      fakeMovie(
+        2,
+        title: 'alpha',
+        year: 1999,
+        monitored: false,
+        hasFile: false,
+      ),
+      fakeMovie(
+        3,
+        title: 'Gamma',
+        year: 2010,
+        collection: 'Example Saga',
+        profile: 2,
+      ),
+      fakeMovie(
+        4,
+        title: 'Delta',
+        tags: [7],
+        min: MinimumAvailability.announced,
+      ),
     ];
-    List<int> ids(MovieQuery q) => [for (final m in applyQuery(movies, q)) m.id];
+    List<int> ids(MovieQuery q) => [
+      for (final m in applyQuery(movies, q)) m.id,
+    ];
 
     test('title ascending and descending', () {
       expect(ids(const MovieQuery()), [2, 1, 4, 3]);
@@ -120,17 +139,25 @@ void main() {
 
     test('every filter dimension', () {
       MovieQuery f(MovieFilter x) => MovieQuery(filter: x);
-      expect(ids(f(const MovieFilter(monitored: MonitoredFilter.unmonitored))), [2]);
+      expect(
+        ids(f(const MovieFilter(monitored: MonitoredFilter.unmonitored))),
+        [2],
+      );
       expect(ids(f(const MovieFilter(file: FileFilter.missing))), [2]);
       expect(ids(f(const MovieFilter(file: FileFilter.downloaded))), [1, 4, 3]);
       expect(
-        ids(f(const MovieFilter(availability: {MinimumAvailability.announced}))),
+        ids(
+          f(const MovieFilter(availability: {MinimumAvailability.announced})),
+        ),
         [4],
       );
       expect(ids(f(const MovieFilter(qualityProfiles: {2}))), [3]);
       expect(ids(f(const MovieFilter(tags: {7}))), [4]);
       expect(ids(f(const MovieFilter(collections: {'Example Saga'}))), [3]);
-      expect(const MovieFilter(tags: {1}, file: FileFilter.missing).activeCount, 2);
+      expect(
+        const MovieFilter(tags: {1}, file: FileFilter.missing).activeCount,
+        2,
+      );
     });
 
     test('filter survives a json round trip', () {
@@ -141,17 +168,18 @@ void main() {
         collections: {'Example Saga'},
       );
       expect(MovieFilter.fromJson(f.toJson()), f);
-      expect(MovieFilter.fromJson({'monitored': 3, 'tags': 'x'}), MovieFilter.none);
+      expect(
+        MovieFilter.fromJson({'monitored': 3, 'tags': 'x'}),
+        MovieFilter.none,
+      );
     });
 
     test('groups by first letter and by year', () {
       final sorted = applyQuery(movies, const MovieQuery());
-      expect([for (final g in groupMovies(sorted, MovieSortKey.title)) g.label], [
-        'A',
-        'B',
-        'D',
-        'G',
-      ]);
+      expect(
+        [for (final g in groupMovies(sorted, MovieSortKey.title)) g.label],
+        ['A', 'B', 'D', 'G'],
+      );
       expect(groupMovies(sorted, MovieSortKey.size), hasLength(1));
       expect(groupOf(fakeMovie(9, title: '1917'), MovieSortKey.title), '#');
     });
@@ -164,10 +192,7 @@ void main() {
           final out = applyQuery(list, MovieQuery(sort: key));
           expect(out, hasLength(n));
         }
-        final found = applyQuery(
-          list,
-          const MovieQuery(search: 'movie 9999'),
-        );
+        final found = applyQuery(list, const MovieQuery(search: 'movie 9999'));
         expect(found.length, n >= 9999 ? 1 : 0);
         expect(
           applyQuery(

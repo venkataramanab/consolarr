@@ -17,11 +17,8 @@ MovieStatus _status(String? v) => MovieStatus.values.firstWhere(
   orElse: () => MovieStatus.unknown,
 );
 
-MinimumAvailability _availability(String? v) =>
-    MinimumAvailability.values.firstWhere(
-      (e) => e.name == v,
-      orElse: () => MinimumAvailability.unknown,
-    );
+MinimumAvailability _availability(String? v) => MinimumAvailability.values
+    .firstWhere((e) => e.name == v, orElse: () => MinimumAvailability.unknown);
 
 String? _iso(DateTime? d) => d?.toUtc().toIso8601String();
 

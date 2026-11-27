@@ -4,6 +4,8 @@ import 'package:arr_api/arr_api.dart';
 import 'package:core/core.dart';
 import 'package:test/test.dart';
 
+import 'support/fake_adapter.dart';
+
 class _Sonarr with EmptyArrLists implements SonarrApi {
   @override
   Future<Result<List<SonarrSeries>>> series() async => const Result.ok([]);
@@ -16,18 +18,12 @@ class _Sonarr with EmptyArrLists implements SonarrApi {
       const Result.ok(ArrSystemStatus(version: '4.0.0.0'));
 }
 
-class _Radarr with EmptyArrLists implements RadarrApi {
-  @override
-  ServiceKind get kind => ServiceKind.radarr;
-  @override
-  Future<Result<ArrSystemStatus>> systemStatus() async =>
-      const Result.err(AppError(ErrorCategory.unsupportedVersion));
-}
-
 void main() {
   test('SonarrApi and RadarrApi share the ArrApi surface', () async {
     final ArrApi sonarr = _Sonarr();
-    final ArrApi radarr = _Radarr();
+    final ArrApi radarr = RadarrClient(
+      dio: dioWith(FakeAdapter.fixed('{"version":"2.0.0.0"}')),
+    );
     expect(sonarr.kind, ServiceKind.sonarr);
     expect((await sonarr.systemStatus()).valueOrNull?.version, '4.0.0.0');
     expect(radarr.kind, ServiceKind.radarr);

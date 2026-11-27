@@ -88,8 +88,12 @@ void main() {
   });
 
   test('a damaged cache entry is skipped, not fatal', () async {
-    await cache.write('srv1', RadarrRepository.libraryKey,
-        '[{"id":1,"title":"Example Movie"},{"id":"x"}, 5]', fixedNow);
+    await cache.write(
+      'srv1',
+      RadarrRepository.libraryKey,
+      '[{"id":1,"title":"Example Movie"},{"id":"x"}, 5]',
+      fixedNow,
+    );
     api.moviesResult = const Result.err(AppError(ErrorCategory.timeout));
     final r = await repo.library();
     expect(r.valueOrNull!.value, hasLength(1));

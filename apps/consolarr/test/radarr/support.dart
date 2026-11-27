@@ -10,7 +10,6 @@ import 'package:consolarr/features/radarr/data/radarr_repository.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 
 /// A fake Radarr API with scripted answers (fake data only).
@@ -130,7 +129,8 @@ class FakeRadarrApi with EmptyArrLists implements RadarrApi {
 
   @override
   Future<Result<RadarrCommand>> command(int id) async {
-    final status = commandScript[commandCalls.clamp(0, commandScript.length - 1)];
+    final status =
+        commandScript[commandCalls.clamp(0, commandScript.length - 1)];
     commandCalls++;
     return Result.ok(RadarrCommand(id: id, status: status));
   }
@@ -207,10 +207,8 @@ class MemoryPayloadCache implements PayloadCache {
     String key,
     String json,
     DateTime fetchedAt,
-  ) async => rows[_k(serverId, key)] = CachedPayload(
-    json: json,
-    fetchedAt: fetchedAt,
-  );
+  ) async =>
+      rows[_k(serverId, key)] = CachedPayload(json: json, fetchedAt: fetchedAt);
 
   @override
   Future<void> deleteForServer(String serverId) async =>

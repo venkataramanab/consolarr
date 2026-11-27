@@ -72,7 +72,11 @@ void main() {
 
     test('tolerates missing dates, file and collection', () async {
       final r = await client(
-        FakeAdapter.fixed(jsonEncode([{'id': 1, 'title': 'Example Movie'}])),
+        FakeAdapter.fixed(
+          jsonEncode([
+            {'id': 1, 'title': 'Example Movie'},
+          ]),
+        ),
       ).movies();
       final m = r.valueOrNull!.single;
       expect(m.inCinemas, isNull);
@@ -87,7 +91,10 @@ void main() {
       final c = RadarrClient(
         dio: dioWith(
           FakeAdapter.fixed(
-            jsonEncode([_movie, {'id': 'x', 'title': 3}]),
+            jsonEncode([
+              _movie,
+              {'id': 'x', 'title': 3},
+            ]),
           ),
         ),
         onRowsSkipped: (n) => skipped = n,
@@ -123,15 +130,15 @@ void main() {
 
     test('401 is auth_failed, 500 is server_error', () async {
       expect(
-        (await client(FakeAdapter.fixed('', status: 401)).movies())
-            .errorOrNull
-            ?.category,
+        (await client(
+          FakeAdapter.fixed('', status: 401),
+        ).movies()).errorOrNull?.category,
         ErrorCategory.authFailed,
       );
       expect(
-        (await client(FakeAdapter.fixed('', status: 500)).movies())
-            .errorOrNull
-            ?.category,
+        (await client(
+          FakeAdapter.fixed('', status: 500),
+        ).movies()).errorOrNull?.category,
         ErrorCategory.serverError,
       );
     });
@@ -150,20 +157,21 @@ void main() {
   group('systemStatus', () {
     test('v5 is fine, v2 is unsupported_version', () async {
       expect(
-        (await client(FakeAdapter.fixed('{"version":"5.2.0.1"}')).systemStatus())
-            .isOk,
+        (await client(
+          FakeAdapter.fixed('{"version":"5.2.0.1"}'),
+        ).systemStatus()).isOk,
         isTrue,
       );
       expect(
-        (await client(FakeAdapter.fixed('{"version":"2.0.0.1"}')).systemStatus())
-            .errorOrNull
-            ?.category,
+        (await client(
+          FakeAdapter.fixed('{"version":"2.0.0.1"}'),
+        ).systemStatus()).errorOrNull?.category,
         ErrorCategory.unsupportedVersion,
       );
       expect(
-        (await client(FakeAdapter.fixed('', status: 404)).systemStatus())
-            .errorOrNull
-            ?.category,
+        (await client(
+          FakeAdapter.fixed('', status: 404),
+        ).systemStatus()).errorOrNull?.category,
         ErrorCategory.unsupportedVersion,
       );
     });
@@ -172,10 +180,8 @@ void main() {
   group('calendar', () {
     test('sends the range as query and parses movies', () async {
       final adapter = FakeAdapter.fixed(jsonEncode([_movie]));
-      final r = await client(adapter).calendar(
-        DateTime.utc(2024, 3),
-        DateTime.utc(2024, 4),
-      );
+      final r = await client(adapter)
+          .calendar(DateTime.utc(2024, 3), DateTime.utc(2024, 4));
       expect(r.valueOrNull, hasLength(1));
       final q = adapter.requests.single.uri.queryParameters;
       expect(q['start'], startsWith('2024-03-01'));
@@ -184,33 +190,37 @@ void main() {
   });
 
   group('updateMovie', () {
-    test('reads then writes the full object, changing only the asked fields',
-        () async {
-      final adapter = FakeAdapter((o) {
-        if (o.method == 'GET') return FakeAdapter.reply(jsonEncode(_movie));
-        return FakeAdapter.reply(o.data as String);
-      });
-      final r = await client(adapter).updateMovie(
-        7,
-        monitored: false,
-        tags: [2],
-        minimumAvailability: MinimumAvailability.inCinemas,
-      );
-      expect(r.valueOrNull!.monitored, isFalse);
-      final put = adapter.requests.last;
-      expect(put.method, 'PUT');
-      final sent = jsonDecode(put.data as String) as Map<String, Object?>;
-      expect(sent['someFutureField'], {'x': 1});
-      expect(sent['tags'], [2]);
-      expect(sent['minimumAvailability'], 'inCinemas');
-      expect(sent['qualityProfileId'], 2);
-      expect(sent.containsKey('path'), isFalse, reason: 'no move');
-    });
+    test(
+      'reads then writes the full object, changing only the asked fields',
+      () async {
+        final adapter = FakeAdapter((o) {
+          if (o.method == 'GET') return FakeAdapter.reply(jsonEncode(_movie));
+          return FakeAdapter.reply(o.data as String);
+        });
+        final r = await client(adapter).updateMovie(
+          7,
+          monitored: false,
+          tags: [2],
+          minimumAvailability: MinimumAvailability.inCinemas,
+        );
+        expect(r.valueOrNull!.monitored, isFalse);
+        final put = adapter.requests.last;
+        expect(put.method, 'PUT');
+        final sent = jsonDecode(put.data as String) as Map<String, Object?>;
+        expect(sent['someFutureField'], {'x': 1});
+        expect(sent['tags'], [2]);
+        expect(sent['minimumAvailability'], 'inCinemas');
+        expect(sent['qualityProfileId'], 2);
+        expect(sent.containsKey('path'), isFalse, reason: 'no move');
+      },
+    );
 
     test('a failed write is an error', () async {
-      final adapter = FakeAdapter((o) => o.method == 'GET'
-          ? FakeAdapter.reply(jsonEncode(_movie))
-          : FakeAdapter.reply('', status: 503));
+      final adapter = FakeAdapter(
+        (o) => o.method == 'GET'
+            ? FakeAdapter.reply(jsonEncode(_movie))
+            : FakeAdapter.reply('', status: 503),
+      );
       final r = await client(adapter).updateMovie(7, monitored: true);
       expect(r.errorOrNull?.category, ErrorCategory.serverError);
     });
@@ -224,48 +234,49 @@ void main() {
       expect(adapter.requests.single.uri.queryParameters['term'], 'tmdb:99');
     });
 
-    test('add sends the options and collection monitor only if present',
-        () async {
-      final adapter = FakeAdapter.fixed(jsonEncode({..._movie, 'id': 9}));
-      final lookup = RadarrMovie.fromJson({..._movie, 'id': 0});
-      final c = client(adapter);
-      final r = await c.addMovie(
-        AddMovieRequest(
-          lookup: lookup,
-          qualityProfileId: 4,
-          rootFolderPath: '/movies',
-          minimumAvailability: MinimumAvailability.released,
-          monitored: true,
-          tags: const [1],
-          searchForMovie: true,
-          addCollection: true,
-        ),
-      );
-      expect(r.valueOrNull!.id, 9);
-      final sent =
-          jsonDecode(adapter.requests.single.data as String) as Map;
-      expect(sent['tmdbId'], 99);
-      expect((sent['addOptions'] as Map)['searchForMovie'], isTrue);
-      expect((sent['addOptions'] as Map)['monitor'], 'movieAndCollection');
+    test(
+      'add sends the options and collection monitor only if present',
+      () async {
+        final adapter = FakeAdapter.fixed(jsonEncode({..._movie, 'id': 9}));
+        final lookup = RadarrMovie.fromJson({..._movie, 'id': 0});
+        final c = client(adapter);
+        final r = await c.addMovie(
+          AddMovieRequest(
+            lookup: lookup,
+            qualityProfileId: 4,
+            rootFolderPath: '/movies',
+            minimumAvailability: MinimumAvailability.released,
+            monitored: true,
+            tags: const [1],
+            searchForMovie: true,
+            addCollection: true,
+          ),
+        );
+        expect(r.valueOrNull!.id, 9);
+        final sent = jsonDecode(adapter.requests.single.data as String) as Map;
+        expect(sent['tmdbId'], 99);
+        expect((sent['addOptions'] as Map)['searchForMovie'], isTrue);
+        expect((sent['addOptions'] as Map)['monitor'], 'movieAndCollection');
 
-      final noCollection = RadarrMovie.fromJson({
-        'id': 0,
-        'title': 'Example Movie',
-        'tmdbId': 5,
-      });
-      await c.addMovie(
-        AddMovieRequest(
-          lookup: noCollection,
-          qualityProfileId: 4,
-          rootFolderPath: '/movies',
-          minimumAvailability: MinimumAvailability.released,
-          monitored: true,
-          addCollection: true,
-        ),
-      );
-      final sent2 = jsonDecode(adapter.requests.last.data as String) as Map;
-      expect((sent2['addOptions'] as Map)['monitor'], 'movieOnly');
-    });
+        final noCollection = RadarrMovie.fromJson({
+          'id': 0,
+          'title': 'Example Movie',
+          'tmdbId': 5,
+        });
+        await c.addMovie(
+          AddMovieRequest(
+            lookup: noCollection,
+            qualityProfileId: 4,
+            rootFolderPath: '/movies',
+            minimumAvailability: MinimumAvailability.released,
+            monitored: true,
+            addCollection: true,
+          ),
+        );
+        final sent2 = jsonDecode(adapter.requests.last.data as String) as Map;
+        expect((sent2['addOptions'] as Map)['monitor'], 'movieOnly');
+      },
+    );
 
     test('adding a movie already in the library sends nothing', () async {
       final adapter = FakeAdapter.fixed('{}');
@@ -304,7 +315,11 @@ void main() {
 
     test('parses the paged envelope', () async {
       final r = await client(
-        FakeAdapter.fixed(jsonEncode({'records': [record]})),
+        FakeAdapter.fixed(
+          jsonEncode({
+            'records': [record],
+          }),
+        ),
       ).queue();
       final i = r.valueOrNull!.single;
       expect(i.progress, 0.75);
@@ -313,9 +328,7 @@ void main() {
     });
 
     test('empty queue is ok', () async {
-      final r = await client(
-        FakeAdapter.fixed('{"records":[]}'),
-      ).queue();
+      final r = await client(FakeAdapter.fixed('{"records":[]}')).queue();
       expect(r.valueOrNull, isEmpty);
     });
 
@@ -361,9 +374,8 @@ void main() {
     });
 
     test('status values', () async {
-      final r = await client(
-        FakeAdapter.fixed('{"id":5,"status":"completed"}'),
-      ).command(5);
+      final r = await client(FakeAdapter.fixed('{"id":5,"status":"completed"}'))
+          .command(5);
       expect(r.valueOrNull!.isFinished, isTrue);
     });
   });

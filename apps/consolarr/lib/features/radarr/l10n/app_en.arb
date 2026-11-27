@@ -1,0 +1,1161 @@
+{
+  "@@locale": "en",
+  "navRadarr": "Movies",
+  "@navRadarr": {
+    "description": "Label of the Radarr tab in the bottom navigation bar."
+  },
+  "radarrKindDescription": "Movies: library, calendar, queue and searches.",
+  "@radarrKindDescription": {
+    "description": "Short description of the Radarr service type in the server editor."
+  },
+  "radarrTitle": "Movies",
+  "@radarrTitle": {
+    "description": "Title of the Radarr screen and its floating top bar."
+  },
+  "radarrTabLibrary": "Library",
+  "@radarrTabLibrary": {
+    "description": "Sub-navigation tab that shows the movie library."
+  },
+  "radarrTabCalendar": "Calendar",
+  "@radarrTabCalendar": {
+    "description": "Sub-navigation tab that shows movie release dates."
+  },
+  "radarrTabQueue": "Queue",
+  "@radarrTabQueue": {
+    "description": "Sub-navigation tab that shows active downloads."
+  },
+  "radarrTabMissing": "Missing",
+  "@radarrTabMissing": {
+    "description": "Sub-navigation tab that shows missing and upcoming movies."
+  },
+  "radarrLoadingLabel": "Loading movies",
+  "@radarrLoadingLabel": {
+    "description": "Accessible label of the skeleton shown while Radarr data loads."
+  },
+  "radarrRetry": "Try again",
+  "@radarrRetry": {
+    "description": "Label of the retry button on error and offline states of the movie screens."
+  },
+  "radarrCancel": "Cancel",
+  "@radarrCancel": {
+    "description": "Label of the button that dismisses a Radarr dialog without acting."
+  },
+  "radarrClose": "Close",
+  "@radarrClose": {
+    "description": "Label of the close button of Radarr sheets."
+  },
+  "radarrBack": "Go back",
+  "@radarrBack": {
+    "description": "Action on the no-longer-exists state of the movie detail; closes the screen."
+  },
+  "radarrApply": "Apply",
+  "@radarrApply": {
+    "description": "Label of the button that applies the chosen sort or filter."
+  },
+  "radarrSave": "Save",
+  "@radarrSave": {
+    "description": "Label of the button that saves edits to a movie."
+  },
+  "radarrSaving": "Saving…",
+  "@radarrSaving": {
+    "description": "Label of the save button while the changes are being sent to the server."
+  },
+  "radarrSaveFailed": "Could not save the changes.",
+  "@radarrSaveFailed": {
+    "description": "Message shown in the edit sheet when saving fails; the reason follows."
+  },
+  "radarrOpenServers": "Check server settings",
+  "@radarrOpenServers": {
+    "description": "Secondary action on errors that are fixed in the server settings."
+  },
+  "radarrErrorTitle": "Couldn't load your movies",
+  "@radarrErrorTitle": {
+    "description": "Headline of the Radarr error state for connection and server problems."
+  },
+  "radarrErrorVersionTitle": "Unsupported Radarr version",
+  "@radarrErrorVersionTitle": {
+    "description": "Headline of the error state when the Radarr version is too old."
+  },
+  "radarrNoServerHeadline": "No Radarr server",
+  "@radarrNoServerHeadline": {
+    "description": "Headline shown when no Radarr server has been added."
+  },
+  "radarrNoServerMessage": "Add your Radarr server to browse your movies.",
+  "@radarrNoServerMessage": {
+    "description": "Hint under the no-server headline."
+  },
+  "radarrNoServerAction": "Add a server",
+  "@radarrNoServerAction": {
+    "description": "Primary action of the no-server state; opens the servers screen."
+  },
+  "radarrOfflineMessage": "Showing saved data. Changes are disabled until the server is reachable again.",
+  "@radarrOfflineMessage": {
+    "description": "Message of the offline banner above cached Radarr data; explains that writes are disabled."
+  },
+  "radarrUpdatedAgo": "Updated {age}",
+  "@radarrUpdatedAgo": {
+    "description": "Age line of the offline banner, for example \"Updated 5 minutes ago\".",
+    "placeholders": {
+      "age": {
+        "type": "String",
+        "description": "Relative age such as \"5 minutes ago\"."
+      }
+    }
+  },
+  "radarrAgeJustNow": "just now",
+  "@radarrAgeJustNow": {
+    "description": "Relative age used when cached data is less than a minute old."
+  },
+  "radarrAgeMinutes": "{count, plural, =1{1 minute ago} other{{count} minutes ago}}",
+  "@radarrAgeMinutes": {
+    "description": "Relative age in minutes for the offline banner.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole minutes."
+      }
+    }
+  },
+  "radarrAgeHours": "{count, plural, =1{1 hour ago} other{{count} hours ago}}",
+  "@radarrAgeHours": {
+    "description": "Relative age in hours for the offline banner.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole hours."
+      }
+    }
+  },
+  "radarrAgeDays": "{count, plural, =1{1 day ago} other{{count} days ago}}",
+  "@radarrAgeDays": {
+    "description": "Relative age in days for the offline banner.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole days."
+      }
+    }
+  },
+  "radarrWritesDisabled": "Changes are disabled while the server is unreachable.",
+  "@radarrWritesDisabled": {
+    "description": "Explains why edit, search and remove actions are disabled in the offline view."
+  },
+  "radarrSizeMb": "{size} MB",
+  "@radarrSizeMb": {
+    "description": "Size in megabytes.",
+    "placeholders": {
+      "size": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPatternDigits",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "radarrSizeGb": "{size} GB",
+  "@radarrSizeGb": {
+    "description": "Size in gigabytes.",
+    "placeholders": {
+      "size": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPatternDigits",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "radarrSizeTb": "{size} TB",
+  "@radarrSizeTb": {
+    "description": "Size in terabytes.",
+    "placeholders": {
+      "size": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPatternDigits",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "radarrPercent": "{percent}%",
+  "@radarrPercent": {
+    "description": "Download progress as a percentage.",
+    "placeholders": {
+      "percent": {
+        "type": "int",
+        "description": "0 to 100."
+      }
+    }
+  },
+  "radarrAddMovie": "Add movie",
+  "@radarrAddMovie": {
+    "description": "Label of the add-movie button, screen title and submit button."
+  },
+  "radarrEmptyHeadline": "No movies yet",
+  "@radarrEmptyHeadline": {
+    "description": "Headline of the empty library state when Radarr has no movies."
+  },
+  "radarrEmptyMessage": "Add a movie to start your library.",
+  "@radarrEmptyMessage": {
+    "description": "Hint under the empty library headline."
+  },
+  "radarrNoMatchHeadline": "No movie matches",
+  "@radarrNoMatchHeadline": {
+    "description": "Headline when the library search matches nothing."
+  },
+  "radarrNoMatchMessage": "Nothing in your library matches this search. You can look it up to add it.",
+  "@radarrNoMatchMessage": {
+    "description": "Hint under the no-match headline."
+  },
+  "radarrSearchToAdd": "Search to add",
+  "@radarrSearchToAdd": {
+    "description": "Action on the no-match state; opens the add-movie search with the typed text."
+  },
+  "radarrFilterEmptyHeadline": "Filters hide every movie",
+  "@radarrFilterEmptyHeadline": {
+    "description": "Headline when the active filters leave no movie."
+  },
+  "radarrFilterEmptyMessage": "Clear the filters to see your library again.",
+  "@radarrFilterEmptyMessage": {
+    "description": "Hint under the filter-empty headline."
+  },
+  "radarrClearFilters": "Clear filters",
+  "@radarrClearFilters": {
+    "description": "Action that removes all active filters."
+  },
+  "radarrSearchHint": "Search your library",
+  "@radarrSearchHint": {
+    "description": "Hint of the library search field."
+  },
+  "radarrClearSearch": "Clear search",
+  "@radarrClearSearch": {
+    "description": "Accessible name of the button that clears the library search."
+  },
+  "radarrSortAction": "Sort",
+  "@radarrSortAction": {
+    "description": "Tooltip of the sort button."
+  },
+  "radarrFilterAction": "Filter",
+  "@radarrFilterAction": {
+    "description": "Tooltip of the filter button when no filter is active."
+  },
+  "radarrFilterActive": "{count, plural, =1{Filter, 1 active} other{Filter, {count} active}}",
+  "@radarrFilterActive": {
+    "description": "Tooltip of the filter button when filters are active.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of active filters."
+      }
+    }
+  },
+  "radarrSwitchToList": "Show as list",
+  "@radarrSwitchToList": {
+    "description": "Tooltip of the button that switches the library to list mode."
+  },
+  "radarrSwitchToGrid": "Show as grid",
+  "@radarrSwitchToGrid": {
+    "description": "Tooltip of the button that switches the library to grid mode."
+  },
+  "radarrJumpAction": "Jump to",
+  "@radarrJumpAction": {
+    "description": "Tooltip of the jump control that scrolls to a group."
+  },
+  "radarrJumpTitle": "Jump to",
+  "@radarrJumpTitle": {
+    "description": "Title of the jump sheet."
+  },
+  "radarrSortSheetTitle": "Sort movies",
+  "@radarrSortSheetTitle": {
+    "description": "Title of the sort sheet."
+  },
+  "radarrFilterSheetTitle": "Filter movies",
+  "@radarrFilterSheetTitle": {
+    "description": "Title of the filter sheet."
+  },
+  "radarrAscending": "Ascending",
+  "@radarrAscending": {
+    "description": "Sort direction option."
+  },
+  "radarrDescending": "Descending",
+  "@radarrDescending": {
+    "description": "Sort direction option."
+  },
+  "radarrSaveAsDefault": "Save as default",
+  "@radarrSaveAsDefault": {
+    "description": "Switch that stores the chosen sort or filter as the default for this list."
+  },
+  "radarrSortTitleKey": "Title",
+  "@radarrSortTitleKey": {
+    "description": "Sort key: movie title."
+  },
+  "radarrSortYear": "Year",
+  "@radarrSortYear": {
+    "description": "Sort key: release year."
+  },
+  "radarrSortAdded": "Date added",
+  "@radarrSortAdded": {
+    "description": "Sort key: when the movie was added."
+  },
+  "radarrSortDownloaded": "Download date",
+  "@radarrSortDownloaded": {
+    "description": "Sort key: when the file was imported."
+  },
+  "radarrSortTheatrical": "Theatrical release",
+  "@radarrSortTheatrical": {
+    "description": "Sort key: cinema release date."
+  },
+  "radarrSortDigital": "Digital release",
+  "@radarrSortDigital": {
+    "description": "Sort key: digital release date."
+  },
+  "radarrSortSize": "Size",
+  "@radarrSortSize": {
+    "description": "Sort key: size on disk."
+  },
+  "radarrSortRating": "Rating",
+  "@radarrSortRating": {
+    "description": "Sort key: rating."
+  },
+  "radarrSortPopularity": "Popularity",
+  "@radarrSortPopularity": {
+    "description": "Sort key: popularity."
+  },
+  "radarrSortProfile": "Quality profile",
+  "@radarrSortProfile": {
+    "description": "Sort key: quality profile name."
+  },
+  "radarrSortGenre": "Genre",
+  "@radarrSortGenre": {
+    "description": "Sort key: first genre."
+  },
+  "radarrFilterMonitored": "Monitoring",
+  "@radarrFilterMonitored": {
+    "description": "Filter section: monitored or not."
+  },
+  "radarrFilterFile": "File",
+  "@radarrFilterFile": {
+    "description": "Filter section: downloaded or missing."
+  },
+  "radarrFilterAvailability": "Minimum availability",
+  "@radarrFilterAvailability": {
+    "description": "Filter section: minimum availability."
+  },
+  "radarrFilterProfile": "Quality profile",
+  "@radarrFilterProfile": {
+    "description": "Filter section: quality profile."
+  },
+  "radarrFilterTags": "Tags",
+  "@radarrFilterTags": {
+    "description": "Filter section: tags."
+  },
+  "radarrFilterCollection": "Collection",
+  "@radarrFilterCollection": {
+    "description": "Filter section: collection."
+  },
+  "radarrMonitored": "Monitored",
+  "@radarrMonitored": {
+    "description": "Badge and option: the movie is monitored."
+  },
+  "radarrUnmonitored": "Unmonitored",
+  "@radarrUnmonitored": {
+    "description": "Badge and option: the movie is not monitored."
+  },
+  "radarrDownloaded": "Downloaded",
+  "@radarrDownloaded": {
+    "description": "Badge: the movie has a file."
+  },
+  "radarrMissing": "Missing",
+  "@radarrMissing": {
+    "description": "Badge: the movie has no file."
+  },
+  "radarrMovieSemantics": "{title}, {details}",
+  "@radarrMovieSemantics": {
+    "description": "Screen reader label of a movie tile.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Movie title."
+      },
+      "details": {
+        "type": "String",
+        "description": "Status details such as downloaded, monitored and availability."
+      }
+    }
+  },
+  "radarrAvailabilityUnannounced": "Unannounced",
+  "@radarrAvailabilityUnannounced": {
+    "description": "Availability: no release date is known."
+  },
+  "radarrAvailabilityComingSoon": "Coming soon",
+  "@radarrAvailabilityComingSoon": {
+    "description": "Availability: a release date is known and still ahead."
+  },
+  "radarrAvailabilityInCinemas": "In cinemas",
+  "@radarrAvailabilityInCinemas": {
+    "description": "Availability: released in cinemas."
+  },
+  "radarrAvailabilityDigital": "Released digitally",
+  "@radarrAvailabilityDigital": {
+    "description": "Availability: released digitally."
+  },
+  "radarrAvailabilityPhysical": "Released on disc",
+  "@radarrAvailabilityPhysical": {
+    "description": "Availability: released on physical media."
+  },
+  "radarrAvailabilityOn": "{availability}, {date}",
+  "@radarrAvailabilityOn": {
+    "description": "Availability banner text with its date.",
+    "placeholders": {
+      "availability": {
+        "type": "String",
+        "description": "Availability label."
+      },
+      "date": {
+        "type": "DateTime",
+        "description": "Release date.",
+        "format": "yMMMd"
+      }
+    }
+  },
+  "radarrMinAnnounced": "Announced",
+  "@radarrMinAnnounced": {
+    "description": "Minimum availability option: as soon as announced."
+  },
+  "radarrMinInCinemas": "In cinemas",
+  "@radarrMinInCinemas": {
+    "description": "Minimum availability option: when in cinemas."
+  },
+  "radarrMinReleased": "Released",
+  "@radarrMinReleased": {
+    "description": "Minimum availability option: when released on disc or digitally."
+  },
+  "radarrMinUnknown": "Unknown",
+  "@radarrMinUnknown": {
+    "description": "Minimum availability when the server did not say."
+  },
+  "radarrDetailTitle": "Movie",
+  "@radarrDetailTitle": {
+    "description": "Title of the movie detail screen while it loads."
+  },
+  "radarrGoneHeadline": "This movie no longer exists",
+  "@radarrGoneHeadline": {
+    "description": "Headline of the detail state for a movie that was deleted."
+  },
+  "radarrGoneMessage": "It was removed from Radarr. Go back to your library.",
+  "@radarrGoneMessage": {
+    "description": "Hint under the no-longer-exists headline."
+  },
+  "radarrRuntime": "{minutes} min",
+  "@radarrRuntime": {
+    "description": "Movie runtime in minutes.",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "description": "Minutes."
+      }
+    }
+  },
+  "radarrRating": "{rating}",
+  "@radarrRating": {
+    "description": "Movie rating out of ten.",
+    "placeholders": {
+      "rating": {
+        "type": "double",
+        "description": "Rating.",
+        "format": "decimalPatternDigits",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "radarrOverview": "Overview",
+  "@radarrOverview": {
+    "description": "Section title: movie overview."
+  },
+  "radarrFileSection": "File",
+  "@radarrFileSection": {
+    "description": "Section title: file information."
+  },
+  "radarrDetailsSection": "Details",
+  "@radarrDetailsSection": {
+    "description": "Section title: movie details."
+  },
+  "radarrNoFile": "No file yet. Search for a release to download it.",
+  "@radarrNoFile": {
+    "description": "File section text when the movie has no file."
+  },
+  "radarrImportedOn": "Imported {date}",
+  "@radarrImportedOn": {
+    "description": "File import date.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "description": "Import date.",
+        "format": "yMMMd"
+      }
+    }
+  },
+  "radarrQualityProfile": "Quality profile",
+  "@radarrQualityProfile": {
+    "description": "Label of the quality profile field."
+  },
+  "radarrMinimumAvailability": "Minimum availability",
+  "@radarrMinimumAvailability": {
+    "description": "Label of the minimum availability field."
+  },
+  "radarrGenres": "Genres",
+  "@radarrGenres": {
+    "description": "Label of the genres line."
+  },
+  "radarrInCollection": "Part of the collection {collection}",
+  "@radarrInCollection": {
+    "description": "Plain text line naming the collection the movie belongs to.",
+    "placeholders": {
+      "collection": {
+        "type": "String",
+        "description": "Collection name."
+      }
+    }
+  },
+  "radarrTrailer": "Trailer",
+  "@radarrTrailer": {
+    "description": "Section title: trailer link."
+  },
+  "radarrCopyTrailer": "Copy trailer link",
+  "@radarrCopyTrailer": {
+    "description": "Tooltip of the button that copies the trailer link."
+  },
+  "radarrTrailerCopied": "Trailer link copied",
+  "@radarrTrailerCopied": {
+    "description": "Confirmation after copying the trailer link."
+  },
+  "radarrEdit": "Edit",
+  "@radarrEdit": {
+    "description": "Label of the edit button."
+  },
+  "radarrEditTitle": "Edit movie",
+  "@radarrEditTitle": {
+    "description": "Title of the edit sheet."
+  },
+  "radarrTags": "Tags",
+  "@radarrTags": {
+    "description": "Label of the tags group."
+  },
+  "radarrSearchMovie": "Search",
+  "@radarrSearchMovie": {
+    "description": "Label of the automatic search button."
+  },
+  "radarrSearchMovieNamed": "Search for {title}",
+  "@radarrSearchMovieNamed": {
+    "description": "Accessible name of the per-row search button.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Movie title."
+      }
+    }
+  },
+  "radarrInteractiveSearch": "Choose release",
+  "@radarrInteractiveSearch": {
+    "description": "Label of the button that opens the interactive release search."
+  },
+  "radarrSearchStarting": "Starting search…",
+  "@radarrSearchStarting": {
+    "description": "Search progress: the command is being sent."
+  },
+  "radarrSearchQueued": "Search queued",
+  "@radarrSearchQueued": {
+    "description": "Search progress: the server queued the search."
+  },
+  "radarrSearchRunning": "Searching indexers…",
+  "@radarrSearchRunning": {
+    "description": "Search progress: the search is running."
+  },
+  "radarrSearchDone": "Search finished",
+  "@radarrSearchDone": {
+    "description": "Search progress: finished."
+  },
+  "radarrSearchFailed": "Search failed",
+  "@radarrSearchFailed": {
+    "description": "Search progress: failed."
+  },
+  "radarrReleasesTitle": "Choose a release",
+  "@radarrReleasesTitle": {
+    "description": "Title of the release sheet."
+  },
+  "radarrReleaseSearchHint": "Filter releases",
+  "@radarrReleaseSearchHint": {
+    "description": "Hint of the release filter field."
+  },
+  "radarrReleaseSortAction": "Sort releases",
+  "@radarrReleaseSortAction": {
+    "description": "Tooltip of the release sort menu."
+  },
+  "radarrReleaseSortedBy": "Sorted by {key}",
+  "@radarrReleaseSortedBy": {
+    "description": "Label of the release sort chip.",
+    "placeholders": {
+      "key": {
+        "type": "String",
+        "description": "Sort key name."
+      }
+    }
+  },
+  "radarrReleaseSortBest": "Best match",
+  "@radarrReleaseSortBest": {
+    "description": "Release sort key."
+  },
+  "radarrReleaseSortAge": "Age",
+  "@radarrReleaseSortAge": {
+    "description": "Release sort key."
+  },
+  "radarrReleaseSortSize": "Size",
+  "@radarrReleaseSortSize": {
+    "description": "Release sort key."
+  },
+  "radarrReleaseSortSeeders": "Seeders",
+  "@radarrReleaseSortSeeders": {
+    "description": "Release sort key."
+  },
+  "radarrReleaseSortIndexer": "Indexer",
+  "@radarrReleaseSortIndexer": {
+    "description": "Release sort key."
+  },
+  "radarrReleaseSortQuality": "Quality",
+  "@radarrReleaseSortQuality": {
+    "description": "Release sort key."
+  },
+  "radarrReleaseAll": "All",
+  "@radarrReleaseAll": {
+    "description": "Release filter: every release."
+  },
+  "radarrReleaseAccepted": "Accepted",
+  "@radarrReleaseAccepted": {
+    "description": "Release filter: accepted releases."
+  },
+  "radarrReleaseRejected": "Rejected",
+  "@radarrReleaseRejected": {
+    "description": "Release filter: rejected releases."
+  },
+  "radarrProtocolTorrent": "Torrent",
+  "@radarrProtocolTorrent": {
+    "description": "Release protocol filter."
+  },
+  "radarrProtocolUsenet": "Usenet",
+  "@radarrProtocolUsenet": {
+    "description": "Release protocol filter."
+  },
+  "radarrResolution": "{resolution}p",
+  "@radarrResolution": {
+    "description": "Resolution filter chip.",
+    "placeholders": {
+      "resolution": {
+        "type": "int",
+        "description": "Vertical resolution."
+      }
+    }
+  },
+  "radarrSearchingReleases": "Searching indexers",
+  "@radarrSearchingReleases": {
+    "description": "Accessible label of the release search skeleton."
+  },
+  "radarrNoReleasesHeadline": "No releases found",
+  "@radarrNoReleasesHeadline": {
+    "description": "Headline when the indexers found nothing."
+  },
+  "radarrNoReleasesMessage": "No indexer returned a release for this movie.",
+  "@radarrNoReleasesMessage": {
+    "description": "Hint under the no-releases headline."
+  },
+  "radarrNoReleaseMatchHeadline": "No release matches",
+  "@radarrNoReleaseMatchHeadline": {
+    "description": "Headline when release filters leave nothing."
+  },
+  "radarrNoReleaseMatchMessage": "Clear the filters to see every release.",
+  "@radarrNoReleaseMatchMessage": {
+    "description": "Hint under the no-match headline of the release sheet."
+  },
+  "radarrRejectedChip": "Rejected",
+  "@radarrRejectedChip": {
+    "description": "Chip on a rejected release."
+  },
+  "radarrRejectionReasons": "Why it was rejected",
+  "@radarrRejectionReasons": {
+    "description": "Heading of the rejection reasons."
+  },
+  "radarrCustomFormats": "Custom formats",
+  "@radarrCustomFormats": {
+    "description": "Heading of the custom formats list."
+  },
+  "radarrExpand": "Details",
+  "@radarrExpand": {
+    "description": "Button that expands a release row."
+  },
+  "radarrCollapse": "Hide details",
+  "@radarrCollapse": {
+    "description": "Button that collapses a release row."
+  },
+  "radarrDownload": "Download",
+  "@radarrDownload": {
+    "description": "Button that sends a release to the download client."
+  },
+  "radarrGrabbing": "Sending…",
+  "@radarrGrabbing": {
+    "description": "Button label while the release is being sent."
+  },
+  "radarrGrabbed": "Sent",
+  "@radarrGrabbed": {
+    "description": "Button label after the release was sent."
+  },
+  "radarrGrabFailedRetry": "Try again",
+  "@radarrGrabFailedRetry": {
+    "description": "Button label after a failed send."
+  },
+  "radarrGrabFailed": "Could not send this release to the download client.",
+  "@radarrGrabFailed": {
+    "description": "Message under a release whose grab failed."
+  },
+  "radarrRejectedGrabTitle": "Download a rejected release?",
+  "@radarrRejectedGrabTitle": {
+    "description": "Title of the confirmation for grabbing a rejected release."
+  },
+  "radarrRejectedGrabMessage": "Radarr rejected this release for the reasons below. It may be the wrong movie, quality or language.",
+  "@radarrRejectedGrabMessage": {
+    "description": "Warning in the rejected-release confirmation; reasons follow."
+  },
+  "radarrGrabAnyway": "Download anyway",
+  "@radarrGrabAnyway": {
+    "description": "Confirm button of the rejected-release dialog."
+  },
+  "radarrSeeders": "{count, plural, =1{1 seeder} other{{count} seeders}}",
+  "@radarrSeeders": {
+    "description": "Seeder count of a release.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Seeders."
+      }
+    }
+  },
+  "radarrReleaseAgeHours": "{hours, plural, =1{1 hour old} other{{hours} hours old}}",
+  "@radarrReleaseAgeHours": {
+    "description": "Age of a release in hours.",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "description": "Hours."
+      }
+    }
+  },
+  "radarrReleaseAgeDays": "{days, plural, =1{1 day old} other{{days} days old}}",
+  "@radarrReleaseAgeDays": {
+    "description": "Age of a release in days.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days."
+      }
+    }
+  },
+  "radarrTypeCinema": "Cinema",
+  "@radarrTypeCinema": {
+    "description": "Release type: cinema."
+  },
+  "radarrTypeDigital": "Digital",
+  "@radarrTypeDigital": {
+    "description": "Release type: digital."
+  },
+  "radarrTypePhysical": "Disc",
+  "@radarrTypePhysical": {
+    "description": "Release type: physical media."
+  },
+  "radarrCalendarEmptyHeadline": "No releases in this period",
+  "@radarrCalendarEmptyHeadline": {
+    "description": "Headline of the empty calendar."
+  },
+  "radarrCalendarEmptyMessage": "No movie has a release date in this range for the selected types.",
+  "@radarrCalendarEmptyMessage": {
+    "description": "Hint under the empty calendar headline."
+  },
+  "radarrCalendarDay": "{date}",
+  "@radarrCalendarDay": {
+    "description": "Day header of the calendar.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "description": "The day.",
+        "format": "yMMMEd"
+      }
+    }
+  },
+  "radarrCalendarToday": "Today, {date}",
+  "@radarrCalendarToday": {
+    "description": "Day header of today in the calendar.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "description": "The day.",
+        "format": "yMMMEd"
+      }
+    }
+  },
+  "radarrCalendarSemantics": "{title}, {type} release",
+  "@radarrCalendarSemantics": {
+    "description": "Screen reader label of a calendar row.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Movie title."
+      },
+      "type": {
+        "type": "String",
+        "description": "Release type."
+      }
+    }
+  },
+  "radarrQueueEmptyHeadline": "Nothing is downloading",
+  "@radarrQueueEmptyHeadline": {
+    "description": "Headline of the empty queue."
+  },
+  "radarrQueueEmptyMessage": "Movies you grab will appear here while they download.",
+  "@radarrQueueEmptyMessage": {
+    "description": "Hint under the empty queue headline."
+  },
+  "radarrQueueUnknownRelease": "Unknown release",
+  "@radarrQueueUnknownRelease": {
+    "description": "Title of a queue row whose release name is missing."
+  },
+  "radarrQueueDownloading": "Downloading",
+  "@radarrQueueDownloading": {
+    "description": "Queue state."
+  },
+  "radarrQueuePaused": "Paused",
+  "@radarrQueuePaused": {
+    "description": "Queue state."
+  },
+  "radarrQueueQueued": "Queued",
+  "@radarrQueueQueued": {
+    "description": "Queue state."
+  },
+  "radarrQueueDelayed": "Delayed",
+  "@radarrQueueDelayed": {
+    "description": "Queue state."
+  },
+  "radarrQueueCompleted": "Completed",
+  "@radarrQueueCompleted": {
+    "description": "Queue state."
+  },
+  "radarrQueueImportPending": "Import pending",
+  "@radarrQueueImportPending": {
+    "description": "Queue state."
+  },
+  "radarrQueueImportBlocked": "Import blocked",
+  "@radarrQueueImportBlocked": {
+    "description": "Queue state."
+  },
+  "radarrQueueImportFailed": "Import failed",
+  "@radarrQueueImportFailed": {
+    "description": "Queue state."
+  },
+  "radarrQueueFailed": "Download failed",
+  "@radarrQueueFailed": {
+    "description": "Queue state."
+  },
+  "radarrQueueClientUnavailable": "Download client unavailable",
+  "@radarrQueueClientUnavailable": {
+    "description": "Queue state."
+  },
+  "radarrQueueWarning": "Warning",
+  "@radarrQueueWarning": {
+    "description": "Queue state."
+  },
+  "radarrQueueMessages": "{count, plural, =1{1 message} other{{count} messages}}",
+  "@radarrQueueMessages": {
+    "description": "Chip that expands the messages of a queue item.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Messages."
+      }
+    }
+  },
+  "radarrTimeLeftHours": "{hours} h {minutes} min left",
+  "@radarrTimeLeftHours": {
+    "description": "Time left, hours and minutes.",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "description": "Hours."
+      },
+      "minutes": {
+        "type": "int",
+        "description": "Minutes."
+      }
+    }
+  },
+  "radarrTimeLeftMinutes": "{minutes} min left",
+  "@radarrTimeLeftMinutes": {
+    "description": "Time left, minutes.",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "description": "Minutes."
+      }
+    }
+  },
+  "radarrTimeLeftSeconds": "{seconds} s left",
+  "@radarrTimeLeftSeconds": {
+    "description": "Time left, seconds.",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "description": "Seconds."
+      }
+    }
+  },
+  "radarrQueueSemantics": "{title}, {state}, {percent} percent",
+  "@radarrQueueSemantics": {
+    "description": "Screen reader label of a queue row.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Release name."
+      },
+      "state": {
+        "type": "String",
+        "description": "State."
+      },
+      "percent": {
+        "type": "int",
+        "description": "Percent."
+      }
+    }
+  },
+  "radarrQueueRemove": "Remove",
+  "@radarrQueueRemove": {
+    "description": "Button that opens the removal dialog of a queue item."
+  },
+  "radarrQueueRemoved": "Removed from the queue",
+  "@radarrQueueRemoved": {
+    "description": "Confirmation after removing a queue item."
+  },
+  "radarrQueueRemoveFailed": "Could not remove the item.",
+  "@radarrQueueRemoveFailed": {
+    "description": "Message when removal fails; the reason follows."
+  },
+  "radarrRemoveTitle": "Remove from queue",
+  "@radarrRemoveTitle": {
+    "description": "Title of the removal dialog."
+  },
+  "radarrRemoveFromClient": "Remove from the download client",
+  "@radarrRemoveFromClient": {
+    "description": "Removal choice."
+  },
+  "radarrRemoveOnlyRadarr": "Only remove from Radarr",
+  "@radarrRemoveOnlyRadarr": {
+    "description": "Removal choice."
+  },
+  "radarrBlocklistNone": "Do not blocklist",
+  "@radarrBlocklistNone": {
+    "description": "Blocklist choice."
+  },
+  "radarrBlocklistAndSearch": "Blocklist and search again",
+  "@radarrBlocklistAndSearch": {
+    "description": "Blocklist choice."
+  },
+  "radarrBlocklistOnly": "Blocklist only",
+  "@radarrBlocklistOnly": {
+    "description": "Blocklist choice."
+  },
+  "radarrRemoveConsequenceClient": "The download and its files are deleted from the download client.",
+  "@radarrRemoveConsequenceClient": {
+    "description": "Consequence text of the removal dialog."
+  },
+  "radarrRemoveConsequenceKeep": "The download stays in the download client and keeps running there.",
+  "@radarrRemoveConsequenceKeep": {
+    "description": "Consequence text of the removal dialog."
+  },
+  "radarrRemoveConsequenceNoBlocklist": "The release can be picked again.",
+  "@radarrRemoveConsequenceNoBlocklist": {
+    "description": "Consequence text of the removal dialog."
+  },
+  "radarrRemoveConsequenceBlocklistSearch": "The release is blocked and Radarr searches for another one.",
+  "@radarrRemoveConsequenceBlocklistSearch": {
+    "description": "Consequence text of the removal dialog."
+  },
+  "radarrRemoveConsequenceBlocklistOnly": "The release is blocked and no new search starts.",
+  "@radarrRemoveConsequenceBlocklistOnly": {
+    "description": "Consequence text of the removal dialog."
+  },
+  "radarrRemoveConfirm": "Remove",
+  "@radarrRemoveConfirm": {
+    "description": "Confirm button of the removal dialog."
+  },
+  "radarrScopeReleased": "Released",
+  "@radarrScopeReleased": {
+    "description": "Wanted scope: released and missing."
+  },
+  "radarrScopeUpcoming": "Upcoming",
+  "@radarrScopeUpcoming": {
+    "description": "Wanted scope: not released yet."
+  },
+  "radarrScopeAll": "All missing",
+  "@radarrScopeAll": {
+    "description": "Wanted scope: every missing movie."
+  },
+  "radarrMissingEmptyHeadline": "Nothing is missing",
+  "@radarrMissingEmptyHeadline": {
+    "description": "Headline when no released movie is missing."
+  },
+  "radarrMissingEmptyMessage": "Every monitored movie in this list has a file.",
+  "@radarrMissingEmptyMessage": {
+    "description": "Hint under the nothing-missing headline."
+  },
+  "radarrUpcomingEmptyHeadline": "No upcoming movies",
+  "@radarrUpcomingEmptyHeadline": {
+    "description": "Headline when no monitored movie is upcoming."
+  },
+  "radarrUpcomingEmptyMessage": "Monitored movies that are not released yet will show up here.",
+  "@radarrUpcomingEmptyMessage": {
+    "description": "Hint under the no-upcoming headline."
+  },
+  "radarrMissingRowSemantics": "{title}, {details}",
+  "@radarrMissingRowSemantics": {
+    "description": "Screen reader label of a missing row.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Movie title."
+      },
+      "details": {
+        "type": "String",
+        "description": "Availability and search state."
+      }
+    }
+  },
+  "radarrSearchAllMissing": "Search all missing",
+  "@radarrSearchAllMissing": {
+    "description": "Button that searches every missing movie."
+  },
+  "radarrSearchAllTitle": "Search for all missing movies?",
+  "@radarrSearchAllTitle": {
+    "description": "Title of the search-all confirmation."
+  },
+  "radarrSearchAllWarning": "Radarr will query your indexers for every missing movie. With a large library this can use many indexer requests and may get you rate limited or banned.",
+  "@radarrSearchAllWarning": {
+    "description": "Warning about indexer load in the search-all confirmation."
+  },
+  "radarrSearchAllConfirm": "Search all",
+  "@radarrSearchAllConfirm": {
+    "description": "Confirm button of the search-all dialog."
+  },
+  "radarrSearchAllRunning": "Searching for all missing movies…",
+  "@radarrSearchAllRunning": {
+    "description": "Progress of the search-all command."
+  },
+  "radarrSearchAllDone": "Search for all missing movies finished",
+  "@radarrSearchAllDone": {
+    "description": "Result of the search-all command."
+  },
+  "radarrAddSearchHint": "Title, tmdb:ID or imdb:ID",
+  "@radarrAddSearchHint": {
+    "description": "Hint of the add-movie search field."
+  },
+  "radarrAddIdleHeadline": "Find a movie",
+  "@radarrAddIdleHeadline": {
+    "description": "Headline of the add screen before a search."
+  },
+  "radarrAddIdleMessage": "Search by title, or paste a TMDB or IMDb id like tmdb:603.",
+  "@radarrAddIdleMessage": {
+    "description": "Hint of the add screen before a search."
+  },
+  "radarrSearching": "Searching",
+  "@radarrSearching": {
+    "description": "Accessible label of the lookup skeleton."
+  },
+  "radarrAddNoResultsHeadline": "No movies found",
+  "@radarrAddNoResultsHeadline": {
+    "description": "Headline of an empty lookup."
+  },
+  "radarrAddNoResultsMessage": "Check the spelling or try an external id.",
+  "@radarrAddNoResultsMessage": {
+    "description": "Hint of an empty lookup."
+  },
+  "radarrInLibrary": "In library",
+  "@radarrInLibrary": {
+    "description": "Marker on a lookup result already in the library."
+  },
+  "radarrAddRowInLibrary": "{title}, already in your library",
+  "@radarrAddRowInLibrary": {
+    "description": "Screen reader label of a lookup result in the library.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Movie title."
+      }
+    }
+  },
+  "radarrAddRowSemantics": "{title}, tap to add",
+  "@radarrAddRowSemantics": {
+    "description": "Screen reader label of a lookup result.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Movie title."
+      }
+    }
+  },
+  "radarrAddOptionsTitle": "Add options",
+  "@radarrAddOptionsTitle": {
+    "description": "Title of the add options sheet."
+  },
+  "radarrAddNeedsSetup": "Radarr needs a quality profile and a root folder before you can add movies.",
+  "@radarrAddNeedsSetup": {
+    "description": "Shown when the server has no profiles or root folders."
+  },
+  "radarrRootFolder": "Root folder",
+  "@radarrRootFolder": {
+    "description": "Label of the root folder field."
+  },
+  "radarrSearchAfterAdd": "Search for the movie after adding",
+  "@radarrSearchAfterAdd": {
+    "description": "Switch: start a search after adding."
+  },
+  "radarrAddCollection": "Also add the rest of the collection",
+  "@radarrAddCollection": {
+    "description": "Switch: add the other movies of the collection."
+  },
+  "radarrAddCollectionHint": "Adds the other movies of {collection} as monitored.",
+  "@radarrAddCollectionHint": {
+    "description": "Hint under the collection switch.",
+    "placeholders": {
+      "collection": {
+        "type": "String",
+        "description": "Collection name."
+      }
+    }
+  },
+  "radarrAddAndSearch": "Add and search",
+  "@radarrAddAndSearch": {
+    "description": "Submit button when search after add is on."
+  },
+  "radarrAdding": "Adding…",
+  "@radarrAdding": {
+    "description": "Submit button while adding."
+  },
+  "radarrAddSuccess": "Movie added",
+  "@radarrAddSuccess": {
+    "description": "Confirmation after adding a movie."
+  },
+  "radarrAddFailed": "Could not add the movie.",
+  "@radarrAddFailed": {
+    "description": "Message when adding fails; the reason follows."
+  }
+}

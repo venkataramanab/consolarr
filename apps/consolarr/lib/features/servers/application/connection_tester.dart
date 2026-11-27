@@ -28,6 +28,16 @@ Future<ConnectionTestOutcome> _probeSonarr(
   ).systemStatus()).map((s) => (s.version, s.majorVersion)),
 );
 
+Future<ConnectionTestOutcome> _probeRadarr(
+  Dio dio,
+  ServerProfile profile,
+  ServerCredentials credentials,
+) async => _fromResult(
+  (await RadarrClient(
+    dio: dio,
+  ).systemStatus()).map((s) => (s.version, s.majorVersion)),
+);
+
 Future<ConnectionTestOutcome> _probeQBittorrent(
   Dio dio,
   ServerProfile profile,
@@ -45,8 +55,9 @@ Future<ConnectionTestOutcome> _probeQBittorrent(
 /// kind is never reported as something it is not.
 final Map<ServiceKind, ConnectionProbe> connectionProbes = {
   ServiceKind.sonarr: _probeSonarr,
+  ServiceKind.radarr: _probeRadarr,
   ServiceKind.qbittorrent: _probeQBittorrent,
-  // ServiceKind.radarr: (W4 Radarr), ServiceKind.transmission and
+  // ServiceKind.transmission and
   // ServiceKind.deluge: (W4 Torrents).
 };
 

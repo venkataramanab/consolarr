@@ -1,0 +1,1161 @@
+{
+  "@@locale": "ar",
+  "navRadarr": "الأفلام",
+  "@navRadarr": {
+    "description": "Label of the Radarr tab in the bottom navigation bar."
+  },
+  "radarrKindDescription": "الأفلام: المكتبة والتقويم والطابور وعمليات البحث.",
+  "@radarrKindDescription": {
+    "description": "Short description of the Radarr service type in the server editor."
+  },
+  "radarrTitle": "الأفلام",
+  "@radarrTitle": {
+    "description": "Title of the Radarr screen and its floating top bar."
+  },
+  "radarrTabLibrary": "المكتبة",
+  "@radarrTabLibrary": {
+    "description": "Sub-navigation tab that shows the movie library."
+  },
+  "radarrTabCalendar": "التقويم",
+  "@radarrTabCalendar": {
+    "description": "Sub-navigation tab that shows movie release dates."
+  },
+  "radarrTabQueue": "الطابور",
+  "@radarrTabQueue": {
+    "description": "Sub-navigation tab that shows active downloads."
+  },
+  "radarrTabMissing": "المفقودة",
+  "@radarrTabMissing": {
+    "description": "Sub-navigation tab that shows missing and upcoming movies."
+  },
+  "radarrLoadingLabel": "جارٍ تحميل الأفلام",
+  "@radarrLoadingLabel": {
+    "description": "Accessible label of the skeleton shown while Radarr data loads."
+  },
+  "radarrRetry": "حاول مجددًا",
+  "@radarrRetry": {
+    "description": "Label of the retry button on error and offline states of the movie screens."
+  },
+  "radarrCancel": "إلغاء",
+  "@radarrCancel": {
+    "description": "Label of the button that dismisses a Radarr dialog without acting."
+  },
+  "radarrClose": "إغلاق",
+  "@radarrClose": {
+    "description": "Label of the close button of Radarr sheets."
+  },
+  "radarrBack": "رجوع",
+  "@radarrBack": {
+    "description": "Action on the no-longer-exists state of the movie detail; closes the screen."
+  },
+  "radarrApply": "تطبيق",
+  "@radarrApply": {
+    "description": "Label of the button that applies the chosen sort or filter."
+  },
+  "radarrSave": "حفظ",
+  "@radarrSave": {
+    "description": "Label of the button that saves edits to a movie."
+  },
+  "radarrSaving": "جارٍ الحفظ…",
+  "@radarrSaving": {
+    "description": "Label of the save button while the changes are being sent to the server."
+  },
+  "radarrSaveFailed": "تعذّر حفظ التغييرات.",
+  "@radarrSaveFailed": {
+    "description": "Message shown in the edit sheet when saving fails; the reason follows."
+  },
+  "radarrOpenServers": "تحقق من إعدادات الخادم",
+  "@radarrOpenServers": {
+    "description": "Secondary action on errors that are fixed in the server settings."
+  },
+  "radarrErrorTitle": "تعذّر تحميل أفلامك",
+  "@radarrErrorTitle": {
+    "description": "Headline of the Radarr error state for connection and server problems."
+  },
+  "radarrErrorVersionTitle": "إصدار Radarr غير مدعوم",
+  "@radarrErrorVersionTitle": {
+    "description": "Headline of the error state when the Radarr version is too old."
+  },
+  "radarrNoServerHeadline": "لا يوجد خادم Radarr",
+  "@radarrNoServerHeadline": {
+    "description": "Headline shown when no Radarr server has been added."
+  },
+  "radarrNoServerMessage": "أضف خادم Radarr لتصفّح أفلامك.",
+  "@radarrNoServerMessage": {
+    "description": "Hint under the no-server headline."
+  },
+  "radarrNoServerAction": "إضافة خادم",
+  "@radarrNoServerAction": {
+    "description": "Primary action of the no-server state; opens the servers screen."
+  },
+  "radarrOfflineMessage": "يتم عرض بيانات محفوظة. التعديلات معطّلة حتى يصبح الخادم متاحًا.",
+  "@radarrOfflineMessage": {
+    "description": "Message of the offline banner above cached Radarr data; explains that writes are disabled."
+  },
+  "radarrUpdatedAgo": "حُدّث {age}",
+  "@radarrUpdatedAgo": {
+    "description": "Age line of the offline banner, for example \"Updated 5 minutes ago\".",
+    "placeholders": {
+      "age": {
+        "type": "String",
+        "description": "Relative age such as \"5 minutes ago\"."
+      }
+    }
+  },
+  "radarrAgeJustNow": "الآن",
+  "@radarrAgeJustNow": {
+    "description": "Relative age used when cached data is less than a minute old."
+  },
+  "radarrAgeMinutes": "{count, plural, =1{قبل دقيقة} =2{قبل دقيقتين} few{قبل {count} دقائق} other{قبل {count} دقيقة}}",
+  "@radarrAgeMinutes": {
+    "description": "Relative age in minutes for the offline banner.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole minutes."
+      }
+    }
+  },
+  "radarrAgeHours": "{count, plural, =1{قبل ساعة} =2{قبل ساعتين} few{قبل {count} ساعات} other{قبل {count} ساعة}}",
+  "@radarrAgeHours": {
+    "description": "Relative age in hours for the offline banner.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole hours."
+      }
+    }
+  },
+  "radarrAgeDays": "{count, plural, =1{قبل يوم} =2{قبل يومين} few{قبل {count} أيام} other{قبل {count} يومًا}}",
+  "@radarrAgeDays": {
+    "description": "Relative age in days for the offline banner.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole days."
+      }
+    }
+  },
+  "radarrWritesDisabled": "التعديلات معطّلة بينما الخادم غير متاح.",
+  "@radarrWritesDisabled": {
+    "description": "Explains why edit, search and remove actions are disabled in the offline view."
+  },
+  "radarrSizeMb": "{size} ميغابايت",
+  "@radarrSizeMb": {
+    "description": "Size in megabytes.",
+    "placeholders": {
+      "size": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPatternDigits",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "radarrSizeGb": "{size} غيغابايت",
+  "@radarrSizeGb": {
+    "description": "Size in gigabytes.",
+    "placeholders": {
+      "size": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPatternDigits",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "radarrSizeTb": "{size} تيرابايت",
+  "@radarrSizeTb": {
+    "description": "Size in terabytes.",
+    "placeholders": {
+      "size": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPatternDigits",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "radarrPercent": "{percent}٪",
+  "@radarrPercent": {
+    "description": "Download progress as a percentage.",
+    "placeholders": {
+      "percent": {
+        "type": "int",
+        "description": "0 to 100."
+      }
+    }
+  },
+  "radarrAddMovie": "إضافة فيلم",
+  "@radarrAddMovie": {
+    "description": "Label of the add-movie button, screen title and submit button."
+  },
+  "radarrEmptyHeadline": "لا توجد أفلام بعد",
+  "@radarrEmptyHeadline": {
+    "description": "Headline of the empty library state when Radarr has no movies."
+  },
+  "radarrEmptyMessage": "أضف فيلمًا لبدء مكتبتك.",
+  "@radarrEmptyMessage": {
+    "description": "Hint under the empty library headline."
+  },
+  "radarrNoMatchHeadline": "لا يوجد فيلم مطابق",
+  "@radarrNoMatchHeadline": {
+    "description": "Headline when the library search matches nothing."
+  },
+  "radarrNoMatchMessage": "لا شيء في مكتبتك يطابق هذا البحث. يمكنك البحث عنه لإضافته.",
+  "@radarrNoMatchMessage": {
+    "description": "Hint under the no-match headline."
+  },
+  "radarrSearchToAdd": "ابحث لإضافته",
+  "@radarrSearchToAdd": {
+    "description": "Action on the no-match state; opens the add-movie search with the typed text."
+  },
+  "radarrFilterEmptyHeadline": "المرشحات تُخفي كل الأفلام",
+  "@radarrFilterEmptyHeadline": {
+    "description": "Headline when the active filters leave no movie."
+  },
+  "radarrFilterEmptyMessage": "امسح المرشحات لرؤية مكتبتك مجددًا.",
+  "@radarrFilterEmptyMessage": {
+    "description": "Hint under the filter-empty headline."
+  },
+  "radarrClearFilters": "مسح المرشحات",
+  "@radarrClearFilters": {
+    "description": "Action that removes all active filters."
+  },
+  "radarrSearchHint": "ابحث في مكتبتك",
+  "@radarrSearchHint": {
+    "description": "Hint of the library search field."
+  },
+  "radarrClearSearch": "مسح البحث",
+  "@radarrClearSearch": {
+    "description": "Accessible name of the button that clears the library search."
+  },
+  "radarrSortAction": "ترتيب",
+  "@radarrSortAction": {
+    "description": "Tooltip of the sort button."
+  },
+  "radarrFilterAction": "تصفية",
+  "@radarrFilterAction": {
+    "description": "Tooltip of the filter button when no filter is active."
+  },
+  "radarrFilterActive": "{count, plural, =1{تصفية، واحد مفعّل} =2{تصفية، اثنان مفعّلان} few{تصفية، {count} مفعّلة} other{تصفية، {count} مفعّلًا}}",
+  "@radarrFilterActive": {
+    "description": "Tooltip of the filter button when filters are active.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of active filters."
+      }
+    }
+  },
+  "radarrSwitchToList": "عرض كقائمة",
+  "@radarrSwitchToList": {
+    "description": "Tooltip of the button that switches the library to list mode."
+  },
+  "radarrSwitchToGrid": "عرض كشبكة",
+  "@radarrSwitchToGrid": {
+    "description": "Tooltip of the button that switches the library to grid mode."
+  },
+  "radarrJumpAction": "انتقل إلى",
+  "@radarrJumpAction": {
+    "description": "Tooltip of the jump control that scrolls to a group."
+  },
+  "radarrJumpTitle": "انتقل إلى",
+  "@radarrJumpTitle": {
+    "description": "Title of the jump sheet."
+  },
+  "radarrSortSheetTitle": "ترتيب الأفلام",
+  "@radarrSortSheetTitle": {
+    "description": "Title of the sort sheet."
+  },
+  "radarrFilterSheetTitle": "تصفية الأفلام",
+  "@radarrFilterSheetTitle": {
+    "description": "Title of the filter sheet."
+  },
+  "radarrAscending": "تصاعدي",
+  "@radarrAscending": {
+    "description": "Sort direction option."
+  },
+  "radarrDescending": "تنازلي",
+  "@radarrDescending": {
+    "description": "Sort direction option."
+  },
+  "radarrSaveAsDefault": "حفظ كافتراضي",
+  "@radarrSaveAsDefault": {
+    "description": "Switch that stores the chosen sort or filter as the default for this list."
+  },
+  "radarrSortTitleKey": "العنوان",
+  "@radarrSortTitleKey": {
+    "description": "Sort key: movie title."
+  },
+  "radarrSortYear": "السنة",
+  "@radarrSortYear": {
+    "description": "Sort key: release year."
+  },
+  "radarrSortAdded": "تاريخ الإضافة",
+  "@radarrSortAdded": {
+    "description": "Sort key: when the movie was added."
+  },
+  "radarrSortDownloaded": "تاريخ التنزيل",
+  "@radarrSortDownloaded": {
+    "description": "Sort key: when the file was imported."
+  },
+  "radarrSortTheatrical": "العرض السينمائي",
+  "@radarrSortTheatrical": {
+    "description": "Sort key: cinema release date."
+  },
+  "radarrSortDigital": "الإصدار الرقمي",
+  "@radarrSortDigital": {
+    "description": "Sort key: digital release date."
+  },
+  "radarrSortSize": "الحجم",
+  "@radarrSortSize": {
+    "description": "Sort key: size on disk."
+  },
+  "radarrSortRating": "التقييم",
+  "@radarrSortRating": {
+    "description": "Sort key: rating."
+  },
+  "radarrSortPopularity": "الشعبية",
+  "@radarrSortPopularity": {
+    "description": "Sort key: popularity."
+  },
+  "radarrSortProfile": "ملف الجودة",
+  "@radarrSortProfile": {
+    "description": "Sort key: quality profile name."
+  },
+  "radarrSortGenre": "النوع",
+  "@radarrSortGenre": {
+    "description": "Sort key: first genre."
+  },
+  "radarrFilterMonitored": "المتابعة",
+  "@radarrFilterMonitored": {
+    "description": "Filter section: monitored or not."
+  },
+  "radarrFilterFile": "الملف",
+  "@radarrFilterFile": {
+    "description": "Filter section: downloaded or missing."
+  },
+  "radarrFilterAvailability": "الحد الأدنى للتوفر",
+  "@radarrFilterAvailability": {
+    "description": "Filter section: minimum availability."
+  },
+  "radarrFilterProfile": "ملف الجودة",
+  "@radarrFilterProfile": {
+    "description": "Filter section: quality profile."
+  },
+  "radarrFilterTags": "الوسوم",
+  "@radarrFilterTags": {
+    "description": "Filter section: tags."
+  },
+  "radarrFilterCollection": "المجموعة",
+  "@radarrFilterCollection": {
+    "description": "Filter section: collection."
+  },
+  "radarrMonitored": "متابَع",
+  "@radarrMonitored": {
+    "description": "Badge and option: the movie is monitored."
+  },
+  "radarrUnmonitored": "غير متابَع",
+  "@radarrUnmonitored": {
+    "description": "Badge and option: the movie is not monitored."
+  },
+  "radarrDownloaded": "تم التنزيل",
+  "@radarrDownloaded": {
+    "description": "Badge: the movie has a file."
+  },
+  "radarrMissing": "مفقود",
+  "@radarrMissing": {
+    "description": "Badge: the movie has no file."
+  },
+  "radarrMovieSemantics": "{title}، {details}",
+  "@radarrMovieSemantics": {
+    "description": "Screen reader label of a movie tile.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Movie title."
+      },
+      "details": {
+        "type": "String",
+        "description": "Status details such as downloaded, monitored and availability."
+      }
+    }
+  },
+  "radarrAvailabilityUnannounced": "غير معلن",
+  "@radarrAvailabilityUnannounced": {
+    "description": "Availability: no release date is known."
+  },
+  "radarrAvailabilityComingSoon": "قريبًا",
+  "@radarrAvailabilityComingSoon": {
+    "description": "Availability: a release date is known and still ahead."
+  },
+  "radarrAvailabilityInCinemas": "في السينما",
+  "@radarrAvailabilityInCinemas": {
+    "description": "Availability: released in cinemas."
+  },
+  "radarrAvailabilityDigital": "صدر رقميًا",
+  "@radarrAvailabilityDigital": {
+    "description": "Availability: released digitally."
+  },
+  "radarrAvailabilityPhysical": "صدر على أقراص",
+  "@radarrAvailabilityPhysical": {
+    "description": "Availability: released on physical media."
+  },
+  "radarrAvailabilityOn": "{availability}، {date}",
+  "@radarrAvailabilityOn": {
+    "description": "Availability banner text with its date.",
+    "placeholders": {
+      "availability": {
+        "type": "String",
+        "description": "Availability label."
+      },
+      "date": {
+        "type": "DateTime",
+        "description": "Release date.",
+        "format": "yMMMd"
+      }
+    }
+  },
+  "radarrMinAnnounced": "عند الإعلان",
+  "@radarrMinAnnounced": {
+    "description": "Minimum availability option: as soon as announced."
+  },
+  "radarrMinInCinemas": "في السينما",
+  "@radarrMinInCinemas": {
+    "description": "Minimum availability option: when in cinemas."
+  },
+  "radarrMinReleased": "عند الصدور",
+  "@radarrMinReleased": {
+    "description": "Minimum availability option: when released on disc or digitally."
+  },
+  "radarrMinUnknown": "غير معروف",
+  "@radarrMinUnknown": {
+    "description": "Minimum availability when the server did not say."
+  },
+  "radarrDetailTitle": "فيلم",
+  "@radarrDetailTitle": {
+    "description": "Title of the movie detail screen while it loads."
+  },
+  "radarrGoneHeadline": "لم يعد هذا الفيلم موجودًا",
+  "@radarrGoneHeadline": {
+    "description": "Headline of the detail state for a movie that was deleted."
+  },
+  "radarrGoneMessage": "تمت إزالته من Radarr. ارجع إلى مكتبتك.",
+  "@radarrGoneMessage": {
+    "description": "Hint under the no-longer-exists headline."
+  },
+  "radarrRuntime": "{minutes} د",
+  "@radarrRuntime": {
+    "description": "Movie runtime in minutes.",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "description": "Minutes."
+      }
+    }
+  },
+  "radarrRating": "{rating}",
+  "@radarrRating": {
+    "description": "Movie rating out of ten.",
+    "placeholders": {
+      "rating": {
+        "type": "double",
+        "description": "Rating.",
+        "format": "decimalPatternDigits",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "radarrOverview": "نبذة",
+  "@radarrOverview": {
+    "description": "Section title: movie overview."
+  },
+  "radarrFileSection": "الملف",
+  "@radarrFileSection": {
+    "description": "Section title: file information."
+  },
+  "radarrDetailsSection": "التفاصيل",
+  "@radarrDetailsSection": {
+    "description": "Section title: movie details."
+  },
+  "radarrNoFile": "لا يوجد ملف بعد. ابحث عن إصدار لتنزيله.",
+  "@radarrNoFile": {
+    "description": "File section text when the movie has no file."
+  },
+  "radarrImportedOn": "استُورد {date}",
+  "@radarrImportedOn": {
+    "description": "File import date.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "description": "Import date.",
+        "format": "yMMMd"
+      }
+    }
+  },
+  "radarrQualityProfile": "ملف الجودة",
+  "@radarrQualityProfile": {
+    "description": "Label of the quality profile field."
+  },
+  "radarrMinimumAvailability": "الحد الأدنى للتوفر",
+  "@radarrMinimumAvailability": {
+    "description": "Label of the minimum availability field."
+  },
+  "radarrGenres": "الأنواع",
+  "@radarrGenres": {
+    "description": "Label of the genres line."
+  },
+  "radarrInCollection": "ضمن المجموعة {collection}",
+  "@radarrInCollection": {
+    "description": "Plain text line naming the collection the movie belongs to.",
+    "placeholders": {
+      "collection": {
+        "type": "String",
+        "description": "Collection name."
+      }
+    }
+  },
+  "radarrTrailer": "العرض الدعائي",
+  "@radarrTrailer": {
+    "description": "Section title: trailer link."
+  },
+  "radarrCopyTrailer": "نسخ رابط العرض الدعائي",
+  "@radarrCopyTrailer": {
+    "description": "Tooltip of the button that copies the trailer link."
+  },
+  "radarrTrailerCopied": "تم نسخ الرابط",
+  "@radarrTrailerCopied": {
+    "description": "Confirmation after copying the trailer link."
+  },
+  "radarrEdit": "تعديل",
+  "@radarrEdit": {
+    "description": "Label of the edit button."
+  },
+  "radarrEditTitle": "تعديل الفيلم",
+  "@radarrEditTitle": {
+    "description": "Title of the edit sheet."
+  },
+  "radarrTags": "الوسوم",
+  "@radarrTags": {
+    "description": "Label of the tags group."
+  },
+  "radarrSearchMovie": "بحث",
+  "@radarrSearchMovie": {
+    "description": "Label of the automatic search button."
+  },
+  "radarrSearchMovieNamed": "البحث عن {title}",
+  "@radarrSearchMovieNamed": {
+    "description": "Accessible name of the per-row search button.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Movie title."
+      }
+    }
+  },
+  "radarrInteractiveSearch": "اختيار إصدار",
+  "@radarrInteractiveSearch": {
+    "description": "Label of the button that opens the interactive release search."
+  },
+  "radarrSearchStarting": "جارٍ بدء البحث…",
+  "@radarrSearchStarting": {
+    "description": "Search progress: the command is being sent."
+  },
+  "radarrSearchQueued": "البحث في الانتظار",
+  "@radarrSearchQueued": {
+    "description": "Search progress: the server queued the search."
+  },
+  "radarrSearchRunning": "جارٍ البحث في المفهرسات…",
+  "@radarrSearchRunning": {
+    "description": "Search progress: the search is running."
+  },
+  "radarrSearchDone": "انتهى البحث",
+  "@radarrSearchDone": {
+    "description": "Search progress: finished."
+  },
+  "radarrSearchFailed": "فشل البحث",
+  "@radarrSearchFailed": {
+    "description": "Search progress: failed."
+  },
+  "radarrReleasesTitle": "اختيار إصدار",
+  "@radarrReleasesTitle": {
+    "description": "Title of the release sheet."
+  },
+  "radarrReleaseSearchHint": "تصفية الإصدارات",
+  "@radarrReleaseSearchHint": {
+    "description": "Hint of the release filter field."
+  },
+  "radarrReleaseSortAction": "ترتيب الإصدارات",
+  "@radarrReleaseSortAction": {
+    "description": "Tooltip of the release sort menu."
+  },
+  "radarrReleaseSortedBy": "مرتّب حسب {key}",
+  "@radarrReleaseSortedBy": {
+    "description": "Label of the release sort chip.",
+    "placeholders": {
+      "key": {
+        "type": "String",
+        "description": "Sort key name."
+      }
+    }
+  },
+  "radarrReleaseSortBest": "الأنسب",
+  "@radarrReleaseSortBest": {
+    "description": "Release sort key."
+  },
+  "radarrReleaseSortAge": "العمر",
+  "@radarrReleaseSortAge": {
+    "description": "Release sort key."
+  },
+  "radarrReleaseSortSize": "الحجم",
+  "@radarrReleaseSortSize": {
+    "description": "Release sort key."
+  },
+  "radarrReleaseSortSeeders": "المصدّرون",
+  "@radarrReleaseSortSeeders": {
+    "description": "Release sort key."
+  },
+  "radarrReleaseSortIndexer": "المفهرس",
+  "@radarrReleaseSortIndexer": {
+    "description": "Release sort key."
+  },
+  "radarrReleaseSortQuality": "الجودة",
+  "@radarrReleaseSortQuality": {
+    "description": "Release sort key."
+  },
+  "radarrReleaseAll": "الكل",
+  "@radarrReleaseAll": {
+    "description": "Release filter: every release."
+  },
+  "radarrReleaseAccepted": "المقبولة",
+  "@radarrReleaseAccepted": {
+    "description": "Release filter: accepted releases."
+  },
+  "radarrReleaseRejected": "المرفوضة",
+  "@radarrReleaseRejected": {
+    "description": "Release filter: rejected releases."
+  },
+  "radarrProtocolTorrent": "تورنت",
+  "@radarrProtocolTorrent": {
+    "description": "Release protocol filter."
+  },
+  "radarrProtocolUsenet": "يوزنت",
+  "@radarrProtocolUsenet": {
+    "description": "Release protocol filter."
+  },
+  "radarrResolution": "{resolution}p",
+  "@radarrResolution": {
+    "description": "Resolution filter chip.",
+    "placeholders": {
+      "resolution": {
+        "type": "int",
+        "description": "Vertical resolution."
+      }
+    }
+  },
+  "radarrSearchingReleases": "جارٍ البحث في المفهرسات",
+  "@radarrSearchingReleases": {
+    "description": "Accessible label of the release search skeleton."
+  },
+  "radarrNoReleasesHeadline": "لم يتم العثور على إصدارات",
+  "@radarrNoReleasesHeadline": {
+    "description": "Headline when the indexers found nothing."
+  },
+  "radarrNoReleasesMessage": "لم يُرجع أي مفهرس إصدارًا لهذا الفيلم.",
+  "@radarrNoReleasesMessage": {
+    "description": "Hint under the no-releases headline."
+  },
+  "radarrNoReleaseMatchHeadline": "لا يوجد إصدار مطابق",
+  "@radarrNoReleaseMatchHeadline": {
+    "description": "Headline when release filters leave nothing."
+  },
+  "radarrNoReleaseMatchMessage": "امسح المرشحات لرؤية كل الإصدارات.",
+  "@radarrNoReleaseMatchMessage": {
+    "description": "Hint under the no-match headline of the release sheet."
+  },
+  "radarrRejectedChip": "مرفوض",
+  "@radarrRejectedChip": {
+    "description": "Chip on a rejected release."
+  },
+  "radarrRejectionReasons": "سبب الرفض",
+  "@radarrRejectionReasons": {
+    "description": "Heading of the rejection reasons."
+  },
+  "radarrCustomFormats": "التنسيقات المخصصة",
+  "@radarrCustomFormats": {
+    "description": "Heading of the custom formats list."
+  },
+  "radarrExpand": "التفاصيل",
+  "@radarrExpand": {
+    "description": "Button that expands a release row."
+  },
+  "radarrCollapse": "إخفاء التفاصيل",
+  "@radarrCollapse": {
+    "description": "Button that collapses a release row."
+  },
+  "radarrDownload": "تنزيل",
+  "@radarrDownload": {
+    "description": "Button that sends a release to the download client."
+  },
+  "radarrGrabbing": "جارٍ الإرسال…",
+  "@radarrGrabbing": {
+    "description": "Button label while the release is being sent."
+  },
+  "radarrGrabbed": "تم الإرسال",
+  "@radarrGrabbed": {
+    "description": "Button label after the release was sent."
+  },
+  "radarrGrabFailedRetry": "حاول مجددًا",
+  "@radarrGrabFailedRetry": {
+    "description": "Button label after a failed send."
+  },
+  "radarrGrabFailed": "تعذّر إرسال هذا الإصدار إلى عميل التنزيل.",
+  "@radarrGrabFailed": {
+    "description": "Message under a release whose grab failed."
+  },
+  "radarrRejectedGrabTitle": "تنزيل إصدار مرفوض؟",
+  "@radarrRejectedGrabTitle": {
+    "description": "Title of the confirmation for grabbing a rejected release."
+  },
+  "radarrRejectedGrabMessage": "رفض Radarr هذا الإصدار للأسباب أدناه. قد يكون الفيلم أو الجودة أو اللغة غير صحيحة.",
+  "@radarrRejectedGrabMessage": {
+    "description": "Warning in the rejected-release confirmation; reasons follow."
+  },
+  "radarrGrabAnyway": "نزّل على أي حال",
+  "@radarrGrabAnyway": {
+    "description": "Confirm button of the rejected-release dialog."
+  },
+  "radarrSeeders": "{count, plural, =1{مصدّر واحد} =2{مصدّران} few{{count} مصدّرين} other{{count} مصدّرًا}}",
+  "@radarrSeeders": {
+    "description": "Seeder count of a release.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Seeders."
+      }
+    }
+  },
+  "radarrReleaseAgeHours": "{hours, plural, =1{عمره ساعة} =2{عمره ساعتان} few{عمره {hours} ساعات} other{عمره {hours} ساعة}}",
+  "@radarrReleaseAgeHours": {
+    "description": "Age of a release in hours.",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "description": "Hours."
+      }
+    }
+  },
+  "radarrReleaseAgeDays": "{days, plural, =1{عمره يوم} =2{عمره يومان} few{عمره {days} أيام} other{عمره {days} يومًا}}",
+  "@radarrReleaseAgeDays": {
+    "description": "Age of a release in days.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days."
+      }
+    }
+  },
+  "radarrTypeCinema": "سينما",
+  "@radarrTypeCinema": {
+    "description": "Release type: cinema."
+  },
+  "radarrTypeDigital": "رقمي",
+  "@radarrTypeDigital": {
+    "description": "Release type: digital."
+  },
+  "radarrTypePhysical": "أقراص",
+  "@radarrTypePhysical": {
+    "description": "Release type: physical media."
+  },
+  "radarrCalendarEmptyHeadline": "لا إصدارات في هذه الفترة",
+  "@radarrCalendarEmptyHeadline": {
+    "description": "Headline of the empty calendar."
+  },
+  "radarrCalendarEmptyMessage": "لا يوجد فيلم بتاريخ إصدار في هذا النطاق للأنواع المحددة.",
+  "@radarrCalendarEmptyMessage": {
+    "description": "Hint under the empty calendar headline."
+  },
+  "radarrCalendarDay": "{date}",
+  "@radarrCalendarDay": {
+    "description": "Day header of the calendar.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "description": "The day.",
+        "format": "yMMMEd"
+      }
+    }
+  },
+  "radarrCalendarToday": "اليوم، {date}",
+  "@radarrCalendarToday": {
+    "description": "Day header of today in the calendar.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "description": "The day.",
+        "format": "yMMMEd"
+      }
+    }
+  },
+  "radarrCalendarSemantics": "{title}، إصدار {type}",
+  "@radarrCalendarSemantics": {
+    "description": "Screen reader label of a calendar row.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Movie title."
+      },
+      "type": {
+        "type": "String",
+        "description": "Release type."
+      }
+    }
+  },
+  "radarrQueueEmptyHeadline": "لا شيء قيد التنزيل",
+  "@radarrQueueEmptyHeadline": {
+    "description": "Headline of the empty queue."
+  },
+  "radarrQueueEmptyMessage": "ستظهر هنا الأفلام التي تنزّلها أثناء التنزيل.",
+  "@radarrQueueEmptyMessage": {
+    "description": "Hint under the empty queue headline."
+  },
+  "radarrQueueUnknownRelease": "إصدار غير معروف",
+  "@radarrQueueUnknownRelease": {
+    "description": "Title of a queue row whose release name is missing."
+  },
+  "radarrQueueDownloading": "قيد التنزيل",
+  "@radarrQueueDownloading": {
+    "description": "Queue state."
+  },
+  "radarrQueuePaused": "متوقف مؤقتًا",
+  "@radarrQueuePaused": {
+    "description": "Queue state."
+  },
+  "radarrQueueQueued": "في الانتظار",
+  "@radarrQueueQueued": {
+    "description": "Queue state."
+  },
+  "radarrQueueDelayed": "مؤجل",
+  "@radarrQueueDelayed": {
+    "description": "Queue state."
+  },
+  "radarrQueueCompleted": "اكتمل",
+  "@radarrQueueCompleted": {
+    "description": "Queue state."
+  },
+  "radarrQueueImportPending": "بانتظار الاستيراد",
+  "@radarrQueueImportPending": {
+    "description": "Queue state."
+  },
+  "radarrQueueImportBlocked": "الاستيراد محظور",
+  "@radarrQueueImportBlocked": {
+    "description": "Queue state."
+  },
+  "radarrQueueImportFailed": "فشل الاستيراد",
+  "@radarrQueueImportFailed": {
+    "description": "Queue state."
+  },
+  "radarrQueueFailed": "فشل التنزيل",
+  "@radarrQueueFailed": {
+    "description": "Queue state."
+  },
+  "radarrQueueClientUnavailable": "عميل التنزيل غير متاح",
+  "@radarrQueueClientUnavailable": {
+    "description": "Queue state."
+  },
+  "radarrQueueWarning": "تحذير",
+  "@radarrQueueWarning": {
+    "description": "Queue state."
+  },
+  "radarrQueueMessages": "{count, plural, =1{رسالة واحدة} =2{رسالتان} few{{count} رسائل} other{{count} رسالة}}",
+  "@radarrQueueMessages": {
+    "description": "Chip that expands the messages of a queue item.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Messages."
+      }
+    }
+  },
+  "radarrTimeLeftHours": "المتبقي {hours} س {minutes} د",
+  "@radarrTimeLeftHours": {
+    "description": "Time left, hours and minutes.",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "description": "Hours."
+      },
+      "minutes": {
+        "type": "int",
+        "description": "Minutes."
+      }
+    }
+  },
+  "radarrTimeLeftMinutes": "المتبقي {minutes} د",
+  "@radarrTimeLeftMinutes": {
+    "description": "Time left, minutes.",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "description": "Minutes."
+      }
+    }
+  },
+  "radarrTimeLeftSeconds": "المتبقي {seconds} ث",
+  "@radarrTimeLeftSeconds": {
+    "description": "Time left, seconds.",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "description": "Seconds."
+      }
+    }
+  },
+  "radarrQueueSemantics": "{title}، {state}، {percent} بالمئة",
+  "@radarrQueueSemantics": {
+    "description": "Screen reader label of a queue row.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Release name."
+      },
+      "state": {
+        "type": "String",
+        "description": "State."
+      },
+      "percent": {
+        "type": "int",
+        "description": "Percent."
+      }
+    }
+  },
+  "radarrQueueRemove": "إزالة",
+  "@radarrQueueRemove": {
+    "description": "Button that opens the removal dialog of a queue item."
+  },
+  "radarrQueueRemoved": "تمت الإزالة من الطابور",
+  "@radarrQueueRemoved": {
+    "description": "Confirmation after removing a queue item."
+  },
+  "radarrQueueRemoveFailed": "تعذّرت إزالة العنصر.",
+  "@radarrQueueRemoveFailed": {
+    "description": "Message when removal fails; the reason follows."
+  },
+  "radarrRemoveTitle": "إزالة من الطابور",
+  "@radarrRemoveTitle": {
+    "description": "Title of the removal dialog."
+  },
+  "radarrRemoveFromClient": "إزالة من عميل التنزيل",
+  "@radarrRemoveFromClient": {
+    "description": "Removal choice."
+  },
+  "radarrRemoveOnlyRadarr": "إزالة من Radarr فقط",
+  "@radarrRemoveOnlyRadarr": {
+    "description": "Removal choice."
+  },
+  "radarrBlocklistNone": "عدم الإضافة إلى القائمة المحظورة",
+  "@radarrBlocklistNone": {
+    "description": "Blocklist choice."
+  },
+  "radarrBlocklistAndSearch": "حظر وإعادة البحث",
+  "@radarrBlocklistAndSearch": {
+    "description": "Blocklist choice."
+  },
+  "radarrBlocklistOnly": "حظر فقط",
+  "@radarrBlocklistOnly": {
+    "description": "Blocklist choice."
+  },
+  "radarrRemoveConsequenceClient": "يُحذف التنزيل وملفاته من عميل التنزيل.",
+  "@radarrRemoveConsequenceClient": {
+    "description": "Consequence text of the removal dialog."
+  },
+  "radarrRemoveConsequenceKeep": "يبقى التنزيل في عميل التنزيل ويستمر هناك.",
+  "@radarrRemoveConsequenceKeep": {
+    "description": "Consequence text of the removal dialog."
+  },
+  "radarrRemoveConsequenceNoBlocklist": "يمكن اختيار هذا الإصدار مجددًا.",
+  "@radarrRemoveConsequenceNoBlocklist": {
+    "description": "Consequence text of the removal dialog."
+  },
+  "radarrRemoveConsequenceBlocklistSearch": "يُحظر هذا الإصدار ويبحث Radarr عن آخر.",
+  "@radarrRemoveConsequenceBlocklistSearch": {
+    "description": "Consequence text of the removal dialog."
+  },
+  "radarrRemoveConsequenceBlocklistOnly": "يُحظر هذا الإصدار ولا يبدأ بحث جديد.",
+  "@radarrRemoveConsequenceBlocklistOnly": {
+    "description": "Consequence text of the removal dialog."
+  },
+  "radarrRemoveConfirm": "إزالة",
+  "@radarrRemoveConfirm": {
+    "description": "Confirm button of the removal dialog."
+  },
+  "radarrScopeReleased": "صدرت",
+  "@radarrScopeReleased": {
+    "description": "Wanted scope: released and missing."
+  },
+  "radarrScopeUpcoming": "قادمة",
+  "@radarrScopeUpcoming": {
+    "description": "Wanted scope: not released yet."
+  },
+  "radarrScopeAll": "كل المفقودة",
+  "@radarrScopeAll": {
+    "description": "Wanted scope: every missing movie."
+  },
+  "radarrMissingEmptyHeadline": "لا شيء مفقود",
+  "@radarrMissingEmptyHeadline": {
+    "description": "Headline when no released movie is missing."
+  },
+  "radarrMissingEmptyMessage": "كل فيلم متابَع في هذه القائمة له ملف.",
+  "@radarrMissingEmptyMessage": {
+    "description": "Hint under the nothing-missing headline."
+  },
+  "radarrUpcomingEmptyHeadline": "لا أفلام قادمة",
+  "@radarrUpcomingEmptyHeadline": {
+    "description": "Headline when no monitored movie is upcoming."
+  },
+  "radarrUpcomingEmptyMessage": "ستظهر هنا الأفلام المتابَعة التي لم تصدر بعد.",
+  "@radarrUpcomingEmptyMessage": {
+    "description": "Hint under the no-upcoming headline."
+  },
+  "radarrMissingRowSemantics": "{title}، {details}",
+  "@radarrMissingRowSemantics": {
+    "description": "Screen reader label of a missing row.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Movie title."
+      },
+      "details": {
+        "type": "String",
+        "description": "Availability and search state."
+      }
+    }
+  },
+  "radarrSearchAllMissing": "البحث عن كل المفقودة",
+  "@radarrSearchAllMissing": {
+    "description": "Button that searches every missing movie."
+  },
+  "radarrSearchAllTitle": "البحث عن كل الأفلام المفقودة؟",
+  "@radarrSearchAllTitle": {
+    "description": "Title of the search-all confirmation."
+  },
+  "radarrSearchAllWarning": "سيستعلم Radarr من المفهرسات عن كل فيلم مفقود. مع مكتبة كبيرة قد يستهلك ذلك طلبات كثيرة وقد يؤدي إلى تقييد حسابك أو حظره.",
+  "@radarrSearchAllWarning": {
+    "description": "Warning about indexer load in the search-all confirmation."
+  },
+  "radarrSearchAllConfirm": "ابحث عن الكل",
+  "@radarrSearchAllConfirm": {
+    "description": "Confirm button of the search-all dialog."
+  },
+  "radarrSearchAllRunning": "جارٍ البحث عن كل الأفلام المفقودة…",
+  "@radarrSearchAllRunning": {
+    "description": "Progress of the search-all command."
+  },
+  "radarrSearchAllDone": "انتهى البحث عن كل الأفلام المفقودة",
+  "@radarrSearchAllDone": {
+    "description": "Result of the search-all command."
+  },
+  "radarrAddSearchHint": "العنوان أو tmdb:المعرّف أو imdb:المعرّف",
+  "@radarrAddSearchHint": {
+    "description": "Hint of the add-movie search field."
+  },
+  "radarrAddIdleHeadline": "ابحث عن فيلم",
+  "@radarrAddIdleHeadline": {
+    "description": "Headline of the add screen before a search."
+  },
+  "radarrAddIdleMessage": "ابحث بالعنوان أو الصق معرّف TMDB أو IMDb مثل tmdb:603.",
+  "@radarrAddIdleMessage": {
+    "description": "Hint of the add screen before a search."
+  },
+  "radarrSearching": "جارٍ البحث",
+  "@radarrSearching": {
+    "description": "Accessible label of the lookup skeleton."
+  },
+  "radarrAddNoResultsHeadline": "لم يتم العثور على أفلام",
+  "@radarrAddNoResultsHeadline": {
+    "description": "Headline of an empty lookup."
+  },
+  "radarrAddNoResultsMessage": "تحقق من الإملاء أو جرّب معرّفًا خارجيًا.",
+  "@radarrAddNoResultsMessage": {
+    "description": "Hint of an empty lookup."
+  },
+  "radarrInLibrary": "في المكتبة",
+  "@radarrInLibrary": {
+    "description": "Marker on a lookup result already in the library."
+  },
+  "radarrAddRowInLibrary": "{title}، موجود في مكتبتك",
+  "@radarrAddRowInLibrary": {
+    "description": "Screen reader label of a lookup result in the library.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Movie title."
+      }
+    }
+  },
+  "radarrAddRowSemantics": "{title}، المس للإضافة",
+  "@radarrAddRowSemantics": {
+    "description": "Screen reader label of a lookup result.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Movie title."
+      }
+    }
+  },
+  "radarrAddOptionsTitle": "خيارات الإضافة",
+  "@radarrAddOptionsTitle": {
+    "description": "Title of the add options sheet."
+  },
+  "radarrAddNeedsSetup": "يحتاج Radarr إلى ملف جودة ومجلد جذر قبل إضافة الأفلام.",
+  "@radarrAddNeedsSetup": {
+    "description": "Shown when the server has no profiles or root folders."
+  },
+  "radarrRootFolder": "المجلد الجذر",
+  "@radarrRootFolder": {
+    "description": "Label of the root folder field."
+  },
+  "radarrSearchAfterAdd": "البحث عن الفيلم بعد الإضافة",
+  "@radarrSearchAfterAdd": {
+    "description": "Switch: start a search after adding."
+  },
+  "radarrAddCollection": "إضافة بقية المجموعة أيضًا",
+  "@radarrAddCollection": {
+    "description": "Switch: add the other movies of the collection."
+  },
+  "radarrAddCollectionHint": "تضيف بقية أفلام {collection} كمتابَعة.",
+  "@radarrAddCollectionHint": {
+    "description": "Hint under the collection switch.",
+    "placeholders": {
+      "collection": {
+        "type": "String",
+        "description": "Collection name."
+      }
+    }
+  },
+  "radarrAddAndSearch": "أضف وابحث",
+  "@radarrAddAndSearch": {
+    "description": "Submit button when search after add is on."
+  },
+  "radarrAdding": "جارٍ الإضافة…",
+  "@radarrAdding": {
+    "description": "Submit button while adding."
+  },
+  "radarrAddSuccess": "تمت إضافة الفيلم",
+  "@radarrAddSuccess": {
+    "description": "Confirmation after adding a movie."
+  },
+  "radarrAddFailed": "تعذّرت إضافة الفيلم.",
+  "@radarrAddFailed": {
+    "description": "Message when adding fails; the reason follows."
+  }
+}
