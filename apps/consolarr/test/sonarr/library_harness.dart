@@ -7,7 +7,6 @@ import 'package:consolarr/features/sonarr/application/library_providers.dart';
 import 'package:consolarr/features/sonarr/application/sonarr_providers.dart';
 import 'package:consolarr/features/sonarr/data/sonarr_prefs_store.dart';
 import 'package:consolarr/features/sonarr/presentation/home/sonarr_home_screen.dart';
-import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
 import 'package:dio/dio.dart';
@@ -91,7 +90,7 @@ Widget libraryApp(
   VoidCallback? onOpenServers,
   ScriptedSonarrApi? api,
   SonarrPrefsStore? prefs,
-  GoRouter? router,
+  RouteRecorder? recorder,
 }) {
   return ProviderScope(
     overrides: [
@@ -107,20 +106,24 @@ Widget libraryApp(
     ],
     child: harnessApp(
       variant,
-      ConsolarrEffectsScope(
-        reduceMotion: reduceMotion,
-        child: Builder(
-          builder: (context) {
-            // The shell raises the bottom padding by the floating nav bar.
-            final media = MediaQuery.of(context);
-            return MediaQuery(
-              data: media.copyWith(padding: media.padding.copyWith(bottom: 88)),
-              child: _withRouter(
-                router,
-                Scaffold(body: SonarrHomeScreen(onOpenServers: onOpenServers)),
-              ),
-            );
-          },
+      _routed(
+        recorder,
+        ConsolarrEffectsScope(
+          reduceMotion: reduceMotion,
+          child: Builder(
+            builder: (context) {
+              // The shell raises the bottom padding by the floating nav bar.
+              final media = MediaQuery.of(context);
+              return MediaQuery(
+                data: media.copyWith(
+                  padding: media.padding.copyWith(bottom: 88),
+                ),
+                child: Scaffold(
+                  body: SonarrHomeScreen(onOpenServers: onOpenServers),
+                ),
+              );
+            },
+          ),
         ),
       ),
     ),
@@ -130,21 +133,29 @@ Widget libraryApp(
 /// Runs library queries inline (no isolate) so tests stay deterministic.
 Future<T> inlineRunner<T>(T Function() computation) async => computation();
 
-Widget _withRouter(GoRouter? router, Widget child) =>
-    router == null ? child : InheritedGoRouter(goRouter: router, child: child);
+/// Remembers where the screen navigated.
+class RouteRecorder {
+  /// Location of the most recently built non-home route, or empty.
+  String location = '';
+}
 
-/// A router that records where the screen navigated (not mounted).
-GoRouter recordingRouter() => GoRouter(
-  routes: [
-    GoRoute(path: '/', builder: (context, state) => const SizedBox()),
-    GoRoute(path: '/sonarr/add', builder: (context, state) => const SizedBox()),
-    GoRoute(
-      path: '/sonarr/series/:id',
-      builder: (context, state) => const SizedBox(),
+Widget _routed(RouteRecorder? recorder, Widget home) {
+  if (recorder == null) return home;
+  Widget visit(GoRouterState state) {
+    recorder.location = state.uri.toString();
+    return const Scaffold();
+  }
+
+  return Router.withConfig(
+    config: GoRouter(
+      routes: [
+        GoRoute(path: '/', builder: (context, state) => home),
+        GoRoute(path: '/sonarr/add', builder: (context, state) => visit(state)),
+        GoRoute(
+          path: '/sonarr/series/:id',
+          builder: (context, state) => visit(state),
+        ),
+      ],
     ),
-  ],
-);
-
-/// The location the router is at.
-String locationOf(GoRouter router) =>
-    router.routerDelegate.currentConfiguration.uri.toString();
+  );
+}

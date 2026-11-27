@@ -4,8 +4,6 @@ import 'package:arr_api/arr_api.dart';
 import 'package:consolarr/features/sonarr/application/library_query.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'support.dart';
-
 SonarrSeries _s(
   int i, {
   String? title,

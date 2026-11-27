@@ -4,6 +4,8 @@ import 'dart:async';
 
 import 'package:arr_api/arr_api.dart';
 import 'package:consolarr/features/arr_common/presentation/add_options_form.dart';
+import 'package:consolarr/features/arr_common/presentation/release_row.dart'
+    show ArrBusyIndicator;
 import 'package:consolarr/features/sonarr/application/add_series.dart';
 import 'package:consolarr/features/sonarr/presentation/stand_ins/glass_sheet.dart';
 import 'package:consolarr/features/sonarr/sonarr_routes.dart';
@@ -239,10 +241,7 @@ class _AddOptionsBodyState extends ConsumerState<AddOptionsBody> {
                 padding: const EdgeInsets.only(bottom: ConsolarrSpacing.sm),
                 child: Row(
                   children: [
-                    const SizedBox.square(
-                      dimension: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
+                    const ArrBusyIndicator(),
                     const SizedBox(width: ConsolarrSpacing.sm),
                     Flexible(child: Text(l10n.sonarrAddAdding)),
                   ],

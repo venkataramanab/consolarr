@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:arr_api/arr_api.dart';
+import 'package:consolarr/features/sonarr/application/search_progress.dart';
 import 'package:consolarr/features/sonarr/application/sonarr_providers.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,6 +25,7 @@ Widget tabApp(
     overrides: [
       ...sonarrTestOverrides(api, cache: cache, now: now),
       artworkSourceProvider.overrideWithValue(null),
+      searchPollDelaysProvider.overrideWithValue(const [Duration.zero]),
       ...extra,
     ],
     child: harnessApp(

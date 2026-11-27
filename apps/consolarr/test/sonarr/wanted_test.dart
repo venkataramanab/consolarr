@@ -9,11 +9,12 @@ import 'package:consolarr/features/sonarr/application/sonarr_session.dart';
 import 'package:consolarr/features/sonarr/application/wanted_providers.dart';
 import 'package:consolarr/features/sonarr/data/wanted_repository.dart';
 import 'package:consolarr/features/sonarr/presentation/wanted/wanted_body.dart';
+import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
-import 'package:flutter/material.dart' show Icons;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:l10n/l10n.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:test_harness/test_harness.dart';
 
 import 'fakes.dart';
@@ -160,8 +161,6 @@ void main() {
         await expectAccessible(tester);
       },
     );
-    await tester.tap(find.text(_l10n.sonarrWantedScopeUpcoming));
-    await tester.pumpAndSettle();
   });
 
   testWidgets('upcoming scope has its own empty state and no search-all', (
@@ -430,7 +429,7 @@ void main() {
               clock: () => DateTime.utc(2026, 5, 1, 12),
             ),
           ),
-          sonarrTestOverrides(apiA).last,
+          clockProvider.overrideWithValue(() => DateTime.utc(2026, 5, 1, 12)),
         ],
         child: harnessApp(
           plainVariant,
@@ -461,9 +460,8 @@ void main() {
     expect(find.text(_l10n.sonarrWantedErrorTitle), findsOneWidget);
   });
 
-  test('search targets: missing search is one-shot per tap', () {
+  test('the missing search target sends MissingEpisodeSearch', () {
     expect(const SearchTarget.missing().request.name, 'MissingEpisodeSearch');
-    expect(Icons.search, isNotNull);
   });
 }
 

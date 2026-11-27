@@ -160,7 +160,17 @@ class _TopActions extends ConsumerWidget {
               : l10n.sonarrDetailWritesDisabled,
           icon: const Icon(Icons.edit_outlined),
           onPressed: writes
-              ? () => showEditSeriesSheet(context: context, seriesId: seriesId)
+              ? () async {
+                  final saved = await showEditSeriesSheet(
+                    context: context,
+                    seriesId: seriesId,
+                  );
+                  if (saved == true && context.mounted) {
+                    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                      SnackBar(content: Text(l10n.sonarrDetailEditSaved)),
+                    );
+                  }
+                }
               : null,
         ),
         PopupMenuButton<int>(
