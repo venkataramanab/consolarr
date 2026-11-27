@@ -389,9 +389,7 @@ void main() {
         ..calendarResult = Result.ok([_ep(1, day: 2)]);
       // Server B rejects the credentials (after the gate opens).
       final apiB = ScriptedSonarrApi()
-        ..calendarResult = const Result.err(
-          AppError(ErrorCategory.authFailed),
-        );
+        ..calendarResult = const Result.err(AppError(ErrorCategory.authFailed));
       final gate = Completer<void>();
       apiB.hook = (_) => gate.future;
       final apis = [apiA, apiB];
