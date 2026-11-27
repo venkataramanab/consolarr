@@ -130,8 +130,12 @@ DelugeListOutcome parseDelugeListResponse(String body) {
   return DelugeListOutcome(rows: parseDelugeList(body));
 }
 
-DelugeListOutcome _parseListResponse(String body) =>
-    parseDelugeListResponse(body);
+/// Top level on purpose: the closure given to [runner] captures only [body],
+/// never the client (its Dio/HttpClient cannot be sent to another isolate).
+Future<DelugeListOutcome> _parseOffIsolate(ParseRunner runner, String body) =>
+    body.length > isolateThresholdBytes
+    ? runner(() => parseDelugeListResponse(body))
+    : Future.value(parseDelugeListResponse(body));
 
 /// Deluge web JSON-RPC client (`/json`).
 ///
@@ -369,9 +373,7 @@ class DelugeClient implements TorrentClient, DaemonHostSelection {
           <String, Object?>{},
           [..._statusKeys, 'num_seeds'],
         ]);
-        final outcome = body.length > isolateThresholdBytes
-            ? await _runner(() => _parseListResponse(body))
-            : parseDelugeListResponse(body);
+        final outcome = await _parseOffIsolate(_runner, body);
         final parsed = outcome.rows;
         if (parsed != null) {
           if (parsed.skipped > 0) onRowsSkipped?.call(parsed.skipped);
