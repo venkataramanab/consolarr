@@ -636,6 +636,31 @@ void main() {
       expect(log, ['exit', 'all', 'pause']);
     });
 
+    testWidgets('select all reports the all-selected state', (tester) async {
+      final semantics = tester.ensureSemantics();
+      Widget bar({required bool all}) => SelectionBar(
+        selectedCount: 3,
+        allSelected: all,
+        countLabel: '3 selected',
+        exitLabel: 'Exit',
+        selectAllLabel: 'Select all',
+        onExit: () {},
+        onSelectAll: () {},
+        actions: const [],
+      );
+      await _pump(tester, bar(all: false));
+      expect(
+        tester.getSemantics(find.byTooltip('Select all')),
+        isSemantics(isSelected: false),
+      );
+      await _pump(tester, bar(all: true));
+      expect(
+        tester.getSemantics(find.byTooltip('Select all')),
+        isSemantics(isSelected: true),
+      );
+      semantics.dispose();
+    });
+
     testWidgets('solid when transparency is reduced', (tester) async {
       Widget bar() => SelectionBar(
         selectedCount: 1,
@@ -668,6 +693,34 @@ void main() {
         )
         .opacity
         .value;
+
+    testWidgets('reduce motion switched on mid-animation shows the content', (
+      tester,
+    ) async {
+      applyVariantView(tester, _v);
+      await tester.pumpWidget(
+        hostApp(
+          _v,
+          reveal(key: 'mid'),
+          a11y: const A11yVariant('motion', reduceMotion: false),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 20));
+      expect(opacityOfItem(tester), lessThan(1));
+      await tester.pumpWidget(hostApp(_v, reveal(key: 'mid')));
+      await tester.pump();
+      expect(
+        find
+            .ancestor(
+              of: find.text('Item'),
+              matching: find.byType(FadeTransition),
+            )
+            .evaluate()
+            .where((e) => (e.widget as FadeTransition).opacity.value < 1),
+        isEmpty,
+      );
+      expect(tester.takeException(), isNull);
+    });
 
     testWidgets('fades in once per key, not again for the same key', (
       tester,

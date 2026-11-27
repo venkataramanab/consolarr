@@ -50,6 +50,7 @@ class StagedReveal extends StatefulWidget {
 class _StagedRevealState extends State<StagedReveal>
     with SingleTickerProviderStateMixin {
   AnimationController? _controller;
+  CurvedAnimation? _curve;
   bool _decided = false;
 
   static const _step = Duration(milliseconds: 40);
@@ -58,41 +59,58 @@ class _StagedRevealState extends State<StagedReveal>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_decided) return;
-    _decided = true;
     final animate = ConsolarrEffects.of(context).animate;
+    if (_decided) {
+      // Reduce motion switched on while the reveal runs: show the content now.
+      if (!animate) _finish(rebuild: false);
+      return;
+    }
+    _decided = true;
     if (!animate || StagedReveal._played.contains(widget.revealKey)) return;
     final delay = _step * math.min(widget.order, _maxOrder);
     final total = ConsolarrMotion.standard + delay;
     final controller = AnimationController(vsync: this, duration: total);
     _controller = controller;
+    _curve = CurvedAnimation(
+      parent: controller,
+      curve: Interval(
+        delay.inMicroseconds / total.inMicroseconds,
+        1,
+        curve: ConsolarrMotion.enterCurve,
+      ),
+    );
     // Siblings built in the same frame all see the key as unplayed; mark it
     // afterwards so later arrivals show immediately.
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => StagedReveal._played.add(widget.revealKey),
     );
     controller.forward().whenComplete(() {
-      if (mounted) setState(() => _controller = null);
-      controller.dispose();
+      if (mounted && identical(_controller, controller)) _finish();
     });
+  }
+
+  /// Drops the animation (finished or cancelled) and shows the content.
+  void _finish({bool rebuild = true}) {
+    final controller = _controller;
+    if (controller == null) return;
+    _controller = null;
+    _curve?.dispose();
+    _curve = null;
+    controller.dispose();
+    if (rebuild && mounted) setState(() {});
   }
 
   @override
   void dispose() {
+    _curve?.dispose();
     _controller?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final controller = _controller;
-    if (controller == null) return widget.child;
-    final delay = _step * math.min(widget.order, _maxOrder);
-    final start = delay.inMicroseconds / controller.duration!.inMicroseconds;
-    final curve = CurvedAnimation(
-      parent: controller,
-      curve: Interval(start, 1, curve: ConsolarrMotion.enterCurve),
-    );
+    final curve = _curve;
+    if (_controller == null || curve == null) return widget.child;
     return FadeTransition(
       opacity: curve,
       child: SlideTransition(

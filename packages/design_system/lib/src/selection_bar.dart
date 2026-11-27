@@ -52,10 +52,16 @@ class SelectionBar extends StatelessWidget {
     required this.onExit,
     required this.onSelectAll,
     required this.actions,
+    this.allSelected = false,
     super.key,
   });
 
   final int selectedCount;
+
+  /// Every item is selected: the select-all button then reports "selected"
+  /// to screen readers and is drawn filled (not by colour alone: the icon
+  /// changes too).
+  final bool allSelected;
 
   /// Localized, plural-aware ("3 selected").
   final String countLabel;
@@ -102,8 +108,10 @@ class SelectionBar extends StatelessWidget {
             IconButton(
               tooltip: selectAllLabel,
               constraints: box(),
+              isSelected: allSelected,
               onPressed: onSelectAll,
               icon: const Icon(Icons.select_all),
+              selectedIcon: const Icon(Icons.deselect),
             ),
             for (final a in actions)
               IconButton(
