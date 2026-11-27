@@ -66,8 +66,8 @@ Torrent parseDelugeTorrent(String hash, Map<String, Object?> json) {
   if (name is! String) throw const FormatException('name');
   // Deluge reports progress as 0..100.
   final progress = (jsonNum(json['progress']).toDouble() / 100).clamp(0.0, 1.0);
-  final eta = jsonNum(json['eta']).toInt();
-  final added = jsonNum(json['time_added']).toInt();
+  final eta = jsonNum(json['eta']);
+  final added = jsonNum(json['time_added']);
   final label = json['label'];
   final rate = jsonNum(json['download_payload_rate']).toInt();
   return Torrent(
@@ -86,10 +86,8 @@ Torrent parseDelugeTorrent(String hash, Map<String, Object?> json) {
     dlSpeed: rate,
     upSpeed: jsonNum(json['upload_payload_rate']).toInt(),
     ratio: jsonNum(json['ratio']).toDouble().clamp(0.0, double.infinity),
-    eta: eta > 0 ? Duration(seconds: eta) : null,
-    addedOn: added > 0
-        ? DateTime.fromMillisecondsSinceEpoch(added * 1000, isUtc: true)
-        : null,
+    eta: etaFromSeconds(eta),
+    addedOn: epochSecondsToDate(added),
     category: label is String && label.isNotEmpty ? label : null,
   );
 }

@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'dart:async';
+import 'dart:io';
+
 import 'package:core/core.dart';
+import 'package:dio/dio.dart';
 import 'package:security/security.dart';
 
 /// Runs [body] and turns every failure into a typed [AppError] (no exception
@@ -13,7 +17,19 @@ Future<Result<T>> guardResult<T>(Future<T> Function() body) async {
   } on TypeError {
     return const Result.err(AppError(ErrorCategory.parseError));
   } on Object catch (e) {
-    return Result.err(appErrorFromDio(e));
+    // Only transport failures map to a network category; any other
+    // unexpected error (RangeError, StateError, ...) means the data was
+    // unusable.
+    final transport =
+        e is AppError ||
+        e is DioException ||
+        e is IOException ||
+        e is TimeoutException;
+    return Result.err(
+      transport
+          ? appErrorFromDio(e)
+          : const AppError(ErrorCategory.parseError),
+    );
   }
 }
 

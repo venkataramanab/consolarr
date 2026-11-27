@@ -44,8 +44,8 @@ Torrent parseTransmissionTorrent(Map<String, Object?> json) {
   if (name is! String) throw const FormatException('name');
   final progress = jsonNum(json['percentDone']).toDouble().clamp(0.0, 1.0);
   final status = json['status'];
-  final eta = jsonNum(json['eta']).toInt();
-  final added = jsonNum(json['addedDate']).toInt();
+  final eta = jsonNum(json['eta']);
+  final added = jsonNum(json['addedDate']);
   final labels = json['labels'];
   final firstLabel =
       labels is List && labels.isNotEmpty && labels.first is String
@@ -69,10 +69,8 @@ Torrent parseTransmissionTorrent(Map<String, Object?> json) {
     upSpeed: jsonNum(json['rateUpload']).toInt(),
     // -1 means "not available".
     ratio: jsonNum(json['uploadRatio']).toDouble().clamp(0.0, double.infinity),
-    eta: eta > 0 ? Duration(seconds: eta) : null,
-    addedOn: added > 0
-        ? DateTime.fromMillisecondsSinceEpoch(added * 1000, isUtc: true)
-        : null,
+    eta: etaFromSeconds(eta),
+    addedOn: epochSecondsToDate(added),
     label: firstLabel,
   );
 }

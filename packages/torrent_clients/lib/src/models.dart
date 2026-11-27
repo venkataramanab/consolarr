@@ -139,8 +139,8 @@ class Torrent {
     if (hash is! String) throw const FormatException('hash must be a string');
     if (name is! String) throw const FormatException('name must be a string');
     final progress = jsonNum(json['progress']).toDouble().clamp(0.0, 1.0);
-    final eta = jsonNum(json['eta']).toInt();
-    final added = jsonNum(json['added_on']).toInt();
+    final eta = jsonNum(json['eta']);
+    final added = jsonNum(json['added_on']);
     final category = json['category'];
     return Torrent(
       hash: hash,
@@ -155,10 +155,8 @@ class Torrent {
       upSpeed: jsonNum(json['upspeed']).toInt(),
       ratio: jsonNum(json['ratio']).toDouble(),
       // qBittorrent reports 8640000 s (100 days) for "infinity".
-      eta: eta > 0 && eta < qbInfiniteEta ? Duration(seconds: eta) : null,
-      addedOn: added > 0
-          ? DateTime.fromMillisecondsSinceEpoch(added * 1000, isUtc: true)
-          : null,
+      eta: eta < qbInfiniteEta ? etaFromSeconds(eta) : null,
+      addedOn: epochSecondsToDate(added),
       category: category is String && category.isNotEmpty ? category : null,
     );
   }
@@ -247,6 +245,28 @@ class TransferInfo {
   /// `connected`, `firewalled` or `disconnected` (plain text from the server).
   final String? connectionStatus;
 }
+
+/// Latest instant a server date may name (end of year 9999, in seconds).
+const _maxEpochSeconds = 253402300799;
+
+/// A server-supplied Unix time in seconds as a UTC date, or `null` when it is
+/// not positive or out of the range a [DateTime] holds (never throws).
+DateTime? epochSecondsToDate(num seconds) {
+  if (!seconds.isFinite || seconds <= 0 || seconds > _maxEpochSeconds) {
+    return null;
+  }
+  return DateTime.fromMillisecondsSinceEpoch(
+    seconds.toInt() * 1000,
+    isUtc: true,
+  );
+}
+
+/// A server-supplied span in seconds as a [Duration], or `null` when it is not
+/// positive or longer than [max] (never overflows).
+Duration? etaFromSeconds(num seconds, {int max = 3153600000}) =>
+    seconds.isFinite && seconds > 0 && seconds <= max
+    ? Duration(seconds: seconds.toInt())
+    : null;
 
 num jsonNum(Object? v) => v is num && v.isFinite ? v : 0;
 
