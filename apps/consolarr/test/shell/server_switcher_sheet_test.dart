@@ -44,7 +44,7 @@ Widget _sheet(HarnessVariant v, UiHarness h) => ProviderScope(
   ],
   child: harnessApp(
     v,
-    const Scaffold(body: ServerSwitcherSheet(kind: ServiceKind.sonarr)),
+    const Scaffold(body: ServerSwitcherSheet(kinds: {ServiceKind.sonarr})),
   ),
 );
 

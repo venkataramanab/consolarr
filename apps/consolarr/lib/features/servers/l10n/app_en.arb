@@ -64,10 +64,6 @@
   "@serverKindQbittorrentDescription": {
     "description": "Short description of qBittorrent on the service choice tile."
   },
-  "serverKindOtherDescription": "Not available yet",
-  "@serverKindOtherDescription": {
-    "description": "Description for a service that is not supported yet."
-  },
   "serverHealthChecking": "Checking…",
   "@serverHealthChecking": {
     "description": "Health text of a server being checked."

@@ -40,6 +40,8 @@ void main() {
         await c.addFile(Uint8List(0), fileName: 'example.torrent'),
         await c.setGlobalLimits(const GlobalLimits(download: 1)),
         await c.torrentDetail('h'),
+        await c.globalLimits(),
+        await c.setAlternativeSpeed(true),
       ];
       for (final r in results) {
         final error = r.errorOrNull;

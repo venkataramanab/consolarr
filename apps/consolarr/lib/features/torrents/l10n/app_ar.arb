@@ -10,7 +10,8 @@
     "placeholders": {
       "count": {
         "type": "int",
-        "description": "How many torrents the client reports."
+        "description": "How many torrents the client reports.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -48,7 +49,8 @@
       },
       "count": {
         "type": "int",
-        "description": "Number of torrents."
+        "description": "Number of torrents.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -102,7 +104,7 @@
       }
     }
   },
-  "torRowSemantics": "{name}، {state}، اكتمل {percent}",
+  "torRowSemantics": "{name}، {state}، اكتمل {percent}، {details}",
   "@torRowSemantics": {
     "description": "Spoken description of a torrent row: name, state and percentage in words.",
     "placeholders": {
@@ -117,6 +119,10 @@
       "percent": {
         "type": "String",
         "description": "Formatted percentage."
+      },
+      "details": {
+        "type": "String",
+        "description": "The row's visible details, already localized and joined: size, speeds, time left and ratio."
       }
     }
   },
@@ -260,7 +266,8 @@
     "placeholders": {
       "count": {
         "type": "int",
-        "description": "Seconds."
+        "description": "Seconds.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -270,7 +277,8 @@
     "placeholders": {
       "count": {
         "type": "int",
-        "description": "Minutes."
+        "description": "Minutes.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -280,11 +288,13 @@
     "placeholders": {
       "hours": {
         "type": "int",
-        "description": "Hours."
+        "description": "Hours.",
+        "format": "decimalPattern"
       },
       "minutes": {
         "type": "int",
-        "description": "Minutes."
+        "description": "Minutes.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -294,11 +304,13 @@
     "placeholders": {
       "days": {
         "type": "int",
-        "description": "Days."
+        "description": "Days.",
+        "format": "decimalPattern"
       },
       "hours": {
         "type": "int",
-        "description": "Hours."
+        "description": "Hours.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -314,7 +326,7 @@
   "@torNoServerHeadline": {
     "description": "Headline when no torrent client server is configured."
   },
-  "torNoServerMessage": "أضف خادم qBittorrent لعرض التورنتات.",
+  "torNoServerMessage": "أضف خادم qBittorrent أو Transmission أو Deluge لعرض التورنتات.",
   "@torNoServerMessage": {
     "description": "Hint when no torrent client server is configured."
   },
@@ -355,5 +367,790 @@
   "torSpeedLimitsHint": "فتح حدود السرعة",
   "@torSpeedLimitsHint": {
     "description": "Accessible hint of the speed header when it can be tapped."
+  },
+  "torTabAll": "الكل",
+  "@torTabAll": {
+    "description": "Status tab: every torrent."
+  },
+  "torTabActive": "نشطة",
+  "@torTabActive": {
+    "description": "Status tab: torrents that are transferring data right now."
+  },
+  "torTabDownloading": "قيد التنزيل",
+  "@torTabDownloading": {
+    "description": "Status tab: torrents that are downloading."
+  },
+  "torTabFinished": "مكتملة",
+  "@torTabFinished": {
+    "description": "Status tab: torrents that are complete (seeding or idle)."
+  },
+  "torTabError": "أخطاء",
+  "@torTabError": {
+    "description": "Status tab: torrents the client reports an error for."
+  },
+  "torTabsLabel": "التصفية حسب الحالة",
+  "@torTabsLabel": {
+    "description": "Accessible label of the status tab bar."
+  },
+  "torSortAction": "ترتيب",
+  "@torSortAction": {
+    "description": "Tooltip of the sort button in the top bar."
+  },
+  "torSortTitle": "ترتيب التورنتات",
+  "@torSortTitle": {
+    "description": "Title of the sort sheet."
+  },
+  "torSortName": "الاسم",
+  "@torSortName": {
+    "description": "Sort option: name."
+  },
+  "torSortStatus": "الحالة",
+  "@torSortStatus": {
+    "description": "Sort option: status."
+  },
+  "torSortProgress": "التقدم",
+  "@torSortProgress": {
+    "description": "Sort option: progress."
+  },
+  "torSortSize": "الحجم",
+  "@torSortSize": {
+    "description": "Sort option: size."
+  },
+  "torSortAdded": "تاريخ الإضافة",
+  "@torSortAdded": {
+    "description": "Sort option: date added."
+  },
+  "torSortRatio": "النسبة",
+  "@torSortRatio": {
+    "description": "Sort option: ratio."
+  },
+  "torSortLabel": "التصنيف",
+  "@torSortLabel": {
+    "description": "Sort option: label."
+  },
+  "torSortDownSpeed": "سرعة التنزيل",
+  "@torSortDownSpeed": {
+    "description": "Sort option: download speed."
+  },
+  "torSortUpSpeed": "سرعة الرفع",
+  "@torSortUpSpeed": {
+    "description": "Sort option: upload speed."
+  },
+  "torSortTimeLeft": "الوقت المتبقي",
+  "@torSortTimeLeft": {
+    "description": "Sort option: time left."
+  },
+  "torSortAscending": "تصاعدي",
+  "@torSortAscending": {
+    "description": "Sort direction: ascending."
+  },
+  "torSortDescending": "تنازلي",
+  "@torSortDescending": {
+    "description": "Sort direction: descending."
+  },
+  "torSortSaveDefault": "حفظ كإعداد افتراضي",
+  "@torSortSaveDefault": {
+    "description": "Checkbox in the sort sheet: remember the sort order and status tab for next time."
+  },
+  "torSortApply": "تطبيق",
+  "@torSortApply": {
+    "description": "Button that applies the chosen sort order."
+  },
+  "torSearchAction": "بحث",
+  "@torSearchAction": {
+    "description": "Tooltip of the search button in the top bar."
+  },
+  "torSearchHint": "البحث بالاسم",
+  "@torSearchHint": {
+    "description": "Hint of the search field above the torrent list."
+  },
+  "torSearchClose": "إغلاق البحث",
+  "@torSearchClose": {
+    "description": "Tooltip of the button that closes the search field."
+  },
+  "torFilterEmptyHeadline": "لا توجد تورنتات مطابقة",
+  "@torFilterEmptyHeadline": {
+    "description": "Headline when the status tab or search hides every torrent."
+  },
+  "torFilterEmptyMessage": "جرّب تبويب حالة آخر أو بحثًا مختلفًا.",
+  "@torFilterEmptyMessage": {
+    "description": "Hint when filters hide every torrent."
+  },
+  "torFilterClear": "مسح عوامل التصفية",
+  "@torFilterClear": {
+    "description": "Button that resets the status tab and search."
+  },
+  "torAddAction": "إضافة تورنت",
+  "@torAddAction": {
+    "description": "Label of the button that opens the add-torrent sheet."
+  },
+  "torMenuTooltip": "خيارات إضافية",
+  "@torMenuTooltip": {
+    "description": "Tooltip of the overflow menu in the torrent list top bar."
+  },
+  "torMenuPauseAll": "إيقاف الكل مؤقتًا",
+  "@torMenuPauseAll": {
+    "description": "Menu item: pause every torrent."
+  },
+  "torMenuResumeAll": "استئناف الكل",
+  "@torMenuResumeAll": {
+    "description": "Menu item: resume every torrent."
+  },
+  "torMenuRefreshInterval": "فترة التحديث",
+  "@torMenuRefreshInterval": {
+    "description": "Menu item that opens the refresh interval dialog."
+  },
+  "torPollTitle": "فترة التحديث",
+  "@torPollTitle": {
+    "description": "Title of the refresh interval dialog."
+  },
+  "torPollOption": "{seconds, plural, =1{كل ثانية} =2{كل ثانيتين} few{كل {seconds} ثوانٍ} many{كل {seconds} ثانية} other{كل {seconds} ثانية}}",
+  "@torPollOption": {
+    "description": "One choice in the refresh interval dialog.",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "description": "Seconds between refreshes.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "torPollHint": "يتوقف تحديث القائمة عندما يكون التطبيق في الخلفية.",
+  "@torPollHint": {
+    "description": "Explanation under the refresh interval choices."
+  },
+  "torPollClose": "إغلاق",
+  "@torPollClose": {
+    "description": "Button that closes the refresh interval dialog."
+  },
+  "torPendingPausing": "جارٍ الإيقاف المؤقت…",
+  "@torPendingPausing": {
+    "description": "Row label while a pause request is in progress."
+  },
+  "torPendingResuming": "جارٍ الاستئناف…",
+  "@torPendingResuming": {
+    "description": "Row label while a resume request is in progress."
+  },
+  "torPendingRemoving": "جارٍ الإزالة…",
+  "@torPendingRemoving": {
+    "description": "Row label while a remove request is in progress."
+  },
+  "torActionPause": "إيقاف مؤقت",
+  "@torActionPause": {
+    "description": "Action: pause a torrent."
+  },
+  "torActionResume": "استئناف",
+  "@torActionResume": {
+    "description": "Action: resume a torrent."
+  },
+  "torActionRemove": "إزالة",
+  "@torActionRemove": {
+    "description": "Action: remove a torrent."
+  },
+  "torActionsFor": "إجراءات {name}",
+  "@torActionsFor": {
+    "description": "Title of the row action menu.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Torrent name (plain text from the server)."
+      }
+    }
+  },
+  "torActionFailed": "لم تنجح العملية. {reason}",
+  "@torActionFailed": {
+    "description": "Message shown when a torrent action failed.",
+    "placeholders": {
+      "reason": {
+        "type": "String",
+        "description": "The plain-language reason the action failed."
+      }
+    }
+  },
+  "torActionUnsupported": "إصدار هذا العميل لا يدعم هذا الإجراء.",
+  "@torActionUnsupported": {
+    "description": "Message shown when the server version does not offer an action."
+  },
+  "torPauseAllTitle": "إيقاف جميع التورنتات مؤقتًا؟",
+  "@torPauseAllTitle": {
+    "description": "Title of the pause-all confirmation."
+  },
+  "torPauseAllBody": "{count, plural, =1{سيتوقف تورنت واحد عن النقل حتى تستأنفه.} =2{سيتوقف تورنتان عن النقل حتى تستأنفهما.} few{ستتوقف {count} تورنتات عن النقل حتى تستأنفها.} many{ستتوقف {count} تورنتًا عن النقل حتى تستأنفها.} other{ستتوقف {count} تورنت عن النقل حتى تستأنفها.}}",
+  "@torPauseAllBody": {
+    "description": "Consequence text of the pause-all confirmation.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of torrents.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "torPauseAllConfirm": "إيقاف الكل مؤقتًا",
+  "@torPauseAllConfirm": {
+    "description": "Confirm button of the pause-all dialog."
+  },
+  "torResumeAllTitle": "استئناف جميع التورنتات؟",
+  "@torResumeAllTitle": {
+    "description": "Title of the resume-all confirmation."
+  },
+  "torResumeAllBody": "{count, plural, =1{سيبدأ تورنت واحد النقل من جديد.} =2{سيبدأ تورنتان النقل من جديد.} few{ستبدأ {count} تورنتات النقل من جديد.} many{ستبدأ {count} تورنتًا النقل من جديد.} other{ستبدأ {count} تورنت النقل من جديد.}}",
+  "@torResumeAllBody": {
+    "description": "Consequence text of the resume-all confirmation.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of torrents.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "torResumeAllConfirm": "استئناف الكل",
+  "@torResumeAllConfirm": {
+    "description": "Confirm button of the resume-all dialog."
+  },
+  "torBulkWorking": "{count, plural, =1{جارٍ العمل على تورنت واحد…} =2{جارٍ العمل على تورنتين…} few{جارٍ العمل على {count} تورنتات…} many{جارٍ العمل على {count} تورنتًا…} other{جارٍ العمل على {count} تورنت…}}",
+  "@torBulkWorking": {
+    "description": "Progress label while pause-all or resume-all runs.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of torrents.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "torCancel": "إلغاء",
+  "@torCancel": {
+    "description": "Button that dismisses a dialog without acting."
+  },
+  "torRemoveTitle": "إزالة التورنت؟",
+  "@torRemoveTitle": {
+    "description": "Title of the remove confirmation."
+  },
+  "torRemoveBody": "ستتم إزالة {name} من العميل. تبقى الملفات التي تم تنزيلها على الخادم ما لم تحدد المربع أدناه.",
+  "@torRemoveBody": {
+    "description": "Body of the remove confirmation.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Torrent name (plain text from the server)."
+      }
+    }
+  },
+  "torRemoveDeleteData": "احذف أيضًا الملفات التي تم تنزيلها من الخادم. لا يمكن التراجع عن ذلك.",
+  "@torRemoveDeleteData": {
+    "description": "Checkbox text of the remove dialog; states the consequence."
+  },
+  "torRemoveConfirm": "إزالة التورنت",
+  "@torRemoveConfirm": {
+    "description": "Confirm button of the remove dialog when files are kept."
+  },
+  "torRemoveConfirmWithData": "إزالة وحذف الملفات",
+  "@torRemoveConfirmWithData": {
+    "description": "Confirm button of the remove dialog when files will be deleted."
+  },
+  "torAddTitle": "إضافة تورنت",
+  "@torAddTitle": {
+    "description": "Title of the add-torrent sheet."
+  },
+  "torAddSourceLabel": "رابط مغناطيسي أو عنوان تورنت",
+  "@torAddSourceLabel": {
+    "description": "Label of the link field in the add sheet."
+  },
+  "torAddSourceHint": "الصق رابطًا أو اكتبه",
+  "@torAddSourceHint": {
+    "description": "Hint of the link field in the add sheet."
+  },
+  "torAddPaste": "لصق",
+  "@torAddPaste": {
+    "description": "Button that pastes the clipboard into the link field."
+  },
+  "torAddPasteEmpty": "لا يحتوي الحافظة على نص.",
+  "@torAddPasteEmpty": {
+    "description": "Message when pasting and the clipboard is empty."
+  },
+  "torAddPickFiles": "اختيار ملفات .torrent",
+  "@torAddPickFiles": {
+    "description": "Button that opens the system file picker."
+  },
+  "torAddOr": "أو",
+  "@torAddOr": {
+    "description": "Separator between the link field and the file picker button."
+  },
+  "torAddConfirmName": "هل تريد إضافة «{name}»؟",
+  "@torAddConfirmName": {
+    "description": "Confirmation of the name parsed from the link.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Name parsed from the link (plain text)."
+      }
+    }
+  },
+  "torAddConfirmUrl": "ملف تورنت من {host}",
+  "@torAddConfirmUrl": {
+    "description": "Confirmation line for a torrent URL; shows the host only.",
+    "placeholders": {
+      "host": {
+        "type": "String",
+        "description": "Host of the URL."
+      }
+    }
+  },
+  "torAddInvalidScheme": "استخدم رابطًا مغناطيسيًا أو عنوان http(s).",
+  "@torAddInvalidScheme": {
+    "description": "Validation: the link has an unsupported scheme."
+  },
+  "torAddInvalidHash": "لا يحتوي هذا الرابط المغناطيسي على بصمة صالحة.",
+  "@torAddInvalidHash": {
+    "description": "Validation: the magnet link lacks a valid info hash."
+  },
+  "torAddInvalidUserinfo": "لا تُقبل العناوين التي تتضمن اسم مستخدم أو كلمة مرور.",
+  "@torAddInvalidUserinfo": {
+    "description": "Validation: the URL embeds credentials."
+  },
+  "torAddInvalidUrl": "هذا العنوان غير صالح.",
+  "@torAddInvalidUrl": {
+    "description": "Validation: the URL cannot be parsed."
+  },
+  "torAddOptions": "خيارات",
+  "@torAddOptions": {
+    "description": "Title of the collapsible options section of the add sheet."
+  },
+  "torAddSavePath": "مسار الحفظ",
+  "@torAddSavePath": {
+    "description": "Field label: where the server stores the download."
+  },
+  "torAddCategory": "الفئة",
+  "@torAddCategory": {
+    "description": "Field label: qBittorrent category."
+  },
+  "torAddLabel": "التصنيف",
+  "@torAddLabel": {
+    "description": "Field label: Deluge label."
+  },
+  "torAddTags": "الوسوم",
+  "@torAddTags": {
+    "description": "Field label: tags, separated by commas."
+  },
+  "torAddTagsHint": "افصل الوسوم بفواصل",
+  "@torAddTagsHint": {
+    "description": "Hint of the tags field."
+  },
+  "torAddStartPaused": "البدء متوقفًا مؤقتًا",
+  "@torAddStartPaused": {
+    "description": "Switch: add the torrent without starting it."
+  },
+  "torAddNoLabels": "تتطلب التصنيفات إضافة Label على خادم Deluge.",
+  "@torAddNoLabels": {
+    "description": "Footnote shown in place of the label field when Deluge has no label plugin."
+  },
+  "torAddButton": "إضافة",
+  "@torAddButton": {
+    "description": "Button that sends the torrent to the client."
+  },
+  "torAddAdding": "جارٍ الإضافة…",
+  "@torAddAdding": {
+    "description": "Label while the torrent is being added."
+  },
+  "torAddAdded": "تمت الإضافة إلى العميل.",
+  "@torAddAdded": {
+    "description": "Success message after adding a torrent."
+  },
+  "torAddFailed": "تعذرت إضافة التورنت. {reason}",
+  "@torAddFailed": {
+    "description": "Failure message after adding a torrent.",
+    "placeholders": {
+      "reason": {
+        "type": "String",
+        "description": "The plain-language reason the action failed."
+      }
+    }
+  },
+  "torAddAnother": "إضافة آخر",
+  "@torAddAnother": {
+    "description": "Button that resets the add sheet after a success."
+  },
+  "torAddDone": "تم",
+  "@torAddDone": {
+    "description": "Button that closes the add sheet after a success."
+  },
+  "torAddRetryHint": "لم تتم إضافة أي عنصر مرتين؛ راجع القائمة قبل المحاولة مجددًا.",
+  "@torAddRetryHint": {
+    "description": "Hint after a failed add: retrying is manual so it cannot add twice."
+  },
+  "torAddFileSummary": "تمت إضافة {added} من {total} ملفات",
+  "@torAddFileSummary": {
+    "description": "Summary line after adding .torrent files.",
+    "placeholders": {
+      "added": {
+        "type": "int",
+        "description": "Files added.",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "description": "Files chosen.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "torAddFileOk": "{name}: تمت الإضافة",
+  "@torAddFileOk": {
+    "description": "Per-file result: added.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "File name (plain text)."
+      }
+    }
+  },
+  "torAddFileFailed": "{name}: فشلت. {reason}",
+  "@torAddFileFailed": {
+    "description": "Per-file result: failed.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "File name (plain text)."
+      },
+      "reason": {
+        "type": "String",
+        "description": "The plain-language reason the action failed."
+      }
+    }
+  },
+  "torAddFileTooLarge": "الملف أكبر من أن يكون تورنت.",
+  "@torAddFileTooLarge": {
+    "description": "Per-file reason: file over the size cap."
+  },
+  "torAddFileNotTorrent": "لا يبدو هذا ملف تورنت.",
+  "@torAddFileNotTorrent": {
+    "description": "Per-file reason: not a bencoded dictionary."
+  },
+  "torAddFileUnreadable": "تعذرت قراءة الملف.",
+  "@torAddFileUnreadable": {
+    "description": "Per-file reason: reading the file failed."
+  },
+  "torDetailTitle": "تفاصيل التورنت",
+  "@torDetailTitle": {
+    "description": "Title of the torrent detail sheet."
+  },
+  "torDetailSavePath": "مسار الحفظ",
+  "@torDetailSavePath": {
+    "description": "Detail row: where the data is stored."
+  },
+  "torDetailCopyPath": "نسخ مسار الحفظ",
+  "@torDetailCopyPath": {
+    "description": "Button that copies the save path."
+  },
+  "torDetailPathCopied": "تم نسخ مسار الحفظ",
+  "@torDetailPathCopied": {
+    "description": "Confirmation after copying the save path."
+  },
+  "torDetailRatioLabel": "نسبة المشاركة",
+  "@torDetailRatioLabel": {
+    "description": "Detail row: upload to download ratio."
+  },
+  "torDetailDownloaded": "تم تنزيله",
+  "@torDetailDownloaded": {
+    "description": "Detail row: total downloaded."
+  },
+  "torDetailUploaded": "تم رفعه",
+  "@torDetailUploaded": {
+    "description": "Detail row: total uploaded."
+  },
+  "torDetailAdded": "تمت الإضافة",
+  "@torDetailAdded": {
+    "description": "Detail row: date the torrent was added."
+  },
+  "torDetailSeeds": "المصادر",
+  "@torDetailSeeds": {
+    "description": "Detail row: seeds."
+  },
+  "torDetailPeers": "الأقران",
+  "@torDetailPeers": {
+    "description": "Detail row: peers."
+  },
+  "torDetailCountOf": "{connected} من {total}",
+  "@torDetailCountOf": {
+    "description": "Connected count out of the total known to trackers.",
+    "placeholders": {
+      "connected": {
+        "type": "int",
+        "description": "Connected.",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "description": "Total known.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "torDetailAvailability": "التوفر",
+  "@torDetailAvailability": {
+    "description": "Detail row: distributed copies."
+  },
+  "torDetailAvailabilityValue": "{copies} نسخة",
+  "@torDetailAvailabilityValue": {
+    "description": "Distributed copies value.",
+    "placeholders": {
+      "copies": {
+        "type": "double",
+        "description": "Copies.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 2
+        }
+      }
+    }
+  },
+  "torDetailEtaLabel": "الوقت المتبقي",
+  "@torDetailEtaLabel": {
+    "description": "Detail row: estimated time remaining."
+  },
+  "torDetailUnknown": "غير معروف",
+  "@torDetailUnknown": {
+    "description": "Shown when the client does not report a value."
+  },
+  "torDetailNoSeeds": "لا توجد مصادر متصلة، لذا قد لا يتقدم التنزيل. حاول لاحقًا أو تحقق من المصدر.",
+  "@torDetailNoSeeds": {
+    "description": "Hint shown when a downloading torrent has no seeds."
+  },
+  "torDetailErrorHeadline": "تعذر تحميل التفاصيل",
+  "@torDetailErrorHeadline": {
+    "description": "Headline of the detail error state."
+  },
+  "torDetailClose": "إغلاق",
+  "@torDetailClose": {
+    "description": "Button that closes a sheet."
+  },
+  "torLimitsTitle": "حدود السرعة",
+  "@torLimitsTitle": {
+    "description": "Title of the speed limits sheet."
+  },
+  "torLimitsDownload": "حد التنزيل",
+  "@torLimitsDownload": {
+    "description": "Section label of the download limit."
+  },
+  "torLimitsUpload": "حد الرفع",
+  "@torLimitsUpload": {
+    "description": "Section label of the upload limit."
+  },
+  "torLimitsNone": "بلا حد",
+  "@torLimitsNone": {
+    "description": "Choice: unlimited speed."
+  },
+  "torLimitsCustom": "حد مخصص",
+  "@torLimitsCustom": {
+    "description": "Choice: a custom limit."
+  },
+  "torLimitsValue": "الحد",
+  "@torLimitsValue": {
+    "description": "Label of the numeric limit field."
+  },
+  "torLimitsUnit": "الوحدة",
+  "@torLimitsUnit": {
+    "description": "Label of the unit chooser."
+  },
+  "torLimitsUnitKB": "ك.ب/ث",
+  "@torLimitsUnitKB": {
+    "description": "Speed unit: kilobytes per second."
+  },
+  "torLimitsUnitMB": "م.ب/ث",
+  "@torLimitsUnitMB": {
+    "description": "Speed unit: megabytes per second."
+  },
+  "torLimitsApply": "تطبيق الحدود",
+  "@torLimitsApply": {
+    "description": "Button that applies the limits."
+  },
+  "torLimitsApplying": "جارٍ التطبيق…",
+  "@torLimitsApplying": {
+    "description": "Label while limits are being applied."
+  },
+  "torLimitsApplied": "تم تطبيق الحدود.",
+  "@torLimitsApplied": {
+    "description": "Confirmation after applying limits."
+  },
+  "torLimitsInvalid": "أدخل عددًا صحيحًا أكبر من صفر.",
+  "@torLimitsInvalid": {
+    "description": "Validation of the custom limit field."
+  },
+  "torLimitsAlt": "حدود السرعة البديلة",
+  "@torLimitsAlt": {
+    "description": "Switch: use the client alternative speed limits."
+  },
+  "torLimitsAltHint": "يستخدم الحدود البديلة المضبوطة في العميل.",
+  "@torLimitsAltHint": {
+    "description": "Explanation under the alternative limits switch."
+  },
+  "torLimitsAltUnsupported": "لا يمكن لإصدار هذا العميل تبديل الحدود البديلة من هنا.",
+  "@torLimitsAltUnsupported": {
+    "description": "Explanation shown on the disabled alternative limits switch when the server does not support it."
+  },
+  "torLimitsNoAlt": "لا يحتوي هذا العميل على حدود سرعة بديلة.",
+  "@torLimitsNoAlt": {
+    "description": "Footnote for clients without an alternative limits switch."
+  },
+  "torLimitsLoadFailed": "تعذرت قراءة الحدود الحالية. {reason}",
+  "@torLimitsLoadFailed": {
+    "description": "Error when the limits could not be loaded.",
+    "placeholders": {
+      "reason": {
+        "type": "String",
+        "description": "The plain-language reason the action failed."
+      }
+    }
+  },
+  "torLimitsFailed": "تعذر تطبيق الحدود. {reason}",
+  "@torLimitsFailed": {
+    "description": "Error when applying the limits failed.",
+    "placeholders": {
+      "reason": {
+        "type": "String",
+        "description": "The plain-language reason the action failed."
+      }
+    }
+  },
+  "torHostTitle": "اختر خادم Deluge",
+  "@torHostTitle": {
+    "description": "Headline of the daemon host picker."
+  },
+  "torHostMessage": "واجهة Deluge Web غير متصلة بخادم بعد. اختر الخادم المطلوب.",
+  "@torHostMessage": {
+    "description": "Explanation of the daemon host picker."
+  },
+  "torHostEntry": "⁦{host}:{port}⁩",
+  "@torHostEntry": {
+    "description": "One daemon host in the picker.",
+    "placeholders": {
+      "host": {
+        "type": "String",
+        "description": "Host name (plain text)."
+      },
+      "port": {
+        "type": "String",
+        "description": "Port number, already formatted for the locale without a thousands separator."
+      }
+    }
+  },
+  "torHostNone": "لا يوجد خادم مضبوط في Deluge Web. أضف واحدًا من مدير الاتصال في Deluge.",
+  "@torHostNone": {
+    "description": "Message when no daemon host exists."
+  },
+  "torKindTransmissionDescription": "عميل تورنت خفيف بواجهة RPC.",
+  "@torKindTransmissionDescription": {
+    "description": "Description of Transmission in the server type picker."
+  },
+  "torKindDelugeDescription": "عميل تورنت بواجهة ويب (Deluge Web).",
+  "@torKindDelugeDescription": {
+    "description": "Description of Deluge in the server type picker."
+  },
+  "torListSeparator": "، ",
+  "@torListSeparator": {
+    "description": "Separator between the items of a spoken list (comma and space)."
+  },
+  "torActionPartialFailed": "{failed, plural, =1{تعذر تغيير تورنت واحد من أصل {total}.} =2{تعذر تغيير تورنتين من أصل {total}.} few{تعذر تغيير {failed} تورنتات من أصل {total}.} many{تعذر تغيير {failed} تورنتًا من أصل {total}.} other{تعذر تغيير {failed} تورنت من أصل {total}.}} تعرض القائمة الحالة الحالية.",
+  "@torActionPartialFailed": {
+    "description": "Shown when an action worked for some torrents and failed for others (Deluge).",
+    "placeholders": {
+      "failed": {
+        "type": "int",
+        "description": "How many torrents failed.",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "description": "How many torrents the action was for.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "torAddTooManyFiles": "{ignored, plural, =1{تم تجاهل ملف واحد إضافي.} =2{تم تجاهل ملفين إضافيين.} few{تم تجاهل {ignored} ملفات إضافية.} many{تم تجاهل {ignored} ملفًا إضافيًا.} other{تم تجاهل {ignored} ملف إضافي.}} يمكنك إضافة حتى {max} ملفًا دفعة واحدة.",
+  "@torAddTooManyFiles": {
+    "description": "Shown after choosing more .torrent files than can be added at once.",
+    "placeholders": {
+      "ignored": {
+        "type": "int",
+        "description": "Files that were not used.",
+        "format": "decimalPattern"
+      },
+      "max": {
+        "type": "int",
+        "description": "The most files one pick adds.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "torAddLabelNotApplied": "تمت الإضافة، لكن تعذر تطبيق التصنيف. تستخدم تصنيفات Deluge أحرفًا صغيرة وأرقامًا والرموز - _ . فقط.",
+  "@torAddLabelNotApplied": {
+    "description": "Warning after a torrent was added to Deluge but its label could not be set."
+  },
+  "torHostNotAllowedMessage": "رفض الخادم هذا الجهاز (403). تحقق من اسم المستخدم وكلمة المرور، ومن أن القائمة البيضاء للمضيفين (rpc-host-whitelist) وقائمة العناوين (rpc-whitelist) في Transmission تسمح بهذا الاتصال.",
+  "@torHostNotAllowedMessage": {
+    "description": "Explains a Transmission 403: credentials or the host/address whitelist."
+  },
+  "torRatioUnknown": "–",
+  "@torRatioUnknown": {
+    "description": "Share ratio shown when the client does not know it (an en dash)."
+  },
+  "torRatioInfinite": "∞",
+  "@torRatioInfinite": {
+    "description": "Share ratio shown when it is infinite (nothing was downloaded)."
+  },
+  "torRatioUnknownSpoken": "غير معروف",
+  "@torRatioUnknownSpoken": {
+    "description": "Spoken form of the unknown ratio."
+  },
+  "torRatioInfiniteSpoken": "لا نهائي",
+  "@torRatioInfiniteSpoken": {
+    "description": "Spoken form of the infinite ratio."
+  },
+  "torDetailRatioValue": "النسبة {value}",
+  "@torDetailRatioValue": {
+    "description": "Row detail for a ratio that is unknown or infinite.",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "description": "The ratio symbol: an en dash or the infinity sign."
+      }
+    }
+  },
+  "torGraphTrendRising": "في ازدياد",
+  "@torGraphTrendRising": {
+    "description": "Trend of the speed graph: speeds are going up."
+  },
+  "torGraphTrendFalling": "في انخفاض",
+  "@torGraphTrendFalling": {
+    "description": "Trend of the speed graph: speeds are going down."
+  },
+  "torGraphTrendSteady": "مستقرة",
+  "@torGraphTrendSteady": {
+    "description": "Trend of the speed graph: speeds are about the same."
+  },
+  "torGraphSummary": "رسم بياني لآخر {count} قراءة: ذروة التنزيل {down}، ذروة الرفع {up}، الاتجاه {trend}. الرفع هو الخط المتقطع.",
+  "@torGraphSummary": {
+    "description": "Spoken text alternative of the speed graph.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Readings in the graph.",
+        "format": "decimalPattern"
+      },
+      "down": {
+        "type": "String",
+        "description": "Peak download speed."
+      },
+      "up": {
+        "type": "String",
+        "description": "Peak upload speed."
+      },
+      "trend": {
+        "type": "String",
+        "description": "Trend word."
+      }
+    }
   }
 }

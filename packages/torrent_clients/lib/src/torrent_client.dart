@@ -3,6 +3,7 @@
 import 'package:core/core.dart';
 import 'package:torrent_clients/src/models.dart';
 import 'package:torrent_clients/src/torrent_actions.dart';
+import 'package:torrent_clients/src/torrent_capabilities.dart';
 
 /// Common surface of the supported torrent clients.
 ///
@@ -12,6 +13,10 @@ abstract interface class TorrentClient implements TorrentActions {
   /// Which client this is: [ServiceKind.qbittorrent],
   /// [ServiceKind.transmission] or [ServiceKind.deluge].
   ServiceKind get kind;
+
+  /// The controls this client (as currently detected) supports. May change
+  /// after the first successful call (for example Deluge's label plugin).
+  TorrentCapabilities get capabilities;
 
   /// Forgets the in-memory session (cookie, token). Called when the active
   /// server or its credentials change, and on dispose. Nothing is persisted.

@@ -9,6 +9,8 @@
       `test-key-0000...`). gitleaks is clean. Manifest stays hardened. New
       logging goes through the redacting logger. Security-relevant logic has
       tests, including failure and mismatch cases.
+- [ ] No secrets, real hosts or personal data in code, fixtures, screenshots
+      or PR text.
 - [ ] **Performance:** no work before the first frame; everything lazy. The
       first-frame test passes. Debug and release APKs build without secrets;
       the APK size gate (arm64 release <= 20 MiB) passes.

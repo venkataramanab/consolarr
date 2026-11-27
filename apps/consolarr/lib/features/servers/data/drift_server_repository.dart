@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:consolarr/features/servers/data/server_secret_keys.dart';
 import 'package:consolarr/features/servers/domain/server_models.dart';
 import 'package:consolarr/features/servers/domain/server_repository.dart';
+import 'package:consolarr/src/database/server_scoped_state.dart';
 import 'package:consolarr/src/cache/payload_cache.dart';
 import 'package:consolarr/src/database/app_database.dart';
 import 'package:core/core.dart';
@@ -327,6 +328,10 @@ class DriftServerRepository implements ServerRepository {
     await (_db.delete(
       _db.appStateRows,
     )..where((r) => r.key.equals(_revisionKey(id)))).go();
+    // Per-server state of other features (for example a Deluge daemon host).
+    await (_db.delete(
+      _db.appStateRows,
+    )..where((r) => r.key.isIn(serverScopedStateKeys(id)))).go();
     for (final kind in ServiceKind.values) {
       final key = _activeKey(kind);
       await (_db.delete(

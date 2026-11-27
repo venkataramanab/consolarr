@@ -4,6 +4,7 @@ import 'package:consolarr/features/servers/domain/server_models.dart';
 import 'package:consolarr/features/shell/application/shell_providers.dart';
 import 'package:consolarr/features/shell/presentation/server_switcher_sheet.dart';
 import 'package:consolarr/features/shell/presentation/shell_chrome.dart';
+import 'package:consolarr/src/navigation/app_destination.dart';
 import 'package:consolarr/src/navigation/destinations.dart';
 import 'package:design_system/design_system.dart';
 import 'package:consolarr/src/providers.dart';
@@ -61,7 +62,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     final media = MediaQuery.of(context);
     WidgetsBinding.instance.addPostFrameCallback((_) => _trackBranch(current));
 
-    final switcherKind = appDestinations[current].switcherKind;
+    final switcherKinds = appDestinations[current].effectiveSwitcherKinds;
 
     return PopScope(
       canPop: current == 0,
@@ -90,9 +91,14 @@ class _AppShellState extends ConsumerState<AppShell> {
                 child: child!,
               ),
               child: ShellChrome(
-                switcher: switcherKind == null
+                switcher: switcherKinds.isEmpty
                     ? null
-                    : ServerSwitcherButton(kind: switcherKind),
+                    : ServerSwitcherButton(
+                        kinds: switcherKinds,
+                        selectionKey: selectedKindKeyFor(
+                          appDestinations[current].id,
+                        ),
+                      ),
                 child: shell,
               ),
             ),

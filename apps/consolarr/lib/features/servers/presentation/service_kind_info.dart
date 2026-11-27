@@ -10,6 +10,8 @@ const supportedServiceKinds = [
   ServiceKind.sonarr,
   ServiceKind.radarr,
   ServiceKind.qbittorrent,
+  ServiceKind.transmission,
+  ServiceKind.deluge,
 ];
 
 /// Authentication modes a service offers, strongest first.
@@ -42,7 +44,8 @@ String serviceKindDescription(AppLocalizations l10n, ServiceKind kind) =>
       ServiceKind.sonarr => l10n.serverKindSonarrDescription,
       ServiceKind.radarr => l10n.radarrKindDescription,
       ServiceKind.qbittorrent => l10n.serverKindQbittorrentDescription,
-      _ => l10n.serverKindOtherDescription,
+      ServiceKind.transmission => l10n.torKindTransmissionDescription,
+      ServiceKind.deluge => l10n.torKindDelugeDescription,
     };
 
 String authModeLabel(AppLocalizations l10n, AuthMode mode) => switch (mode) {
