@@ -8,8 +8,8 @@ import 'package:l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:observability/observability.dart';
 
-/// Accessibility (SET-12): reduce-motion override, larger touch targets and
-/// high contrast. Text size and the screen reader come from the device.
+/// Accessibility (SET-12): reduce-motion override, larger touch targets,
+/// reduce transparency and high contrast. Text size and the screen reader come from the device.
 class AccessibilityScreen extends ConsumerWidget {
   const AccessibilityScreen({super.key});
 
@@ -41,6 +41,14 @@ class AccessibilityScreen extends ConsumerWidget {
               icon: Icons.touch_app_outlined,
               value: s.largerTargets,
               onChanged: n.setLargerTargets,
+            ),
+            SwitchRow(
+              title: l10n.a11yTransparencyTitle,
+              subtitle: l10n.a11yTransparencySubtitle,
+              icon: Icons.blur_off,
+              value: s.reduceTransparency || s.highContrast,
+              // High contrast already means solid surfaces.
+              onChanged: s.highContrast ? null : n.setReduceTransparency,
             ),
             SwitchRow(
               title: l10n.a11yContrastTitle,

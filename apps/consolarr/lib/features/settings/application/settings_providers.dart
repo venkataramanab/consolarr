@@ -159,6 +159,14 @@ class SettingsNotifier extends Notifier<AppSettings> {
     stored: value ? '1' : '0',
   );
 
+  Future<bool> setReduceTransparency(bool value) => _commit(
+    value,
+    read: (s) => s.reduceTransparency,
+    write: (s, v) => s.copyWith(reduceTransparency: v),
+    key: SettingsKeys.reduceTransparency,
+    stored: value ? '1' : '0',
+  );
+
   Future<bool> setLockEnabled(bool value) => _commit(
     value,
     read: (s) => s.lockEnabled,

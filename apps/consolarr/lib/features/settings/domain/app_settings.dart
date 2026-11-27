@@ -28,6 +28,7 @@ class AppSettings {
     this.motion = MotionPreference.system,
     this.highContrast = false,
     this.largerTargets = false,
+    this.reduceTransparency = false,
     this.lockEnabled = false,
     this.lockDelay = LockDelay.immediately,
     this.blockScreenshots = false,
@@ -54,6 +55,9 @@ class AppSettings {
   final MotionPreference motion;
   final bool highContrast;
   final bool largerTargets;
+
+  /// Solid surfaces instead of frosted glass (on top of high contrast).
+  final bool reduceTransparency;
   final bool lockEnabled;
   final LockDelay lockDelay;
   final bool blockScreenshots;
@@ -77,6 +81,7 @@ class AppSettings {
     MotionPreference? motion,
     bool? highContrast,
     bool? largerTargets,
+    bool? reduceTransparency,
     bool? lockEnabled,
     LockDelay? lockDelay,
     bool? blockScreenshots,
@@ -92,6 +97,7 @@ class AppSettings {
     motion: motion ?? this.motion,
     highContrast: highContrast ?? this.highContrast,
     largerTargets: largerTargets ?? this.largerTargets,
+    reduceTransparency: reduceTransparency ?? this.reduceTransparency,
     lockEnabled: lockEnabled ?? this.lockEnabled,
     lockDelay: lockDelay ?? this.lockDelay,
     blockScreenshots: blockScreenshots ?? this.blockScreenshots,
@@ -126,6 +132,7 @@ class AppSettings {
       ),
       highContrast: flag(SettingsKeys.highContrast),
       largerTargets: flag(SettingsKeys.largerTargets),
+      reduceTransparency: flag(SettingsKeys.reduceTransparency),
       lockEnabled: flag(SettingsKeys.lockEnabled),
       lockDelay: pick(
         LockDelay.values,
@@ -150,6 +157,7 @@ abstract final class SettingsKeys {
   static const motion = 'settings.motion';
   static const highContrast = 'settings.high_contrast';
   static const largerTargets = 'settings.larger_targets';
+  static const reduceTransparency = 'settings.reduce_transparency';
   static const lockEnabled = 'settings.lock_enabled';
   static const lockDelay = 'settings.lock_delay';
   static const blockScreenshots = 'settings.block_screenshots';

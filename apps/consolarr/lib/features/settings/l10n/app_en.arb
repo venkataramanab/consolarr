@@ -678,5 +678,13 @@
   "lockCoolDownOver": "You can try unlocking again.",
   "@lockCoolDownOver": {
     "description": "Announced once when the pause after too many unlock attempts has ended."
+  },
+  "a11yTransparencyTitle": "Reduce transparency",
+  "@a11yTransparencyTitle": {
+    "description": "Title of the switch that replaces frosted glass with solid surfaces."
+  },
+  "a11yTransparencySubtitle": "Use solid backgrounds instead of frosted glass. Always on with high contrast.",
+  "@a11yTransparencySubtitle": {
+    "description": "Explanation under the reduce transparency switch."
   }
 }

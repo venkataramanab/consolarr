@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:consolarr/consolarr.dart';
+import 'package:consolarr/features/servers/application/server_connection.dart';
+import 'package:consolarr/features/servers/application/servers_providers.dart';
+import 'package:consolarr/features/settings/application/settings_providers.dart';
+import 'package:consolarr/src/first_frame.dart';
+import 'package:consolarr/src/providers.dart';
 import 'package:consolarr/src/database/app_database.dart';
 import 'package:consolarr/src/images/image_cache_config.dart';
 import 'package:security/security.dart';
@@ -12,12 +17,11 @@ import 'package:test_harness/test_harness.dart';
 /// Records which providers are created before `firstFrameDoneProvider` flips.
 base class _EarlyReads extends ProviderObserver {
   bool firstFrameDone = false;
-  final List<String> early = [];
+  final List<Object> early = [];
 
   @override
   void didAddProvider(ProviderObserverContext context, Object? value) {
-    if (!firstFrameDone)
-      early.add(context.provider.name ?? '${context.provider.runtimeType}');
+    if (!firstFrameDone) early.add(context.provider);
   }
 
   @override
@@ -32,6 +36,20 @@ base class _EarlyReads extends ProviderObserver {
   }
 }
 
+/// Flips the recorder's flag *before* listeners of the first-frame provider
+/// run, so reads those listeners start count as after the first frame.
+class _SpyFirstFrame extends FirstFrameDone {
+  _SpyFirstFrame(this.reads);
+
+  final _EarlyReads reads;
+
+  @override
+  void markDone() {
+    reads.firstFrameDone = true;
+    super.markDone();
+  }
+}
+
 void main() {
   testWidgets('the database and shell providers are not read before the '
       'first frame', (tester) async {
@@ -40,6 +58,7 @@ void main() {
       ProviderScope(
         observers: [reads],
         overrides: [
+          firstFrameDoneProvider.overrideWith(() => _SpyFirstFrame(reads)),
           databaseProvider.overrideWith((ref) {
             final db = AppDatabase.memory();
             ref.onDispose(db.close);
@@ -52,17 +71,29 @@ void main() {
     );
     // pumpWidget ran the first frame and its post-frame callback.
     expect(reads.firstFrameDone, isTrue);
-    const forbidden = {
-      'databaseProvider',
-      'serverRepositoryProvider',
-      'serversProvider',
-      'payloadCacheProvider',
-      'pinStoreProvider',
-      'secureHttpClientFactoryProvider',
-      'activeConnectionProvider',
-      'activeConnectionKeyProvider',
+    // Providers are compared by identity (they carry no names).
+    final forbidden = <Object>{
+      databaseProvider,
+      serverRepositoryProvider,
+      serversProvider,
+      payloadCacheProvider,
+      pinStoreProvider,
+      secureHttpClientFactoryProvider,
+      activeConnectionProvider,
+      activeConnectionKeyProvider,
+      // The settings and consent rows are read only after the first frame.
+      settingsStoreProvider,
+      consentStoreProvider,
+      storedRowsProvider,
     };
-    final touched = reads.early.where(forbidden.contains).toList();
+    // Guard the guard: the observer does see providers.
+    expect(reads.early, contains(settingsProvider));
+    final touched = reads.early
+        .where(
+          (p) =>
+              forbidden.contains(p) || forbidden.contains((p as dynamic).from),
+        )
+        .toList();
     expect(
       touched,
       isEmpty,

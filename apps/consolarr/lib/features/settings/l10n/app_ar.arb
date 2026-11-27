@@ -678,5 +678,13 @@
   "lockCoolDownOver": "يمكنك محاولة فتح القفل مجددًا.",
   "@lockCoolDownOver": {
     "description": "Announced once when the pause after too many unlock attempts has ended."
+  },
+  "a11yTransparencyTitle": "تقليل الشفافية",
+  "@a11yTransparencyTitle": {
+    "description": "Title of the switch that replaces frosted glass with solid surfaces."
+  },
+  "a11yTransparencySubtitle": "استخدم خلفيات صلبة بدل الزجاج الشفاف. تكون مفعّلة دائمًا مع التباين العالي.",
+  "@a11yTransparencySubtitle": {
+    "description": "Explanation under the reduce transparency switch."
   }
 }
