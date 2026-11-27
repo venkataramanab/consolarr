@@ -84,6 +84,69 @@ void main() {
       expect(e.toDraft().credentials.headers.single.value, 'new');
     });
 
+    group('changing the origin of an existing server', () {
+      ServerFormController editing() {
+        final e = ServerFormController(
+          existing: ServerEntry(
+            profile: ServerProfile.parse(
+              id: 's1',
+              name: 'Example',
+              kind: ServiceKind.sonarr,
+              address: 'https://sonarr.example',
+            ).valueOrNull!,
+            sortOrder: 0,
+          ),
+        );
+        addTearDown(e.dispose);
+        return e;
+      }
+
+      test('is detected for scheme, host and port, not for path or case', () {
+        final e = editing();
+        expect(e.originChanged, isFalse);
+        e.address.text = 'https://SONARR.example/tv';
+        expect(e.originChanged, isFalse);
+        for (final changed in [
+          'http://sonarr.example',
+          'https://other.example',
+          'https://sonarr.example:8443',
+        ]) {
+          e.address.text = changed;
+          expect(e.originChanged, isTrue, reason: changed);
+        }
+      });
+
+      test('requires the secrets again and forgets the stored ones', () {
+        final e = editing()..address.text = 'https://other.example';
+        expect(e.hasStoredSecrets, isFalse);
+        expect(e.validate().secrets, FieldIssue.secretsReenter);
+        expect(e.validate().isValid, isFalse);
+        e.apiKey.text = 'test-key-0000';
+        expect(e.validate().secrets, isNull);
+        expect(e.validate().isValid, isTrue);
+      });
+
+      test('stored header values are not carried to the new origin', () {
+        final e = ServerFormController(existing: existingWithHeader())
+          ..address.text = 'https://other.example'
+          ..apiKey.text = 'test-key-0000';
+        final draft = e.toDraft(
+          storedHeaders: const [HeaderEntry(name: 'x-gw', value: 'stored')],
+        );
+        expect(draft.credentials.headers.single.value, isEmpty);
+        expect(e.validate().secrets, FieldIssue.secretsReenter);
+        addTearDown(e.dispose);
+      });
+
+      test('a new server never needs re-entry', () {
+        c
+          ..name.text = 'Example'
+          ..address.text = 'https://sonarr.example';
+        expect(c.originChanged, isFalse);
+        expect(c.validate().secrets, isNull);
+      });
+    });
+
     test('dirty tracking and markSaved', () {
       expect(c.isDirty, isFalse);
       c.name.text = 'x';

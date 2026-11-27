@@ -115,6 +115,24 @@ void main() {
       expect(a.requests.single.uri.path, '/api/v3/series');
     });
 
+    test(
+      'malformed rows are skipped and only their count is reported',
+      () async {
+        final skipped = <int>[];
+        final client = SonarrClient(
+          dio: dioWith(
+            FakeAdapter.fixed(
+              jsonEncode([fullSeries(), 'junk', fullSeries(id: 2)]),
+            ),
+          ),
+          onRowsSkipped: skipped.add,
+        );
+        final r = await client.series();
+        expect(r.valueOrNull, hasLength(2));
+        expect(skipped, [1]);
+      },
+    );
+
     test('a wrong-typed body is parse_error', () async {
       final r = await _client(FakeAdapter.fixed('{"a":1}')).series();
       expect(r.errorOrNull?.category, ErrorCategory.parseError);

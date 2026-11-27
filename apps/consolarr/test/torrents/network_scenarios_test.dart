@@ -84,7 +84,7 @@ void main() {
   test('happy path through the real client', () async {
     final qbit = FakeQbit();
     final c = containerWith(qbit);
-    final s = await c.read(torrentListProvider.future);
+    final s = await c.read(torrentListProvider.future) as TorrentsData;
     expect(s.torrents.single.name, 'Example Torrent 1');
     expect(s.transfer!.upSpeed, 2048);
     expect(qbit.logins, 1);
@@ -97,7 +97,7 @@ void main() {
       faults: const [LatencyFault(Duration(seconds: 2))],
       delay: (d) async => waits.add(d),
     );
-    final s = await c.read(torrentListProvider.future);
+    final s = await c.read(torrentListProvider.future) as TorrentsData;
     expect(s.torrents, hasLength(1));
     expect(waits, isNotEmpty);
     expect(waits.every((d) => d == const Duration(seconds: 2)), isTrue);
@@ -133,7 +133,10 @@ void main() {
     for (var i = 0; i < 3 && c.read(torrentListProvider).value == null; i++) {
       await c.read(torrentListProvider.notifier).refresh();
     }
-    expect(c.read(torrentListProvider).value!.torrents, hasLength(1));
+    expect(
+      (c.read(torrentListProvider).value! as TorrentsData).torrents,
+      hasLength(1),
+    );
     sub.close();
   });
 
@@ -145,23 +148,27 @@ void main() {
     expect(qbit.logins, 1);
     qbit.expireNextDataCalls = 1;
     await c.read(torrentListProvider.notifier).refresh();
-    final s = c.read(torrentListProvider).value!;
+    final s = c.read(torrentListProvider).value! as TorrentsData;
     expect(s.offline, isFalse);
     expect(qbit.logins, 2);
     sub.close();
   });
 
-  test('a timeout after data keeps the list and goes offline', () async {
+  test('an auth failure after data is an error, never "offline"', () async {
     final qbit = FakeQbit();
     final c = containerWith(qbit);
     final sub = c.listen(torrentListProvider, (_, _) {});
     await c.read(torrentListProvider.future);
-    // Swap in a failing adapter by exhausting re-login: a persistent 403.
+    // A persistent 403, even after a fresh login, is auth_failed.
     qbit.expireNextDataCalls = 100;
     await c.read(torrentListProvider.notifier).refresh();
-    final s = c.read(torrentListProvider).value!;
-    expect(s.offline, isTrue);
-    expect(s.torrents, hasLength(1));
+    final state = c.read(torrentListProvider);
+    expect(state.hasError, isTrue);
+    expect(
+      (state.error! as AppError).category,
+      ErrorCategory.authFailed,
+      reason: 'auth must not be hidden behind the last good list',
+    );
     sub.close();
   });
 }

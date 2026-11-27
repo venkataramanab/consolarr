@@ -187,6 +187,36 @@ void main() {
     });
   });
 
+  group('parseRowsTolerant', () {
+    int parse(Object? v) => v is int ? v : throw const FormatException('x');
+
+    test('skips malformed rows and counts them', () {
+      final r = parseRowsTolerant([1, 'x', 3, null], parse);
+      expect(r.items, [1, 3]);
+      expect(r.skipped, 2);
+    });
+
+    test('an empty list is fine; all-malformed is a format error', () {
+      expect(parseRowsTolerant(<Object?>[], parse).items, isEmpty);
+      expect(() => parseRowsTolerant(['a', 'b'], parse), throwsFormatException);
+    });
+  });
+
+  test('kOfflineFallbackCategories never hides auth, version or TLS', () {
+    for (final c in [
+      ErrorCategory.authFailed,
+      ErrorCategory.unsupportedVersion,
+      ErrorCategory.tlsPinMismatch,
+      ErrorCategory.tlsUntrusted,
+      ErrorCategory.tlsExpired,
+      ErrorCategory.cleartextRefused,
+      ErrorCategory.redirectRefused,
+    ]) {
+      expect(kOfflineFallbackCategories, isNot(contains(c)));
+    }
+    expect(kOfflineFallbackCategories, contains(ErrorCategory.timeout));
+  });
+
   group('CleartextPolicy', () {
     ServerProfile profile(String address, {bool allow = false}) =>
         ServerProfile.parse(

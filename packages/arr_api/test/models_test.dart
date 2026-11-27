@@ -146,7 +146,21 @@ void main() {
       final list = parseSeriesList(
         jsonEncode([fullSeries(), fullSeries(id: 2)]),
       );
-      expect(list.map((s) => s.id), [1, 2]);
+      expect(list.items.map((s) => s.id), [1, 2]);
+      expect(list.skipped, 0);
+    });
+
+    test('skips malformed rows and counts them', () {
+      final list = parseSeriesList(
+        jsonEncode([
+          fullSeries(),
+          7,
+          {'id': 'not-a-number'},
+          fullSeries(id: 3),
+        ]),
+      );
+      expect(list.items.map((s) => s.id), [1, 3]);
+      expect(list.skipped, 2);
     });
 
     test('rejects non-arrays and malformed JSON with FormatException', () {

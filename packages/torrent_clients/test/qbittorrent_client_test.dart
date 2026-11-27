@@ -193,6 +193,26 @@ void main() {
   });
 
   group('lists', () {
+    test(
+      'malformed rows are skipped and only their count is reported',
+      () async {
+        final skipped = <int>[];
+        final a = _server(
+          data: {
+            'torrents/info': jsonEncode([fullTorrent(), 5, fullTorrent(2)]),
+          },
+        );
+        final c = QBittorrentClient(
+          dio: dioWith(a, base: 'https://qbit.example'),
+          username: 'test-user',
+          password: 'test-password',
+          onRowsSkipped: skipped.add,
+        );
+        expect((await c.listTorrents()).valueOrNull, hasLength(2));
+        expect(skipped, [1]);
+      },
+    );
+
     test('torrents/info', () async {
       final a = _server(
         data: {

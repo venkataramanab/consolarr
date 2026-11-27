@@ -15,7 +15,7 @@ typedef ParseRunner = Future<T> Function<T>(T Function() computation);
 Future<T> _isolateRunner<T>(T Function() computation) =>
     Isolate.run(computation);
 
-List<SonarrSeries> _parseSeries(String body) => parseSeriesList(body);
+ParsedRows<SonarrSeries> _parseSeries(String body) => parseSeriesList(body);
 
 /// Hand-written, tolerant Sonarr v3 client (also works with v4).
 ///
@@ -24,9 +24,13 @@ List<SonarrSeries> _parseSeries(String body) => parseSeriesList(body);
 /// port and optional path prefix). Paths here are relative; the client builds
 /// absolute URIs itself so a prefix such as `/sonarr` is always preserved.
 class SonarrClient implements SonarrApi {
-  SonarrClient({required Dio dio, ParseRunner? parseRunner})
+  SonarrClient({required Dio dio, ParseRunner? parseRunner, this.onRowsSkipped})
     : _dio = dio,
       _runner = parseRunner ?? _isolateRunner;
+
+  /// Called with the number of malformed series rows that were skipped (only
+  /// when greater than zero). A count only: never row content.
+  final void Function(int skipped)? onRowsSkipped;
 
   /// Bodies larger than this are parsed off the UI isolate.
   static const isolateThresholdBytes = 64 * 1024;
@@ -103,10 +107,11 @@ class SonarrClient implements SonarrApi {
   Future<Result<List<SonarrSeries>>> series() async {
     try {
       final body = await _get('api/v3/series');
-      final list = body.length > isolateThresholdBytes
+      final parsed = body.length > isolateThresholdBytes
           ? await _runner(() => _parseSeries(body))
           : parseSeriesList(body);
-      return Result.ok(list);
+      if (parsed.skipped > 0) onRowsSkipped?.call(parsed.skipped);
+      return Result.ok(parsed.items);
     } on FormatException {
       return const Result.err(AppError(ErrorCategory.parseError));
     } on Object catch (e) {

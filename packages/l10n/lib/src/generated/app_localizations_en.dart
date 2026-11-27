@@ -414,6 +414,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Use the ASCII form of the host name (for example xn--...), not special characters.';
 
   @override
+  String get serverErrorSecretsReenter =>
+      'You changed the server address. Enter the key or password again; stored secrets are never sent to a different address.';
+
+  @override
+  String get serverSecretReenterHint =>
+      'You changed the server address, so the stored key or password will not be used. Enter it again.';
+
+  @override
   String get serverErrorPrefixInvalid =>
       'Use a path such as /sonarr, without spaces, ? or ...';
 
@@ -1516,6 +1524,14 @@ class AppLocalizationsEnXa extends AppLocalizationsEn {
   @override
   String get serverErrorAddressNonAscii =>
       '[Üšé ţĥé ÀŠÇÎÎ ƒöŕɱ öƒ ţĥé ĥöšţ ñàɱé (ƒöŕ éẋàɱþļé ẋñ--...), ñöţ šþéçîàļ çĥàŕàçţéŕš.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get serverErrorSecretsReenter =>
+      '[Ýöü çĥàñĝéð ţĥé šéŕṽéŕ àððŕéšš. Éñţéŕ ţĥé ķéý öŕ þàššŵöŕð àĝàîñ; šţöŕéð šéçŕéţš àŕé ñéṽéŕ šéñţ ţö à ðîƒƒéŕéñţ àððŕéšš.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get serverSecretReenterHint =>
+      '[Ýöü çĥàñĝéð ţĥé šéŕṽéŕ àððŕéšš, šö ţĥé šţöŕéð ķéý öŕ þàššŵöŕð ŵîļļ ñöţ ƀé üšéð. Éñţéŕ îţ àĝàîñ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]';
 
   @override
   String get serverErrorPrefixInvalid =>

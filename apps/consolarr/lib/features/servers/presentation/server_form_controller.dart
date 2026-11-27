@@ -18,19 +18,33 @@ enum FieldIssue {
   addressNonAscii,
   prefixInvalid,
   headerInvalid,
+  secretsReenter,
 }
 
 /// All current problems of the form (empty map = valid).
 class FormIssues {
-  const FormIssues({this.name, this.address, this.prefix, this.headers});
+  const FormIssues({
+    this.name,
+    this.address,
+    this.prefix,
+    this.headers,
+    this.secrets,
+  });
 
   final FieldIssue? name;
   final FieldIssue? address;
   final FieldIssue? prefix;
   final FieldIssue? headers;
 
+  /// The origin changed but the secrets were not entered again.
+  final FieldIssue? secrets;
+
   bool get isValid =>
-      name == null && address == null && prefix == null && headers == null;
+      name == null &&
+      address == null &&
+      prefix == null &&
+      headers == null &&
+      secrets == null;
 }
 
 /// One custom header row.
@@ -171,7 +185,20 @@ class ServerFormController extends ChangeNotifier {
 
   bool shows(String field) => _showAll || touched.contains(field);
 
-  /// Whether the address is plain http.
+  /// Whether the typed address has a different origin (scheme, host or port)
+  /// than the stored server. Stored secrets must then be entered again: they
+  /// are never sent to a changed origin, so they are neither kept nor reused
+  /// (not by save, and not by the connection test).
+  bool get originChanged {
+    final old = _existing?.profile.address;
+    final typed = Uri.tryParse(address.text.trim());
+    if (old == null || typed == null || !typed.hasAuthority) return false;
+    return typed.scheme.toLowerCase() != old.scheme ||
+        typed.host.toLowerCase() != old.host.toLowerCase() ||
+        typed.port != old.port;
+  }
+
+  /// Whether the typed address is plain http.
   bool get addressIsHttp =>
       Uri.tryParse(address.text.trim())?.scheme.toLowerCase() == 'http';
 
@@ -215,7 +242,23 @@ class ServerFormController extends ChangeNotifier {
       address: addressIssue,
       prefix: prefixIssue,
       headers: headerIssue,
+      secrets: addressIssue == null && _missingSecretsAfterOriginChange
+          ? FieldIssue.secretsReenter
+          : null,
     );
+  }
+
+  bool get _missingSecretsAfterOriginChange {
+    if (!originChanged) return false;
+    final missing = switch (authMode) {
+      AuthMode.none => false,
+      AuthMode.apiKey => apiKey.text.isEmpty,
+      AuthMode.basic => username.text.isEmpty || password.text.isEmpty,
+    };
+    return missing ||
+        headers.any(
+          (h) => h.name.text.trim().isNotEmpty && h.value.text.isEmpty,
+        );
   }
 
   String? _secret(TextEditingController c) => c.text.isEmpty ? null : c.text;
@@ -224,9 +267,10 @@ class ServerFormController extends ChangeNotifier {
   /// header values left empty for an existing header name are filled from
   /// [storedHeaders] so they are kept too.
   ServerDraft toDraft({List<HeaderEntry> storedHeaders = const []}) {
-    final stored = {
-      for (final h in storedHeaders) h.name.toLowerCase(): h.value,
-    };
+    // Never carry stored header values over to a changed origin.
+    final stored = originChanged
+        ? const <String, String>{}
+        : {for (final h in storedHeaders) h.name.toLowerCase(): h.value};
     return ServerDraft(
       id: draftId,
       name: name.text.trim(),
@@ -254,7 +298,8 @@ class ServerFormController extends ChangeNotifier {
   }
 
   /// Whether a stored secret exists the user may leave untouched.
-  bool get hasStoredSecrets => _existing != null && !_existing.needsCredentials;
+  bool get hasStoredSecrets =>
+      _existing != null && !_existing.needsCredentials && !originChanged;
 
   @override
   void dispose() {

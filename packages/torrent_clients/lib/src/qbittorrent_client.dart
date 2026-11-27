@@ -15,7 +15,7 @@ typedef ParseRunner = Future<T> Function<T>(T Function() computation);
 Future<T> _isolateRunner<T>(T Function() computation) =>
     Isolate.run(computation);
 
-List<Torrent> _parseTorrents(String body) => parseTorrentList(body);
+ParsedRows<Torrent> _parseTorrents(String body) => parseTorrentList(body);
 
 /// qBittorrent WebUI API v2 client (cookie login).
 ///
@@ -32,6 +32,7 @@ class QBittorrentClient implements TorrentClient {
     String? username,
     String? password,
     ParseRunner? parseRunner,
+    this.onRowsSkipped,
   }) : _dio = dio,
        _username = username,
        _password = password,
@@ -39,6 +40,10 @@ class QBittorrentClient implements TorrentClient {
 
   /// Bodies larger than this are parsed off the UI isolate.
   static const isolateThresholdBytes = 64 * 1024;
+
+  /// Called with the number of malformed torrent rows that were skipped (only
+  /// when greater than zero). A count only: never row content.
+  final void Function(int skipped)? onRowsSkipped;
 
   final Dio _dio;
   final String? _username;
@@ -160,9 +165,11 @@ class QBittorrentClient implements TorrentClient {
   @override
   Future<Result<List<Torrent>>> listTorrents() => _guard(() async {
     final body = await _get('api/v2/torrents/info');
-    return body.length > isolateThresholdBytes
+    final parsed = body.length > isolateThresholdBytes
         ? await _runner(() => _parseTorrents(body))
         : parseTorrentList(body);
+    if (parsed.skipped > 0) onRowsSkipped?.call(parsed.skipped);
+    return parsed.items;
   });
 
   @override

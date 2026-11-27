@@ -92,9 +92,12 @@ class _Body extends ConsumerWidget {
       ),
     );
 
-    final state = library.value;
+    // Order matters: Riverpod keeps the previous value through a reload and
+    // through an error, so `value` alone would show the previous server's
+    // library as current after a switch.
+    final state = library.isLoading || library.hasError ? null : library.value;
     if (state == null) {
-      if (library.hasError) {
+      if (library.hasError && !library.isLoading) {
         final copy = sonarrUnexpectedErrorCopy(l10n);
         return statePane(
           ErrorState(

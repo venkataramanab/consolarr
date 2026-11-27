@@ -93,6 +93,33 @@ List<Torrent> allStates() => [
 
 final fixedNow = DateTime.utc(2026, 1, 1, 12);
 
+/// The torrent screen under the harness (reduced motion), without a
+/// `ProviderScope`: the caller supplies its own overrides.
+Widget screenAppFor(
+  HarnessVariant variant, {
+  VoidCallback? onAddServer,
+  VoidCallback? onSpeedHeaderTap,
+}) {
+  return harnessApp(
+    variant,
+    Builder(
+      builder: (context) {
+        final media = MediaQuery.of(context);
+        return MediaQuery(
+          data: media.copyWith(disableAnimations: true),
+          child: Scaffold(
+            extendBody: true,
+            body: TorrentListScreen(
+              onAddServer: onAddServer,
+              onSpeedHeaderTap: onSpeedHeaderTap,
+            ),
+          ),
+        );
+      },
+    ),
+  );
+}
+
 /// A screen under the harness with reduced motion (so `pumpAndSettle`
 /// completes) and the given client.
 Widget screenApp(

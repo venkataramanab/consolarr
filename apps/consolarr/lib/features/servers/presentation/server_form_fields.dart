@@ -18,6 +18,7 @@ String? _issueText(AppLocalizations l10n, FieldIssue? issue) => switch (issue) {
   FieldIssue.addressNonAscii => l10n.serverErrorAddressNonAscii,
   FieldIssue.prefixInvalid => l10n.serverErrorPrefixInvalid,
   FieldIssue.headerInvalid => l10n.serverErrorHeaderInvalid,
+  FieldIssue.secretsReenter => l10n.serverErrorSecretsReenter,
 };
 
 // 12px helper/error text fails the contrast guideline on the card tones, so
@@ -159,6 +160,18 @@ class ServerFormFields extends StatelessWidget {
                   ),
               ],
             ),
+            if (c.originChanged)
+              Padding(
+                padding: const EdgeInsets.only(bottom: ConsolarrSpacing.sm),
+                child: Text(
+                  issues.secrets != null && c.shows('secrets')
+                      ? l10n.serverErrorSecretsReenter
+                      : l10n.serverSecretReenterHint,
+                  style: issues.secrets != null && c.shows('secrets')
+                      ? _errorStyle(context)
+                      : Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
             const SizedBox(height: ConsolarrSpacing.md),
             if (c.authMode == AuthMode.apiKey)
               SecretTextField(

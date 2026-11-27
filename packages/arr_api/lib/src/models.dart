@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:arr_api/src/json_read.dart';
+import 'package:core/core.dart';
 
 /// Series lifecycle as reported by Sonarr.
 enum SeriesStatus { continuing, ended, upcoming, deleted, unknown }
@@ -265,18 +266,19 @@ bool _listEq<T>(List<T> a, List<T> b) {
   return true;
 }
 
-/// Parses a `GET /series` body. Throws [FormatException] on malformed JSON,
-/// a non-array body or an invalid element. Top level so it can run in an
-/// isolate.
-List<SonarrSeries> parseSeriesList(String body) {
+/// Parses a `GET /series` body. Throws [FormatException] on malformed JSON, a
+/// non-array body, or when no element at all could be parsed. Individual
+/// malformed elements are skipped and counted ([ParsedRows.skipped]), so one
+/// bad row never hides the library. Top level so it can run in an isolate.
+ParsedRows<SonarrSeries> parseSeriesList(String body) {
   final decoded = jsonDecode(body);
   if (decoded is! List) throw const FormatException('expected a JSON array');
-  return [
-    for (final e in decoded)
-      SonarrSeries.fromJson(
-        JsonRead.map(e) ?? (throw const FormatException('expected an object')),
-      ),
-  ];
+  return parseRowsTolerant(
+    decoded,
+    (e) => SonarrSeries.fromJson(
+      JsonRead.map(e) ?? (throw const FormatException('expected an object')),
+    ),
+  );
 }
 
 /// Parses a `GET /system/status` body. Throws [FormatException] when the body

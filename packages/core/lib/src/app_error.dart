@@ -55,3 +55,18 @@ class AppError implements Exception {
   @override
   String toString() => 'AppError(${category.code})';
 }
+
+/// Failures after which cached or last-good data is shown (with an offline
+/// marker) instead of an error: the server is not reachable or not healthy.
+///
+/// Everything else is shown as such and never hidden behind old data:
+/// `auth_failed`, `unsupported_version`, `cleartext_refused`, redirects and
+/// every TLS category (a pin mismatch must block).
+const Set<ErrorCategory> kOfflineFallbackCategories = {
+  ErrorCategory.networkUnreachable,
+  ErrorCategory.timeout,
+  ErrorCategory.serverError,
+  ErrorCategory.notFound,
+  ErrorCategory.parseError,
+  ErrorCategory.responseTooLarge,
+};

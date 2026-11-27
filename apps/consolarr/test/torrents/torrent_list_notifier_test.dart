@@ -27,14 +27,14 @@ void main() {
   test('no configured client is the noServer state', () async {
     final c = containerFor(() async => null);
     final s = await c.read(torrentListProvider.future);
-    expect(s.noServer, isTrue);
+    expect(s, isA<TorrentsNoServer>());
   });
 
   test('loads torrents and flags a missing transfer as partial', () async {
     final client = FakeTorrentClient(torrents: [sampleTorrent(1)])
       ..failTransfer();
     final c = containerFor(() async => client);
-    final s = await c.read(torrentListProvider.future);
+    final s = await c.read(torrentListProvider.future) as TorrentsData;
     expect(s.torrents, hasLength(1));
     expect(s.transferUnavailable, isTrue);
     expect(s.offline, isFalse);
@@ -65,7 +65,7 @@ void main() {
     await c.read(torrentListProvider.future);
     client.failTorrents(ErrorCategory.networkUnreachable);
     await c.read(torrentListProvider.notifier).refresh();
-    final s = c.read(torrentListProvider).value!;
+    final s = c.read(torrentListProvider).value! as TorrentsData;
     expect(s.offline, isTrue);
     expect(s.torrents, hasLength(1));
 
@@ -75,7 +75,7 @@ void main() {
         const TransferInfo(dlSpeed: 1, upSpeed: 1, dlTotal: 0, upTotal: 0),
       );
     await c.read(torrentListProvider.notifier).refresh();
-    final back = c.read(torrentListProvider).value!;
+    final back = c.read(torrentListProvider).value! as TorrentsData;
     expect(back.offline, isFalse);
     expect(back.torrents, hasLength(2));
     sub.close();

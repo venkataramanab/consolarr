@@ -790,6 +790,18 @@ abstract class AppLocalizations {
   /// **'Use the ASCII form of the host name (for example xn--...), not special characters.'**
   String get serverErrorAddressNonAscii;
 
+  /// Validation error: the address origin changed, so the stored key or password must be entered again before saving or testing.
+  ///
+  /// In en, this message translates to:
+  /// **'You changed the server address. Enter the key or password again; stored secrets are never sent to a different address.'**
+  String get serverErrorSecretsReenter;
+
+  /// Hint shown above the credential fields after the address (scheme, host or port) was changed: stored secrets are not reused.
+  ///
+  /// In en, this message translates to:
+  /// **'You changed the server address, so the stored key or password will not be used. Enter it again.'**
+  String get serverSecretReenterHint;
+
   /// Validation error: invalid path prefix.
   ///
   /// In en, this message translates to:

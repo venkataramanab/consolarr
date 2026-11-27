@@ -106,7 +106,6 @@ class _ServerList extends ConsumerWidget {
     for (final e in entries) {
       ref.invalidate(serverHealthProvider(e.profile.id));
     }
-    ref.invalidate(activeServerIdsProvider);
     await Future.wait([
       for (final e in entries)
         ref
@@ -194,7 +193,6 @@ class _ServerRow extends ConsumerWidget {
         await context.push(ServersRoutes.edit(id));
       case _RowAction.setActive:
         await repo.setActive(entry.profile.kind, id);
-        ref.invalidate(activeServerIdsProvider);
       case _RowAction.setStartup:
         await repo.setStartup(id);
       case _RowAction.clearStartup:

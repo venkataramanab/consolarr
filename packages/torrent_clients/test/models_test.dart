@@ -82,9 +82,19 @@ void main() {
   group('parseTorrentList / parseTransferInfo', () {
     test('parse arrays and objects', () {
       expect(
-        parseTorrentList(jsonEncode([fullTorrent(), fullTorrent(2)])),
+        parseTorrentList(jsonEncode([fullTorrent(), fullTorrent(2)])).items,
         hasLength(2),
       );
+      final mixed = parseTorrentList(
+        jsonEncode([
+          fullTorrent(),
+          'junk',
+          {'hash': 1},
+          fullTorrent(2),
+        ]),
+      );
+      expect(mixed.items, hasLength(2));
+      expect(mixed.skipped, 2);
       final t = parseTransferInfo(
         jsonEncode({
           'dl_info_speed': 100,

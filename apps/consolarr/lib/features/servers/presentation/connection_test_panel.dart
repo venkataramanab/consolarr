@@ -88,7 +88,8 @@ class _ConnectionTestPanelState extends ConsumerState<ConnectionTestPanel> {
     final c = widget.controller;
     final existing = c.existing;
     var stored = ServerCredentials.empty;
-    if (existing != null) {
+    // Stored secrets are never sent to a changed origin.
+    if (existing != null && !c.originChanged) {
       stored = await ref
           .read(serverRepositoryProvider)
           .loadCredentials(existing.profile);

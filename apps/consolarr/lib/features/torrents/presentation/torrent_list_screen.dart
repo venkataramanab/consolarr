@@ -68,23 +68,24 @@ class _TorrentListScreenState extends ConsumerState<TorrentListScreen>
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final async = ref.watch(torrentListProvider);
-    final data = async.value;
     return FloatingTopBarScaffold(
       title: l10n.torrentsTitle,
       bodyBuilder: (context, padding) {
-        if (data == null) {
-          if (async.hasError) {
-            return _error(context, padding, async.error!);
-          }
-          return _skeleton(padding);
-        }
-        if (data.noServer) return _noServer(context, padding);
-        return _content(context, padding, data);
+        // Order matters: Riverpod keeps the previous value through a reload
+        // and through an error, so `value` alone would show the previous
+        // server's torrents as current after a switch.
+        if (async.isLoading) return _skeleton(padding);
+        if (async.hasError) return _error(context, padding, async.error!);
+        return switch (async.value) {
+          null => _skeleton(padding),
+          TorrentsNoServer() => _noServer(context, padding),
+          final TorrentsData data => _content(context, padding, data),
+        };
       },
     );
   }
 
-  Widget _offlineBanner(AppLocalizations l10n, TorrentListState data) {
+  Widget _offlineBanner(AppLocalizations l10n, TorrentsData data) {
     final fetched = data.fetchedAt;
     String? age;
     if (fetched != null) {
@@ -148,7 +149,7 @@ class _TorrentListScreenState extends ConsumerState<TorrentListScreen>
     );
   }
 
-  Widget _header(TorrentListState data) {
+  Widget _header(TorrentsData data) {
     return SpeedHeader(
       down: data.transfer?.dlSpeed,
       up: data.transfer?.upSpeed,
@@ -160,11 +161,7 @@ class _TorrentListScreenState extends ConsumerState<TorrentListScreen>
     );
   }
 
-  Widget _content(
-    BuildContext context,
-    EdgeInsets padding,
-    TorrentListState data,
-  ) {
+  Widget _content(BuildContext context, EdgeInsets padding, TorrentsData data) {
     final l10n = context.l10n;
     final side = EdgeInsets.symmetric(horizontal: padding.horizontal / 2);
     final dim = data.offline ? 0.55 : 1.0;

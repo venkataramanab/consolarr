@@ -81,7 +81,7 @@ class _ServerEditorScreenState extends ConsumerState<ServerEditorScreen> {
     });
     final repo = ref.read(serverRepositoryProvider);
     final existing = c.existing;
-    final stored = existing == null
+    final stored = existing == null || c.originChanged
         ? ServerCredentials.empty
         : await repo.loadCredentials(existing.profile);
     final result = await repo.save(c.toDraft(storedHeaders: stored.headers));

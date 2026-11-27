@@ -31,6 +31,9 @@ final eventTrackerProvider = Provider<EventTracker>(
   ),
 );
 
+/// The redacting logger. Messages must carry counts and categories only.
+final loggerProvider = Provider<AppLogger>((ref) => AppLogger());
+
 /// Consent seam: everything off by default. Read lazily, never before the
 /// first frame.
 final consentStoreProvider = Provider<ConsentStore>(

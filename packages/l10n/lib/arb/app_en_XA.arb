@@ -484,6 +484,14 @@
   "@serverErrorAddressNonAscii": {
     "description": "Validation error: the host name contains non-ASCII characters; the user should enter its ASCII (punycode) form."
   },
+  "serverErrorSecretsReenter": "[Ýöü çĥàñĝéð ţĥé šéŕṽéŕ àððŕéšš. Éñţéŕ ţĥé ķéý öŕ þàššŵöŕð àĝàîñ; šţöŕéð šéçŕéţš àŕé ñéṽéŕ šéñţ ţö à ðîƒƒéŕéñţ àððŕéšš.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@serverErrorSecretsReenter": {
+    "description": "Validation error: the address origin changed, so the stored key or password must be entered again before saving or testing."
+  },
+  "serverSecretReenterHint": "[Ýöü çĥàñĝéð ţĥé šéŕṽéŕ àððŕéšš, šö ţĥé šţöŕéð ķéý öŕ þàššŵöŕð ŵîļļ ñöţ ƀé üšéð. Éñţéŕ îţ àĝàîñ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@serverSecretReenterHint": {
+    "description": "Hint shown above the credential fields after the address (scheme, host or port) was changed: stored secrets are not reused."
+  },
   "serverErrorPrefixInvalid": "[Üšé à þàţĥ šüçĥ àš /šöñàŕŕ, ŵîţĥöüţ šþàçéš, ? öŕ ...~~~~~~~~~~~~~~~~~~~~~]",
   "@serverErrorPrefixInvalid": {
     "description": "Validation error: invalid path prefix."

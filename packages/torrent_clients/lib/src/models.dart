@@ -2,6 +2,8 @@
 
 import 'dart:convert';
 
+import 'package:core/core.dart';
+
 /// How a torrent is doing, reduced to what the UI conveys (icon + text).
 enum TorrentState {
   downloading,
@@ -159,10 +161,10 @@ Map<String, Object?> _object(Object? v) {
 }
 
 /// Parses a `torrents/info` body. Top level so it can run in an isolate.
-List<Torrent> parseTorrentList(String body) {
+ParsedRows<Torrent> parseTorrentList(String body) {
   final decoded = jsonDecode(body);
   if (decoded is! List) throw const FormatException('expected a JSON array');
-  return [for (final e in decoded) Torrent.fromJson(_object(e))];
+  return parseRowsTolerant(decoded, (e) => Torrent.fromJson(_object(e)));
 }
 
 /// Parses a `transfer/info` body.

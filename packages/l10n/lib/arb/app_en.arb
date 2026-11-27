@@ -484,6 +484,14 @@
   "@serverErrorAddressNonAscii": {
     "description": "Validation error: the host name contains non-ASCII characters; the user should enter its ASCII (punycode) form."
   },
+  "serverErrorSecretsReenter": "You changed the server address. Enter the key or password again; stored secrets are never sent to a different address.",
+  "@serverErrorSecretsReenter": {
+    "description": "Validation error: the address origin changed, so the stored key or password must be entered again before saving or testing."
+  },
+  "serverSecretReenterHint": "You changed the server address, so the stored key or password will not be used. Enter it again.",
+  "@serverSecretReenterHint": {
+    "description": "Hint shown above the credential fields after the address (scheme, host or port) was changed: stored secrets are not reused."
+  },
   "serverErrorPrefixInvalid": "Use a path such as /sonarr, without spaces, ? or ...",
   "@serverErrorPrefixInvalid": {
     "description": "Validation error: invalid path prefix."

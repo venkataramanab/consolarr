@@ -411,6 +411,14 @@ class AppLocalizationsAr extends AppLocalizations {
       'استخدم الصيغة ASCII لاسم المضيف (مثل xn--...) بدون أحرف خاصة.';
 
   @override
+  String get serverErrorSecretsReenter =>
+      'غيّرت عنوان الخادم. أدخل المفتاح أو كلمة المرور من جديد؛ لا تُرسل الأسرار المخزّنة إلى عنوان مختلف.';
+
+  @override
+  String get serverSecretReenterHint =>
+      'غيّرت عنوان الخادم، لذلك لن يُستخدم المفتاح أو كلمة المرور المخزّنة. أدخلها من جديد.';
+
+  @override
   String get serverErrorPrefixInvalid =>
       'استخدم مسارًا مثل /sonarr بدون مسافات أو ? أو ...';
 

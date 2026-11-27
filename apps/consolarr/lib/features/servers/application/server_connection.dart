@@ -21,34 +21,46 @@ class ServerConnection {
   final Dio dio;
 }
 
-/// The connection for the active server of [ServiceKind], or `null` when no
-/// server of that kind is configured. Fails with
-/// `AppError(auth_failed, debugDetail: 'needs_credentials')` when the stored
-/// secrets are missing (Keystore loss), so screens can show the re-entry
-/// prompt. Rebuilds when the server list changes.
-///
-/// Feature tests override this with a fake connection.
+/// The active server of [ServiceKind] plus the save revision (see
+/// `ServerRepository.watchConnectionKey`). Everything that must follow the
+/// active server or its credentials watches this provider; no screen needs to
+/// invalidate anything by hand after `setActive` or `save`.
+final activeConnectionKeyProvider =
+    StreamProvider.family<ConnectionKey, ServiceKind>(
+      (ref, kind) =>
+          ref.watch(serverRepositoryProvider).watchConnectionKey(kind),
+    );
+
 /// Typed app errors (missing credentials, ...) are answers, not glitches:
 /// never auto-retry them.
 Duration? _noRetry(int retryCount, Object error) => null;
 
-String _signature(List<ServerEntry> list) =>
-    [for (final e in list) '${e.profile.hashCode}/${e.needsCredentials}']
-        .join(',');
-
+/// The connection for the active server of [ServiceKind], or `null` when no
+/// server of that kind is configured. Fails with
+/// `AppError(auth_failed, debugDetail: 'needs_credentials')` when the stored
+/// secrets are missing (Keystore loss), so screens can show the re-entry
+/// prompt. Rebuilds whenever the active server or any saved data changes
+/// ([activeConnectionKeyProvider]); a rebuild creates a fresh Dio with the
+/// new auth headers and closes the old one.
+///
+/// Feature tests override this with a fake connection.
 final activeConnectionProvider =
     FutureProvider.family<ServerConnection?, ServiceKind>(retry: _noRetry, (
       ref,
       kind,
     ) async {
       final repo = ref.watch(serverRepositoryProvider);
-      // Rebuild when the server list really changes (not on first emission).
-      final seen = _signature(await repo.watchAll().first);
-      ref.listen(serversProvider, (_, next) {
-        final list = next.value;
-        if (list != null && _signature(list) != seen) ref.invalidateSelf();
+      // A plain stream subscription, not `ref.watch(keyProvider.future)`:
+      // Riverpod pauses the dependencies of a provider nobody listens to yet,
+      // which would starve the first read of this provider.
+      final key = await repo.watchConnectionKey(kind).first;
+      // The new subscription replays the current value first, so a change
+      // between the read above and this listen is still noticed.
+      final sub = repo.watchConnectionKey(kind).listen((next) {
+        if (next != key) ref.invalidateSelf();
       });
-      final id = await repo.activeId(kind);
+      ref.onDispose(sub.cancel);
+      final id = key.serverId;
       if (id == null) return null;
       final entry = await repo.find(id);
       if (entry == null) return null;

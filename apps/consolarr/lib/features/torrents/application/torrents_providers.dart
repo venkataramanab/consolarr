@@ -35,51 +35,69 @@ final torrentClientProvider = FutureProvider<TorrentClient?>(retry: _noRetry, (
     dio: connection.dio,
     username: credentials?.username,
     password: credentials?.password,
+    onRowsSkipped: (count) =>
+        ref.read(loggerProvider).info('skipped $count malformed torrent rows'),
   );
   ref.onDispose(client.forgetSession);
   return client;
 });
 
-/// What the torrent list screen shows.
-class TorrentListState {
-  const TorrentListState({
-    this.torrents = const [],
+/// What the torrent list screen shows (sealed, like every feature state).
+///
+/// "Nothing could be loaded" is not a state here: it is the provider's
+/// `AsyncError` carrying the [AppError] (with its category), so the screen can
+/// tell unauthorized from unreachable.
+sealed class TorrentListState {
+  const TorrentListState();
+}
+
+/// No torrent client is configured.
+final class TorrentsNoServer extends TorrentListState {
+  const TorrentsNoServer();
+}
+
+/// The torrents of the active server, live or (after a reachability failure)
+/// the last good copy.
+final class TorrentsData extends TorrentListState {
+  const TorrentsData({
+    required this.torrents,
     this.transfer,
     this.fetchedAt,
-    this.noServer = false,
-    this.offline = false,
+    this.offlineError,
     this.transferUnavailable = false,
   });
-
-  /// No torrent client is configured.
-  const TorrentListState.noServer() : this(noServer: true);
 
   final List<Torrent> torrents;
   final TransferInfo? transfer;
 
   /// When [torrents] were last read successfully.
   final DateTime? fetchedAt;
-  final bool noServer;
 
-  /// The last poll failed; [torrents] is the last good data.
-  final bool offline;
+  /// The last poll failed with a reachability category; [torrents] is the last
+  /// good data. Other failures (for example `auth_failed`) are not kept as
+  /// offline: they replace the state with an error.
+  final AppError? offlineError;
 
   /// Torrents loaded but the statistics did not (partial).
   final bool transferUnavailable;
 
-  TorrentListState copyWith({bool? offline}) => TorrentListState(
+  bool get offline => offlineError != null;
+
+  TorrentsData withOfflineError(AppError error) => TorrentsData(
     torrents: torrents,
     transfer: transfer,
     fetchedAt: fetchedAt,
-    noServer: noServer,
-    offline: offline ?? this.offline,
+    offlineError: error,
     transferUnavailable: transferUnavailable,
   );
 }
 
 /// The torrent list. `AsyncError` (an [AppError]) means nothing could be
-/// loaded yet; once data exists a failing refresh keeps it and sets
-/// [TorrentListState.offline] instead.
+/// loaded, or that a refresh failed for a reason that must not be hidden
+/// behind old data ([kOfflineFallbackCategories] decides). While the active
+/// server changes the value is `AsyncLoading`; screens must check
+/// `isLoading` and `hasError` before reading `value`, because Riverpod keeps
+/// the previous server's value through reloads and errors.
 final torrentListProvider =
     AsyncNotifierProvider<TorrentListNotifier, TorrentListState>(
       TorrentListNotifier.new,
@@ -90,23 +108,29 @@ final torrentListProvider =
 Duration? _noRetry(int retryCount, Object error) => null;
 
 class TorrentListNotifier extends AsyncNotifier<TorrentListState> {
-  bool _inFlight = false;
+  /// Bumped by every build (a server switch or credential edit rebuilds), so
+  /// results of work started for an earlier build can be recognised and
+  /// dropped.
+  int _generation = 0;
+  int? _inFlightGeneration;
 
   @override
   Future<TorrentListState> build() async {
+    _generation++;
     final client = await ref.watch(torrentClientProvider.future);
-    if (client == null) return const TorrentListState.noServer();
+    if (client == null) return const TorrentsNoServer();
     final result = await _fetch(client);
+    // A superseded build's value is discarded by Riverpod itself.
     return result.when(ok: (s) => s, err: (e) => throw e);
   }
 
-  Future<Result<TorrentListState>> _fetch(TorrentClient client) async {
+  Future<Result<TorrentsData>> _fetch(TorrentClient client) async {
     final snapshot = await TorrentsRepository(
       client,
       clock: ref.read(clockProvider),
     ).fetch();
     return snapshot.map(
-      (s) => TorrentListState(
+      (s) => TorrentsData(
         torrents: s.torrents,
         transfer: s.transfer,
         fetchedAt: s.fetchedAt,
@@ -115,38 +139,50 @@ class TorrentListNotifier extends AsyncNotifier<TorrentListState> {
     );
   }
 
-  /// Re-reads the client. Keeps existing data on failure (offline); without
-  /// data the failure becomes the provider's error. Overlapping calls are
-  /// coalesced.
+  /// Re-reads the client. Keeps existing data on a reachability failure
+  /// (offline); other failures become the provider's error. Overlapping calls
+  /// are coalesced, a refresh during a reload is ignored, and a result that
+  /// arrives after the connection changed (or the provider was disposed) is
+  /// dropped.
   Future<void> refresh() async {
-    if (_inFlight) return;
-    _inFlight = true;
+    final generation = _generation;
+    if (_inFlightGeneration == generation) return;
+    final current = state;
+    // Mid-reload the visible value belongs to the previous server.
+    if (current.isLoading) return;
+    _inFlightGeneration = generation;
+    bool stale() => !ref.mounted || generation != _generation;
     try {
-      final previous = state.value;
+      final previous = current is AsyncData<TorrentListState>
+          ? current.value
+          : null;
       final TorrentClient? client;
       try {
         client = await ref.read(torrentClientProvider.future);
       } on Object catch (e) {
-        _fail(previous, appErrorOrUnknown(e));
+        if (!stale()) _fail(previous, appErrorOrUnknown(e));
         return;
       }
+      if (stale()) return;
       if (client == null) {
-        state = const AsyncData(TorrentListState.noServer());
+        state = const AsyncData(TorrentsNoServer());
         return;
       }
       final result = await _fetch(client);
+      if (stale()) return;
       result.when(
         ok: (s) => state = AsyncData(s),
         err: (e) => _fail(previous, e),
       );
     } finally {
-      _inFlight = false;
+      if (_inFlightGeneration == generation) _inFlightGeneration = null;
     }
   }
 
   void _fail(TorrentListState? previous, AppError error) {
-    if (previous != null && !previous.noServer) {
-      state = AsyncData(previous.copyWith(offline: true));
+    if (previous is TorrentsData &&
+        kOfflineFallbackCategories.contains(error.category)) {
+      state = AsyncData(previous.withOfflineError(error));
     } else {
       state = AsyncError(error, StackTrace.current);
     }
@@ -165,21 +201,31 @@ final speedHistoryProvider =
 
 class SpeedHistoryNotifier extends Notifier<List<SpeedSample>> {
   static SpeedSample? _sampleOf(TorrentListState? data) {
-    final transfer = data?.transfer;
-    if (data == null || data.offline || transfer == null) return null;
+    if (data is! TorrentsData || data.offline) return null;
+    final transfer = data.transfer;
+    if (transfer == null) return null;
     return SpeedSample(down: transfer.dlSpeed, up: transfer.upSpeed);
   }
 
   @override
   List<SpeedSample> build() {
     ref.listen(torrentListProvider, (previous, next) {
+      // A server switch reloads the list: the old server's speeds must not
+      // linger in the graph.
+      if (next.isLoading || next.hasError) {
+        state = const [];
+        return;
+      }
       final data = next.value;
       // Only a new poll adds a sample, not a rebuild of the same value.
       if (identical(previous?.value, data)) return;
       final sample = _sampleOf(data);
       if (sample != null) state = appendSpeedSample(state, sample);
     });
-    final first = _sampleOf(ref.read(torrentListProvider).value);
+    final initial = ref.read(torrentListProvider);
+    final first = initial.isLoading || initial.hasError
+        ? null
+        : _sampleOf(initial.value);
     return first == null ? const [] : [first];
   }
 }

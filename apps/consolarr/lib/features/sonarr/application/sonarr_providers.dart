@@ -49,7 +49,10 @@ final class LibraryData extends LibraryState {
   bool get isOffline => snapshot.offlineError != null;
 }
 
-/// The series library. Refreshing keeps the existing content visible.
+/// The series library. Refreshing keeps the existing content visible. While
+/// the active server changes the value is `AsyncLoading`; screens must check
+/// `isLoading` and `hasError` before reading `value` (Riverpod keeps the
+/// previous server's value through reloads and errors).
 final seriesLibraryProvider =
     AsyncNotifierProvider<SeriesLibraryNotifier, LibraryState>(
       SeriesLibraryNotifier.new,
@@ -58,17 +61,13 @@ final seriesLibraryProvider =
 class SeriesLibraryNotifier extends AsyncNotifier<LibraryState> {
   SonarrRepository? _repository;
 
-  static const _keepsContent = {
-    ErrorCategory.networkUnreachable,
-    ErrorCategory.timeout,
-    ErrorCategory.serverError,
-    ErrorCategory.notFound,
-    ErrorCategory.parseError,
-    ErrorCategory.responseTooLarge,
-  };
+  /// Bumped by every build (server switch, credential edit). Work started for
+  /// an earlier build compares it after each await and drops its result.
+  int _generation = 0;
 
   @override
   Future<LibraryState> build() async {
+    _generation++;
     _repository = null;
     final ServerConnection? connection;
     try {
@@ -80,7 +79,12 @@ class SeriesLibraryNotifier extends AsyncNotifier<LibraryState> {
     }
     if (connection == null) return const LibraryNoServer();
     final repository = SonarrRepository(
-      api: SonarrClient(dio: connection.dio),
+      api: SonarrClient(
+        dio: connection.dio,
+        onRowsSkipped: (count) => ref
+            .read(loggerProvider)
+            .info('skipped $count malformed series rows'),
+      ),
       cache: ref.watch(payloadCacheProvider),
       serverId: connection.profile.id,
       clock: ref.watch(clockProvider),
@@ -89,21 +93,26 @@ class SeriesLibraryNotifier extends AsyncNotifier<LibraryState> {
     return _toState(await repository.load());
   }
 
-  /// Reloads from the server without clearing what is on screen.
+  /// Reloads from the server without clearing what is on screen. A result
+  /// that arrives after the connection changed, or after dispose, is dropped.
   Future<void> refresh() async {
+    final generation = _generation;
     final repository = _repository;
-    final previous = state.value;
+    final current = state;
+    // Mid-reload the visible value belongs to the previous server.
+    if (current.isLoading && repository == null) return;
+    final previous = current is AsyncData<LibraryState> ? current.value : null;
     if (repository == null) {
       ref.invalidateSelf();
       await future;
       return;
     }
     final result = await repository.load();
-    if (!ref.mounted) return;
+    if (!ref.mounted || generation != _generation) return;
     final error = result.errorOrNull;
     if (error != null &&
         previous is LibraryData &&
-        _keepsContent.contains(error.category)) {
+        kOfflineFallbackCategories.contains(error.category)) {
       state = AsyncData(LibraryData(previous.snapshot.withOfflineError(error)));
       return;
     }

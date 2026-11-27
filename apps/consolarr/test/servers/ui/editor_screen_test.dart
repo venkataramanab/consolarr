@@ -238,6 +238,38 @@ void main() {
       expect(h.tester.credentials.single.apiKey, 'test-key-0000');
     });
 
+    testWidgets('a changed address needs the secrets again and the test never '
+        'sends the stored ones', (tester) async {
+      final h = existing();
+      h.repo.credentials['a'] = const ServerCredentials(
+        apiKey: 'test-key-0000',
+      );
+      await _pump(tester, h, screen: const ServerEditorScreen(serverId: 'a'));
+      await tester.enterText(_field('Address'), 'https://other-host.example');
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('stored key or password will not be used'),
+        findsOneWidget,
+      );
+      expect(find.text('Leave empty to keep the saved value.'), findsNothing);
+
+      // Saving is blocked until the key is typed again.
+      await _tap(tester, find.text('Save'));
+      expect(h.repo.saved, isEmpty);
+      expect(
+        find.textContaining('Enter the key or password again'),
+        findsOneWidget,
+      );
+
+      await tester.enterText(_field('API key'), 'test-key-1111');
+      await _tapTest(tester);
+      expect(h.tester.credentials.single.apiKey, 'test-key-1111');
+      expect(
+        h.tester.credentials.map((c) => c.apiKey),
+        isNot(contains('test-key-0000')),
+      );
+    });
+
     testWidgets(
       'pinned certificate is shown and can be removed after confirm',
       (tester) async {

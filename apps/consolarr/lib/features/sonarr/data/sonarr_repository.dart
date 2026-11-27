@@ -41,18 +41,6 @@ class SonarrRepository {
   /// Payload cache key for the series list.
   static const cacheKey = 'sonarr.series';
 
-  /// Failures after which the cached copy is shown (the server is not
-  /// reachable or not healthy). Auth and version problems are shown as such,
-  /// never hidden behind old data; a pin mismatch must block.
-  static const _offlineFallback = {
-    ErrorCategory.networkUnreachable,
-    ErrorCategory.timeout,
-    ErrorCategory.serverError,
-    ErrorCategory.notFound,
-    ErrorCategory.parseError,
-    ErrorCategory.responseTooLarge,
-  };
-
   final SonarrApi _api;
   final PayloadCache _cache;
   final String _serverId;
@@ -77,7 +65,7 @@ class SonarrRepository {
         error = statusError!;
       }
     }
-    if (_offlineFallback.contains(error.category)) {
+    if (kOfflineFallbackCategories.contains(error.category)) {
       final copy = await cached();
       if (copy != null) return Result.ok(copy.withOfflineError(error));
     }

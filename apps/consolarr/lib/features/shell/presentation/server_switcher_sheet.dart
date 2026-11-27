@@ -108,29 +108,26 @@ class _ServerList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    return FutureBuilder<String?>(
-      future: ref.read(serverRepositoryProvider).activeId(kind),
-      builder: (context, snapshot) {
-        final activeId = snapshot.data;
-        return ListView(
-          shrinkWrap: true,
-          children: [
-            for (final entry in servers)
-              _ServerTile(
-                entry: entry,
-                isActive: entry.profile.id == activeId,
-                activeLabel: l10n.switcherActive,
-                onTap: () async {
-                  await ref
-                      .read(serverRepositoryProvider)
-                      .setActive(kind, entry.profile.id);
-                  ref.invalidate(activeConnectionProvider(kind));
-                  if (context.mounted) Navigator.of(context).pop();
-                },
-              ),
-          ],
-        );
-      },
+    final activeId = ref
+        .watch(activeConnectionKeyProvider(kind))
+        .value
+        ?.serverId;
+    return ListView(
+      shrinkWrap: true,
+      children: [
+        for (final entry in servers)
+          _ServerTile(
+            entry: entry,
+            isActive: entry.profile.id == activeId,
+            activeLabel: l10n.switcherActive,
+            onTap: () async {
+              await ref
+                  .read(serverRepositoryProvider)
+                  .setActive(kind, entry.profile.id);
+              if (context.mounted) Navigator.of(context).pop();
+            },
+          ),
+      ],
     );
   }
 }
