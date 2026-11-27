@@ -226,24 +226,6 @@
   "@radarrClearSearch": {
     "description": "Accessible name of the button that clears the library search."
   },
-  "radarrSortAction": "ترتيب",
-  "@radarrSortAction": {
-    "description": "Tooltip of the sort button."
-  },
-  "radarrFilterAction": "تصفية",
-  "@radarrFilterAction": {
-    "description": "Tooltip of the filter button when no filter is active."
-  },
-  "radarrFilterActive": "{count, plural, =0{تصفية، لا شيء مفعّل} =1{تصفية، واحد مفعّل} =2{تصفية، اثنان مفعّلان} few{تصفية، {count} مفعّلة} many{تصفية، {count} مفعّلًا} other{تصفية، {count} مفعّل}}",
-  "@radarrFilterActive": {
-    "description": "Tooltip of the filter button when filters are active.",
-    "placeholders": {
-      "count": {
-        "type": "int",
-        "description": "Number of active filters."
-      }
-    }
-  },
   "radarrSortChip": "الترتيب: {key}",
   "@radarrSortChip": {
     "description": "Label of the sort button above the library; shows the current sort key.",
@@ -678,10 +660,6 @@
   "@radarrReleaseSearchHint": {
     "description": "Hint of the release filter field."
   },
-  "radarrReleaseSortAction": "ترتيب الإصدارات",
-  "@radarrReleaseSortAction": {
-    "description": "Tooltip of the release sort menu."
-  },
   "radarrReleaseSortedBy": "مرتّب حسب {key}",
   "@radarrReleaseSortedBy": {
     "description": "Label of the release sort chip.",
@@ -715,10 +693,6 @@
   "radarrReleaseSortQuality": "الجودة",
   "@radarrReleaseSortQuality": {
     "description": "Release sort key."
-  },
-  "radarrReleaseAll": "الكل",
-  "@radarrReleaseAll": {
-    "description": "Release filter: every release."
   },
   "radarrReleaseAccepted": "المقبولة",
   "@radarrReleaseAccepted": {
@@ -797,10 +771,6 @@
   "radarrGrabbed": "تم الإرسال",
   "@radarrGrabbed": {
     "description": "Button label after the release was sent."
-  },
-  "radarrGrabFailedRetry": "حاول مجددًا",
-  "@radarrGrabFailedRetry": {
-    "description": "Button label after a failed send."
   },
   "radarrGrabFailed": "تعذّر إرسال هذا الإصدار إلى عميل التنزيل.",
   "@radarrGrabFailed": {

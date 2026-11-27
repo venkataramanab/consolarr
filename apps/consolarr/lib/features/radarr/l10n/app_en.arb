@@ -226,24 +226,6 @@
   "@radarrClearSearch": {
     "description": "Accessible name of the button that clears the library search."
   },
-  "radarrSortAction": "Sort",
-  "@radarrSortAction": {
-    "description": "Tooltip of the sort button."
-  },
-  "radarrFilterAction": "Filter",
-  "@radarrFilterAction": {
-    "description": "Tooltip of the filter button when no filter is active."
-  },
-  "radarrFilterActive": "{count, plural, =1{Filter, 1 active} other{Filter, {count} active}}",
-  "@radarrFilterActive": {
-    "description": "Tooltip of the filter button when filters are active.",
-    "placeholders": {
-      "count": {
-        "type": "int",
-        "description": "Number of active filters."
-      }
-    }
-  },
   "radarrSortChip": "Sort: {key}",
   "@radarrSortChip": {
     "description": "Label of the sort button above the library; shows the current sort key.",
@@ -678,10 +660,6 @@
   "@radarrReleaseSearchHint": {
     "description": "Hint of the release filter field."
   },
-  "radarrReleaseSortAction": "Sort releases",
-  "@radarrReleaseSortAction": {
-    "description": "Tooltip of the release sort menu."
-  },
   "radarrReleaseSortedBy": "Sorted by {key}",
   "@radarrReleaseSortedBy": {
     "description": "Label of the release sort chip.",
@@ -715,10 +693,6 @@
   "radarrReleaseSortQuality": "Quality",
   "@radarrReleaseSortQuality": {
     "description": "Release sort key."
-  },
-  "radarrReleaseAll": "All",
-  "@radarrReleaseAll": {
-    "description": "Release filter: every release."
   },
   "radarrReleaseAccepted": "Accepted",
   "@radarrReleaseAccepted": {
@@ -797,10 +771,6 @@
   "radarrGrabbed": "Sent",
   "@radarrGrabbed": {
     "description": "Button label after the release was sent."
-  },
-  "radarrGrabFailedRetry": "Try again",
-  "@radarrGrabFailedRetry": {
-    "description": "Button label after a failed send."
   },
   "radarrGrabFailed": "Could not send this release to the download client.",
   "@radarrGrabFailed": {
