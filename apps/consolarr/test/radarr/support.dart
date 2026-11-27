@@ -252,10 +252,12 @@ List<Override> radarrOverrides(
   FakeRadarrApi api, {
   MemoryPayloadCache? cache,
   MemoryPrefs? prefs,
+  bool includeContext = true,
 }) {
   final context = contextFor(api, cache: cache);
   return [
-    radarrContextProvider.overrideWith((ref) async => context),
+    if (includeContext)
+      radarrContextProvider.overrideWith((ref) async => context),
     radarrPrefsProvider.overrideWithValue(prefs ?? MemoryPrefs()),
     clockProvider.overrideWithValue(() => fixedNow),
     commandPollIntervalProvider.overrideWithValue(Duration.zero),

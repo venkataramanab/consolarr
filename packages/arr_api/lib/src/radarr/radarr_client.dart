@@ -31,10 +31,10 @@ class RadarrClient extends ArrClientBase implements RadarrApi {
     try {
       status = parseSystemStatus(await getText('api/v3/system/status'));
     } on DioException catch (e) {
-      if (e.response?.statusCode == 404) {
-        // Radarr v2 and earlier only have `api/system/status`.
-        throw const _Unsupported();
-      }
+      if (e.response?.statusCode != 404) rethrow;
+      // Radarr v0.2 only has `api/system/status`: tell "too old" apart from a
+      // wrong address or path prefix.
+      if (await _isLegacy()) throw const _Unsupported();
       rethrow;
     }
     final major = status.majorVersion;
@@ -56,6 +56,16 @@ class RadarrClient extends ArrClientBase implements RadarrApi {
       return const Result.err(AppError(ErrorCategory.parseError));
     } on Object catch (e) {
       return Result.err(appErrorFromDio(e));
+    }
+  }
+
+  Future<bool> _isLegacy() async {
+    try {
+      final legacy = parseSystemStatus(await getText('api/system/status'));
+      final major = legacy.majorVersion;
+      return major != null && major < ArrClientBase.minMajorVersion;
+    } on Object {
+      return false;
     }
   }
 

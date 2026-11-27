@@ -639,9 +639,14 @@ class SearchStatusNotifier extends Notifier<Map<int, SearchPhase>> {
         running != SearchPhase.failed) {
       return;
     }
-    final context = await ref.read(radarrContextProvider.future);
-    if (context == null || !ref.mounted) return;
+    // Mark busy before the first await so a second tap cannot start twice.
     _set(key, SearchPhase.starting);
+    final context = await ref.read(radarrContextProvider.future);
+    if (!ref.mounted) return;
+    if (context == null) {
+      _set(key, null);
+      return;
+    }
     final started = await start(context.api);
     if (!ref.mounted) return;
     final error = started.errorOrNull;
@@ -708,9 +713,13 @@ class GrabNotifier extends Notifier<Map<String, GrabPhase>> {
 
   Future<void> grab(RadarrRelease release) async {
     if (state[release.guid] == GrabPhase.grabbing) return;
-    final context = await ref.read(radarrContextProvider.future);
-    if (context == null || !ref.mounted) return;
     state = {...state, release.guid: GrabPhase.grabbing};
+    final context = await ref.read(radarrContextProvider.future);
+    if (!ref.mounted) return;
+    if (context == null) {
+      state = {...state}..remove(release.guid);
+      return;
+    }
     final result = await context.api.grab(release);
     if (!ref.mounted) return;
     final error = result.errorOrNull;

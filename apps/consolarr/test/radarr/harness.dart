@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:consolarr/features/radarr/application/radarr_providers.dart';
-import 'package:consolarr/src/providers.dart';
 import 'package:design_system/design_system.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -35,11 +34,18 @@ Widget radarrApp(
   MemoryPayloadCache? cache,
   MemoryPrefs? prefs,
   bool reduceMotion = true,
+  bool includeContext = true,
+  ArtworkSource? artwork,
 }) {
   return ProviderScope(
     overrides: [
-      ...radarrOverrides(api, cache: cache, prefs: prefs),
-      artworkSourceProvider.overrideWithValue(null),
+      ...radarrOverrides(
+        api,
+        cache: cache,
+        prefs: prefs,
+        includeContext: includeContext,
+      ),
+      artworkSourceProvider.overrideWithValue(artwork),
       ...extra,
     ],
     child: harnessApp(

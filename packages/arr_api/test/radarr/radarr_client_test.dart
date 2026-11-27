@@ -168,11 +168,22 @@ void main() {
         ).systemStatus()).errorOrNull?.category,
         ErrorCategory.unsupportedVersion,
       );
+      // v3 missing and a legacy endpoint that answers: too old.
+      final legacy = FakeAdapter(
+        (o) => o.uri.path.contains('/v3/')
+            ? FakeAdapter.reply('', status: 404)
+            : FakeAdapter.reply('{"version":"0.2.0.1"}'),
+      );
+      expect(
+        (await client(legacy).systemStatus()).errorOrNull?.category,
+        ErrorCategory.unsupportedVersion,
+      );
+      // Nothing there at all: a wrong address, not an old server.
       expect(
         (await client(
           FakeAdapter.fixed('', status: 404),
         ).systemStatus()).errorOrNull?.category,
-        ErrorCategory.unsupportedVersion,
+        ErrorCategory.notFound,
       );
     });
   });
