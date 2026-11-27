@@ -49,6 +49,11 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // AndroidX libraries ship about 70 translations of their own strings;
+        // the app is localized into English and Arabic only.
+        androidResources {
+            localeFilters += listOf("en", "ar")
+        }
     }
 
     // `flutter build apk --target-platform android-arm64` only filters

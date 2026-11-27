@@ -612,4 +612,69 @@ void main() {
       await const NoopAnalytics().logEvent('e');
     });
   });
+
+  group('redaction properties (seeded)', () {
+    final rnd = Random(20260101);
+    const words = ['x', 'My', 'custom', 'Real', 'app', 'Thing', 'v2', 'Media'];
+    const keywords = ['auth', 'key', 'token', 'session', 'cookie'];
+
+    String casing(String s) => String.fromCharCodes([
+      for (final c in s.codeUnits)
+        rnd.nextBool() ? String.fromCharCode(c).toUpperCase().codeUnitAt(0) : c,
+    ]);
+
+    String headerName() {
+      final parts = [
+        for (var i = rnd.nextInt(3); i > 0; i--)
+          words[rnd.nextInt(words.length)],
+        casing(keywords[rnd.nextInt(keywords.length)]),
+        for (var i = rnd.nextInt(3); i > 0; i--)
+          words[rnd.nextInt(words.length)],
+      ];
+      if (parts.length < 2) parts.add(words[rnd.nextInt(words.length)]);
+      return parts.join('-');
+    }
+
+    test('dashed header names naming a secret are always masked', () {
+      const redactor = Redactor();
+      for (var i = 0; i < 300; i++) {
+        final name = headerName();
+        final value = 'sv${rnd.nextInt(1 << 30).toRadixString(36)}zq9';
+        expect(
+          redactor.redactText('$name: $value'),
+          isNot(contains(value)),
+          reason: name,
+        );
+        expect(
+          redactor.redactHeaders({name: value})[name],
+          isNot(contains(value)),
+          reason: name,
+        );
+      }
+    });
+
+    test('redaction is idempotent', () {
+      const redactor = Redactor();
+      const pieces = [
+        'Authorization: Bearer abcdefghijkl',
+        'apikey=0123456789abcdef0123456789abcdef',
+        'https://u:p@nas.example:8989/x?token=abc123def',
+        'Cookie: SID=abc',
+        'plain text 12:30',
+        'password=hunter2',
+        'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.c2ln',
+      ];
+      for (var i = 0; i < 200; i++) {
+        final line = [
+          for (var j = 1 + rnd.nextInt(4); j > 0; j--)
+            if (rnd.nextBool())
+              pieces[rnd.nextInt(pieces.length)]
+            else
+              '${headerName()}: v${rnd.nextInt(99999)}',
+        ].join(rnd.nextBool() ? ' ' : '\n');
+        final once = redactor.redactText(line);
+        expect(redactor.redactText(once), once, reason: line);
+      }
+    });
+  });
 }

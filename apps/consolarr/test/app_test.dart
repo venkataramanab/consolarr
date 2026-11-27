@@ -73,7 +73,11 @@ void main() {
   testWidgets('telemetry seams default to no-ops with consent off', (
     tester,
   ) async {
-    final container = ProviderContainer();
+    final container = ProviderContainer(
+      overrides: [
+        settingsStoreProvider.overrideWithValue(InMemorySettingsStore()),
+      ],
+    );
     addTearDown(container.dispose);
     final consent = await container.read(consentStoreProvider).load();
     expect(consent.crashReports, isFalse);

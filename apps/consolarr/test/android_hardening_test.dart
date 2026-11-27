@@ -47,11 +47,63 @@ void main() {
         expect(nsc, isNot(contains('src="user"')));
       });
 
-      test('only the INTERNET permission is requested', () {
+      test('only INTERNET and the opt-in app lock biometric are requested', () {
         final permissions = RegExp(
           r'<uses-permission[^>]*android:name="([^"]+)"',
         ).allMatches(manifest).map((m) => m.group(1)).toList();
-        expect(permissions, ['android.permission.INTERNET']);
+        expect(permissions, [
+          'android.permission.INTERNET',
+          'android.permission.USE_BIOMETRIC',
+        ]);
+      });
+
+      test('the only added query is an https view intent (browser launch)', () {
+        final queries = RegExp(
+          r'<queries>.*?</queries>',
+          dotAll: true,
+        ).firstMatch(manifest)!.group(0)!;
+        expect(queries, contains('android.intent.action.VIEW'));
+        expect(queries, contains('android:scheme="https"'));
+        expect(queries, isNot(contains('android:scheme="http"')));
+        expect(queries, isNot(contains('<package')));
+      });
+
+      test('the activity is a FragmentActivity (platform authenticator) and '
+          'adds no exported component', () {
+        final kotlin = read(
+          '$root/android/app/src/main/kotlin/org/consolarr/app/MainActivity.kt',
+        );
+        expect(kotlin, contains('FlutterFragmentActivity'));
+        expect(manifest, isNot(contains('<provider')));
+        expect('android:exported="true"'.allMatches(manifest), hasLength(1));
+      });
+
+      test('sharing is a first-party text intent: no share_plus, no file '
+          'provider', () {
+        final kotlin = read(
+          '$root/android/app/src/main/kotlin/org/consolarr/app/MainActivity.kt',
+        );
+        expect(kotlin, contains('"consolarr/share"'));
+        expect(kotlin, contains('Intent.ACTION_SEND'));
+        expect(kotlin, contains('Intent.EXTRA_TEXT'));
+        expect(kotlin, contains('Intent.createChooser'));
+        // Text only: no stream, no URI grant.
+        expect(kotlin, isNot(contains('EXTRA_STREAM')));
+        expect(kotlin, isNot(contains('FLAG_GRANT_READ_URI_PERMISSION')));
+        expect(manifest, isNot(contains('<provider')));
+        expect(read('$root/pubspec.yaml'), isNot(contains('share_plus')));
+        final lock = read(
+          '${Directory.current.parent.parent.path}/pubspec.lock',
+        );
+        for (final gone in ['share_plus', 'cross_file']) {
+          expect(lock, isNot(contains(gone)), reason: gone);
+        }
+      });
+
+      test('only the English and Arabic resources are packaged', () {
+        expect(gradle, contains('localeFilters'));
+        expect(gradle, contains('"en"'));
+        expect(gradle, contains('"ar"'));
       });
 
       test('only the launcher activity is exported', () {

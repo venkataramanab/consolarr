@@ -3,6 +3,7 @@
 import 'package:design_system/src/radii.dart';
 import 'package:design_system/src/roles_context.dart';
 import 'package:design_system/src/spacing.dart';
+import 'package:design_system/src/touch_targets.dart';
 import 'package:material_ui/material_ui.dart';
 
 enum StatusTone { success, warning, error, info, neutral }
@@ -99,8 +100,8 @@ class _StatusChipState extends State<StatusChip> {
             borderRadius: ConsolarrRadii.chip,
             onTap: () => setState(() => _expanded = !_expanded),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                minHeight: ConsolarrSpacing.minTapTarget,
+              constraints: BoxConstraints(
+                minHeight: TouchTargets.of(context).minimum,
               ),
               child: Align(
                 alignment: AlignmentDirectional.centerStart,
