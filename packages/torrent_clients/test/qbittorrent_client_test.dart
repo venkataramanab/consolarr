@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'dart:convert';
+import 'dart:isolate';
 
 import 'package:core/core.dart';
 import 'package:dio/dio.dart';
@@ -279,8 +280,14 @@ void main() {
         expect((await viaRunner.listTorrents()).valueOrNull, hasLength(10000));
         expect(calls, 1);
 
+        // A real HttpClient cannot be sent to another isolate; a Dio holding a
+        // ReceivePort is the same, so a closure capturing the client fails.
+        final unsendable = dioWith(_server(data: {'torrents/info': big}));
+        final port = ReceivePort();
+        addTearDown(port.close);
+        unsendable.interceptors.add(_HoldsPort(port));
         final real = QBittorrentClient(
-          dio: dioWith(_server(data: {'torrents/info': big})),
+          dio: unsendable,
           username: 'test-user',
           password: 'test-password',
         );
@@ -395,4 +402,9 @@ void qbittorrentActionTests() {
       expect(inner.torrents.single.paused, isTrue);
     });
   });
+}
+
+class _HoldsPort extends Interceptor {
+  _HoldsPort(this.port);
+  final ReceivePort port;
 }

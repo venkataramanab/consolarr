@@ -4,7 +4,7 @@ import 'package:arr_api/arr_api.dart';
 import 'package:core/core.dart';
 import 'package:test/test.dart';
 
-class _Sonarr with EmptyArrLists implements SonarrApi {
+class _Sonarr with EmptyArrLists, UnsupportedSonarrCalls implements SonarrApi {
   @override
   Future<Result<List<SonarrSeries>>> series() async => const Result.ok([]);
   @override

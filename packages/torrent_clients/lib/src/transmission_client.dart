@@ -95,13 +95,6 @@ ParsedRows<Torrent> parseTransmissionList(String body) {
   );
 }
 
-/// Top level on purpose: the closure given to [runner] captures only [body],
-/// never the client (its Dio/HttpClient cannot be sent to another isolate).
-Future<ParsedRows<Torrent>> _parseOffIsolate(ParseRunner runner, String body) =>
-    body.length > isolateThresholdBytes
-    ? runner(() => parseTransmissionList(body))
-    : Future.value(parseTransmissionList(body));
-
 /// Transmission RPC client (`/transmission/rpc`).
 ///
 /// The `X-Transmission-Session-Id` is kept in memory only: a 409 response
@@ -242,7 +235,7 @@ class TransmissionClient implements TorrentClient {
   Future<Result<List<Torrent>>> listTorrents() => guardResult(() async {
     await _ensureVersion();
     final body = await _rpcRaw('torrent-get', {'fields': _listFields});
-    final parsed = await _parseOffIsolate(_runner, body);
+    final parsed = await parseOffIsolate(_runner, body, parseTransmissionList);
     if (parsed.skipped > 0) onRowsSkipped?.call(parsed.skipped);
     return parsed.items;
   });

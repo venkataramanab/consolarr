@@ -17,7 +17,8 @@ enum ErrorCategory {
   tlsUntrusted('tls_untrusted'),
   tlsExpired('tls_expired'),
   redirectRefused('redirect_refused'),
-  responseTooLarge('response_too_large');
+  responseTooLarge('response_too_large'),
+  requestTooLarge('request_too_large');
 
   const ErrorCategory(this.code);
 
