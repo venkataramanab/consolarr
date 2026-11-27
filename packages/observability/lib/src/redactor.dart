@@ -96,6 +96,11 @@ class Redactor {
     caseSensitive: false,
   );
 
+  /// `X-Custom-Auth-Thing: value`: a dashed header name whose name says secret.
+  static final _dashedHeader = RegExp(
+    r'(?<![\w\-])([A-Za-z0-9]+(?:-[A-Za-z0-9]+)+)(?![ \t]*:[ \t]*(?:\[REDACTED\]|\w+=))([ \t]*:[ \t]*)([^\r\n]+)',
+  );
+
   static final _scheme = RegExp(
     r'\b(bearer|basic)([ \t]+)(?!\[REDACTED\])[A-Za-z0-9._~+/=%\-]{6,}',
     caseSensitive: false,
@@ -142,6 +147,11 @@ class Redactor {
       (m) => '${m[1]}${m[2]}$placeholder',
     );
     out = out.replaceAllMapped(_scheme, (m) => '${m[1]}${m[2]}$placeholder');
+    out = out.replaceAllMapped(_dashedHeader, (m) {
+      return isSensitiveHeaderName(m[1]!)
+          ? '${m[1]}${m[2]}$placeholder'
+          : m[0]!;
+    });
     out = _redactKeyValues(out);
     out = out.replaceAll(_jwt, placeholder);
     out = out.replaceAll(_longHex, placeholder);
@@ -367,10 +377,22 @@ class Redactor {
       for (final e in headers.entries)
         e.key:
             (_sensitiveHeaderNames.contains(e.key.toLowerCase()) ||
+                isSensitiveHeaderName(e.key) ||
                 isSensitiveKey(e.key))
             ? placeholder
             : redactText(_headerValue(e.value)),
     };
+  }
+
+  /// Header names are broader than other keys: anything containing
+  /// auth, key, token, session or cookie is a secret.
+  static bool isSensitiveHeaderName(String name) {
+    final n = name.toLowerCase();
+    return n.contains('auth') ||
+        n.contains('key') ||
+        n.contains('token') ||
+        n.contains('session') ||
+        n.contains('cookie');
   }
 
   String _headerValue(Object? v) => v is Iterable ? v.join(', ') : '$v';

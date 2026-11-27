@@ -5,8 +5,12 @@
 The source manifest is hardened, but plugins and AndroidX libraries merge
 extra entries into the final manifest, so the merged result is what counts:
 
-* the only permission requested is INTERNET (plus the app-private signature
-  permission AndroidX adds for non-exported dynamic receivers);
+* the only permissions requested are INTERNET and the two biometric ones the
+  opt-in app lock needs (USE_BIOMETRIC, and USE_FINGERPRINT which
+  androidx.biometric merges for the API 26-27 fallback), plus the exact
+  app-private signature permission
+  `<package>.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` that AndroidX adds for
+  non-exported dynamic receivers;
 * the only exported component is the launcher activity;
 * no component with an intent filter relies on the implicit default for
   `android:exported`;
@@ -22,7 +26,13 @@ import xml.etree.ElementTree as ET
 
 ANDROID = "{http://schemas.android.com/apk/res/android}"
 COMPONENT_TAGS = ("activity", "activity-alias", "service", "receiver", "provider")
-ALLOWED_PERMISSIONS = {"android.permission.INTERNET"}
+ALLOWED_PERMISSIONS = {
+    "android.permission.INTERNET",
+    # Opt-in app lock (SET-02): BiometricPrompt; USE_FINGERPRINT is merged by
+    # androidx.biometric for the API 26-27 FingerprintManager fallback.
+    "android.permission.USE_BIOMETRIC",
+    "android.permission.USE_FINGERPRINT",
+}
 
 
 def check(xml_text: str, release: bool = False) -> list[str]:
@@ -82,6 +92,8 @@ def check(xml_text: str, release: bool = False) -> list[str]:
 
 _GOOD = """<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="x.y">
   <uses-permission android:name="android.permission.INTERNET"/>
+  <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
+  <uses-permission android:name="android.permission.USE_FINGERPRINT"/>
   <uses-permission android:name="x.y.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"/>
   <application android:allowBackup="false" android:usesCleartextTraffic="false">
     <activity android:name="x.y.MainActivity" android:exported="true">
@@ -101,6 +113,14 @@ def self_test() -> None:
         "extra permission": _GOOD.replace(
             "<application",
             '<uses-permission android:name="android.permission.CAMERA"/><application',
+        ),
+        "another app's dynamic-receiver permission": _GOOD.replace(
+            "<application",
+            '<uses-permission android:name="other.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"/><application',
+        ),
+        "unrelated credentials permission": _GOOD.replace(
+            "<application",
+            '<uses-permission android:name="android.permission.USE_CREDENTIALS"/><application',
         ),
         "exported service": _GOOD.replace(
             "</application>", '<service android:name="s.S" android:exported="true"/></application>'

@@ -6,6 +6,10 @@ import 'package:l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:observability/observability.dart';
 
+/// The root navigator's key: routes that must cover the shell (full-screen
+/// flows) set it as their `parentNavigatorKey`.
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
+
 /// One primary destination of the app (a tab of the floating bar and a
 /// branch of the shell router). Features contribute their own descriptors
 /// (`features/<feature>/<feature>_routes.dart`); `appDestinations` lists them
@@ -22,6 +26,7 @@ class AppDestination {
     this.kinds,
     this.screen,
     this.switcherKind,
+    this.children = const [],
   });
 
   /// Stable identifier (`home`, `sonarr`, ...), for tests and diagnostics.
@@ -51,6 +56,11 @@ class AppDestination {
 
   /// The service kind whose servers the top bar's switcher offers here.
   final ServiceKind? switcherKind;
+
+  /// Child routes of this branch. Paths are relative to [route] (for example
+  /// `series/:id`). A child renders inside the shell with the bar visible; a
+  /// full-screen flow sets `parentNavigatorKey: rootNavigatorKey`.
+  final List<RouteBase> children;
 
   /// Whether this destination serves servers of [kind].
   bool servesKind(ServiceKind kind) => kinds?.contains(kind) ?? false;

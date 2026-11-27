@@ -34,6 +34,15 @@ Dependency direction: `presentation -> application -> data -> packages`.
 Widgets never call Dio, drift or storage directly. Features never import each
 other's `application`/`data`; they share through `shared/` and `src/`.
 
+**Recorded exception (settings).** `features/settings` reads the server list
+for the connection check and for scrubbing known values out of the diagnostics
+bundle, so it imports `serversProvider`, `serverRepositoryProvider` and
+`ServerRepository` from `features/servers`, `uiServersProvider` from
+`features/shell` and `ScreenTracker` from `features/servers/presentation`.
+They stay where they are until the open Sonarr, Torrents and Radarr branches
+have merged (all of them import these by path); moving them to `lib/src/` is a
+mechanical follow-up. Do not add further cross-feature imports.
+
 ## 2. Errors
 
 * Every fallible call returns `Result<T>`; failures are `AppError` with an
@@ -89,8 +98,26 @@ other's `application`/`data`; they share through `shared/` and `src/`.
   to yet.)
 * Infrastructure seams (`secretStoreProvider`, `pinStoreProvider`,
   `secureHttpClientFactoryProvider`, `databaseProvider`, `clockProvider`,
-  `loggerProvider`) live in `lib/src/providers.dart`; tests and the Play entry
-  point override them.
+  `monotonicClockProvider`, `secureScreenProvider`, `loggerProvider`) live in
+  `lib/src/providers.dart`; tests and the Play entry point override them.
+* **Settings are read once.** `storedRowsProvider` reads the settings table
+  after the first frame; `SettingsNotifier` and the consent store share that
+  one read. A failed read is retried once; after that the app **fails closed**
+  (`LockPhase.loadFailed`: content hidden, window secure, retry button).
+* **Consent.** `consentManagerProvider` loads the stored choice right after the
+  first frame, so consent applies from startup. Entry points (Play) override
+  `rawCrashReporterProvider` / `rawAnalyticsProvider` only, never the gated
+  `crashReporterProvider` / `analyticsProvider` (a test guards this). While
+  consent is off the raw sinks get no call at all.
+* **The window secure flag is reference counted by owner**
+  (`SecureScreen.setSecure(secure:, owner:)`): the app lock and "block
+  screenshots" are one owner, every revealed secret field tracker another.
+  Never clear the flag directly.
+* **Settings setters** apply the value, write it and revert that field if the
+  write fails (logging only the error type); they return whether it was stored.
+* **Time away** (the app lock delay) uses the monotonic clock together with the
+  wall clock: the longer of the two counts, so changing the wall clock cannot
+  extend it.
 
 ## 4. Secrets
 
@@ -150,6 +177,15 @@ in `EmptyArrLists`.
   planned feature is marked there). The router builds one shell branch per
   entry and the bar is built from the same list: no enum, no positional
   coupling.
+* `AppDestination.children` are the branch's child routes. Their paths are
+  **relative to `route`** (for example `series/:id`, not `/sonarr/series/:id`).
+  A child renders inside the shell with the bar visible; a full-screen flow
+  sets `parentNavigatorKey: rootNavigatorKey`. Sheets and menus
+  (`showGlassSheet`, `showNestedMenu`) open on the root navigator, above the
+  bar.
+* **Polling pauses while the app is locked.** The content stays mounted
+  (hidden) behind the lock, so every timer or poll that talks to a server must
+  skip its tick while `appLockedProvider` is true (and resume after unlock).
 * A destination with `kinds` is offered once a server of any of those kinds
   exists; the open branch is always shown, so the bar never highlights another
   tab for the screen you are on. `routeForKind(kind)` replaces switches that
@@ -269,3 +305,8 @@ warning from 90%). Native libraries are stored compressed
 (`packaging.jniLibs.useLegacyPackaging`), plugin libraries of other ABIs are
 dropped when `--target-platform` is given, and Inter is subset to Latin
 (`design_system/assets/fonts/README.md`; Arabic uses the system fonts).
+Android resources are limited to `en` and `ar` (`androidResources.localeFilters`
+in both flavors), which drops the ~70 translations AndroidX libraries bring.
+Sharing text uses a first-party method channel (`consolarr/share`,
+`ACTION_SEND`) instead of a plugin. `local_auth` (androidx.biometric, the app
+lock) is the one deliberate size cost; see the PR for its budget exception.
