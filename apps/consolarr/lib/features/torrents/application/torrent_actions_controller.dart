@@ -25,16 +25,24 @@ class TorrentActionsState {
 
 /// Pause, resume and remove (TOR-06, TOR-07). Every method returns a
 /// [Result]; a failure puts the row back (the pending marker is only a label)
-/// and the screen shows the reason. The state resets when the client changes.
+/// and the screen shows the reason. The list is re-read after every outcome.
+/// A bulk or removal where only some torrents failed (Deluge) returns a
+/// `PartialActionFailure`; the screen reports "N of M". The state resets when
+/// the client changes.
 final torrentActionsProvider =
     NotifierProvider<TorrentActionsController, TorrentActionsState>(
       TorrentActionsController.new,
     );
 
 class TorrentActionsController extends Notifier<TorrentActionsState> {
+  /// Bumped by every build (a server switch rebuilds and resets the state), so
+  /// an action started for an earlier build never touches the new state.
+  int _generation = 0;
+
   @override
   TorrentActionsState build() {
     // A server switch drops every pending marker of the previous server.
+    _generation++;
     ref.watch(torrentClientProvider);
     return const TorrentActionsState();
   }
@@ -83,16 +91,19 @@ class TorrentActionsController extends Notifier<TorrentActionsState> {
     if (client == null || !ref.mounted) {
       return const Result.err(AppError(ErrorCategory.networkUnreachable));
     }
+    final generation = _generation;
     state = TorrentActionsState(
       rows: {...state.rows, hash: pending},
       bulk: state.bulk,
       bulkCount: state.bulkCount,
     );
     final result = await run(client);
-    if (!ref.mounted) return result;
+    if (!ref.mounted || generation != _generation) return result;
     _track(event, result, client);
-    if (result.isOk) await ref.read(torrentListProvider.notifier).refresh();
-    if (!ref.mounted) return result;
+    // Also after a failure: a partial failure changed some torrents, and a
+    // dropped connection may have applied the action anyway.
+    await ref.read(torrentListProvider.notifier).refresh();
+    if (!ref.mounted || generation != _generation) return result;
     final rows = {...state.rows}..remove(hash);
     state = TorrentActionsState(
       rows: rows,
@@ -136,16 +147,17 @@ class TorrentActionsController extends Notifier<TorrentActionsState> {
     if (client == null || !ref.mounted) {
       return const Result.err(AppError(ErrorCategory.networkUnreachable));
     }
+    final generation = _generation;
     state = TorrentActionsState(
       rows: state.rows,
       bulk: action,
       bulkCount: hashes.length,
     );
     final result = await run(client, hashes);
-    if (!ref.mounted) return result;
+    if (!ref.mounted || generation != _generation) return result;
     _track(event, result, client);
-    if (result.isOk) await ref.read(torrentListProvider.notifier).refresh();
-    if (!ref.mounted) return result;
+    await ref.read(torrentListProvider.notifier).refresh();
+    if (!ref.mounted || generation != _generation) return result;
     state = TorrentActionsState(rows: state.rows);
     return result;
   }

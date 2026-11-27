@@ -10,7 +10,8 @@
     "placeholders": {
       "count": {
         "type": "int",
-        "description": "How many torrents the client reports."
+        "description": "How many torrents the client reports.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -48,7 +49,8 @@
       },
       "count": {
         "type": "int",
-        "description": "Number of torrents."
+        "description": "Number of torrents.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -102,7 +104,7 @@
       }
     }
   },
-  "torRowSemantics": "{name}، {state}، اكتمل {percent}",
+  "torRowSemantics": "{name}، {state}، اكتمل {percent}، {details}",
   "@torRowSemantics": {
     "description": "Spoken description of a torrent row: name, state and percentage in words.",
     "placeholders": {
@@ -117,6 +119,10 @@
       "percent": {
         "type": "String",
         "description": "Formatted percentage."
+      },
+      "details": {
+        "type": "String",
+        "description": "The row's visible details, already localized and joined: size, speeds, time left and ratio."
       }
     }
   },
@@ -260,7 +266,8 @@
     "placeholders": {
       "count": {
         "type": "int",
-        "description": "Seconds."
+        "description": "Seconds.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -270,7 +277,8 @@
     "placeholders": {
       "count": {
         "type": "int",
-        "description": "Minutes."
+        "description": "Minutes.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -280,11 +288,13 @@
     "placeholders": {
       "hours": {
         "type": "int",
-        "description": "Hours."
+        "description": "Hours.",
+        "format": "decimalPattern"
       },
       "minutes": {
         "type": "int",
-        "description": "Minutes."
+        "description": "Minutes.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -294,11 +304,13 @@
     "placeholders": {
       "days": {
         "type": "int",
-        "description": "Days."
+        "description": "Days.",
+        "format": "decimalPattern"
       },
       "hours": {
         "type": "int",
-        "description": "Hours."
+        "description": "Hours.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -498,7 +510,8 @@
     "placeholders": {
       "seconds": {
         "type": "int",
-        "description": "Seconds between refreshes."
+        "description": "Seconds between refreshes.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -568,7 +581,8 @@
     "placeholders": {
       "count": {
         "type": "int",
-        "description": "Number of torrents."
+        "description": "Number of torrents.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -586,7 +600,8 @@
     "placeholders": {
       "count": {
         "type": "int",
-        "description": "Number of torrents."
+        "description": "Number of torrents.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -600,7 +615,8 @@
     "placeholders": {
       "count": {
         "type": "int",
-        "description": "Number of torrents."
+        "description": "Number of torrents.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -770,11 +786,13 @@
     "placeholders": {
       "added": {
         "type": "int",
-        "description": "Files added."
+        "description": "Files added.",
+        "format": "decimalPattern"
       },
       "total": {
         "type": "int",
-        "description": "Files chosen."
+        "description": "Files chosen.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -860,11 +878,13 @@
     "placeholders": {
       "connected": {
         "type": "int",
-        "description": "Connected."
+        "description": "Connected.",
+        "format": "decimalPattern"
       },
       "total": {
         "type": "int",
-        "description": "Total known."
+        "description": "Total known.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -1002,7 +1022,7 @@
   "@torHostMessage": {
     "description": "Explanation of the daemon host picker."
   },
-  "torHostEntry": "{host}:{port}",
+  "torHostEntry": "⁦{host}:{port}⁩",
   "@torHostEntry": {
     "description": "One daemon host in the picker.",
     "placeholders": {
@@ -1012,7 +1032,7 @@
       },
       "port": {
         "type": "String",
-        "description": "Port."
+        "description": "Port number, already formatted for the locale without a thousands separator."
       }
     }
   },
@@ -1027,5 +1047,110 @@
   "torKindDelugeDescription": "عميل تورنت بواجهة ويب (Deluge Web).",
   "@torKindDelugeDescription": {
     "description": "Description of Deluge in the server type picker."
+  },
+  "torListSeparator": "، ",
+  "@torListSeparator": {
+    "description": "Separator between the items of a spoken list (comma and space)."
+  },
+  "torActionPartialFailed": "{failed, plural, =1{تعذر تغيير تورنت واحد من أصل {total}.} =2{تعذر تغيير تورنتين من أصل {total}.} few{تعذر تغيير {failed} تورنتات من أصل {total}.} many{تعذر تغيير {failed} تورنتًا من أصل {total}.} other{تعذر تغيير {failed} تورنت من أصل {total}.}} تعرض القائمة الحالة الحالية.",
+  "@torActionPartialFailed": {
+    "description": "Shown when an action worked for some torrents and failed for others (Deluge).",
+    "placeholders": {
+      "failed": {
+        "type": "int",
+        "description": "How many torrents failed.",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "description": "How many torrents the action was for.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "torAddTooManyFiles": "{ignored, plural, =1{تم تجاهل ملف واحد إضافي.} =2{تم تجاهل ملفين إضافيين.} few{تم تجاهل {ignored} ملفات إضافية.} many{تم تجاهل {ignored} ملفًا إضافيًا.} other{تم تجاهل {ignored} ملف إضافي.}} يمكنك إضافة حتى {max} ملفًا دفعة واحدة.",
+  "@torAddTooManyFiles": {
+    "description": "Shown after choosing more .torrent files than can be added at once.",
+    "placeholders": {
+      "ignored": {
+        "type": "int",
+        "description": "Files that were not used.",
+        "format": "decimalPattern"
+      },
+      "max": {
+        "type": "int",
+        "description": "The most files one pick adds.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "torAddLabelNotApplied": "تمت الإضافة، لكن تعذر تطبيق التصنيف. تستخدم تصنيفات Deluge أحرفًا صغيرة وأرقامًا والرموز - _ . فقط.",
+  "@torAddLabelNotApplied": {
+    "description": "Warning after a torrent was added to Deluge but its label could not be set."
+  },
+  "torHostNotAllowedMessage": "رفض الخادم هذا الجهاز (403). تحقق من اسم المستخدم وكلمة المرور، ومن أن القائمة البيضاء للمضيفين (rpc-host-whitelist) وقائمة العناوين (rpc-whitelist) في Transmission تسمح بهذا الاتصال.",
+  "@torHostNotAllowedMessage": {
+    "description": "Explains a Transmission 403: credentials or the host/address whitelist."
+  },
+  "torRatioUnknown": "–",
+  "@torRatioUnknown": {
+    "description": "Share ratio shown when the client does not know it (an en dash)."
+  },
+  "torRatioInfinite": "∞",
+  "@torRatioInfinite": {
+    "description": "Share ratio shown when it is infinite (nothing was downloaded)."
+  },
+  "torRatioUnknownSpoken": "غير معروف",
+  "@torRatioUnknownSpoken": {
+    "description": "Spoken form of the unknown ratio."
+  },
+  "torRatioInfiniteSpoken": "لا نهائي",
+  "@torRatioInfiniteSpoken": {
+    "description": "Spoken form of the infinite ratio."
+  },
+  "torDetailRatioValue": "النسبة {value}",
+  "@torDetailRatioValue": {
+    "description": "Row detail for a ratio that is unknown or infinite.",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "description": "The ratio symbol: an en dash or the infinity sign."
+      }
+    }
+  },
+  "torGraphTrendRising": "في ازدياد",
+  "@torGraphTrendRising": {
+    "description": "Trend of the speed graph: speeds are going up."
+  },
+  "torGraphTrendFalling": "في انخفاض",
+  "@torGraphTrendFalling": {
+    "description": "Trend of the speed graph: speeds are going down."
+  },
+  "torGraphTrendSteady": "مستقرة",
+  "@torGraphTrendSteady": {
+    "description": "Trend of the speed graph: speeds are about the same."
+  },
+  "torGraphSummary": "رسم بياني لآخر {count} قراءة: ذروة التنزيل {down}، ذروة الرفع {up}، الاتجاه {trend}. الرفع هو الخط المتقطع.",
+  "@torGraphSummary": {
+    "description": "Spoken text alternative of the speed graph.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Readings in the graph.",
+        "format": "decimalPattern"
+      },
+      "down": {
+        "type": "String",
+        "description": "Peak download speed."
+      },
+      "up": {
+        "type": "String",
+        "description": "Peak upload speed."
+      },
+      "trend": {
+        "type": "String",
+        "description": "Trend word."
+      }
+    }
   }
 }

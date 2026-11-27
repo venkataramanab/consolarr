@@ -36,7 +36,10 @@ const _matrix = <String, (ServiceKind, TorrentCapabilities)>{
     ServiceKind.deluge,
     TorrentCapabilities(labelModel: LabelModel.label),
   ),
-  'Deluge (no label plugin)': (ServiceKind.deluge, TorrentCapabilities()),
+  'Deluge (no label plugin)': (
+    ServiceKind.deluge,
+    TorrentCapabilities(labelsNeedPlugin: true),
+  ),
 };
 
 Future<void> _show(

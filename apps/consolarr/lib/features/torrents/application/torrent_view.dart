@@ -95,7 +95,7 @@ int _compare(Torrent a, Torrent b, TorrentSort sort) {
       final y = b.addedOn?.millisecondsSinceEpoch ?? 0;
       return x.compareTo(y);
     case TorrentSort.ratio:
-      return a.ratio.compareTo(b.ratio);
+      return _ratioKey(a).compareTo(_ratioKey(b));
     case TorrentSort.label:
       return (a.category ?? a.label ?? '').toLowerCase().compareTo(
         (b.category ?? b.label ?? '').toLowerCase(),
@@ -129,3 +129,10 @@ List<Torrent> applyView(List<Torrent> all, TorrentView view) {
   });
   return out;
 }
+
+/// Sort key of a ratio: unknown (`-1`) first, infinite (`-2`) last.
+double _ratioKey(Torrent t) => t.ratioInfinite
+    ? double.infinity
+    : t.ratioUnknown
+    ? -1
+    : t.ratio;

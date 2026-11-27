@@ -12,18 +12,29 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:observability/observability.dart';
 import 'package:torrent_clients/torrent_clients.dart';
 
-/// A `.torrent` file chosen in the system picker. Bytes are read only after
-/// the size has been checked; the name is for the screen, never for logs.
+/// The most files one pick may add. The platform picker copies every chosen
+/// file into the app cache before Dart sees any of them, so the rest of a
+/// larger pick is discarded unread and reported.
+const maxPickedTorrentFiles = 20;
+
+/// A `.torrent` file chosen in the system picker. The size is checked before
+/// the bytes are read from the picker's copy; the name is for the screen,
+/// never for logs.
 class PickedTorrentFile {
   const PickedTorrentFile({
     required this.name,
     required this.length,
     required this.readBytes,
+    this.discard,
   });
 
   final String name;
   final Future<int> Function() length;
   final Future<Uint8List> Function() readBytes;
+
+  /// Deletes the picker's cached copy (it may hold a tracker passkey). Called
+  /// once the file was read or skipped, whatever the outcome.
+  final Future<void> Function()? discard;
 }
 
 /// Opens the system picker (no storage permission) and returns the choice.
@@ -36,12 +47,20 @@ final torrentFilePickerProvider = Provider<TorrentFilePicker>(
 
 /// The result for one link or file.
 class AddItemResult {
-  const AddItemResult({this.name, this.error, this.fileProblem});
+  const AddItemResult({
+    this.name,
+    this.error,
+    this.fileProblem,
+    this.labelWarning = false,
+  });
 
   /// File name (plain text) for file results; `null` for a link.
   final String? name;
   final AppError? error;
   final FileProblem? fileProblem;
+
+  /// The torrent was added but its label could not be applied (Deluge).
+  final bool labelWarning;
 
   bool get ok => error == null && fileProblem == null;
 }
@@ -60,8 +79,11 @@ final class AddAdding extends AddState {
 
 /// Finished; [results] holds one entry per link or file.
 final class AddFinished extends AddState {
-  const AddFinished(this.results);
+  const AddFinished(this.results, {this.ignored = 0});
   final List<AddItemResult> results;
+
+  /// Files beyond [maxPickedTorrentFiles] that were not looked at.
+  final int ignored;
 
   int get added => results.where((r) => r.ok).length;
 }
@@ -113,6 +135,19 @@ class AddTorrentController extends Notifier<AddState> {
     );
   }
 
+  /// [o] with a warning listener, so a best-effort step (Deluge's label) that
+  /// fails is shown next to a successful add instead of failing it.
+  AddTorrentOptions _listening(
+    AddTorrentOptions o,
+    void Function(AddWarning) onWarning,
+  ) => AddTorrentOptions(
+    savePath: o.savePath,
+    category: o.category,
+    tags: o.tags,
+    paused: o.paused,
+    onWarning: onWarning,
+  );
+
   void reset() {
     if (state is! AddAdding) state = const AddIdle();
   }
@@ -132,7 +167,11 @@ class AddTorrentController extends Notifier<AddState> {
       }
       return false;
     }
-    final result = await client.addMagnetOrUrl(link.trim(), options: options);
+    var labelWarning = false;
+    final result = await client.addMagnetOrUrl(
+      link.trim(),
+      options: _listening(options, (_) => labelWarning = true),
+    );
     if (!ref.mounted) return result.isOk;
     _track(
       parsed is MagnetLink ? TorrentSourceParam.magnet : TorrentSourceParam.url,
@@ -142,21 +181,38 @@ class AddTorrentController extends Notifier<AddState> {
           result.errorOrNull != null &&
           UnsupportedAction.isIt(result.errorOrNull!),
     );
-    state = AddFinished([AddItemResult(error: result.errorOrNull)]);
+    state = AddFinished([
+      AddItemResult(error: result.errorOrNull, labelWarning: labelWarning),
+    ]);
     if (result.isOk) {
       unawaited(ref.read(torrentListProvider.notifier).refresh());
     }
     return result.isOk;
   }
 
+  Future<void> _discard(PickedTorrentFile f) async {
+    try {
+      await f.discard?.call();
+    } on Object {
+      // Best effort: the cache is also cleared by the system.
+    }
+  }
+
   /// Checks and sends each of [files] on its own, so one bad file does not
-  /// stop the others.
+  /// stop the others. At most [maxPickedTorrentFiles] are used; the picker's
+  /// cached copy of every file (used or not) is deleted as soon as it is read
+  /// or skipped.
   Future<void> addFiles(
-    List<PickedTorrentFile> files,
+    List<PickedTorrentFile> picked,
     AddTorrentOptions options,
   ) async {
-    if (state is AddAdding || files.isEmpty) return;
+    if (state is AddAdding || picked.isEmpty) return;
     state = const AddAdding();
+    final files = picked.take(maxPickedTorrentFiles).toList();
+    for (final extra in picked.skip(maxPickedTorrentFiles)) {
+      await _discard(extra);
+    }
+    final ignored = picked.length - files.length;
     final client = await _client();
     final results = <AddItemResult>[];
     for (final f in files) {
@@ -167,14 +223,19 @@ class AddTorrentController extends Notifier<AddState> {
             error: const AppError(ErrorCategory.networkUnreachable),
           ),
         );
+        await _discard(f);
         continue;
       }
       Uint8List bytes;
       try {
+        // `length` and `readBytes` read the picker's cached copy; the platform
+        // has already read the whole file once, so this cap cannot save that
+        // memory: it keeps oversized data away from the network call.
         if (await f.length() > maxTorrentFileBytes) {
           results.add(
             AddItemResult(name: f.name, fileProblem: FileProblem.tooLarge),
           );
+          await _discard(f);
           continue;
         }
         bytes = await f.readBytes();
@@ -185,14 +246,21 @@ class AddTorrentController extends Notifier<AddState> {
             error: const AppError(ErrorCategory.parseError),
           ),
         );
+        await _discard(f);
         continue;
       }
+      await _discard(f);
       final problem = checkTorrentBytes(bytes);
       if (problem != null) {
         results.add(AddItemResult(name: f.name, fileProblem: problem));
         continue;
       }
-      final r = await client.addFile(bytes, fileName: f.name, options: options);
+      var labelWarning = false;
+      final r = await client.addFile(
+        bytes,
+        fileName: f.name,
+        options: _listening(options, (_) => labelWarning = true),
+      );
       if (!ref.mounted) return;
       _track(
         TorrentSourceParam.file,
@@ -201,10 +269,16 @@ class AddTorrentController extends Notifier<AddState> {
         unsupported:
             r.errorOrNull != null && UnsupportedAction.isIt(r.errorOrNull!),
       );
-      results.add(AddItemResult(name: f.name, error: r.errorOrNull));
+      results.add(
+        AddItemResult(
+          name: f.name,
+          error: r.errorOrNull,
+          labelWarning: labelWarning,
+        ),
+      );
     }
     if (!ref.mounted) return;
-    state = AddFinished(results);
+    state = AddFinished(results, ignored: ignored);
     if (results.any((r) => r.ok)) {
       unawaited(ref.read(torrentListProvider.notifier).refresh());
     }

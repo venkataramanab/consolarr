@@ -49,6 +49,9 @@ class FakeTorrentClient implements TorrentClient {
 
   /// What the actions answer with (`null` = success) and what they received.
   AppError? actionError;
+
+  /// Reports a label warning on every add (Deluge).
+  bool labelWarning = false;
   Completer<void>? actionGate;
   final List<String> calls = [];
   final List<String> addedLinks = [];
@@ -101,6 +104,7 @@ class FakeTorrentClient implements TorrentClient {
   }) {
     addedLinks.add(link);
     addedOptions.add(options);
+    if (labelWarning) options.onWarning?.call(AddWarning.labelNotApplied);
     return _act('addLink');
   }
 
@@ -120,10 +124,26 @@ class FakeTorrentClient implements TorrentClient {
     return e == null ? Result.ok(limits) : Result.err(e);
   }
 
+  /// What the server stores: limits are rounded up to a multiple of this many
+  /// bytes (Transmission: 1000), like a client with its own unit.
+  int limitRounding = 1;
+
+  int _round(int bytes) => bytes == 0
+      ? 0
+      : (bytes + limitRounding - 1) ~/ limitRounding * limitRounding;
+
   @override
-  Future<Result<void>> setGlobalLimits(GlobalLimits l) {
+  Future<Result<void>> setGlobalLimits(GlobalLimits l) async {
     lastLimits = l;
-    return _act('setLimits');
+    final r = await _act('setLimits');
+    if (r.isOk) {
+      limits = SpeedLimitsState(
+        download: _round(l.download ?? limits.download),
+        upload: _round(l.upload ?? limits.upload),
+        alternativeActive: limits.alternativeActive,
+      );
+    }
+    return r;
   }
 
   @override

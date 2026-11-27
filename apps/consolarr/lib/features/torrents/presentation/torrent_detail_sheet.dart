@@ -12,7 +12,6 @@ import 'package:consolarr/features/torrents/presentation/format.dart';
 import 'package:consolarr/features/torrents/presentation/remove_dialog.dart';
 import 'package:consolarr/features/torrents/presentation/screen_view.dart';
 import 'package:consolarr/features/torrents/presentation/torrent_state_view.dart';
-import 'package:consolarr/shared/errors/connection_error_message.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter/services.dart';
@@ -159,7 +158,7 @@ class _TorrentDetailSheetState extends ConsumerState<TorrentDetailSheet>
   );
 
   Widget _error(AppLocalizations l10n, AppError error) {
-    final text = connectionErrorMessage(l10n, error);
+    final text = torrentErrorMessage(l10n, error);
     return SingleChildScrollView(
       controller: widget.controller,
       child: ErrorState(
@@ -172,7 +171,7 @@ class _TorrentDetailSheetState extends ConsumerState<TorrentDetailSheet>
     );
   }
 
-  Widget _row(String label, String value, {Widget? trailing}) {
+  Widget _row(String label, String value, {Widget? trailing, String? spoken}) {
     final theme = Theme.of(context);
     return MergeSemantics(
       child: Padding(
@@ -186,10 +185,15 @@ class _TorrentDetailSheetState extends ConsumerState<TorrentDetailSheet>
             ),
             Expanded(
               flex: 3,
-              child: Text(
-                value,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontFeatures: ConsolarrTypeScale.tabularFigures,
+              child: Semantics(
+                // A symbol such as "–" or "∞" is read as its spoken form.
+                label: spoken,
+                excludeSemantics: spoken != null,
+                child: Text(
+                  value,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontFeatures: ConsolarrTypeScale.tabularFigures,
+                  ),
                 ),
               ),
             ),
@@ -219,8 +223,9 @@ class _TorrentDetailSheetState extends ConsumerState<TorrentDetailSheet>
     final noSeeds =
         (t.state == TorrentState.downloading ||
             t.state == TorrentState.stalled) &&
+        // Only when the client reported both: unknown is not "none".
         d.seeds == 0 &&
-        (d.seedsTotal ?? 0) == 0;
+        d.seedsTotal == 0;
     final paused =
         t.state == TorrentState.paused || t.state == TorrentState.finished;
     final added = t.addedOn;
@@ -284,7 +289,11 @@ class _TorrentDetailSheetState extends ConsumerState<TorrentDetailSheet>
                     },
                   ),
           ),
-          _row(l10n.torDetailRatioLabel, l10n.torDetailRatio(t.ratio)),
+          _row(
+            l10n.torDetailRatioLabel,
+            ratioValue(l10n, t),
+            spoken: ratioSpoken(l10n, t),
+          ),
           _row(
             l10n.torDetailDownloaded,
             d.downloaded == null ? unknown : formatBytes(l10n, d.downloaded!),

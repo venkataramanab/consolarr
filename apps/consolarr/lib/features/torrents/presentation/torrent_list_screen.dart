@@ -20,7 +20,6 @@ import 'package:consolarr/features/torrents/presentation/speed_limits_sheet.dart
 import 'package:consolarr/features/torrents/presentation/status_tabs.dart';
 import 'package:consolarr/features/torrents/presentation/torrent_detail_sheet.dart';
 import 'package:consolarr/features/torrents/presentation/torrent_row.dart';
-import 'package:consolarr/shared/errors/connection_error_message.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
@@ -386,7 +385,7 @@ class _TorrentListScreenState extends ConsumerState<TorrentListScreen>
       );
     }
     final noHost = appError.debugDetail == delugeNoHostDetail;
-    final text = connectionErrorMessage(l10n, appError);
+    final text = torrentErrorMessage(l10n, appError);
     return Padding(
       padding: EdgeInsets.only(top: padding.top, bottom: padding.bottom),
       child: RefreshIndicator(
@@ -492,7 +491,6 @@ class _TorrentListScreenState extends ConsumerState<TorrentListScreen>
   Widget _content(BuildContext context, EdgeInsets padding, TorrentsData data) {
     final l10n = context.l10n;
     final side = EdgeInsets.symmetric(horizontal: padding.horizontal / 2);
-    final dim = data.offline ? 0.55 : 1.0;
     final view = ref.watch(torrentViewProvider);
     final visible = ref.watch(visibleTorrentsProvider);
     final pending = ref.watch(torrentActionsProvider.select((s) => s.rows));
@@ -571,17 +569,16 @@ class _TorrentListScreenState extends ConsumerState<TorrentListScreen>
               top: ConsolarrSpacing.sm,
               bottom: padding.bottom,
             ).add(side),
-            sliver: SliverOpacity(
-              opacity: dim,
-              sliver: SliverList.separated(
-                itemCount: visible.length,
-                separatorBuilder: (_, _) =>
-                    const SizedBox(height: ConsolarrSpacing.sm),
-                itemBuilder: (context, i) => _rowFor(
-                  visible[i],
-                  pending[visible[i].hash],
-                  interactive: !data.offline,
-                ),
+            // Offline is shown by the banner and by rows that do nothing on
+            // tap; the text stays fully opaque (dimming it failed AA contrast).
+            sliver: SliverList.separated(
+              itemCount: visible.length,
+              separatorBuilder: (_, _) =>
+                  const SizedBox(height: ConsolarrSpacing.sm),
+              itemBuilder: (context, i) => _rowFor(
+                visible[i],
+                pending[visible[i].hash],
+                interactive: !data.offline,
               ),
             ),
           ),

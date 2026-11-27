@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'dart:async';
+
 import 'package:consolarr/features/torrents/application/add_torrent_controller.dart';
 import 'package:consolarr/features/torrents/application/torrent_link.dart';
 import 'package:consolarr/features/torrents/application/torrents_providers.dart';
@@ -13,6 +15,9 @@ import 'package:l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:observability/observability.dart';
 import 'package:torrent_clients/torrent_clients.dart';
+
+/// How long typing must pause before the confirmation is announced.
+const _settleDelay = Duration(milliseconds: 700);
 
 /// Opens the add sheet (TOR-04, TOR-05).
 Future<void> showAddTorrentSheet(BuildContext context) {
@@ -49,8 +54,23 @@ class _AddTorrentSheetState extends ConsumerState<AddTorrentSheet> {
   final _tags = TextEditingController();
   bool _paused = false;
 
+  /// The link as it was when typing paused. The confirmation is a live region
+  /// only once it is settled, so a screen reader does not announce a new name
+  /// on every keystroke.
+  String _settled = '';
+  Timer? _settleTimer;
+
+  void _linkChanged() {
+    _settleTimer?.cancel();
+    _settleTimer = Timer(_settleDelay, () {
+      if (mounted) setState(() => _settled = _link.text);
+    });
+    setState(() {});
+  }
+
   @override
   void dispose() {
+    _settleTimer?.cancel();
     _link.dispose();
     _savePath.dispose();
     _category.dispose();
@@ -85,6 +105,8 @@ class _AddTorrentSheetState extends ConsumerState<AddTorrentSheet> {
       return;
     }
     setState(() => _link.text = text.trim());
+    _settleTimer?.cancel();
+    _settled = _link.text; // a paste is one change: announce it at once
   }
 
   Future<void> _send(TorrentCapabilities caps) async {
@@ -118,7 +140,6 @@ class _AddTorrentSheetState extends ConsumerState<AddTorrentSheet> {
     final l10n = context.l10n;
     final add = ref.watch(addTorrentProvider);
     final caps = ref.watch(torrentCapabilitiesProvider);
-    final kind = ref.watch(torrentClientProvider).value?.kind;
     final parsed = parseTorrentLink(_link.text);
     final adding = add is AddAdding;
     final canSend = !adding && (parsed is MagnetLink || parsed is UrlLink);
@@ -147,7 +168,7 @@ class _AddTorrentSheetState extends ConsumerState<AddTorrentSheet> {
               enableIMEPersonalizedLearning: false,
               minLines: 1,
               maxLines: 3,
-              onChanged: (_) => setState(() {}),
+              onChanged: (_) => _linkChanged(),
               decoration: InputDecoration(
                 labelText: l10n.torAddSourceLabel,
                 hintText: l10n.torAddSourceHint,
@@ -163,7 +184,7 @@ class _AddTorrentSheetState extends ConsumerState<AddTorrentSheet> {
             if (parsed is MagnetLink || parsed is UrlLink) ...[
               const SizedBox(height: ConsolarrSpacing.sm),
               Semantics(
-                liveRegion: true,
+                liveRegion: _settled == _link.text,
                 child: Text(switch (parsed) {
                   MagnetLink(:final displayName) => l10n.torAddConfirmName(
                     displayName,
@@ -174,7 +195,7 @@ class _AddTorrentSheetState extends ConsumerState<AddTorrentSheet> {
               ),
             ],
             const SizedBox(height: ConsolarrSpacing.md),
-            _options_(l10n, caps, kind, adding),
+            _options_(l10n, caps, adding),
             const SizedBox(height: ConsolarrSpacing.md),
             FilledButton(
               onPressed: canSend ? () => _send(caps) : null,
@@ -201,7 +222,6 @@ class _AddTorrentSheetState extends ConsumerState<AddTorrentSheet> {
   Widget _options_(
     AppLocalizations l10n,
     TorrentCapabilities caps,
-    ServiceKind? kind,
     bool adding,
   ) {
     return ExpansionTile(
@@ -227,7 +247,7 @@ class _AddTorrentSheetState extends ConsumerState<AddTorrentSheet> {
                   : l10n.torAddCategory,
             ),
           ),
-        ] else if (kind == ServiceKind.deluge) ...[
+        ] else if (caps.labelsNeedPlugin) ...[
           const SizedBox(height: ConsolarrSpacing.sm),
           Text(
             l10n.torAddNoLabels,
@@ -263,7 +283,7 @@ class _AddTorrentSheetState extends ConsumerState<AddTorrentSheet> {
     switch (add) {
       case AddIdle() || AddAdding():
         return const SizedBox.shrink();
-      case AddFinished(:final results):
+      case AddFinished(:final results, :final ignored):
         final isFiles = results.any((r) => r.name != null);
         final okAll = results.every((r) => r.ok);
         return Semantics(
@@ -278,6 +298,13 @@ class _AddTorrentSheetState extends ConsumerState<AddTorrentSheet> {
                     results.length,
                   ),
                   style: theme.textTheme.titleSmall,
+                ),
+              if (ignored > 0)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: ConsolarrSpacing.xs),
+                  child: Text(
+                    l10n.torAddTooManyFiles(ignored, maxPickedTorrentFiles),
+                  ),
                 ),
               for (final r in results) _resultRow(l10n, r, roles),
               if (!okAll)
@@ -340,7 +367,19 @@ class _AddTorrentSheetState extends ConsumerState<AddTorrentSheet> {
             color: r.ok ? roles.success : roles.error,
           ),
           const SizedBox(width: ConsolarrSpacing.sm),
-          Expanded(child: Text(text)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(text),
+                if (r.ok && r.labelWarning)
+                  Text(
+                    l10n.torAddLabelNotApplied,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+              ],
+            ),
+          ),
         ],
       ),
     );

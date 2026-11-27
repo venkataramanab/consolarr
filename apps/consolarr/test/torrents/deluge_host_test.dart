@@ -40,13 +40,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(DelugeHostPicker), findsOneWidget);
     expect(find.text('Choose a Deluge daemon'), findsOneWidget);
-    expect(find.text('daemon-a.example:58846'), findsOneWidget);
+    expect(find.text('\u2066daemon-a.example:58846\u2069'), findsOneWidget);
     // Server text is plain text, never markup.
     expect(
-      find.text('<b>not markup</b> daemon-b.example:58847'),
+      find.text('\u2066<b>not markup</b> daemon-b.example:58847\u2069'),
       findsOneWidget,
     );
-    await tester.tap(find.text('daemon-a.example:58846'));
+    await tester.tap(find.text('\u2066daemon-a.example:58846\u2069'));
     await tester.pumpAndSettle();
     expect(c.selected, ['h1']);
     expect(find.byType(DelugeHostPicker), findsNothing);

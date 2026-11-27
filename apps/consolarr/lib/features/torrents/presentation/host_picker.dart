@@ -35,7 +35,10 @@ class DelugeHostPicker extends StatelessWidget {
           ListTile(
             minTileHeight: ConsolarrSpacing.minTapTarget,
             leading: const Icon(Icons.dns_outlined),
-            title: Text(l10n.torHostEntry(h.host, '${h.port}'), maxLines: 2),
+            title: Text(
+              l10n.torHostEntry(h.host, l10n.plainInt(h.port)),
+              maxLines: 2,
+            ),
             onTap: () => onSelected(h),
           ),
       ],
