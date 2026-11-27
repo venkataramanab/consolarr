@@ -18,10 +18,15 @@ class LogEntry {
   final String message;
 }
 
-/// The opt-in in-app log (SET-04): off by default, memory only, a ring
+/// The opt-in in-app log (SET-04): off by default, memory only, a circular
 /// buffer with a cap, cleared on request, when turned off and when the
-/// process ends. Messages are redacted at write time; the bundle redacts them
-/// again.
+/// process ends. Messages are redacted at write time and capped at
+/// [maxMessageLength]; the bundle redacts them again.
+///
+/// Reading does not copy: [length], [entryAt] and [view] look straight into the
+/// buffer, and [version] changes on every change so a listener can tell
+/// whether to rebuild. [entries] is the explicit (copying) snapshot used by
+/// the bundle.
 class DiagnosticsLog {
   DiagnosticsLog({
     this.capacity = 500,
@@ -30,11 +35,19 @@ class DiagnosticsLog {
   }) : assert(capacity > 0, 'capacity > 0'),
        _clock = clock ?? DateTime.now;
 
+  /// Largest stored message, marker included (about 1 KB).
+  static const maxMessageLength = 1024;
+
+  /// Appended to a message that was cut at [maxMessageLength].
+  static const truncationMarker = ' ...[TRUNCATED]';
+
   final int capacity;
   final Redactor redactor;
   final DateTime Function() _clock;
 
-  final List<LogEntry> _entries = [];
+  final List<LogEntry?> _ring = [];
+  int _start = 0;
+  int _version = 0;
   final List<void Function()> _listeners = [];
   bool _enabled = false;
   LogLevel _level = LogLevel.info;
@@ -45,50 +58,116 @@ class DiagnosticsLog {
   set enabled(bool value) {
     if (_enabled == value) return;
     _enabled = value;
-    if (!value) _entries.clear();
-    _notify();
+    if (!value) _drop();
+    _changed();
   }
 
   LogLevel get level => _level;
   set level(LogLevel value) {
     if (_level == value) return;
     _level = value;
-    _notify();
+    _changed();
   }
 
-  /// Oldest first.
-  List<LogEntry> get entries => List.unmodifiable(_entries);
+  /// Changes whenever the entries, the level or the on/off state change.
+  int get version => _version;
 
-  /// Records [message] (redacted) when the log is on and [level] passes the
-  /// selected level. Never throws.
+  /// Number of stored entries.
+  int get length => _ring.length;
+
+  /// The entry at [index], 0 being the oldest.
+  LogEntry entryAt(int index) {
+    RangeError.checkValidIndex(index, this, 'index', length);
+    return _ring[(_start + index) % _ring.length]!;
+  }
+
+  /// A live, read-only, oldest-first view (no copy). Valid until the next
+  /// change; take [entries] to keep a stable list.
+  Iterable<LogEntry> get view => _LogView(this);
+
+  /// An independent copy, oldest first.
+  List<LogEntry> get entries => List.unmodifiable(view);
+
+  /// Records [message] (redacted, capped) when the log is on and [level]
+  /// passes the selected level. Never throws.
   void add(LogLevel level, String message) {
     if (!_enabled || level.index < _level.index) return;
-    _entries.add(
-      LogEntry(
-        time: _clock().toUtc(),
-        level: level,
-        message: redactor.redactText(message),
-      ),
+    final entry = LogEntry(
+      time: _clock().toUtc(),
+      level: level,
+      message: _cap(redactor.redactText(message)),
     );
-    if (_entries.length > capacity) {
-      _entries.removeRange(0, _entries.length - capacity);
+    if (_ring.length < capacity) {
+      _ring.add(entry);
+    } else {
+      _ring[_start] = entry;
+      _start = (_start + 1) % capacity;
     }
-    _notify();
+    _changed();
+  }
+
+  static String _cap(String m) {
+    if (m.length <= maxMessageLength) return m;
+    var end = maxMessageLength - truncationMarker.length;
+    final unit = m.codeUnitAt(end - 1);
+    if (unit >= 0xD800 && unit <= 0xDBFF) end--;
+    return '${m.substring(0, end)}$truncationMarker';
   }
 
   void clear() {
-    if (_entries.isEmpty) return;
-    _entries.clear();
-    _notify();
+    if (_ring.isEmpty) return;
+    _drop();
+    _changed();
+  }
+
+  void _drop() {
+    _ring.clear();
+    _start = 0;
   }
 
   void addListener(void Function() listener) => _listeners.add(listener);
   void removeListener(void Function() listener) => _listeners.remove(listener);
 
-  void _notify() {
+  void _changed() {
+    _version++;
     for (final l in List.of(_listeners)) {
       l();
     }
+  }
+}
+
+class _LogView extends Iterable<LogEntry> {
+  const _LogView(this._log);
+
+  final DiagnosticsLog _log;
+
+  @override
+  int get length => _log.length;
+
+  @override
+  bool get isEmpty => _log.length == 0;
+
+  @override
+  LogEntry elementAt(int index) => _log.entryAt(index);
+
+  @override
+  Iterator<LogEntry> get iterator => _LogIterator(_log);
+}
+
+class _LogIterator implements Iterator<LogEntry> {
+  _LogIterator(this._log);
+
+  final DiagnosticsLog _log;
+  int _i = -1;
+
+  @override
+  LogEntry get current => _log.entryAt(_i);
+
+  @override
+  bool moveNext() {
+    if (_i + 1 >= _log.length) return false;
+    _i++;
+    return true;
   }
 }
 

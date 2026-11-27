@@ -142,6 +142,48 @@ void main() {
       expect(log.entries.map((e) => e.message), ['line 2', 'line 3', 'line 4']);
     });
 
+    test('circular buffer: lazy view, length, entryAt and version', () {
+      final log = DiagnosticsLog(capacity: 3)..enabled = true;
+      final v0 = log.version;
+      for (var i = 0; i < 7; i++) {
+        log.add(LogLevel.info, 'line $i');
+      }
+      expect(log.version, greaterThan(v0));
+      expect(log.length, 3);
+      expect(log.entryAt(0).message, 'line 4');
+      expect(log.entryAt(2).message, 'line 6');
+      expect(log.view.map((e) => e.message), ['line 4', 'line 5', 'line 6']);
+      expect(log.view.length, 3);
+      expect(() => log.entryAt(3), throwsRangeError);
+      // `entries` is an explicit copy: later lines do not change it.
+      final copy = log.entries;
+      log.add(LogLevel.info, 'line 7');
+      expect(copy.map((e) => e.message), ['line 4', 'line 5', 'line 6']);
+      expect(log.entryAt(0).message, 'line 5');
+    });
+
+    test('add bumps the version once; clearing an empty log does not', () {
+      final log = DiagnosticsLog(capacity: 1000)..enabled = true;
+      final before = log.version;
+      log.add(LogLevel.info, 'a');
+      expect(log.version, before + 1);
+      log.clear();
+      expect(log.version, before + 2);
+      log.clear();
+      expect(log.version, before + 2);
+      expect(log.length, 0);
+    });
+
+    test('an entry is capped at about 1 KB with a marker', () {
+      final log = DiagnosticsLog()..enabled = true;
+      log.add(LogLevel.info, 'x ' * 4000);
+      final m = log.entryAt(0).message;
+      expect(m.length, lessThanOrEqualTo(DiagnosticsLog.maxMessageLength));
+      expect(m, endsWith(DiagnosticsLog.truncationMarker));
+      log.add(LogLevel.info, 'short');
+      expect(log.entryAt(1).message, 'short');
+    });
+
     test('level selector drops lower levels', () {
       final log = DiagnosticsLog()
         ..enabled = true
