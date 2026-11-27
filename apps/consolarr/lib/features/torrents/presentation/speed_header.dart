@@ -71,13 +71,33 @@ class SpeedHeader extends StatelessWidget {
       );
     }
 
+    String graphSummary() {
+      final peaks = speedPeaks(history);
+      final trend = switch (speedTrend(history)) {
+        SpeedTrend.rising => l10n.torGraphTrendRising,
+        SpeedTrend.falling => l10n.torGraphTrendFalling,
+        SpeedTrend.steady => l10n.torGraphTrendSteady,
+      };
+      return l10n.torGraphSummary(
+        history.length,
+        formatSpeed(l10n, peaks.down),
+        formatSpeed(l10n, peaks.up),
+        trend,
+      );
+    }
+
+    // The graph is decoration for the eye; its content is spoken here (peaks
+    // and trend), as part of one static label that does not announce itself.
     final spoken = unavailable
         ? l10n.torSpeedOffline
-        : l10n.torSpeedHeaderSemantics(
-            formatSpeed(l10n, down ?? 0),
-            formatSpeed(l10n, up ?? 0),
-            torrentCount,
-          );
+        : [
+            l10n.torSpeedHeaderSemantics(
+              formatSpeed(l10n, down ?? 0),
+              formatSpeed(l10n, up ?? 0),
+              torrentCount,
+            ),
+            if (history.length >= 2) graphSummary(),
+          ].join('. ');
 
     final card = Container(
       padding: const EdgeInsets.all(ConsolarrSpacing.md),
@@ -183,25 +203,39 @@ class SpeedGraphPainter extends CustomPainter {
       if (s.up > peak) peak = s.up;
     }
     final alpha = dimmed ? 0.4 : 1.0;
-    void line(int Function(SpeedSample) pick, Color color, double width) {
+    void line(
+      int Function(SpeedSample) pick,
+      Color color,
+      double width, {
+      bool dashed = false,
+    }) {
       final path = Path();
       for (var i = 0; i < history.length; i++) {
         final x = size.width * i / (history.length - 1);
         final y = size.height - 2 - (size.height - 4) * pick(history[i]) / peak;
         i == 0 ? path.moveTo(x, y) : path.lineTo(x, y);
       }
-      canvas.drawPath(
-        path,
-        Paint()
-          ..color = color.withValues(alpha: alpha)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = width
-          ..strokeJoin = StrokeJoin.round,
-      );
+      final paint = Paint()
+        ..color = color.withValues(alpha: alpha)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = width
+        ..strokeJoin = StrokeJoin.round;
+      if (!dashed) {
+        canvas.drawPath(path, paint);
+        return;
+      }
+      for (final metric in path.computeMetrics()) {
+        for (var d = 0.0; d < metric.length; d += 8) {
+          final end = d + 4 < metric.length ? d + 4 : metric.length;
+          canvas.drawPath(metric.extractPath(d, end), paint);
+        }
+      }
     }
 
-    line((s) => s.up, upColor, 1.5);
-    line((s) => s.down, downColor, 2);
+    // Upload is dashed and thinner, download solid and thicker: the two lines
+    // differ by more than colour.
+    line((s) => s.up, upColor, 1.5, dashed: true);
+    line((s) => s.down, downColor, 2.5);
   }
 
   @override
