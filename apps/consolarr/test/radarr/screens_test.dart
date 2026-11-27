@@ -3,13 +3,11 @@
 import 'dart:async';
 
 import 'package:arr_api/arr_api.dart';
-import 'package:consolarr/features/radarr/application/radarr_providers.dart';
 import 'package:consolarr/features/radarr/presentation/calendar_page.dart';
 import 'package:consolarr/features/radarr/presentation/missing_page.dart';
 import 'package:consolarr/features/radarr/presentation/movie_detail_screen.dart';
 import 'package:core/core.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:test_harness/test_harness.dart';
 

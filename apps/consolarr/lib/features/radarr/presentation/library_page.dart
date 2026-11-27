@@ -283,8 +283,12 @@ class _Toolbar extends ConsumerWidget {
     final tags = ref.watch(tagsProvider);
     final isGrid = mode == LibraryViewMode.grid;
     final canJump = groups.length > 1 && groups.first.label.isNotEmpty;
-    final names = <int, String>{for (final p in profiles.value ?? const []) p.id: p.name};
-    final tagNames = <int, String>{for (final t in tags.value ?? const []) t.id: t.label};
+    final names = <int, String>{
+      for (final p in profiles.value ?? const []) p.id: p.name,
+    };
+    final tagNames = <int, String>{
+      for (final t in tags.value ?? const []) t.id: t.label,
+    };
     final sortName = sortKeyText(l10n, query.sort);
     final direction = query.ascending
         ? l10n.radarrAscending

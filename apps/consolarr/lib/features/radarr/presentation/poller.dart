@@ -56,7 +56,8 @@ class _VisiblePollerState extends ConsumerState<VisiblePoller>
   void didChangeDependencies() {
     super.didChangeDependencies();
     _visible =
-        TickerMode.of(context) && (ModalRoute.isCurrentOf(context) ?? true);
+        TickerMode.valuesOf(context).enabled &&
+        (ModalRoute.isCurrentOf(context) ?? true);
     _sync();
   }
 
