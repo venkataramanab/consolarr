@@ -18,7 +18,24 @@ import 'package:core/core.dart';
 import 'package:dio/dio.dart';
 import 'package:security/security.dart';
 
+// Parse entry points for [decodeOffIsolate]. Top level, so nothing but the body
+// and (static) parser functions is ever sent to another isolate.
 ParsedRows<SonarrSeries> _parseSeries(String body) => parseSeriesList(body);
+
+ArrPage<ArrQueueItem> _parseQueuePage(String body) =>
+    ArrPage.fromJson(jsonDecode(body), ArrQueueItem.fromJson);
+
+ArrPage<SonarrEpisode> _parseEpisodePage(String body) =>
+    ArrPage.fromJson(jsonDecode(body), SonarrEpisode.fromJson);
+
+ParsedRows<SonarrEpisode> _parseEpisodes(String body) =>
+    parseArrList(jsonDecode(body), SonarrEpisode.fromJson);
+
+ParsedRows<ArrRelease> _parseReleases(String body) =>
+    parseArrList(jsonDecode(body), ArrRelease.fromJson);
+
+ParsedRows<SonarrLookupResult> _parseLookup(String body) =>
+    parseArrList(jsonDecode(body), SonarrLookupResult.fromJson);
 
 /// Hand-written, tolerant Sonarr v3 client (also works with v4).
 ///
@@ -77,9 +94,7 @@ class SonarrClient extends ArrClientBase implements SonarrApi {
   @override
   Future<Result<List<SonarrSeries>>> series() => guard(() async {
     final body = await getText('api/v3/series');
-    final parsed = body.length > ArrClientBase.isolateThresholdBytes
-        ? await runner(() => _parseSeries(body))
-        : parseSeriesList(body);
+    final parsed = await decodeOffIsolate(runner, body, _parseSeries);
     if (parsed.skipped > 0) onRowsSkipped?.call(parsed.skipped);
     return parsed.items;
   });
@@ -124,21 +139,15 @@ class SonarrClient extends ArrClientBase implements SonarrApi {
     return response.data ?? '';
   }
 
-  /// Decodes [body], off the UI isolate when it is large.
-  Future<T> _decode<T>(String body, T Function(String body) parse) =>
-      body.length > ArrClientBase.isolateThresholdBytes
-      ? runner(() => parse(body))
-      : Future.value(parse(body));
-
   Future<Result<List<T>>> _rows<T>(
     String path,
     Map<String, Object?> query,
-    T Function(Map<String, Object?> json) parse,
+    ParsedRows<T> Function(String body) parse,
   ) => guard(() async {
-    final body = await _get(path, query);
-    final parsed = await _decode(
-      body,
-      (b) => parseArrList(jsonDecode(b), parse),
+    final parsed = await decodeOffIsolate(
+      runner,
+      await _get(path, query),
+      parse,
     );
     if (parsed.skipped > 0) onRowsSkipped?.call(parsed.skipped);
     return parsed.items;
@@ -169,7 +178,7 @@ class SonarrClient extends ArrClientBase implements SonarrApi {
   Future<Result<List<SonarrEpisode>>> episodes(int seriesId) => _rows(
     'api/v3/episode',
     {'seriesId': seriesId, 'includeEpisodeFile': true},
-    SonarrEpisode.fromJson,
+    _parseEpisodes,
   );
 
   @override
@@ -217,7 +226,7 @@ class SonarrClient extends ArrClientBase implements SonarrApi {
     'end': _day(end),
     'unmonitored': includeUnmonitored,
     'includeSeries': true,
-  }, SonarrEpisode.fromJson);
+  }, _parseEpisodes);
 
   /// Most queue pages read in one refresh, and the page size.
   static const _queuePageSize = 200;
@@ -233,10 +242,7 @@ class SonarrClient extends ArrClientBase implements SonarrApi {
         'includeSeries': true,
         'includeEpisode': true,
       });
-      final parsed = await _decode(
-        body,
-        (b) => ArrPage.fromJson(jsonDecode(b), ArrQueueItem.fromJson),
-      );
+      final parsed = await decodeOffIsolate(runner, body, _parseQueuePage);
       if (parsed.skipped > 0) onRowsSkipped?.call(parsed.skipped);
       items.addAll(parsed.records);
       if (!parsed.hasMore) break;
@@ -282,10 +288,7 @@ class SonarrClient extends ArrClientBase implements SonarrApi {
         'monitored': true,
       },
     );
-    final parsed = await _decode(
-      body,
-      (b) => ArrPage.fromJson(jsonDecode(b), SonarrEpisode.fromJson),
-    );
+    final parsed = await decodeOffIsolate(runner, body, _parseEpisodePage);
     if (parsed.skipped > 0) onRowsSkipped?.call(parsed.skipped);
     return parsed;
   });
@@ -318,7 +321,7 @@ class SonarrClient extends ArrClientBase implements SonarrApi {
     episodeId != null
         ? {'episodeId': episodeId}
         : {'seriesId': seriesId, 'seasonNumber': seasonNumber},
-    ArrRelease.fromJson,
+    _parseReleases,
   );
 
   @override
@@ -333,11 +336,8 @@ class SonarrClient extends ArrClientBase implements SonarrApi {
   // --- lookup and add ------------------------------------------------------------
 
   @override
-  Future<Result<List<SonarrLookupResult>>> lookup(String term) => _rows(
-    'api/v3/series/lookup',
-    {'term': term},
-    SonarrLookupResult.fromJson,
-  );
+  Future<Result<List<SonarrLookupResult>>> lookup(String term) =>
+      _rows('api/v3/series/lookup', {'term': term}, _parseLookup);
 
   @override
   Future<Result<SonarrSeriesDetail>> addSeries(

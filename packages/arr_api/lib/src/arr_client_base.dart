@@ -16,6 +16,23 @@ typedef ParseRunner = Future<T> Function<T>(T Function() computation);
 Future<T> isolateParseRunner<T>(T Function() computation) =>
     Isolate.run(computation);
 
+/// Bodies larger than this are parsed off the UI isolate.
+const arrIsolateThresholdBytes = 64 * 1024;
+
+/// Runs [parse] on [body], off the UI isolate when the body is large.
+///
+/// Top level on purpose: the closure handed to [runner] captures only [body]
+/// and [parse]. A closure created inside a client method would drag the whole
+/// client (and its unsendable Dio/HttpClient) along and `Isolate.run` would
+/// throw. [parse] must itself be a top-level function or a static tear-off.
+Future<T> decodeOffIsolate<T>(
+  ParseRunner runner,
+  String body,
+  T Function(String body) parse,
+) => body.length > arrIsolateThresholdBytes
+    ? runner(() => parse(body))
+    : Future.value(parse(body));
+
 /// What Sonarr and Radarr clients share: URL building under a path prefix,
 /// the GET helper, artwork URLs and the profile/folder/tag lists (the `v3`
 /// APIs of both services are identical there).
@@ -29,7 +46,7 @@ abstract class ArrClientBase implements ArrApi {
     : runner = parseRunner ?? isolateParseRunner;
 
   /// Bodies larger than this are parsed off the UI isolate.
-  static const isolateThresholdBytes = 64 * 1024;
+  static const isolateThresholdBytes = arrIsolateThresholdBytes;
 
   /// Oldest supported major version (Sonarr and Radarr v3).
   static const minMajorVersion = 3;

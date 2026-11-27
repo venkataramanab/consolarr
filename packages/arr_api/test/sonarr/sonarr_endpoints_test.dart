@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:isolate';
 
 import 'package:arr_api/arr_api.dart';
 import 'package:core/core.dart';
@@ -714,6 +715,83 @@ void main() {
       expect(r.valueOrNull?.length, 1500);
     });
 
+    test('the real isolate runner parses large series, episode, calendar, '
+        'release and lookup lists (no captured client)', () async {
+      // A real HttpClient is unsendable; a ReceivePort in the adapter is the
+      // same for Isolate.run, so a closure that captures the client fails.
+      Future<SonarrClient> clientFor(String body) async => SonarrClient(
+        dio: dioWith(_UnsendableAdapter(body), base: _base),
+        parseRunner: isolateParseRunner,
+      );
+      String big(Map<String, Object?> Function(int i) row, int n) {
+        final body = jsonEncode([for (var i = 1; i <= n; i++) row(i)]);
+        expect(body.length, greaterThan(ArrClientBase.isolateThresholdBytes));
+        return body;
+      }
+
+      final series = await (await clientFor(
+        big(
+          (i) => {
+            'id': i,
+            'title': 'Example Show $i ${'x' * 60}',
+            'monitored': true,
+          },
+          1200,
+        ),
+      )).series();
+      expect(series.errorOrNull, isNull);
+      expect(series.valueOrNull?.length, 1200);
+
+      final episodes = await (await clientFor(
+        big(
+          (i) => {
+            'id': i,
+            'seriesId': 1,
+            'seasonNumber': 1,
+            'episodeNumber': i,
+            'title': 'Example Episode $i ${'x' * 60}',
+          },
+          1200,
+        ),
+      )).episodes(1);
+      expect(episodes.errorOrNull, isNull);
+      expect(episodes.valueOrNull?.length, 1200);
+
+      final calendar = await (await clientFor(
+        big(
+          (i) => {
+            'id': i,
+            'seriesId': 1,
+            'seasonNumber': 1,
+            'episodeNumber': i,
+            'title': 'Example Episode $i ${'x' * 60}',
+          },
+          1200,
+        ),
+      )).calendar(start: DateTime.utc(2026), end: DateTime.utc(2026, 2));
+      expect(calendar.errorOrNull, isNull);
+      expect(calendar.valueOrNull?.length, 1200);
+
+      final releases = await (await clientFor(
+        big(
+          (i) => {
+            'guid': 'guid-$i',
+            'indexerId': 1,
+            'title': 'Example.Show.S01E01.${'x' * 60}.$i',
+          },
+          1200,
+        ),
+      )).releases(episodeId: 1);
+      expect(releases.errorOrNull, isNull);
+      expect(releases.valueOrNull?.length, 1200);
+
+      final lookup = await (await clientFor(
+        big((i) => {'title': 'Example Show $i ${'x' * 60}', 'tvdbId': i}, 1200),
+      )).lookup('example');
+      expect(lookup.errorOrNull, isNull);
+      expect(lookup.valueOrNull?.length, 1200);
+    });
+
     test('a slow server is still answered', () async {
       final a = FakeAdapter((_) async {
         await Future<void>.delayed(const Duration(milliseconds: 50));
@@ -732,4 +810,15 @@ void main() {
       _noKeyInUrls(a);
     });
   });
+}
+
+/// A fake adapter that, like the real `HttpClient` adapter, cannot be sent to
+/// another isolate.
+class _UnsendableAdapter extends FakeAdapter {
+  _UnsendableAdapter(String body) : super((_) => FakeAdapter.reply(body));
+
+  final ReceivePort port = ReceivePort();
+
+  @override
+  void close({bool force = false}) => port.close();
 }
