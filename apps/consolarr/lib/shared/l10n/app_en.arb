@@ -154,5 +154,21 @@
   "commonRetry": "Try again",
   "@commonRetry": {
     "description": "Button label: repeat a failed action."
+  },
+  "connErrorInvalidPortMessage": "The port is not valid.",
+  "@connErrorInvalidPortMessage": {
+    "description": "Plain-language message for a connection problem: the port number is outside 1-65535."
+  },
+  "connErrorInvalidPortHint": "Enter a port number between 1 and 65535.",
+  "@connErrorInvalidPortHint": {
+    "description": "Fix hint shown under the message for a connection problem: the port number is outside 1-65535."
+  },
+  "connErrorNonAsciiHostMessage": "The host name uses characters that are not supported.",
+  "@connErrorNonAsciiHostMessage": {
+    "description": "Plain-language message for a connection problem: the host contains non-ASCII characters."
+  },
+  "connErrorNonAsciiHostHint": "Enter the punycode form of the host name (it starts with xn--).",
+  "@connErrorNonAsciiHostHint": {
+    "description": "Fix hint shown under the message for a connection problem: the host contains non-ASCII characters; enter the punycode form."
   }
 }
