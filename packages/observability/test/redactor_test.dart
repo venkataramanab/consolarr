@@ -439,6 +439,82 @@ void main() {
       }
     });
 
+    test('Transmission session id header is masked', () {
+      const sid = 'Zx9QkLm2PvRt7WnYb4HsJcDe8UaFgXo1';
+      expect(
+        r.redactHeaders({
+          'X-Transmission-Session-Id': sid,
+        })['X-Transmission-Session-Id'],
+        mask,
+      );
+      final out = r.redactText('409 conflict\nX-Transmission-Session-Id: $sid');
+      expect(out, isNot(contains(sid)));
+      expect(
+        r.redactText('x-transmission-session-id=$sid'),
+        isNot(contains(sid)),
+      );
+    });
+
+    test('qBittorrent session cookies are masked in free text', () {
+      const sid = 'k3Jd9sLq0Zp2Vx8Tn5Bw';
+      for (final text in [
+        'login ok, got QBT_SID_8080=$sid and more',
+        'cookie jar: SID=$sid; path=/',
+        'resp {"QBT_SID_9091":"$sid"}',
+        'QBT_SID_1=$sid',
+      ]) {
+        final out = r.redactText(text);
+        expect(out, isNot(contains(sid)), reason: '$text -> $out');
+        expect(r.redactText(out), out);
+      }
+      expect(r.redactValue({'QBT_SID_8080': sid}), {'QBT_SID_8080': mask});
+    });
+
+    test('pw and passcode are sensitive key names', () {
+      expect(Redactor.isSensitiveKey('pw'), isTrue);
+      expect(Redactor.isSensitiveKey('PW'), isTrue);
+      expect(Redactor.isSensitiveKey('passcode'), isTrue);
+      expect(Redactor.isSensitiveKey('pass_code'), isTrue);
+      const v = 'hunter2hunter2';
+      expect(r.redactText('pw=$v'), isNot(contains(v)));
+      expect(r.redactText('{"passcode": "$v"}'), isNot(contains(v)));
+      expect(r.redactUrl('https://h.example/p?pw=$v'), isNot(contains(v)));
+      expect(Redactor.isSensitiveKey('pwned'), isFalse);
+    });
+
+    test('RPC params after whitespace or a newline are masked', () {
+      const s = 'S3cretValueXyz';
+      for (final sep in [' ', '\n', ' \n\t ', '\r\n  ']) {
+        for (final colon in [':', ' :', '\n:']) {
+          final text =
+              '{"method":"auth.login","params"$colon$sep["admin","$s"]}';
+          final out = r.redactText(text);
+          expect(
+            out,
+            isNot(contains(s)),
+            reason: '${jsonEncode(text)} -> $out',
+          );
+          expect(out, isNot(contains('admin')), reason: out);
+          expect(r.redactText(out), out);
+        }
+      }
+    });
+
+    test('brackets, braces and semicolons bound scheme-less user info', () {
+      const pass = 'p4ssW0rdZ';
+      for (final text in [
+        '[user:$pass@host.example]',
+        '{user:$pass@host.example}',
+        'a;user:$pass@host.example',
+        'x[user:$pass@host.example:8080/path]',
+      ]) {
+        final out = r.redactText(text);
+        expect(out, isNot(contains(pass)), reason: '$text -> $out');
+        expect(out, contains('host.example'));
+        expect(r.redactText(out), out);
+      }
+    });
+
     test('standalone 32+ hex keys and bearer tokens are masked', () {
       const hex = '0123456789abcdef';
       for (var i = 0; i < runs; i++) {

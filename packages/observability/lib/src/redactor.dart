@@ -30,6 +30,7 @@ class Redactor {
     'proxy-authorization',
     'x-api-key',
     'x-auth-token',
+    'x-transmission-session-id',
     'cookie',
     'set-cookie',
   };
@@ -46,8 +47,11 @@ class Redactor {
         k.endsWith('keys') ||
         k.endsWith('otp') ||
         k == 'pwd' ||
+        k == 'pw' ||
         k == 'pass' ||
         k == 'sid' ||
+        k.startsWith('qbtsid') || // qBittorrent: QBT_SID_<port>
+        k.endsWith('sessionid') || // X-Transmission-Session-Id
         k == 'auth' ||
         k == 'session' ||
         k == 'sessionid' ||
@@ -56,6 +60,7 @@ class Redactor {
         k.contains('password') ||
         k.contains('passwd') ||
         k.contains('passphrase') ||
+        k.contains('passcode') ||
         k.contains('secret') ||
         k.contains('credential') ||
         k.contains('authorization') ||
@@ -87,7 +92,7 @@ class Redactor {
   );
 
   static final _headerLine = RegExp(
-    r'\b(authorization|proxy-authorization|x-api-key|x-auth-token|set-cookie|cookie)([ \t]*[:=][ \t]*)([^\r\n]+)',
+    r'\b(authorization|proxy-authorization|x-api-key|x-auth-token|x-transmission-session-id|set-cookie|cookie)([ \t]*[:=][ \t]*)([^\r\n]+)',
     caseSensitive: false,
   );
 
@@ -113,7 +118,7 @@ class Redactor {
     r'^(?:(?:[\w\-]+\.)*login|auth\.[\w.\-]*)$',
     caseSensitive: false,
   );
-  static final _rpcParams = RegExp('\\\\?"params\\\\?"[ \\t]*:[ \\t]*');
+  static final _rpcParams = RegExp('\\\\?"params\\\\?"\\s*:\\s*');
 
   static final _longHex = RegExp(
     r'(?<![0-9A-Za-z])[0-9a-fA-F]{32,}(?![0-9A-Za-z])',
@@ -143,13 +148,13 @@ class Redactor {
     return out;
   }
 
-  static const _userInfoBoundary = '=(<,"\'';
+  static const _userInfoBoundary = '=(<,"\'[{;';
   static final _userChar = RegExp(r'[\w.\-%+~]');
   static final _hostStart = RegExp(r'[\w\[]');
 
   /// `user:pass@host` without a scheme: for a whitespace-delimited chunk, the
   /// user info runs from a `user:` token (at the start of the chunk or right
-  /// after one of `=(<,"'`) up to the last `@` that precedes a host.
+  /// after one of `=(<,"'[{;`) up to the last `@` that precedes a host.
   String _redactSchemeLessUserInfo(String text) {
     return text.replaceAllMapped(_chunk, (m) {
       final chunk = m[0]!;
