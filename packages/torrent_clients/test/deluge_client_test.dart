@@ -129,6 +129,7 @@ void main() {
       final c = _client(s);
       await c.listTorrents();
       expect(c.capabilities.labelModel, LabelModel.label);
+      expect(c.capabilities.labelsNeedPlugin, isFalse);
       await c.addMagnetOrUrl(
         exampleMagnet,
         options: const AddTorrentOptions(category: 'example'),
@@ -142,6 +143,7 @@ void main() {
       final c = _client(s);
       await c.listTorrents();
       expect(c.capabilities.labelModel, LabelModel.none);
+      expect(c.capabilities.labelsNeedPlugin, isTrue);
       await c.addMagnetOrUrl(
         exampleMagnet,
         options: const AddTorrentOptions(category: 'example'),

@@ -24,6 +24,7 @@ class TorrentCapabilities {
     this.distinctStop = false,
     this.availability = true,
     this.speedLimitUnit = 1,
+    this.labelsNeedPlugin = false,
   });
 
   /// The alternative speed limits toggle exists.
@@ -50,6 +51,10 @@ class TorrentCapabilities {
   /// the stored value may differ and should re-read the limits after applying.
   final int speedLimitUnit;
 
+  /// There is no label field because a server plugin is missing (Deluge's
+  /// Label plugin), so the UI explains it instead of hiding the field silently.
+  final bool labelsNeedPlugin;
+
   /// Whether the add form offers a category/label field.
   bool get hasLabel => labelModel != LabelModel.none;
 
@@ -65,6 +70,7 @@ class TorrentCapabilities {
     distinctStop: distinctStop,
     availability: availability,
     speedLimitUnit: speedLimitUnit,
+    labelsNeedPlugin: labelsNeedPlugin,
   );
 
   @override
@@ -76,7 +82,8 @@ class TorrentCapabilities {
       other.startPaused == startPaused &&
       other.distinctStop == distinctStop &&
       other.availability == availability &&
-      other.speedLimitUnit == speedLimitUnit;
+      other.speedLimitUnit == speedLimitUnit &&
+      other.labelsNeedPlugin == labelsNeedPlugin;
 
   @override
   int get hashCode => Object.hash(
@@ -87,5 +94,6 @@ class TorrentCapabilities {
     distinctStop,
     availability,
     speedLimitUnit,
+    labelsNeedPlugin,
   );
 }

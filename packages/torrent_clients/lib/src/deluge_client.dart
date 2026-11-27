@@ -202,6 +202,8 @@ class DelugeClient implements TorrentClient, DaemonHostSelection {
   TorrentCapabilities get capabilities => TorrentCapabilities(
     labelModel: _hasLabels == true ? LabelModel.label : LabelModel.none,
     speedLimitUnit: _kib,
+    // Detection finished and found no Label plugin.
+    labelsNeedPlugin: _hasLabels == false,
   );
 
   @override
