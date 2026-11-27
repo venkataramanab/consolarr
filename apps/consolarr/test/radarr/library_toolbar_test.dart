@@ -12,7 +12,6 @@ import 'package:consolarr/features/radarr/presentation/radarr_screen.dart';
 import 'package:core/core.dart';
 import 'package:dio/dio.dart';
 import 'package:design_system/design_system.dart';
-import 'package:flutter/painting.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
