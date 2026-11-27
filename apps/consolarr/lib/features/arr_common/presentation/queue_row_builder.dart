@@ -36,8 +36,9 @@ String queueSizeText(AppLocalizations l10n, int bytes) {
 /// "12 min left", "1 h 5 min left", ...
 String queueTimeLeftText(AppLocalizations l10n, Duration left) {
   if (left.inMinutes < 1) return l10n.arrCommonQueueTimeLeftLessThanMinute;
-  if (left.inHours < 1)
+  if (left.inHours < 1) {
     return l10n.arrCommonQueueTimeLeftMinutes(left.inMinutes);
+  }
   if (left.inDays < 1) {
     return l10n.arrCommonQueueTimeLeftHours(left.inHours, left.inMinutes % 60);
   }

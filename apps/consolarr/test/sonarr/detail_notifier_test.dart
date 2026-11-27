@@ -311,4 +311,95 @@ void main() {
     expect(isOpenableExternalUri(Uri.parse('intent://x#Intent;end')), isFalse);
     expect(isOpenableExternalUri(Uri.parse('https://u:p@x.example/')), isFalse);
   });
+
+  group('writes that finish after a refresh failed', () {
+    // The refresh that lands meanwhile either errors (auth) or finds the
+    // series gone; neither leaves data for the finished write to update.
+    Future<void> failRefresh(
+      ProviderContainer c,
+      ScriptedSonarrApi api, {
+      ErrorCategory category = ErrorCategory.authFailed,
+    }) async {
+      api.detailResult = Result.err(AppError(category));
+      await c.read(seriesDetailProvider(1).notifier).refresh();
+      final s = c.read(seriesDetailProvider(1));
+      expect(s.hasError || s.value is DetailGone, isTrue);
+    }
+
+    bool unchanged(ProviderContainer c) {
+      final s = c.read(seriesDetailProvider(1));
+      return s.hasError || s.value is DetailGone;
+    }
+
+    for (final category in [ErrorCategory.authFailed, ErrorCategory.notFound]) {
+      test('an episode toggle does not throw (${category.code})', () async {
+        final gate = Completer<void>();
+        final api = detailApi()
+          ..hook = (n) =>
+              n == 'setEpisodesMonitored' ? gate.future : Future.value();
+        final c = container(api);
+        await load(c);
+        final toggle = c
+            .read(seriesDetailProvider(1).notifier)
+            .setEpisodeMonitored(2, monitored: false);
+        await Future<void>.delayed(Duration.zero);
+        await failRefresh(c, api, category: category);
+        gate.complete();
+        await toggle;
+        expect(unchanged(c), isTrue);
+      });
+
+      test('a season toggle does not throw (${category.code})', () async {
+        final gate = Completer<void>();
+        final api = detailApi()
+          ..updateResult = Result.ok(fakeDetail(1))
+          ..hook = (n) => n == 'updateSeries' ? gate.future : Future.value();
+        final c = container(api);
+        await load(c);
+        final toggle = c
+            .read(seriesDetailProvider(1).notifier)
+            .setSeasonMonitored(1, monitored: false);
+        await Future<void>.delayed(Duration.zero);
+        await failRefresh(c, api, category: category);
+        gate.complete();
+        await toggle;
+        expect(unchanged(c), isTrue);
+      });
+
+      test('saving the edit sheet does not throw (${category.code})', () async {
+        final gate = Completer<void>();
+        final api = detailApi()
+          ..updateResult = Result.ok(fakeDetail(1))
+          ..hook = (n) => n == 'updateSeries' ? gate.future : Future.value();
+        final c = container(api);
+        await load(c);
+        final save = c
+            .read(seriesDetailProvider(1).notifier)
+            .saveEdit(monitored: false, qualityProfileId: 1, tags: const []);
+        await Future<void>.delayed(Duration.zero);
+        await failRefresh(c, api, category: category);
+        gate.complete();
+        expect(await save, isNull);
+      });
+
+      test('an episode reload does not throw (${category.code})', () async {
+        final gate = Completer<void>();
+        final api = detailApi()
+          ..hook = (n) => n == 'episodes' ? gate.future : Future.value();
+        final c = container(api);
+        // First load needs the episodes; open the gate for it, then close it.
+        gate.complete();
+        await load(c);
+        final second = Completer<void>();
+        api.hook = (n) => n == 'episodes' ? second.future : Future.value();
+        final reload = c
+            .read(seriesDetailProvider(1).notifier)
+            .reloadEpisodes();
+        await Future<void>.delayed(Duration.zero);
+        await failRefresh(c, api, category: category);
+        second.complete();
+        await reload;
+      });
+    }
+  });
 }

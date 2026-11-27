@@ -53,8 +53,9 @@ class LibraryQueryNotifier extends Notifier<LibraryQuery> {
       final rawFilter = await store.read(id, _filterPref);
       if (!ref.mounted || id != _serverId) return;
       var next = state;
-      if (sort != null)
+      if (sort != null) {
         next = next.copyWith(sortKey: sort.$1, ascending: sort.$2);
+      }
       if (rawFilter != null) {
         next = next.copyWith(filter: _decodeFilter(rawFilter));
       }

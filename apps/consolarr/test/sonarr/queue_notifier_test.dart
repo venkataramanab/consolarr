@@ -114,6 +114,64 @@ void main() {
       expect(api.count('queue'), polled, reason: 'no calls after dispose');
     });
 
+    test(
+      'a server switch during the first load leaves no orphan timer',
+      () async {
+        final gate = Completer<void>();
+        final first = ScriptedSonarrApi()
+          ..queueResult = Result.ok([fakeQueueItem(1)])
+          ..hook = (n) => n == 'queue' ? gate.future : Future.value();
+        final second = ScriptedSonarrApi()
+          ..queueResult = Result.ok([fakeQueueItem(2)]);
+        final servers = SwitchableSonarr(first, second);
+        final c = ProviderContainer(
+          retry: (_, _) => null,
+          overrides: [
+            ...servers.overrides,
+            queuePollIntervalProvider.overrideWithValue(
+              const Duration(milliseconds: 20),
+            ),
+          ],
+        );
+        addTearDown(c.dispose);
+        c.listen(queueProvider, (_, _) {});
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+        expect(first.count('queue'), 1, reason: 'first load is in flight');
+        servers.switchToSecond(c);
+        final state = await c.read(queueProvider.future) as QueueData;
+        expect(state.items.single.id, 2);
+        // The first server's load now finishes; nothing may poll it afterwards.
+        gate.complete();
+        await Future<void>.delayed(const Duration(milliseconds: 150));
+        expect(first.count('queue'), 1);
+        expect(
+          second.count('queue'),
+          greaterThan(2),
+          reason: 'new server polls',
+        );
+        c.dispose();
+        final polled = second.count('queue');
+        await Future<void>.delayed(const Duration(milliseconds: 80));
+        expect(second.count('queue'), polled);
+      },
+    );
+
+    test(
+      'hiding the queue cancels the timer; showing it restarts it',
+      () async {
+        final api = ScriptedSonarrApi()
+          ..queueResult = Result.ok([fakeQueueItem(1)]);
+        final c = _container(api, poll: const Duration(milliseconds: 20));
+        await c.read(queueProvider.future);
+        final notifier = c.read(queueProvider.notifier);
+        expect(notifier.isPolling, isTrue);
+        notifier.visible = false;
+        expect(notifier.isPolling, isFalse);
+        notifier.visible = true;
+        expect(notifier.isPolling, isTrue);
+      },
+    );
+
     test('a hidden queue does not poll', () async {
       final api = ScriptedSonarrApi()
         ..queueResult = Result.ok([fakeQueueItem(1)]);
@@ -124,6 +182,56 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 100));
       expect(api.count('queue'), before);
     });
+  });
+
+  group('a dropped removal is never success', () {
+    test('a server switch while removing returns a defined error', () async {
+      final gate = Completer<void>();
+      final first = ScriptedSonarrApi()
+        ..queueResult = Result.ok([fakeQueueItem(1)])
+        ..hook = (n) => n == 'removeQueueItem' ? gate.future : Future.value();
+      final second = ScriptedSonarrApi()
+        ..queueResult = Result.ok([fakeQueueItem(1)]);
+      final servers = SwitchableSonarr(first, second);
+      final c = ProviderContainer(
+        retry: (_, _) => null,
+        overrides: [
+          ...servers.overrides,
+          queuePollIntervalProvider.overrideWithValue(const Duration(hours: 1)),
+        ],
+      );
+      addTearDown(c.dispose);
+      c.listen(queueProvider, (_, _) {});
+      await c.read(queueProvider.future);
+      final removal = c.read(queueProvider.notifier).remove(1, _choice);
+      await Future<void>.delayed(Duration.zero);
+      servers.switchToSecond(c);
+      await c.read(queueProvider.future);
+      gate.complete();
+      expect(await removal, QueueNotifier.droppedError);
+      expect(second.count('removeQueueItem'), 0);
+    });
+
+    test(
+      'a second removal of the same item while one runs is refused',
+      () async {
+        final gate = Completer<void>();
+        final api = ScriptedSonarrApi()
+          ..queueResult = Result.ok([fakeQueueItem(1)])
+          ..hook = (n) => n == 'removeQueueItem' ? gate.future : Future.value();
+        final c = _container(api);
+        await c.read(queueProvider.future);
+        final first = c.read(queueProvider.notifier).remove(1, _choice);
+        await Future<void>.delayed(Duration.zero);
+        expect(
+          await c.read(queueProvider.notifier).remove(1, _choice),
+          QueueNotifier.droppedError,
+        );
+        gate.complete();
+        await first;
+        expect(api.count('removeQueueItem'), 1);
+      },
+    );
   });
 
   group('remove', () {

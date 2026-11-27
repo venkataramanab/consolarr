@@ -63,7 +63,7 @@ void main() {
     );
     await pumpEn(tester, api);
     expect(find.text("Couldn't search for releases"), findsOneWidget);
-  }, skip: false);
+  });
 
   testWidgets('results list rows, expand shows rejection reasons', (
     tester,

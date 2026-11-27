@@ -25,8 +25,9 @@ class ArrPage<T> {
     final m = JsonRead.map(json);
     if (m == null) throw const FormatException('expected an object');
     final records = m['records'];
-    if (records is! List)
+    if (records is! List) {
       throw const FormatException('records must be an array');
+    }
     final ParsedRows<T> rows = parseArrList(records, parse);
     return ArrPage(
       records: rows.items,

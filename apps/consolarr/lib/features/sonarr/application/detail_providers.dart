@@ -153,10 +153,16 @@ class SeriesDetailNotifier extends AsyncNotifier<DetailState> {
     final result = await repository.reloadEpisodes(data.snapshot);
     final next = result.valueOrNull;
     if (!ref.mounted || generation != _generation || next == null) return;
-    state = AsyncData(_data!.copyWith(snapshot: next));
+    // A refresh that failed meanwhile may have replaced the data.
+    final now = _data;
+    if (now == null) return;
+    state = AsyncData(now.copyWith(snapshot: next));
   }
 
+  /// The data on screen, or null while loading, after an error (Riverpod
+  /// keeps the previous value through those) or when the series is gone.
   DetailData? get _data {
+    if (state.isLoading || state.hasError) return null;
     final s = state.value;
     return s is DetailData ? s : null;
   }
@@ -184,7 +190,10 @@ class SeriesDetailNotifier extends AsyncNotifier<DetailState> {
       episodeId,
     ], monitored: monitored);
     if (!ref.mounted || generation != _generation) return;
-    final now = _data!;
+    // A refresh that failed meanwhile may have replaced the data; there is
+    // nothing left to update then.
+    final now = _data;
+    if (now == null) return;
     final ok = result.isOk;
     final next = now.copyWith(
       // A failed change goes back to what the server has.
@@ -232,7 +241,8 @@ class SeriesDetailNotifier extends AsyncNotifier<DetailState> {
       detail.editedPayload(seasonMonitored: {season: monitored}),
     );
     if (!ref.mounted || generation != _generation) return;
-    final now = _data!;
+    final now = _data;
+    if (now == null) return;
     final updated = result.valueOrNull;
     if (updated == null) {
       state = AsyncData(
@@ -287,9 +297,10 @@ class SeriesDetailNotifier extends AsyncNotifier<DetailState> {
             SeriesMonitorChangedEvent(monitored: updated.summary.monitored),
           );
     }
-    final next = _data!.copyWith(
-      snapshot: _data!.snapshot.copyWith(detail: updated),
-    );
+    // The server took the change; the screen may already show an error.
+    final now = _data;
+    if (now == null) return null;
+    final next = now.copyWith(snapshot: now.snapshot.copyWith(detail: updated));
     state = AsyncData(next);
     await _repository?.store(next.snapshot);
     return null;
