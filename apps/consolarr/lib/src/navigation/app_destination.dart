@@ -74,3 +74,9 @@ class AppDestination {
   /// Whether this destination serves servers of [kind].
   bool servesKind(ServiceKind kind) => kinds?.contains(kind) ?? false;
 }
+
+/// The `AppStateRows` key under which the server switcher of the destination
+/// [destinationId] remembers the chosen kind. The shell and the feature that
+/// reads the choice both use this.
+String selectedKindKeyFor(String destinationId) =>
+    '$destinationId.selected_kind';

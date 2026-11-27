@@ -2,6 +2,8 @@
 
 import 'package:consolarr/features/torrents/application/torrent_view.dart';
 import 'package:consolarr/src/database/app_database.dart';
+import 'package:consolarr/src/database/server_scoped_state.dart';
+import 'package:consolarr/src/navigation/app_destination.dart';
 import 'package:core/core.dart';
 
 /// Small torrent preferences in the key/value `AppStateRows` table. Values
@@ -12,11 +14,15 @@ class TorrentsPrefs {
 
   final AppDatabase _db;
 
-  static const selectedKindKey = 'torrents.selected_kind';
+  /// The destination id (`AppDestination.id`) of the torrents tab.
+  static const destinationId = 'torrents';
+
+  /// Where the switcher stores the chosen kind: the same key the shell passes
+  /// to the switcher for this destination.
+  static final selectedKindKey = selectedKindKeyFor(destinationId);
   static const pollSecondsKey = 'torrents.poll_seconds';
   static const viewDefaultKey = 'torrents.view_default';
-  static String delugeHostKey(String serverId) =>
-      'torrents.deluge_host.$serverId';
+  static String delugeHostKey(String serverId) => delugeHostStateKey(serverId);
 
   Future<String?> _read(String key) async {
     try {

@@ -95,8 +95,14 @@ void main() {
         final lock = read(
           '${Directory.current.parent.parent.path}/pubspec.lock',
         );
-        for (final gone in ['share_plus', 'cross_file']) {
-          expect(lock, isNot(contains(gone)), reason: gone);
+        expect(lock, isNot(contains('share_plus')));
+        // `cross_file` came with share_plus. It may stay only as a transitive
+        // dependency of `file_selector` (the torrent file picker), never as a
+        // direct one.
+        expect(read('$root/pubspec.yaml'), isNot(contains('cross_file')));
+        if (lock.contains('cross_file:')) {
+          final entry = lock.split('  cross_file:').last.split('\n  ').first;
+          expect(entry, contains('dependency: transitive'));
         }
       });
 

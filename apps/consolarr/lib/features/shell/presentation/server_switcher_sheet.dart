@@ -186,9 +186,14 @@ class _ServerList extends ConsumerWidget {
             onTap: () async {
               final kind = entry.profile.kind;
               final key = selectionKey;
+              // The server becomes active first, the kind is stored second:
+              // the screen then switches once, straight to the chosen server.
+              // (The other order showed the new kind's previously active
+              // server for a moment.)
+              await ref
+                  .read(serverRepositoryProvider)
+                  .setActive(kind, entry.profile.id);
               if (multi && key != null) {
-                // Stored first so the screen already follows the new kind
-                // when the active server changes.
                 final db = ref.read(databaseProvider);
                 await db
                     .into(db.appStateRows)
@@ -196,9 +201,6 @@ class _ServerList extends ConsumerWidget {
                       AppStateRowsCompanion.insert(key: key, value: kind.name),
                     );
               }
-              await ref
-                  .read(serverRepositoryProvider)
-                  .setActive(kind, entry.profile.id);
               if (context.mounted) Navigator.of(context).pop();
             },
           ),

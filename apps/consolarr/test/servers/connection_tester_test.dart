@@ -225,9 +225,13 @@ void main() {
     test('a kind without a probe is not reported as an old version, and no '
         'request is made', () async {
       final factory = _Factory(StubAdapter((o) => json('{}')));
-      for (final kind in [ServiceKind.radarr]) {
-        final r = await DefaultConnectionTester(factory)
-            .test(profile(kind), sonarrKey);
+      // An injected, empty registry: the test must not depend on which kinds
+      // have a probe today (every service branch registers its own).
+      for (final kind in [ServiceKind.radarr, ServiceKind.sonarr]) {
+        final r = await DefaultConnectionTester(
+          factory,
+          probes: const {},
+        ).test(profile(kind), sonarrKey);
         final error = failure(r);
         expect(error.category, isNot(ErrorCategory.unsupportedVersion));
         expect(error.debugDetail, contains('no connection probe'));
