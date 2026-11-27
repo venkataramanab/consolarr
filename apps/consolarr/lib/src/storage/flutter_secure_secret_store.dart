@@ -11,8 +11,9 @@ import 'package:security/security.dart';
 /// device.
 ///
 /// Keystore loss (a restored device, changed lock screen, wiped keys) makes
-/// reads fail on Android. That is reported as "no secret" so the caller can
-/// ask the user to re-enter credentials instead of crashing (SRV-09).
+/// reads fail on Android. That is reported as [SecretStoreUnavailable], never
+/// as "no secret": the pin store must fail closed, while the credential path
+/// maps it to "needs credentials" (SRV-09).
 class FlutterSecureSecretStore implements SecretStore {
   FlutterSecureSecretStore({FlutterSecureStorage? storage})
     : _storage = storage ?? const FlutterSecureStorage();
@@ -24,7 +25,7 @@ class FlutterSecureSecretStore implements SecretStore {
     try {
       return await _storage.read(key: key);
     } on PlatformException {
-      return null;
+      throw const SecretStoreUnavailable('keystore read failed');
     }
   }
 

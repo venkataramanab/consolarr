@@ -14,6 +14,8 @@ String? _issueText(AppLocalizations l10n, FieldIssue? issue) => switch (issue) {
   FieldIssue.addressInvalid => l10n.serverErrorAddressInvalid,
   FieldIssue.addressCredentials => l10n.serverErrorAddressCredentials,
   FieldIssue.addressQuery => l10n.serverErrorAddressQuery,
+  FieldIssue.addressPort => l10n.serverErrorAddressPort,
+  FieldIssue.addressNonAscii => l10n.serverErrorAddressNonAscii,
   FieldIssue.prefixInvalid => l10n.serverErrorPrefixInvalid,
   FieldIssue.headerInvalid => l10n.serverErrorHeaderInvalid,
 };

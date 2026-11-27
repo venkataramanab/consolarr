@@ -23,6 +23,14 @@ void main() {
       expect(c.validate().address, FieldIssue.addressCredentials);
       c.address.text = 'https://sonarr.example/?apikey=abc';
       expect(c.validate().address, FieldIssue.addressQuery);
+      for (final bad in ['https://sonarr.example:99999', 'https://h:0']) {
+        c.address.text = bad;
+        expect(c.validate().address, FieldIssue.addressPort, reason: bad);
+      }
+      c.address.text = 'https://münchen.example';
+      expect(c.validate().address, FieldIssue.addressNonAscii);
+      c.address.text = r'https://evil.example\@sonarr.example';
+      expect(c.validate().address, FieldIssue.addressInvalid);
       c.address.text = 'https://sonarr.example';
       c.pathPrefix.text = '/a/../b';
       expect(c.validate().prefix, FieldIssue.prefixInvalid);

@@ -13,8 +13,15 @@ class InMemorySecretStore implements SecretStore {
   /// Simulates Keystore loss: forgets every value.
   void simulateKeystoreLoss() => _values.clear();
 
+  /// When true, [read] throws [SecretStoreUnavailable] (a Keystore error, as
+  /// opposed to a missing value).
+  bool unavailable = false;
+
   @override
-  Future<String?> read(String key) async => _values[key];
+  Future<String?> read(String key) async {
+    if (unavailable) throw const SecretStoreUnavailable();
+    return _values[key];
+  }
 
   @override
   Future<void> write(String key, String value) async => _values[key] = value;

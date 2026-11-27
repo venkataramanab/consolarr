@@ -476,6 +476,14 @@
   "@serverErrorAddressQuery": {
     "description": "Validation error: address contains a query string."
   },
+  "serverErrorAddressPort": "يجب أن يكون المنفذ رقمًا من 1 إلى 65535.",
+  "@serverErrorAddressPort": {
+    "description": "Validation error: the port in the address is not between 1 and 65535."
+  },
+  "serverErrorAddressNonAscii": "استخدم الصيغة ASCII لاسم المضيف (مثل xn--...) بدون أحرف خاصة.",
+  "@serverErrorAddressNonAscii": {
+    "description": "Validation error: the host name contains non-ASCII characters; the user should enter its ASCII (punycode) form."
+  },
   "serverErrorPrefixInvalid": "استخدم مسارًا مثل /sonarr بدون مسافات أو ? أو ...",
   "@serverErrorPrefixInvalid": {
     "description": "Validation error: invalid path prefix."

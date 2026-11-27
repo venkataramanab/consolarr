@@ -22,6 +22,29 @@ class ServerEntry {
   final bool needsCredentials;
 }
 
+/// What a live connection is built from: the active server of a kind and a
+/// revision that `ServerRepository.save` bumps on every write (profile or
+/// credential edits). A change in either means "rebuild the connection".
+class ConnectionKey {
+  const ConnectionKey(this.serverId, this.revision);
+
+  /// `null` when no server of the kind exists.
+  final String? serverId;
+  final int revision;
+
+  @override
+  bool operator ==(Object other) =>
+      other is ConnectionKey &&
+      other.serverId == serverId &&
+      other.revision == revision;
+
+  @override
+  int get hashCode => Object.hash(serverId, revision);
+
+  @override
+  String toString() => 'ConnectionKey($serverId, $revision)';
+}
+
 /// One custom request header (SRV-04). The value is a secret.
 class HeaderEntry {
   const HeaderEntry({required this.name, required this.value});

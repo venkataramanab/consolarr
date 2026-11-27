@@ -778,6 +778,18 @@ abstract class AppLocalizations {
   /// **'Remove everything after the ? in the address. Keys belong in the key field.'**
   String get serverErrorAddressQuery;
 
+  /// Validation error: the port in the address is not between 1 and 65535.
+  ///
+  /// In en, this message translates to:
+  /// **'The port must be a number from 1 to 65535.'**
+  String get serverErrorAddressPort;
+
+  /// Validation error: the host name contains non-ASCII characters; the user should enter its ASCII (punycode) form.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the ASCII form of the host name (for example xn--...), not special characters.'**
+  String get serverErrorAddressNonAscii;
+
   /// Validation error: invalid path prefix.
   ///
   /// In en, this message translates to:

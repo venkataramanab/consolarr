@@ -11,8 +11,14 @@ import 'package:consolarr/features/servers/domain/server_models.dart';
 ///    and then the secrets (`<id>/api_key`, `<id>/username`, `<id>/password`,
 ///    `<id>/header/<name>`); secrets of an auth mode no longer used are
 ///    deleted.
-///  * `delete` removes the row, its secrets, its pins and its cached payloads.
-///  * A missing secret never throws: the entry reports `needsCredentials`.
+///  * `delete` removes the row, its secrets, its pins and its cached payloads;
+///    it always completes, even for a row that no longer parses.
+///  * A missing or unreadable secret never throws: the entry reports
+///    `needsCredentials`.
+///  * Editing a server's identity (kind, address, path prefix) clears its
+///    cached payloads and its old pins; changing the origin (scheme, host or
+///    port) also drops every stored secret that the draft does not re-supply,
+///    so credentials are never sent to a changed origin.
 abstract interface class ServerRepository {
   Stream<List<ServerEntry>> watchAll();
 
@@ -34,6 +40,11 @@ abstract interface class ServerRepository {
   /// The active server id for [kind]; falls back to the first server of that
   /// kind, or `null` when none exists.
   Future<String?> activeId(ServiceKind kind);
+
+  /// The active server of [kind] plus a revision bumped by every `save`.
+  /// Emits the current value on listen and again whenever the active server
+  /// or the saved data of any server changes (distinct values only).
+  Stream<ConnectionKey> watchConnectionKey(ServiceKind kind);
 
   /// Stored secrets for [profile]; missing values are `null`/absent.
   Future<ServerCredentials> loadCredentials(ServerProfile profile);

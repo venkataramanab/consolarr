@@ -406,6 +406,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Remove everything after the ? in the address. Keys belong in the key field.';
 
   @override
+  String get serverErrorAddressPort =>
+      'The port must be a number from 1 to 65535.';
+
+  @override
+  String get serverErrorAddressNonAscii =>
+      'Use the ASCII form of the host name (for example xn--...), not special characters.';
+
+  @override
   String get serverErrorPrefixInvalid =>
       'Use a path such as /sonarr, without spaces, ? or ...';
 
@@ -1500,6 +1508,14 @@ class AppLocalizationsEnXa extends AppLocalizationsEn {
   @override
   String get serverErrorAddressQuery =>
       '[Ŕéɱöṽé éṽéŕýţĥîñĝ àƒţéŕ ţĥé ? îñ ţĥé àððŕéšš. Ķéýš ƀéļöñĝ îñ ţĥé ķéý ƒîéļð.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get serverErrorAddressPort =>
+      '[Ţĥé þöŕţ ɱüšţ ƀé à ñüɱƀéŕ ƒŕöɱ 1 ţö 65535.~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get serverErrorAddressNonAscii =>
+      '[Üšé ţĥé ÀŠÇÎÎ ƒöŕɱ öƒ ţĥé ĥöšţ ñàɱé (ƒöŕ éẋàɱþļé ẋñ--...), ñöţ šþéçîàļ çĥàŕàçţéŕš.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]';
 
   @override
   String get serverErrorPrefixInvalid =>

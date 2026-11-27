@@ -4,6 +4,7 @@ import 'package:consolarr/src/storage/flutter_secure_secret_store.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:security/security.dart';
 
 class _ThrowingStorage extends FlutterSecureStorage {
   const _ThrowingStorage();
@@ -35,8 +36,9 @@ void main() {
     expect(await store.read('b'), isNull);
   });
 
-  test('a Keystore failure reads as a missing secret, never throws', () async {
+  test('a Keystore failure is reported as unavailable, not as a missing '
+      'secret', () async {
     final store = FlutterSecureSecretStore(storage: const _ThrowingStorage());
-    expect(await store.read('a'), isNull);
+    await expectLater(store.read('a'), throwsA(isA<SecretStoreUnavailable>()));
   });
 }

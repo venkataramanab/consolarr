@@ -126,6 +126,34 @@ void main() {
     );
   });
 
+  group('pin store unavailable (fail closed)', () {
+    test('a pinned server with a failing Keystore read and a different '
+        'certificate is blocked, not offered a first-use decision', () async {
+      final pinned = certs.selfSigned();
+      final other = certs.selfSigned();
+      final s = await serve(other);
+      final secrets = InMemorySecretStore();
+      final store = SecretBackedPinStore(secrets);
+      final key = PinKey.forProfile(s.profile());
+      final fp = CertificateFingerprint.parse(pinned.sha256Hex);
+      await store.write(key, fp, _confirm(key, fp));
+      secrets.unavailable = true;
+
+      final dio = DefaultSecureHttpClientFactory(pins: store)
+          .create(s.profile());
+      final err = await _failure(
+        dio.get<Object>(
+          '/api',
+          options: Options(headers: {'X-Api-Key': 'test-key-0000'}),
+        ),
+      );
+      expect(err, isNot(isA<CertificateDecisionRequired>()));
+      expect(err, isA<AppError>());
+      expect((err as AppError).debugDetail, 'pin store unavailable');
+      expect(s.seen, isEmpty);
+    });
+  });
+
   group('pinned', () {
     test('the pinned certificate is accepted, headers are sent', () async {
       final cert = certs.selfSigned();

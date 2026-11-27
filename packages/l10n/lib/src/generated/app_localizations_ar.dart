@@ -403,6 +403,14 @@ class AppLocalizationsAr extends AppLocalizations {
       'احذف كل ما بعد علامة ? في العنوان. مكان المفاتيح هو حقل المفتاح.';
 
   @override
+  String get serverErrorAddressPort =>
+      'يجب أن يكون المنفذ رقمًا من 1 إلى 65535.';
+
+  @override
+  String get serverErrorAddressNonAscii =>
+      'استخدم الصيغة ASCII لاسم المضيف (مثل xn--...) بدون أحرف خاصة.';
+
+  @override
   String get serverErrorPrefixInvalid =>
       'استخدم مسارًا مثل /sonarr بدون مسافات أو ? أو ...';
 

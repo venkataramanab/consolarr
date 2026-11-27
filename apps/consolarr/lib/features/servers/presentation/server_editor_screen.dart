@@ -261,8 +261,16 @@ class _PinSectionState extends ConsumerState<PinSection> {
 
   PinKey get _key => PinKey.forProfile(widget.entry.profile);
 
-  Future<CertificateFingerprint?> _read() =>
-      ref.read(pinStoreProvider).read(_key);
+  /// The pin section is informational: a profile that cannot form a pin key,
+  /// or a store that cannot be read, simply shows no pin (the connection
+  /// itself fails closed elsewhere).
+  Future<CertificateFingerprint?> _read() async {
+    try {
+      return await ref.read(pinStoreProvider).read(_key);
+    } on Object {
+      return null;
+    }
+  }
 
   Future<void> _remove(CertificateFingerprint pinned) async {
     final l10n = context.l10n;

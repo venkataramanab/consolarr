@@ -97,9 +97,19 @@ class DriftServerRepository implements ServerRepository {
   static List<String> _splitNames(String s) =>
       s.isEmpty ? const [] : s.split('\n');
 
+  /// Credential path: an unreadable store reads as "no secret", which the UI
+  /// answers with a re-entry prompt. (The pin path must NOT do this.)
+  Future<String?> _read(String key) async {
+    try {
+      return await _secrets.read(key);
+    } on SecretStoreUnavailable {
+      return null;
+    }
+  }
+
   Future<bool> _needsCredentials(ServerProfile p) async {
     Future<bool> missing(String key) async =>
-        (await _secrets.read(key))?.isNotEmpty != true;
+        (await _read(key))?.isNotEmpty != true;
     switch (p.authMode) {
       case AuthMode.none:
         break;
@@ -122,13 +132,13 @@ class DriftServerRepository implements ServerRepository {
     final id = profile.id;
     final headers = <HeaderEntry>[];
     for (final name in profile.headerNames) {
-      final v = await _secrets.read(ServerSecretKeys.header(id, name));
+      final v = await _read(ServerSecretKeys.header(id, name));
       if (v != null) headers.add(HeaderEntry(name: name, value: v));
     }
     return ServerCredentials(
-      apiKey: await _secrets.read(ServerSecretKeys.apiKey(id)),
-      username: await _secrets.read(ServerSecretKeys.username(id)),
-      password: await _secrets.read(ServerSecretKeys.password(id)),
+      apiKey: await _read(ServerSecretKeys.apiKey(id)),
+      username: await _read(ServerSecretKeys.username(id)),
+      password: await _read(ServerSecretKeys.password(id)),
       headers: headers,
     );
   }
@@ -143,6 +153,7 @@ class DriftServerRepository implements ServerRepository {
     // is not stored yet is still a new server.
     final isNew = draft.id == null || await find(id) == null;
     final headers = draft.credentials.headers;
+    final existing = isNew ? null : await find(id);
     final parsed = ServerProfile.parse(
       id: id,
       name: draft.name.trim(),
@@ -152,11 +163,19 @@ class DriftServerRepository implements ServerRepository {
       authMode: draft.authMode,
       allowCleartext: draft.allowCleartext,
       headerNames: [for (final h in headers) h.name],
+      // The editor has no field for it yet: keep what is stored.
+      alternateAddress: existing?.profile.alternateAddress?.toString(),
     );
     final profile = parsed.valueOrNull;
     if (profile == null) return Result.err(parsed.errorOrNull!);
 
-    final existing = isNew ? null : await find(id);
+    final previous = existing?.profile;
+    if (previous != null && _identityChanged(previous, profile)) {
+      await _forgetIdentity(previous);
+      if (_originChanged(previous, profile)) {
+        await _deleteSecrets(id, previous.headerNames);
+      }
+    }
     final sortOrder = existing?.sortOrder ?? await _nextSortOrder();
 
     await _db
@@ -178,9 +197,66 @@ class DriftServerRepository implements ServerRepository {
         );
 
     await _writeSecrets(profile, draft.credentials, existing?.profile);
+    await _bumpRevision(id);
     if (isNew) onServerAdded?.call(profile);
     return Result.ok((await find(id))!);
   }
+
+  static bool _identityChanged(ServerProfile a, ServerProfile b) =>
+      a.kind != b.kind ||
+      a.address != b.address ||
+      a.pathPrefix != b.pathPrefix;
+
+  static bool _originChanged(ServerProfile a, ServerProfile b) =>
+      a.address.scheme != b.address.scheme ||
+      a.address.host.toLowerCase() != b.address.host.toLowerCase() ||
+      a.address.port != b.address.port;
+
+  /// Cached payloads and certificate pins belong to the old identity.
+  Future<void> _forgetIdentity(ServerProfile old) async {
+    await _cache.deleteForServer(old.id);
+    await _deletePins(old.id, [old.address, old.alternateAddress]);
+  }
+
+  Future<void> _deletePins(String id, List<Uri?> addresses) async {
+    for (final uri in addresses) {
+      if (uri == null) continue;
+      try {
+        await _secrets.delete(
+          PinKey(profileId: id, host: uri.host, port: uri.port).storageKey,
+        );
+      } on ArgumentError {
+        // An address that cannot form a pin key has no pin to remove.
+      }
+    }
+  }
+
+  Future<void> _deleteSecrets(String id, List<String> headerNames) async {
+    await _secrets.delete(ServerSecretKeys.apiKey(id));
+    await _secrets.delete(ServerSecretKeys.username(id));
+    await _secrets.delete(ServerSecretKeys.password(id));
+    for (final name in headerNames) {
+      await _secrets.delete(ServerSecretKeys.header(id, name));
+    }
+  }
+
+  static String _revisionKey(String id) => 'rev/$id';
+
+  Future<int> _revision(String id) async {
+    final row = await (_db.select(
+      _db.appStateRows,
+    )..where((r) => r.key.equals(_revisionKey(id)))).getSingleOrNull();
+    return int.tryParse(row?.value ?? '') ?? 0;
+  }
+
+  Future<void> _bumpRevision(String id) async => _db
+      .into(_db.appStateRows)
+      .insertOnConflictUpdate(
+        AppStateRowsCompanion.insert(
+          key: _revisionKey(id),
+          value: '${await _revision(id) + 1}',
+        ),
+      );
 
   Future<int> _nextSortOrder() async {
     final max = _db.serverRows.sortOrder.max();
@@ -232,26 +308,25 @@ class DriftServerRepository implements ServerRepository {
 
   @override
   Future<void> delete(String id) async {
-    final entry = await find(id);
-    if (entry != null) {
-      final p = entry.profile;
-      await _secrets.delete(ServerSecretKeys.apiKey(id));
-      await _secrets.delete(ServerSecretKeys.username(id));
-      await _secrets.delete(ServerSecretKeys.password(id));
-      for (final name in p.headerNames) {
-        await _secrets.delete(ServerSecretKeys.header(id, name));
-      }
+    // Work from the raw row, not the parsed profile: a row that no longer
+    // parses (hand-edited, future schema) must still be removable together
+    // with its secrets.
+    final row = await (_db.select(
+      _db.serverRows,
+    )..where((r) => r.id.equals(id))).getSingleOrNull();
+    if (row != null) {
+      await _deleteSecrets(id, _splitNames(row.headerNames));
       // Removing a pin is not creating one; no confirmation is involved.
-      await _secrets.delete(PinKey.forProfile(p).storageKey);
-      final alt = p.alternateAddress;
-      if (alt != null) {
-        await _secrets.delete(
-          PinKey(profileId: id, host: alt.host, port: alt.port).storageKey,
-        );
-      }
+      await _deletePins(id, [
+        Uri.tryParse(row.address),
+        if (row.alternateAddress != null) Uri.tryParse(row.alternateAddress!),
+      ]);
     }
     await _cache.deleteForServer(id);
     await (_db.delete(_db.serverRows)..where((r) => r.id.equals(id))).go();
+    await (_db.delete(
+      _db.appStateRows,
+    )..where((r) => r.key.equals(_revisionKey(id)))).go();
     for (final kind in ServiceKind.values) {
       final key = _activeKey(kind);
       await (_db.delete(
@@ -297,6 +372,20 @@ class DriftServerRepository implements ServerRepository {
       .insertOnConflictUpdate(
         AppStateRowsCompanion.insert(key: _activeKey(kind), value: id),
       );
+
+  @override
+  Stream<ConnectionKey> watchConnectionKey(ServiceKind kind) {
+    Future<ConnectionKey> current() async {
+      final id = await activeId(kind);
+      return ConnectionKey(id, id == null ? 0 : await _revision(id));
+    }
+
+    return _db
+        .customSelect('SELECT 1', readsFrom: {_db.serverRows, _db.appStateRows})
+        .watch()
+        .asyncMap((_) => current())
+        .distinct();
+  }
 
   @override
   Future<String?> activeId(ServiceKind kind) async {

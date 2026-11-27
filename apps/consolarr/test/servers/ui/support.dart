@@ -68,6 +68,7 @@ class FakeServerRepository implements ServerRepository {
   String? startup;
   final Map<ServiceKind, String> active = {};
   AppError? saveError;
+  int _revision = 0;
 
   @override
   Stream<List<ServerEntry>> watchAll() async* {
@@ -107,6 +108,7 @@ class FakeServerRepository implements ServerRepository {
     entries
       ..removeWhere((x) => x.profile.id == e.profile.id)
       ..add(e);
+    _revision++;
     _changes.add(null);
     return Result.ok(e);
   }
@@ -127,11 +129,28 @@ class FakeServerRepository implements ServerRepository {
   Future<void> setStartup(String? id) async => startup = id;
 
   @override
-  Future<void> setActive(ServiceKind kind, String id) async =>
-      active[kind] = id;
+  Future<void> setActive(ServiceKind kind, String id) async {
+    active[kind] = id;
+    _changes.add(null);
+  }
 
   @override
   Future<String?> activeId(ServiceKind kind) async => active[kind];
+
+  @override
+  Stream<ConnectionKey> watchConnectionKey(ServiceKind kind) async* {
+    Future<ConnectionKey> current() async =>
+        ConnectionKey(await activeId(kind), _revision);
+    var last = await current();
+    yield last;
+    await for (final _ in _changes.stream) {
+      final next = await current();
+      if (next != last) {
+        last = next;
+        yield next;
+      }
+    }
+  }
 
   @override
   Future<ServerCredentials> loadCredentials(ServerProfile profile) async =>

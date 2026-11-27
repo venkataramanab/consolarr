@@ -476,6 +476,14 @@
   "@serverErrorAddressQuery": {
     "description": "Validation error: address contains a query string."
   },
+  "serverErrorAddressPort": "[Ţĥé þöŕţ ɱüšţ ƀé à ñüɱƀéŕ ƒŕöɱ 1 ţö 65535.~~~~~~~~~~~~~~~~~]",
+  "@serverErrorAddressPort": {
+    "description": "Validation error: the port in the address is not between 1 and 65535."
+  },
+  "serverErrorAddressNonAscii": "[Üšé ţĥé ÀŠÇÎÎ ƒöŕɱ öƒ ţĥé ĥöšţ ñàɱé (ƒöŕ éẋàɱþļé ẋñ--...), ñöţ šþéçîàļ çĥàŕàçţéŕš.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@serverErrorAddressNonAscii": {
+    "description": "Validation error: the host name contains non-ASCII characters; the user should enter its ASCII (punycode) form."
+  },
   "serverErrorPrefixInvalid": "[Üšé à þàţĥ šüçĥ àš /šöñàŕŕ, ŵîţĥöüţ šþàçéš, ? öŕ ...~~~~~~~~~~~~~~~~~~~~~]",
   "@serverErrorPrefixInvalid": {
     "description": "Validation error: invalid path prefix."

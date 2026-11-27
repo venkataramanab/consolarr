@@ -131,6 +131,62 @@ void main() {
     });
   });
 
+  group('ServerProfile.parse address hardening', () {
+    String? detail(String a) => ServerProfile.parse(
+      id: 'p',
+      name: 'n',
+      kind: ServiceKind.sonarr,
+      address: a,
+    ).errorOrNull?.debugDetail;
+
+    test('rejects ports outside 1..65535', () {
+      for (final a in [
+        'https://nas.example:99999',
+        'https://nas.example:65536',
+        'https://nas.example:0',
+        'https://nas.example:-1',
+      ]) {
+        expect(detail(a), 'invalid port', reason: a);
+      }
+    });
+
+    test('accepts the port range limits', () {
+      for (final a in ['https://nas.example:1', 'https://nas.example:65535']) {
+        expect(detail(a), isNull, reason: a);
+      }
+    });
+
+    test('rejects a backslash anywhere in the address', () {
+      expect(detail(r'https://evil.example\@nas.example'), 'invalid address');
+      expect(detail(r'https://nas.example\sonarr'), 'invalid address');
+    });
+
+    test('rejects non-ASCII hosts with a dedicated reason', () {
+      expect(detail('https://münchen.example'), 'host must be ascii');
+      expect(
+        ServerProfile.parse(
+          id: 'p',
+          name: 'n',
+          kind: ServiceKind.sonarr,
+          address: 'https://nas.example',
+          alternateAddress: 'https://münchen.example:99999',
+        ).errorOrNull?.debugDetail,
+        isNotNull,
+      );
+    });
+
+    test('a valid alternate address is preserved', () {
+      final p = ServerProfile.parse(
+        id: 'p',
+        name: 'n',
+        kind: ServiceKind.sonarr,
+        address: 'https://nas.example',
+        alternateAddress: 'https://alt.example:8443',
+      ).valueOrNull!;
+      expect(p.alternateAddress.toString(), 'https://alt.example:8443');
+    });
+  });
+
   group('CleartextPolicy', () {
     ServerProfile profile(String address, {bool allow = false}) =>
         ServerProfile.parse(

@@ -6,6 +6,7 @@ import 'package:consolarr/features/servers/domain/server_models.dart';
 import 'package:consolarr/src/cache/payload_cache.dart';
 import 'package:consolarr/src/database/app_database.dart';
 import 'package:core/core.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:security/security.dart';
 
@@ -257,5 +258,179 @@ void main() {
     await Future<void>.delayed(const Duration(milliseconds: 50));
     await sub.cancel();
     expect(emissions.last, 1);
+  });
+
+  group('hardening (W3b)', () {
+    test(
+      'an unreadable Keystore reads as needsCredentials, never throws',
+      () async {
+        final id = (await repo.save(sonarr())).valueOrNull!.profile.id;
+        secrets.unavailable = true;
+        expect((await repo.find(id))!.needsCredentials, isTrue);
+        final creds = await repo.loadCredentials(
+          (await repo.find(id))!.profile,
+        );
+        expect(creds.apiKey, isNull);
+      },
+    );
+
+    test('delete removes a row whose address no longer parses, with its '
+        'secrets', () async {
+      const id = 'bad-port-row';
+      await db
+          .into(db.serverRows)
+          .insert(
+            ServerRowsCompanion.insert(
+              id: id,
+              name: 'Broken',
+              kind: 'sonarr',
+              address: 'https://nas.example:99999',
+              authMode: 'apiKey',
+              headerNames: const Value('X-One'),
+              alternateAddress: const Value('https://alt.example:0'),
+            ),
+          );
+      await secrets.write(ServerSecretKeys.apiKey(id), 'test-key-0000');
+      await secrets.write(ServerSecretKeys.header(id, 'X-One'), 'v');
+      await cache.write(id, 'sonarr.series', '[]', DateTime.utc(2026));
+
+      await repo.delete(id);
+
+      expect(await db.select(db.serverRows).get(), isEmpty);
+      expect(await secrets.read(ServerSecretKeys.apiKey(id)), isNull);
+      expect(await secrets.read(ServerSecretKeys.header(id, 'X-One')), isNull);
+      expect(await cache.read(id, 'sonarr.series'), isNull);
+    });
+
+    test('save rejects out-of-range ports', () async {
+      final r = await repo.save(sonarr(address: 'https://nas.example:99999'));
+      expect(r.errorOrNull?.category, ErrorCategory.parseError);
+      expect(await db.select(db.serverRows).get(), isEmpty);
+    });
+
+    test('save keeps the alternate address', () async {
+      final id = (await repo.save(sonarr())).valueOrNull!.profile.id;
+      await (db.update(db.serverRows)..where((r) => r.id.equals(id))).write(
+        const ServerRowsCompanion(
+          alternateAddress: Value('https://alt.example:8443'),
+        ),
+      );
+      await repo.save(sonarr(id: id, name: 'Renamed'));
+      final p = (await repo.find(id))!.profile;
+      expect(p.alternateAddress.toString(), 'https://alt.example:8443');
+      expect(p.name, 'Renamed');
+    });
+
+    test(
+      'editing the identity clears cached payloads and the old pin',
+      () async {
+        final entry = (await repo.save(sonarr())).valueOrNull!;
+        final id = entry.profile.id;
+        final oldPin = PinKey.forProfile(entry.profile);
+        await secrets.write(oldPin.storageKey, '0' * 64);
+        await cache.write(id, 'sonarr.series', '[]', DateTime.utc(2026));
+
+        // A rename alone keeps both.
+        await repo.save(sonarr(id: id, name: 'Renamed'));
+        expect(await cache.read(id, 'sonarr.series'), isNotNull);
+        expect(await secrets.read(oldPin.storageKey), isNotNull);
+
+        for (final changed in [
+          sonarr(id: id, address: 'https://other.example'),
+        ]) {
+          await repo.save(changed);
+        }
+        expect(await cache.read(id, 'sonarr.series'), isNull);
+        expect(await secrets.read(oldPin.storageKey), isNull);
+
+        // Path prefix changes are identity changes too.
+        await cache.write(id, 'sonarr.series', '[]', DateTime.utc(2026));
+        await repo.save(
+          sonarr(id: id, address: 'https://other.example', pathPrefix: '/tv'),
+        );
+        expect(await cache.read(id, 'sonarr.series'), isNull);
+      },
+    );
+
+    test(
+      'changing the origin drops secrets that are not re-supplied',
+      () async {
+        final id = (await repo.save(
+          sonarr(
+            credentials: const ServerCredentials(
+              apiKey: 'test-key-0000',
+              headers: [HeaderEntry(name: 'X-One', value: 'v1')],
+            ),
+          ),
+        )).valueOrNull!.profile.id;
+
+        final r = await repo.save(
+          sonarr(
+            id: id,
+            address: 'https://other.example',
+            credentials: const ServerCredentials(),
+          ),
+        );
+        expect(r.valueOrNull!.needsCredentials, isTrue);
+        expect(await secrets.read(ServerSecretKeys.apiKey(id)), isNull);
+
+        // Re-entering works.
+        final again = await repo.save(
+          sonarr(
+            id: id,
+            address: 'https://other.example',
+            credentials: const ServerCredentials(apiKey: 'test-key-1111'),
+          ),
+        );
+        expect(again.valueOrNull!.needsCredentials, isFalse);
+      },
+    );
+
+    test('a same-origin edit keeps secrets', () async {
+      final id = (await repo.save(sonarr())).valueOrNull!.profile.id;
+      await repo.save(
+        sonarr(
+          id: id,
+          pathPrefix: '/tv',
+          credentials: const ServerCredentials(),
+        ),
+      );
+      expect(await secrets.read(ServerSecretKeys.apiKey(id)), 'test-key-0000');
+    });
+  });
+
+  group('watchConnectionKey', () {
+    test('emits on credential edits and on set-active, not on noise', () async {
+      final a = (await repo.save(sonarr(name: 'A'))).valueOrNull!.profile.id;
+      final b = (await repo.save(sonarr(name: 'B'))).valueOrNull!.profile.id;
+      final keys = <ConnectionKey>[];
+      final sub = repo.watchConnectionKey(ServiceKind.sonarr).listen(keys.add);
+      Future<void> settle() =>
+          Future<void>.delayed(const Duration(milliseconds: 50));
+      await settle();
+      expect(keys.last.serverId, a);
+
+      await repo.save(
+        sonarr(
+          id: a,
+          credentials: const ServerCredentials(apiKey: 'test-key-2222'),
+        ),
+      );
+      await settle();
+      final afterEdit = keys.last;
+      expect(afterEdit.serverId, a);
+      expect(afterEdit, isNot(keys.first));
+
+      await repo.setActive(ServiceKind.sonarr, b);
+      await settle();
+      expect(keys.last.serverId, b);
+
+      // Unrelated writes (another kind) do not re-emit the same value.
+      final count = keys.length;
+      await repo.setActive(ServiceKind.qbittorrent, 'x');
+      await settle();
+      expect(keys.length, count);
+      await sub.cancel();
+    });
   });
 }

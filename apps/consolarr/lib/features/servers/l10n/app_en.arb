@@ -438,6 +438,14 @@
   "@serverErrorAddressQuery": {
     "description": "Validation error: address contains a query string."
   },
+  "serverErrorAddressPort": "The port must be a number from 1 to 65535.",
+  "@serverErrorAddressPort": {
+    "description": "Validation error: the port in the address is not between 1 and 65535."
+  },
+  "serverErrorAddressNonAscii": "Use the ASCII form of the host name (for example xn--...), not special characters.",
+  "@serverErrorAddressNonAscii": {
+    "description": "Validation error: the host name contains non-ASCII characters; the user should enter its ASCII (punycode) form."
+  },
   "serverErrorPrefixInvalid": "Use a path such as /sonarr, without spaces, ? or ...",
   "@serverErrorPrefixInvalid": {
     "description": "Validation error: invalid path prefix."

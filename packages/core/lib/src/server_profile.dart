@@ -109,13 +109,26 @@ class ServerProfile {
   static final _badPathChars = RegExp(r'[\s?#\\\x00-\x1f\x7f]');
 
   static Result<Uri> _parseAddress(String address) {
-    final uri = Uri.tryParse(address.trim());
+    final trimmed = address.trim();
+    // A backslash is a path separator to some parsers and an authority
+    // terminator to others (`https://evil\@nas`): never accept it.
+    final uri = trimmed.contains(r'\') ? null : Uri.tryParse(trimmed);
     if (uri == null ||
         !uri.hasScheme ||
         (uri.scheme != 'https' && uri.scheme != 'http') ||
         uri.host.isEmpty) {
       return const Result.err(
         AppError(ErrorCategory.parseError, debugDetail: 'invalid address'),
+      );
+    }
+    if (uri.host.codeUnits.any((c) => c > 0x7e || c < 0x21 || c == 0x25)) {
+      return const Result.err(
+        AppError(ErrorCategory.parseError, debugDetail: 'host must be ascii'),
+      );
+    }
+    if (uri.hasPort && (uri.port < 1 || uri.port > 65535)) {
+      return const Result.err(
+        AppError(ErrorCategory.parseError, debugDetail: 'invalid port'),
       );
     }
     if (uri.userInfo.isNotEmpty) {

@@ -44,6 +44,22 @@ void main() {
     });
   });
 
+  group('SecretBackedPinStore with an unreadable store', () {
+    test(
+      'propagates SecretStoreUnavailable instead of reporting no pin',
+      () async {
+        final secrets = InMemorySecretStore();
+        final pins = SecretBackedPinStore(secrets);
+        await pins.write(_key1, _fp1, _c(_key1, _fp1));
+        secrets.unavailable = true;
+        await expectLater(
+          pins.read(_key1),
+          throwsA(isA<SecretStoreUnavailable>()),
+        );
+      },
+    );
+  });
+
   for (final (name, make) in <(String, PinStore Function())>[
     ('InMemoryPinStore', InMemoryPinStore.new),
     ('SecretBackedPinStore', () => SecretBackedPinStore(InMemorySecretStore())),

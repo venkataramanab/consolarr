@@ -14,6 +14,8 @@ enum FieldIssue {
   addressInvalid,
   addressCredentials,
   addressQuery,
+  addressPort,
+  addressNonAscii,
   prefixInvalid,
   headerInvalid,
 }
@@ -198,6 +200,10 @@ class ServerFormController extends ChangeNotifier {
           addressIssue = FieldIssue.addressCredentials;
         case 'address must not contain a query string':
           addressIssue = FieldIssue.addressQuery;
+        case 'invalid port':
+          addressIssue = FieldIssue.addressPort;
+        case 'host must be ascii':
+          addressIssue = FieldIssue.addressNonAscii;
         case 'invalid path prefix':
           prefixIssue = FieldIssue.prefixInvalid;
         case 'invalid headers':
