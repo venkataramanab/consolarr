@@ -57,19 +57,21 @@ void main() {
         expect(await s.read(_key2), isNull);
       });
 
-      test('write requires a confirmation covering key and fingerprint',
-          () async {
-        final s = make();
-        expect(
-          () => s.write(_key1, _fp1, _c(_key2, _fp1)),
-          throwsArgumentError,
-        );
-        expect(
-          () => s.write(_key1, _fp1, _c(_key1, _fp2)),
-          throwsArgumentError,
-        );
-        expect(await s.read(_key1), isNull);
-      });
+      test(
+        'write requires a confirmation covering key and fingerprint',
+        () async {
+          final s = make();
+          expect(
+            () => s.write(_key1, _fp1, _c(_key2, _fp1)),
+            throwsArgumentError,
+          );
+          expect(
+            () => s.write(_key1, _fp1, _c(_key1, _fp2)),
+            throwsArgumentError,
+          );
+          expect(await s.read(_key1), isNull);
+        },
+      );
 
       test('replacing a pin also needs a covering confirmation', () async {
         final s = make();
@@ -94,20 +96,24 @@ void main() {
     });
   }
 
-  test('SecretBackedPinStore: a corrupt entry blocks instead of unpinning',
-      () async {
-    final secrets = InMemorySecretStore({_key1.storageKey: 'not-a-hash'});
-    final stored = await SecretBackedPinStore(secrets).read(_key1);
-    expect(stored, isNotNull);
-    expect(stored, isNot(_fp1));
-  });
+  test(
+    'SecretBackedPinStore: a corrupt entry blocks instead of unpinning',
+    () async {
+      final secrets = InMemorySecretStore({_key1.storageKey: 'not-a-hash'});
+      final stored = await SecretBackedPinStore(secrets).read(_key1);
+      expect(stored, isNotNull);
+      expect(stored, isNot(_fp1));
+    },
+  );
 
-  test('SecretBackedPinStore stores only the hex under the storage key',
-      () async {
-    final secrets = InMemorySecretStore();
-    await SecretBackedPinStore(secrets).write(_key1, _fp1, _c(_key1, _fp1));
-    expect(await secrets.read(_key1.storageKey), _fp1.hex);
-  });
+  test(
+    'SecretBackedPinStore stores only the hex under the storage key',
+    () async {
+      final secrets = InMemorySecretStore();
+      await SecretBackedPinStore(secrets).write(_key1, _fp1, _c(_key1, _fp1));
+      expect(await secrets.read(_key1.storageKey), _fp1.hex);
+    },
+  );
 
   group('appErrorFromDio', () {
     test('passes typed errors through (plain and wrapped)', () {

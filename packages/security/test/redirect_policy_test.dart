@@ -41,13 +41,18 @@ void main() {
 
   test('http target needs the opt-in and the profile host', () {
     expect(
-      (decide('http://nas.example/', 'http://nas.example/x') as RedirectRefuse)
-          .error
-          .category,
+      (decide(
+        'http://nas.example/',
+        'http://nas.example/x',
+      ) as RedirectRefuse).error.category,
       ErrorCategory.cleartextRefused,
     );
     expect(
-      decide('http://nas.example/', 'http://nas.example/x', allowCleartext: true),
+      decide(
+        'http://nas.example/',
+        'http://nas.example/x',
+        allowCleartext: true,
+      ),
       isA<RedirectFollow>(),
     );
     expect(
@@ -69,20 +74,30 @@ void main() {
 
   test('methods', () {
     expect(
-      (decide('https://nas.example/', 'https://nas.example/x',
-              status: 303, method: 'POST') as RedirectFollow)
-          .toGet,
+      (decide(
+        'https://nas.example/',
+        'https://nas.example/x',
+        status: 303,
+        method: 'POST',
+      ) as RedirectFollow).toGet,
       isTrue,
     );
     expect(
-      decide('https://nas.example/', 'https://nas.example/x',
-          status: 307, method: 'POST'),
+      decide(
+        'https://nas.example/',
+        'https://nas.example/x',
+        status: 307,
+        method: 'POST',
+      ),
       isA<RedirectRefuse>(),
     );
     expect(
-      (decide('https://nas.example/', 'https://nas.example/x',
-              status: 307, method: 'GET') as RedirectFollow)
-          .toGet,
+      (decide(
+        'https://nas.example/',
+        'https://nas.example/x',
+        status: 307,
+        method: 'GET',
+      ) as RedirectFollow).toGet,
       isFalse,
     );
   });
@@ -96,6 +111,9 @@ void main() {
       'Accept': 'application/json',
       'User-Agent': 'ua',
     });
-    expect(out.keys.map((k) => k.toLowerCase()).toSet(), {'accept', 'user-agent'});
+    expect(out.keys.map((k) => k.toLowerCase()).toSet(), {
+      'accept',
+      'user-agent',
+    });
   });
 }

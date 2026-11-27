@@ -57,25 +57,27 @@ void main() {
   }
 
   group('unpinned self-signed (TOFU)', () {
-    test('requires a decision carrying fingerprint, subject, issuer, validity',
-        () async {
-      final cert = certs.selfSigned(cn: 'nas.example', org: 'Example Org');
-      final s = await serve(cert);
-      final dio = factory().create(s.profile());
+    test(
+      'requires a decision carrying fingerprint, subject, issuer, validity',
+      () async {
+        final cert = certs.selfSigned(cn: 'nas.example', org: 'Example Org');
+        final s = await serve(cert);
+        final dio = factory().create(s.profile());
 
-      final err = await _failure(dio.get<Object>('/api'));
-      expect(err, isA<CertificateDecisionRequired>());
-      final d = err as CertificateDecisionRequired;
-      expect(d.category, ErrorCategory.tlsUntrusted);
-      expect(d.certificate.fingerprint.hex, cert.sha256Hex);
-      expect(d.certificate.subject, contains('nas.example'));
-      expect(d.certificate.issuer, contains('Example Org'));
-      expect(d.certificate.notAfter.isAfter(DateTime.now()), isTrue);
-      expect(d.certificate.notBefore.isBefore(DateTime.now()), isTrue);
-      expect(d.key, PinKey.forProfile(s.profile()));
-      // The request never reached the application.
-      expect(s.seen, isEmpty);
-    });
+        final err = await _failure(dio.get<Object>('/api'));
+        expect(err, isA<CertificateDecisionRequired>());
+        final d = err as CertificateDecisionRequired;
+        expect(d.category, ErrorCategory.tlsUntrusted);
+        expect(d.certificate.fingerprint.hex, cert.sha256Hex);
+        expect(d.certificate.subject, contains('nas.example'));
+        expect(d.certificate.issuer, contains('Example Org'));
+        expect(d.certificate.notAfter.isAfter(DateTime.now()), isTrue);
+        expect(d.certificate.notBefore.isBefore(DateTime.now()), isTrue);
+        expect(d.key, PinKey.forProfile(s.profile()));
+        // The request never reached the application.
+        expect(s.seen, isEmpty);
+      },
+    );
 
     test('after the user pins it, the same client connects', () async {
       final cert = certs.selfSigned();
@@ -109,17 +111,19 @@ void main() {
       expect(s.seen, isEmpty);
     });
 
-    test('a not-yet-valid certificate (clock in the past) is reported',
-        () async {
-      final cert = certs.selfSigned();
-      final s = await serve(cert);
-      final err = await _failure(
-        factory(
-          clock: () => DateTime.utc(2001),
-        ).create(s.profile()).get<Object>('/api'),
-      );
-      expect(err, isA<CertificateExpired>());
-    });
+    test(
+      'a not-yet-valid certificate (clock in the past) is reported',
+      () async {
+        final cert = certs.selfSigned();
+        final s = await serve(cert);
+        final err = await _failure(
+          factory(clock: () => DateTime.utc(2001))
+              .create(s.profile())
+              .get<Object>('/api'),
+        );
+        expect(err, isA<CertificateExpired>());
+      },
+    );
   });
 
   group('pinned', () {
@@ -137,26 +141,34 @@ void main() {
       expect(s.seen, hasLength(1));
     });
 
-    test('a swapped self-signed certificate is blocked before any request',
-        () async {
-      final pinned = certs.selfSigned();
-      final other = certs.selfSigned();
-      final s = await serve(other);
-      await pin(s, pinned);
+    test(
+      'a swapped self-signed certificate is blocked before any request',
+      () async {
+        final pinned = certs.selfSigned();
+        final other = certs.selfSigned();
+        final s = await serve(other);
+        await pin(s, pinned);
 
-      final err = await _failure(
-        factory().create(s.profile()).get<Object>(
-          '/api',
-          options: Options(headers: {'X-Api-Key': 'test-key-0000'}),
-        ),
-      );
-      expect(err, isA<TlsPinMismatch>());
-      final m = err as TlsPinMismatch;
-      expect(m.category, ErrorCategory.tlsPinMismatch);
-      expect(m.pinned.hex, pinned.sha256Hex);
-      expect(m.presented.fingerprint.hex, other.sha256Hex);
-      expect(s.seen, isEmpty, reason: 'no request bytes may reach the server');
-    });
+        final err = await _failure(
+          factory()
+              .create(s.profile())
+              .get<Object>(
+                '/api',
+                options: Options(headers: {'X-Api-Key': 'test-key-0000'}),
+              ),
+        );
+        expect(err, isA<TlsPinMismatch>());
+        final m = err as TlsPinMismatch;
+        expect(m.category, ErrorCategory.tlsPinMismatch);
+        expect(m.pinned.hex, pinned.sha256Hex);
+        expect(m.presented.fingerprint.hex, other.sha256Hex);
+        expect(
+          s.seen,
+          isEmpty,
+          reason: 'no request bytes may reach the server',
+        );
+      },
+    );
 
     test('a swapped CA-signed certificate is also blocked', () async {
       final ca = certs.ca();
@@ -194,24 +206,26 @@ void main() {
       expect(err, isA<TlsPinMismatch>());
     });
 
-    test('re-trust: clear + write the new pin unblocks the same client',
-        () async {
-      final old = certs.selfSigned();
-      final fresh = certs.selfSigned();
-      final s = await serve(fresh);
-      await pin(s, old);
-      final dio = factory().create(s.profile());
-      final err = await _failure(dio.get<Object>('/api'));
-      final m = err as TlsPinMismatch;
+    test(
+      're-trust: clear + write the new pin unblocks the same client',
+      () async {
+        final old = certs.selfSigned();
+        final fresh = certs.selfSigned();
+        final s = await serve(fresh);
+        await pin(s, old);
+        final dio = factory().create(s.profile());
+        final err = await _failure(dio.get<Object>('/api'));
+        final m = err as TlsPinMismatch;
 
-      await pins.clear(m.key, _confirm(m.key, m.pinned));
-      await pins.write(
-        m.key,
-        m.presented.fingerprint,
-        _confirm(m.key, m.presented.fingerprint),
-      );
-      expect((await dio.get<Object>('/api')).statusCode, 200);
-    });
+        await pins.clear(m.key, _confirm(m.key, m.pinned));
+        await pins.write(
+          m.key,
+          m.presented.fingerprint,
+          _confirm(m.key, m.presented.fingerprint),
+        );
+        expect((await dio.get<Object>('/api')).statusCode, 200);
+      },
+    );
 
     test('pins are per profile: another profile is not trusted', () async {
       final cert = certs.selfSigned();

@@ -58,7 +58,11 @@ void main() {
     final profile = s.profile();
     final key = PinKey.forProfile(profile);
     final fp = CertificateFingerprint.parse(cert.sha256Hex);
-    await pins.write(key, fp, UserPinConfirmation.userAccepted(key: key, fingerprint: fp));
+    await pins.write(
+      key,
+      fp,
+      UserPinConfirmation.userAccepted(key: key, fingerprint: fp),
+    );
     return (s, profile, factory(limits: limits, pins: pins).create(profile));
   }
 
@@ -155,56 +159,63 @@ void main() {
       expect(target.seen, isEmpty);
     });
 
-    test('https cross-origin redirect strips auth, keeps safe headers',
-        () async {
-      final cert = certs.selfSigned();
-      final targetCert = certs.selfSigned();
-      final target = await serve(cert: targetCert);
-      final s = await serve(
-        cert: cert,
-        handler: (r) {
-          r.response
-            ..statusCode = 307
-            ..headers.set('location', '${target.origin}/landing');
-        },
-      );
-      // Trust both certificates for this profile's connections.
-      final pins = InMemoryPinStore();
-      for (final (srv, c) in [(s, cert), (target, targetCert)]) {
-        final key = PinKey(
-          profileId: 'p1',
-          host: '127.0.0.1',
-          port: srv.port,
-        );
-        final fp = CertificateFingerprint.parse(c.sha256Hex);
-        await pins.write(
-          key,
-          fp,
-          UserPinConfirmation.userAccepted(key: key, fingerprint: fp),
-        );
-      }
-      final dio = factory(pins: pins).create(s.profile());
-      final r = await dio.get<Object>(
-        '/start',
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer test-token-0000',
-            'X-Api-Key': 'test-key-0000',
-            'Cookie': 'SID=test-session',
-            'X-Custom-Gateway': 'test-secret',
-            'Accept': 'application/json',
+    test(
+      'https cross-origin redirect strips auth, keeps safe headers',
+      () async {
+        final cert = certs.selfSigned();
+        final targetCert = certs.selfSigned();
+        final target = await serve(cert: targetCert);
+        final s = await serve(
+          cert: cert,
+          handler: (r) {
+            r.response
+              ..statusCode = 307
+              ..headers.set('location', '${target.origin}/landing');
           },
-        ),
-      );
-      expect(r.statusCode, 200);
-      expect(s.seen.single.headers['x-api-key'], 'test-key-0000');
-      final landed = target.seen.single;
-      expect(landed.uri.path, '/landing');
-      for (final h in ['authorization', 'x-api-key', 'cookie', 'x-custom-gateway']) {
-        expect(landed.headers, isNot(contains(h)), reason: h);
-      }
-      expect(landed.headers['accept'], 'application/json');
-    });
+        );
+        // Trust both certificates for this profile's connections.
+        final pins = InMemoryPinStore();
+        for (final (srv, c) in [(s, cert), (target, targetCert)]) {
+          final key = PinKey(
+            profileId: 'p1',
+            host: '127.0.0.1',
+            port: srv.port,
+          );
+          final fp = CertificateFingerprint.parse(c.sha256Hex);
+          await pins.write(
+            key,
+            fp,
+            UserPinConfirmation.userAccepted(key: key, fingerprint: fp),
+          );
+        }
+        final dio = factory(pins: pins).create(s.profile());
+        final r = await dio.get<Object>(
+          '/start',
+          options: Options(
+            headers: {
+              'Authorization': 'Bearer test-token-0000',
+              'X-Api-Key': 'test-key-0000',
+              'Cookie': 'SID=test-session',
+              'X-Custom-Gateway': 'test-secret',
+              'Accept': 'application/json',
+            },
+          ),
+        );
+        expect(r.statusCode, 200);
+        expect(s.seen.single.headers['x-api-key'], 'test-key-0000');
+        final landed = target.seen.single;
+        expect(landed.uri.path, '/landing');
+        for (final h in [
+          'authorization',
+          'x-api-key',
+          'cookie',
+          'x-custom-gateway',
+        ]) {
+          expect(landed.headers, isNot(contains(h)), reason: h);
+        }
+        expect(landed.headers['accept'], 'application/json');
+      },
+    );
 
     test('https -> http redirect is refused', () async {
       final plain = await serve();
@@ -261,12 +272,9 @@ void main() {
 
   group('limits', () {
     test('a body over the limit fails with response_too_large', () async {
-      final s = await serve(
-        handler: (r) => r.response.write('x' * 5000),
-      );
-      final dio = factory(
-        limits: const HttpLimits(maxResponseBytes: 1000),
-      ).create(s.profile(allowCleartext: true));
+      final s = await serve(handler: (r) => r.response.write('x' * 5000));
+      final dio = factory(limits: const HttpLimits(maxResponseBytes: 1000))
+          .create(s.profile(allowCleartext: true));
       final err = await _failure(dio.get<Object>('/big'));
       expect(err.category, ErrorCategory.responseTooLarge);
     });
@@ -281,18 +289,18 @@ void main() {
           }
         },
       );
-      final dio = factory(
-        limits: const HttpLimits(maxResponseBytes: 2000),
-      ).create(s.profile(allowCleartext: true));
+      final dio = factory(limits: const HttpLimits(maxResponseBytes: 2000))
+          .create(s.profile(allowCleartext: true));
       final err = await _failure(dio.get<Object>('/stream'));
       expect(err.category, ErrorCategory.responseTooLarge);
     });
 
     test('a per-request override allows larger bodies (images)', () async {
-      final s = await serve(handler: (r) => r.response.add(List.filled(5000, 1)));
-      final dio = factory(
-        limits: const HttpLimits(maxResponseBytes: 1000),
-      ).create(s.profile(allowCleartext: true));
+      final s = await serve(
+        handler: (r) => r.response.add(List.filled(5000, 1)),
+      );
+      final dio = factory(limits: const HttpLimits(maxResponseBytes: 1000))
+          .create(s.profile(allowCleartext: true));
       final r = await dio.get<List<int>>(
         '/img',
         options: Options(
@@ -345,18 +353,20 @@ void main() {
       expect(seen.uri.hasQuery, isFalse);
     });
 
-    test('an image server presenting an unpinned cert is not contacted',
-        () async {
-      final s = await serve(cert: certs.selfSigned());
-      final dio = factory().create(s.profile());
-      final err = await _failure(
-        dio.get<List<int>>(
-          '/poster.jpg',
-          options: Options(responseType: ResponseType.bytes),
-        ),
-      );
-      expect(err, isA<CertificateDecisionRequired>());
-      expect(s.seen, isEmpty);
-    });
+    test(
+      'an image server presenting an unpinned cert is not contacted',
+      () async {
+        final s = await serve(cert: certs.selfSigned());
+        final dio = factory().create(s.profile());
+        final err = await _failure(
+          dio.get<List<int>>(
+            '/poster.jpg',
+            options: Options(responseType: ResponseType.bytes),
+          ),
+        );
+        expect(err, isA<CertificateDecisionRequired>());
+        expect(s.seen, isEmpty);
+      },
+    );
   });
 }
