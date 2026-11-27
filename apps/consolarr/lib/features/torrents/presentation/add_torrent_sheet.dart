@@ -5,7 +5,6 @@ import 'package:consolarr/features/torrents/application/torrent_link.dart';
 import 'package:consolarr/features/torrents/application/torrents_providers.dart';
 import 'package:consolarr/features/torrents/presentation/error_text.dart';
 import 'package:consolarr/features/torrents/presentation/screen_view.dart';
-import 'package:consolarr/features/torrents/presentation/stand_ins/glass_sheet.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter/services.dart';
@@ -23,14 +22,21 @@ Future<void> showAddTorrentSheet(BuildContext context) {
     title: l10n.torAddTitle,
     closeLabel: l10n.torDetailClose,
     detents: GlassSheetDetents.full,
-    builder: (_) => const AddTorrentSheet(),
+    // The glass surface is a plain decoration: list tiles need a Material.
+    scrollBuilder: (_, controller) => Material(
+      type: MaterialType.transparency,
+      child: AddTorrentSheet(controller: controller),
+    ),
   );
 }
 
 /// The add form: a link (paste or type) with the parsed name to confirm, or
 /// `.torrent` files from the system picker, plus options the client supports.
 class AddTorrentSheet extends ConsumerStatefulWidget {
-  const AddTorrentSheet({super.key});
+  const AddTorrentSheet({this.controller, super.key});
+
+  /// The sheet's scroll controller (from `showGlassSheet(scrollBuilder:)`).
+  final ScrollController? controller;
 
   @override
   ConsumerState<AddTorrentSheet> createState() => _AddTorrentSheetState();
@@ -121,6 +127,7 @@ class _AddTorrentSheetState extends ConsumerState<AddTorrentSheet> {
     return TorrentScreenView(
       screen: ScreenName.torrentAdd,
       child: SingleChildScrollView(
+        controller: widget.controller,
         padding: const EdgeInsets.fromLTRB(
           ConsolarrSpacing.gutter,
           ConsolarrSpacing.sm,

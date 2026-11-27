@@ -19,22 +19,40 @@ class TorrentDetailNotifier extends AsyncNotifier<TorrentDetail> {
 
   final String hash;
 
-  Future<Result<TorrentDetail>> _load() async {
-    final client = await ref.watch(torrentClientProvider.future);
-    if (client == null)
-      return const Result.err(AppError(ErrorCategory.notFound));
-    return client.torrentDetail(hash);
-  }
+  /// Bumped by every build (a client switch rebuilds), so a refresh started
+  /// for an earlier build can be recognised and dropped.
+  int _generation = 0;
 
   @override
-  Future<TorrentDetail> build() async =>
-      (await _load()).when(ok: (d) => d, err: (e) => throw e);
+  Future<TorrentDetail> build() async {
+    _generation++;
+    final client = await ref.watch(torrentClientProvider.future);
+    if (client == null) throw const AppError(ErrorCategory.notFound);
+    return (await client.torrentDetail(hash))
+        .when(ok: (d) => d, err: (e) => throw e);
+  }
 
-  /// Silent refresh: no loading state, failures keep the old data.
-  Future<void> refresh() async {
-    if (state.isLoading || state.hasError) return;
-    final r = await _load();
-    if (!ref.mounted) return;
-    r.when(ok: (d) => state = AsyncData(d), err: (_) {});
+  /// Silent refresh: no loading state, failures keep the old data. Returns
+  /// `false` when the read failed (the poller backs off). A result for a
+  /// client that was replaced meanwhile, or after a rebuild, is dropped.
+  Future<bool> refresh() async {
+    if (state.isLoading || state.hasError) return true;
+    final generation = _generation;
+    // Captured before the await: `ref.read`, never `watch`, outside build.
+    final client = ref.read(torrentClientProvider).value;
+    if (client == null) return true;
+    final result = await client.torrentDetail(hash);
+    if (!ref.mounted ||
+        generation != _generation ||
+        !identical(client, ref.read(torrentClientProvider).value)) {
+      return true;
+    }
+    return result.when(
+      ok: (d) {
+        state = AsyncData(d);
+        return true;
+      },
+      err: (_) => false,
+    );
   }
 }

@@ -4,7 +4,6 @@ import 'package:consolarr/features/torrents/application/torrent_limits_controlle
 import 'package:consolarr/features/torrents/application/torrents_providers.dart';
 import 'package:consolarr/features/torrents/presentation/error_text.dart';
 import 'package:consolarr/features/torrents/presentation/screen_view.dart';
-import 'package:consolarr/features/torrents/presentation/stand_ins/glass_sheet.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,7 +18,10 @@ Future<void> showSpeedLimitsSheet(BuildContext context) {
     context: context,
     title: l10n.torLimitsTitle,
     closeLabel: l10n.torDetailClose,
-    builder: (_) => const SpeedLimitsSheet(),
+    builder: (_) => const Material(
+      type: MaterialType.transparency,
+      child: SpeedLimitsSheet(),
+    ),
   );
 }
 

@@ -122,7 +122,9 @@ void main() {
       await _menu(tester, 'Sort');
       await tester.tap(find.text('Name'));
       await tester.tap(find.text('Ascending'));
+      await tester.ensureVisible(find.text('Save as default'));
       await tester.tap(find.text('Save as default'));
+      await tester.ensureVisible(find.text('Apply'));
       await tester.tap(find.text('Apply'));
       await tester.pumpAndSettle();
       final names = [

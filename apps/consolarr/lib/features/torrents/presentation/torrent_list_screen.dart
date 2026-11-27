@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:consolarr/features/settings/application/lock_controller.dart';
 import 'package:consolarr/features/shell/presentation/floating_top_bar_scaffold.dart';
 import 'package:consolarr/features/torrents/application/poll_scheduler.dart';
 import 'package:consolarr/features/torrents/application/torrent_actions_controller.dart';
@@ -16,8 +17,6 @@ import 'package:consolarr/features/torrents/presentation/poll_dialog.dart';
 import 'package:consolarr/features/torrents/presentation/remove_dialog.dart';
 import 'package:consolarr/features/torrents/presentation/speed_header.dart';
 import 'package:consolarr/features/torrents/presentation/speed_limits_sheet.dart';
-import 'package:consolarr/features/torrents/presentation/stand_ins/glass_sheet.dart';
-import 'package:consolarr/features/torrents/presentation/stand_ins/sort_sheet.dart';
 import 'package:consolarr/features/torrents/presentation/status_tabs.dart';
 import 'package:consolarr/features/torrents/presentation/torrent_detail_sheet.dart';
 import 'package:consolarr/features/torrents/presentation/torrent_row.dart';
@@ -68,19 +67,35 @@ class _TorrentListScreenState extends ConsumerState<TorrentListScreen>
       interval: ref.read(torrentPollIntervalProvider),
       // Skip while backgrounded or when this tab is not the visible one.
       isVisible: () =>
-          mounted && _resumed && TickerMode.valuesOf(context).enabled,
+          mounted &&
+          _resumed &&
+          TickerMode.valuesOf(context).enabled &&
+          !ref.read(appLockedProvider),
       tick: () => ref.read(torrentListProvider.notifier).refresh(quiet: true),
     )..start();
-    ref.listenManual(
-      torrentPollIntervalProvider,
-      (_, next) => _scheduler.setInterval(next),
-    );
+    ref
+      ..listenManual(
+        torrentPollIntervalProvider,
+        (_, next) => _scheduler.setInterval(next),
+      )
+      // Unlocking resumes polling; locking is picked up by the next tick.
+      ..listenManual(
+        appLockedProvider,
+        (_, _) => _scheduler.visibilityChanged(),
+      );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // A tab switch flips TickerMode: resume when this screen is visible again.
+    if (mounted) _scheduler.visibilityChanged();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _resumed = state == AppLifecycleState.resumed;
-    if (_resumed) unawaited(_scheduler.pollNow());
+    if (_resumed) unawaited(_scheduler.pollNow()); // checks visibility itself
   }
 
   @override
@@ -153,29 +168,34 @@ class _TorrentListScreenState extends ConsumerState<TorrentListScreen>
       context: context,
       title: l10n.torActionsFor(t.name),
       closeLabel: l10n.torDetailClose,
-      builder: (sheetContext) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              minTileHeight: ConsolarrSpacing.minTapTarget,
-              leading: Icon(paused ? Icons.play_arrow : Icons.pause),
-              title: Text(paused ? l10n.torActionResume : l10n.torActionPause),
-              onTap: () {
-                Navigator.of(sheetContext).pop();
-                _rowAction(t, paused ? _RowAction.resume : _RowAction.pause);
-              },
-            ),
-            ListTile(
-              minTileHeight: ConsolarrSpacing.minTapTarget,
-              leading: const Icon(Icons.delete_outline),
-              title: Text(l10n.torActionRemove),
-              onTap: () {
-                Navigator.of(sheetContext).pop();
-                _rowAction(t, _RowAction.remove);
-              },
-            ),
-          ],
+      builder: (sheetContext) => Material(
+        type: MaterialType.transparency,
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                minTileHeight: ConsolarrSpacing.minTapTarget,
+                leading: Icon(paused ? Icons.play_arrow : Icons.pause),
+                title: Text(
+                  paused ? l10n.torActionResume : l10n.torActionPause,
+                ),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  _rowAction(t, paused ? _RowAction.resume : _RowAction.pause);
+                },
+              ),
+              ListTile(
+                minTileHeight: ConsolarrSpacing.minTapTarget,
+                leading: const Icon(Icons.delete_outline),
+                title: Text(l10n.torActionRemove),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  _rowAction(t, _RowAction.remove);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -190,6 +210,9 @@ class _TorrentListScreenState extends ConsumerState<TorrentListScreen>
       closeLabel: l10n.torDetailClose,
       detents: GlassSheetDetents.full,
       builder: (sheetContext) => SortSheet<TorrentSort>(
+        // The glass sheet already shows the title; do not repeat it.
+        title: l10n.torSortTitle,
+        showTitle: false,
         options: [
           for (final s in TorrentSort.values)
             SortOption(key: s, label: _sortLabel(l10n, s)),

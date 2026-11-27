@@ -45,7 +45,7 @@ void main() {
       });
     });
 
-    test('nothing runs while hidden, and polling resumes when visible', () {
+    test('hidden cancels the timer; visibilityChanged resumes polling', () {
       fakeAsync((async) {
         var visible = false;
         var ticks = 0;
@@ -59,9 +59,36 @@ void main() {
         )..start();
         async.elapse(const Duration(seconds: 60));
         expect(ticks, 0);
+        // The timer was cancelled, not rescheduled every interval.
+        expect(async.nonPeriodicTimerCount, 0);
         visible = true;
-        async.elapse(const Duration(seconds: 4));
+        scheduler.visibilityChanged();
+        async.elapse(const Duration(seconds: 5));
         expect(ticks, greaterThan(0));
+        scheduler.dispose();
+      });
+    });
+
+    test('pollNow does nothing while hidden (and stays idle)', () {
+      fakeAsync((async) {
+        var visible = false;
+        var ticks = 0;
+        final scheduler = PollScheduler(
+          interval: const Duration(seconds: 2),
+          isVisible: () => visible,
+          tick: () async {
+            ticks++;
+            return true;
+          },
+        )..start();
+        scheduler.pollNow();
+        async.flushMicrotasks();
+        expect(ticks, 0);
+        expect(async.nonPeriodicTimerCount, 0);
+        visible = true;
+        scheduler.pollNow();
+        async.flushMicrotasks();
+        expect(ticks, 1);
         scheduler.dispose();
       });
     });

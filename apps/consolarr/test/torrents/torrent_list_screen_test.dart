@@ -403,5 +403,46 @@ void main() {
       await tester.pump(interval * 5);
       expect(client.listCalls, before);
     });
+
+    testWidgets('no polling while the app lock is closed; resumes on unlock', (
+      tester,
+    ) async {
+      final client = FakeTorrentClient(torrents: [sampleTorrent(1)]);
+      await tester.pumpWidget(
+        screenApp(
+          baseVariant,
+          client: clientOf(client),
+          pollInterval: interval,
+        ),
+      );
+      await tester.pumpAndSettle();
+      final container = containerOf(tester);
+      container.read(testLockedProvider.notifier).set(true);
+      await tester.pump();
+      final locked = client.listCalls;
+      await tester.pump(interval * 5);
+      expect(client.listCalls, locked, reason: 'locked: no poll');
+      container.read(testLockedProvider.notifier).set(false);
+      await tester.pumpAndSettle();
+      expect(client.listCalls, locked + 1, reason: 'unlock polls once');
+    });
+
+    testWidgets('resume while the tab is hidden does not poll', (tester) async {
+      final client = FakeTorrentClient(torrents: [sampleTorrent(1)]);
+      await tester.pumpWidget(
+        screenApp(
+          baseVariant,
+          client: clientOf(client),
+          pollInterval: interval,
+          tickerEnabled: false,
+        ),
+      );
+      await tester.pumpAndSettle();
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      final before = client.listCalls;
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(client.listCalls, before);
+    });
   });
 }

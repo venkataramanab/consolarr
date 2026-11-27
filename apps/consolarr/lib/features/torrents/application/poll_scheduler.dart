@@ -20,9 +20,9 @@ Duration pollDelay(Duration base, int failures) {
 }
 
 /// Polls with a delay that follows [pollDelay]. A tick runs only while
-/// [isVisible] is true (the app is resumed and the screen is on top); a hidden
-/// scheduler keeps its timer but does no work, so nothing hammers the server
-/// or the battery.
+/// [isVisible] is true (the app is resumed, unlocked and the screen is on
+/// top). A hidden scheduler cancels its timer (no wake-ups at all); the owner
+/// calls [visibilityChanged] when visibility may have changed.
 class PollScheduler {
   PollScheduler({
     required Duration interval,
@@ -38,6 +38,9 @@ class PollScheduler {
   int _failures = 0;
   bool _running = false;
   bool _disposed = false;
+
+  /// The timer is cancelled because the screen was hidden.
+  bool _idle = false;
 
   /// Failures in a row since the last success.
   int get failures => _failures;
@@ -57,11 +60,22 @@ class PollScheduler {
   }
 
   /// Polls now (for example when the app returns to the foreground) and
-  /// restarts the wait; the failure count is kept.
+  /// restarts the wait; the failure count is kept. Does nothing while hidden.
   Future<void> pollNow() async {
     if (_disposed) return;
     _timer?.cancel();
+    if (!isVisible()) {
+      _idle = true;
+      return;
+    }
     await _run();
+  }
+
+  /// Call when [isVisible] may have changed (resume, tab switch, unlock).
+  /// Polls at once when the scheduler was idle and is visible again.
+  void visibilityChanged() {
+    if (_disposed || !_idle || !isVisible()) return;
+    unawaited(pollNow());
   }
 
   void _schedule() {
@@ -72,7 +86,7 @@ class PollScheduler {
   Future<void> _fire() async {
     if (_disposed) return;
     if (!isVisible()) {
-      _schedule();
+      _idle = true; // no timer until visibilityChanged()
       return;
     }
     await _run();
@@ -80,6 +94,7 @@ class PollScheduler {
 
   Future<void> _run() async {
     if (_running) return;
+    _idle = false;
     _running = true;
     try {
       final ok = await tick();

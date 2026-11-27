@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:consolarr/features/settings/application/lock_controller.dart';
 import 'package:consolarr/features/torrents/application/torrents_providers.dart';
 import 'package:consolarr/features/torrents/presentation/torrent_list_screen.dart';
 import 'package:consolarr/src/database/app_database.dart';
@@ -248,13 +249,16 @@ Widget screenApp(
   VoidCallback? onAddServer,
   VoidCallback? onSpeedHeaderTap,
   bool tickerEnabled = true,
+  List<Override> overrides = const [],
 }) {
   return ProviderScope(
     overrides: [
+      lockedOverride,
       testDatabaseOverride,
       torrentClientProvider.overrideWith((ref) => client()),
       torrentPollIntervalProvider.overrideWithValue(pollInterval),
       clockProvider.overrideWithValue(() => fixedNow),
+      ...overrides,
     ],
     child: harnessApp(
       variant,
@@ -330,6 +334,7 @@ Widget sheetApp(
   return ProviderScope(
     retry: (_, _) => null,
     overrides: [
+      lockedOverride,
       testDatabaseOverride,
       torrentClientProvider.overrideWith(
         (ref) => clientGate != null ? clientGate.future : Future.value(client),
@@ -357,4 +362,18 @@ final stressVariants = harnessMatrix(
   textScales: const [2],
   locales: const [Locale('ar'), Locale('en', 'XA')],
   brightnesses: const [Brightness.dark],
+);
+
+/// A switch for tests that need the app lock closed or open.
+final testLockedProvider = NotifierProvider<TestLocked, bool>(TestLocked.new);
+
+class TestLocked extends Notifier<bool> {
+  @override
+  bool build() => false;
+  void set(bool locked) => state = locked;
+}
+
+/// Overrides `appLockedProvider` with [testLockedProvider].
+final lockedOverride = appLockedProvider.overrideWith(
+  (ref) => ref.watch(testLockedProvider),
 );

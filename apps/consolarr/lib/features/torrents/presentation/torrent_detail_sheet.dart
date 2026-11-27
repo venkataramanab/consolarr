@@ -2,6 +2,8 @@
 
 import 'dart:async';
 
+import 'package:consolarr/features/settings/application/lock_controller.dart';
+import 'package:consolarr/features/torrents/application/poll_scheduler.dart';
 import 'package:consolarr/features/torrents/application/torrent_actions_controller.dart';
 import 'package:consolarr/features/torrents/application/torrent_detail_provider.dart';
 import 'package:consolarr/features/torrents/application/torrents_providers.dart';
@@ -9,7 +11,6 @@ import 'package:consolarr/features/torrents/presentation/error_text.dart';
 import 'package:consolarr/features/torrents/presentation/format.dart';
 import 'package:consolarr/features/torrents/presentation/remove_dialog.dart';
 import 'package:consolarr/features/torrents/presentation/screen_view.dart';
-import 'package:consolarr/features/torrents/presentation/stand_ins/glass_sheet.dart';
 import 'package:consolarr/features/torrents/presentation/torrent_state_view.dart';
 import 'package:consolarr/shared/errors/connection_error_message.dart';
 import 'package:core/core.dart';
@@ -29,7 +30,10 @@ Future<void> showTorrentDetailSheet(BuildContext context, String hash) {
     title: l10n.torDetailTitle,
     closeLabel: l10n.torDetailClose,
     detents: GlassSheetDetents.full,
-    builder: (_) => TorrentDetailSheet(hash: hash),
+    scrollBuilder: (_, controller) => Material(
+      type: MaterialType.transparency,
+      child: TorrentDetailSheet(hash: hash, controller: controller),
+    ),
   );
 }
 
@@ -38,9 +42,12 @@ Future<void> showTorrentDetailSheet(BuildContext context, String hash) {
 /// refreshes at the list's interval, only while it is open and the app is
 /// visible.
 class TorrentDetailSheet extends ConsumerStatefulWidget {
-  const TorrentDetailSheet({required this.hash, super.key});
+  const TorrentDetailSheet({required this.hash, this.controller, super.key});
 
   final String hash;
+
+  /// The sheet's scroll controller (from `showGlassSheet(scrollBuilder:)`).
+  final ScrollController? controller;
 
   @override
   ConsumerState<TorrentDetailSheet> createState() => _TorrentDetailSheetState();
@@ -48,7 +55,7 @@ class TorrentDetailSheet extends ConsumerStatefulWidget {
 
 class _TorrentDetailSheetState extends ConsumerState<TorrentDetailSheet>
     with WidgetsBindingObserver {
-  Timer? _timer;
+  late final PollScheduler _scheduler;
   bool _resumed = true;
   String? _failure;
 
@@ -56,22 +63,33 @@ class _TorrentDetailSheetState extends ConsumerState<TorrentDetailSheet>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _timer = Timer.periodic(ref.read(torrentPollIntervalProvider), (_) {
-      if (mounted && _resumed) {
-        unawaited(
+    _scheduler = PollScheduler(
+      interval: ref.read(torrentPollIntervalProvider),
+      // The same rules as the list: foreground, unlocked, mounted.
+      isVisible: () => mounted && _resumed && !ref.read(appLockedProvider),
+      tick: () =>
           ref.read(torrentDetailProvider(widget.hash).notifier).refresh(),
-        );
-      }
-    });
+    )..start();
+    ref
+      ..listenManual(
+        torrentPollIntervalProvider,
+        (_, next) => _scheduler.setInterval(next),
+      )
+      ..listenManual(
+        appLockedProvider,
+        (_, _) => _scheduler.visibilityChanged(),
+      );
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) =>
-      _resumed = state == AppLifecycleState.resumed;
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _resumed = state == AppLifecycleState.resumed;
+    if (_resumed) unawaited(_scheduler.pollNow());
+  }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _scheduler.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -127,9 +145,10 @@ class _TorrentDetailSheetState extends ConsumerState<TorrentDetailSheet>
     );
   }
 
-  Widget _skeleton() => const Padding(
-    padding: EdgeInsets.all(ConsolarrSpacing.gutter),
-    child: Column(
+  Widget _skeleton() => SingleChildScrollView(
+    controller: widget.controller,
+    padding: const EdgeInsets.all(ConsolarrSpacing.gutter),
+    child: const Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         SkeletonBox(height: 56),
@@ -142,6 +161,7 @@ class _TorrentDetailSheetState extends ConsumerState<TorrentDetailSheet>
   Widget _error(AppLocalizations l10n, AppError error) {
     final text = connectionErrorMessage(l10n, error);
     return SingleChildScrollView(
+      controller: widget.controller,
       child: ErrorState(
         headline: l10n.torDetailErrorHeadline,
         message: text.message,
@@ -206,6 +226,7 @@ class _TorrentDetailSheetState extends ConsumerState<TorrentDetailSheet>
     final added = t.addedOn;
     final path = d.savePath;
     return SingleChildScrollView(
+      controller: widget.controller,
       padding: const EdgeInsets.fromLTRB(
         ConsolarrSpacing.gutter,
         0,

@@ -53,16 +53,16 @@ final torrentLimitsProvider =
     );
 
 class TorrentLimitsController extends AsyncNotifier<LimitsView> {
-  Future<TorrentClient> _client() async {
-    final c = await ref.watch(torrentClientProvider.future);
-    if (c == null) throw const AppError(ErrorCategory.notFound);
-    return c;
-  }
+  /// Bumped by every build (a client switch rebuilds), so work started for an
+  /// earlier build is dropped when it completes.
+  int _generation = 0;
 
   @override
   Future<LimitsView> build() async {
-    final client = await _client();
-    final r = await client.globalLimits();
+    _generation++;
+    final c = await ref.watch(torrentClientProvider.future);
+    if (c == null) throw const AppError(ErrorCategory.notFound);
+    final r = await c.globalLimits();
     return r.when(
       ok: (l) => LimitsView(limits: l),
       err: (e) => throw e,
@@ -88,34 +88,66 @@ class TorrentLimitsController extends AsyncNotifier<LimitsView> {
     );
   }
 
-  /// Applies [download] and [upload] (bytes per second, 0 = unlimited).
+  /// Runs [call] on the client of this build. Returns `null` (and does
+  /// nothing) when there is no client, or when the client or the build changed
+  /// while the call was in flight: its result belongs to the old server.
+  Future<({TorrentClient client, Result<void> result})?> _guarded(
+    Future<Result<void>> Function(TorrentClient client) call,
+  ) async {
+    final generation = _generation;
+    final client = ref.read(torrentClientProvider).value;
+    if (client == null) return null;
+    final result = await call(client);
+    if (!ref.mounted ||
+        generation != _generation ||
+        !identical(client, ref.read(torrentClientProvider).value)) {
+      return null;
+    }
+    return (client: client, result: result);
+  }
+
+  /// Applies [download] and [upload] (bytes per second, 0 = unlimited), then
+  /// re-reads what the server stored (clients round, for example to kB/s).
   Future<void> apply({required int download, required int upload}) async {
     final current = state.value;
     if (current == null || current.applying) return;
     state = AsyncData(
       current.copyWith(applying: true, clearFailure: true, applied: false),
     );
-    final client = await _client();
-    final r = await client.setGlobalLimits(
-      GlobalLimits(download: download, upload: upload),
+    final done = await _guarded(
+      (c) =>
+          c.setGlobalLimits(GlobalLimits(download: download, upload: upload)),
     );
-    if (!ref.mounted) return;
-    _track(client, r);
+    if (done == null) return;
+    _track(done.client, done.result);
+    final error = done.result.errorOrNull;
+    if (error != null) {
+      state = AsyncData(current.copyWith(applying: false, failure: error));
+      return;
+    }
+    final generation = _generation;
+    final reread = await done.client.globalLimits();
+    if (!ref.mounted ||
+        generation != _generation ||
+        !identical(done.client, ref.read(torrentClientProvider).value)) {
+      return;
+    }
     state = AsyncData(
-      r.when(
-        ok: (_) => current.copyWith(
-          limits: SpeedLimitsState(
+      current.copyWith(
+        // What the server reports; the requested values when the re-read fails.
+        limits: reread.when(
+          ok: (l) => l,
+          err: (_) => SpeedLimitsState(
             download: download,
             upload: upload,
             alternativeActive: current.limits.alternativeActive,
           ),
-          applying: false,
-          applied: true,
         ),
-        err: (e) => current.copyWith(applying: false, failure: e),
+        applying: false,
+        applied: true,
       ),
     );
-    if (r.isOk) unawaited(ref.read(torrentListProvider.notifier).refresh());
+    unawaited(ref.read(torrentListProvider.notifier).refresh());
   }
 
   Future<void> setAlternative(bool enabled) async {
@@ -124,28 +156,26 @@ class TorrentLimitsController extends AsyncNotifier<LimitsView> {
     state = AsyncData(
       current.copyWith(applying: true, clearFailure: true, applied: false),
     );
-    final client = await _client();
-    final r = await client.setAlternativeSpeed(enabled);
-    if (!ref.mounted) return;
-    _track(client, r);
-    final unsupported =
-        r.errorOrNull != null && UnsupportedAction.isIt(r.errorOrNull!);
+    final done = await _guarded((c) => c.setAlternativeSpeed(enabled));
+    if (done == null) return;
+    _track(done.client, done.result);
+    final error = done.result.errorOrNull;
+    final unsupported = error != null && UnsupportedAction.isIt(error);
     state = AsyncData(
-      r.when(
-        ok: (_) => current.copyWith(
-          limits: SpeedLimitsState(
-            download: current.limits.download,
-            upload: current.limits.upload,
-            alternativeActive: enabled,
-          ),
-          applying: false,
-        ),
-        err: (e) => current.copyWith(
-          applying: false,
-          failure: unsupported ? null : e,
-          altUnsupported: unsupported,
-        ),
-      ),
+      error == null
+          ? current.copyWith(
+              limits: SpeedLimitsState(
+                download: current.limits.download,
+                upload: current.limits.upload,
+                alternativeActive: enabled,
+              ),
+              applying: false,
+            )
+          : current.copyWith(
+              applying: false,
+              failure: unsupported ? null : error,
+              altUnsupported: unsupported,
+            ),
     );
   }
 }
