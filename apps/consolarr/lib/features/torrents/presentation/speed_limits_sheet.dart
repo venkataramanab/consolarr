@@ -2,6 +2,7 @@
 
 import 'package:consolarr/features/torrents/application/torrent_limits_controller.dart';
 import 'package:consolarr/features/torrents/application/torrents_providers.dart';
+import 'package:consolarr/features/torrents/presentation/digit_input.dart';
 import 'package:consolarr/features/torrents/presentation/error_text.dart';
 import 'package:consolarr/features/torrents/presentation/screen_view.dart';
 import 'package:design_system/design_system.dart';
@@ -35,26 +36,31 @@ enum _Unit {
 
 /// One limit editor: none or custom with a unit.
 class _LimitDraft {
-  _LimitDraft(int bytesPerSecond)
-    : custom = bytesPerSecond > 0,
-      unit =
-          bytesPerSecond >= _Unit.mb.bytes * 1 &&
-              bytesPerSecond % _Unit.mb.bytes == 0
-          ? _Unit.mb
-          : _Unit.kb,
-      text = TextEditingController() {
-    if (bytesPerSecond > 0) {
-      text.text = '${(bytesPerSecond / unit.bytes).round()}';
-    }
+  _LimitDraft(int bytesPerSecond) : text = TextEditingController() {
+    reset(bytesPerSecond);
   }
 
-  bool custom;
-  _Unit unit;
+  bool custom = false;
+  _Unit unit = _Unit.kb;
   final TextEditingController text;
+
+  /// Shows [bytesPerSecond] (what the server reports): none, or a whole number
+  /// of KB/s or MB/s.
+  void reset(int bytesPerSecond) {
+    custom = bytesPerSecond > 0;
+    unit =
+        bytesPerSecond >= _Unit.mb.bytes && bytesPerSecond % _Unit.mb.bytes == 0
+        ? _Unit.mb
+        : _Unit.kb;
+    text.text = bytesPerSecond > 0
+        ? '${(bytesPerSecond / unit.bytes).round()}'
+        : '';
+  }
 
   int? get bytes {
     if (!custom) return 0;
-    final v = int.tryParse(text.text.trim());
+    // Any script's digits are accepted; parse them as ASCII.
+    final v = int.tryParse(normalizeDigits(text.text.trim()));
     return v == null || v <= 0 ? null : v * unit.bytes;
   }
 
@@ -86,6 +92,16 @@ class _SpeedLimitsSheetState extends ConsumerState<SpeedLimitsSheet> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final async = ref.watch(torrentLimitsProvider);
+    // After an apply the fields show what the server stored (a client may
+    // round, for example Transmission to whole kB/s), not what was typed.
+    ref.listen(torrentLimitsProvider, (prev, next) {
+      final v = next.value;
+      if (v == null || !v.applied || prev?.value?.applied == true) return;
+      setState(() {
+        _down?.reset(v.limits.download);
+        _up?.reset(v.limits.upload);
+      });
+    });
     return TorrentScreenView(
       screen: ScreenName.torrentSpeedLimits,
       child: async.isLoading
@@ -94,7 +110,7 @@ class _SpeedLimitsSheetState extends ConsumerState<SpeedLimitsSheet> {
               child: SkeletonBox(height: 200),
             )
           : async.hasError
-          ? Padding(
+          ? SingleChildScrollView(
               padding: const EdgeInsets.all(ConsolarrSpacing.gutter),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -154,7 +170,11 @@ class _SpeedLimitsSheetState extends ConsumerState<SpeedLimitsSheet> {
                   controller: d.text,
                   enabled: !busy,
                   keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  inputFormatters: [
+                    const AnyDigitsFormatter(),
+                    // 7 digits: enough for any limit, never an overflow.
+                    LengthLimitingTextInputFormatter(7),
+                  ],
                   decoration: InputDecoration(
                     labelText: l10n.torLimitsValue,
                     errorText: invalid ? l10n.torLimitsInvalid : null,

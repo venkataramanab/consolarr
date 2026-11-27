@@ -110,7 +110,7 @@ void main() {
         }
       });
 
-      testWidgets('offline with the last data (dimmed, banner)', (
+      testWidgets('offline with the last data (banner, opaque text)', (
         tester,
       ) async {
         await expectStateSurvivesMatrix(

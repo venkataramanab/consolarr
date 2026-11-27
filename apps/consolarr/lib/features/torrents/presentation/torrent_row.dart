@@ -44,6 +44,28 @@ class TorrentRow extends StatelessWidget {
       PendingAction.removing => l10n.torPendingRemoving,
       null => view.label,
     };
+    final size = l10n.torDetailSize(formatBytes(l10n, torrent.size));
+    final down = torrent.dlSpeed > 0
+        ? l10n.torDetailDown(formatSpeed(l10n, torrent.dlSpeed))
+        : null;
+    final up = torrent.upSpeed > 0
+        ? l10n.torDetailUp(formatSpeed(l10n, torrent.upSpeed))
+        : null;
+    final eta = active && torrent.eta != null
+        ? l10n.torDetailEta(formatDuration(l10n, torrent.eta!))
+        : null;
+    final details = [size, ?down, ?up, ?eta, ratioDetail(l10n, torrent)];
+    // The spoken label carries what the eye sees: speeds and time left too.
+    final spokenDetails = [
+      size,
+      ?down,
+      ?up,
+      ?eta,
+      if (torrent.ratioUnknown || torrent.ratioInfinite)
+        l10n.torDetailRatioValue(ratioSpoken(l10n, torrent))
+      else
+        ratioDetail(l10n, torrent),
+    ].join(l10n.torListSeparator);
     return ProgressFillRow(
       title: torrent.name,
       progress: torrent.progress,
@@ -51,19 +73,15 @@ class TorrentRow extends StatelessWidget {
       stateIcon: pending == null ? view.icon : Icons.hourglass_empty,
       stateLabel: stateLabel,
       progressLabel: percent,
-      semanticsLabel: l10n.torRowSemantics(torrent.name, stateLabel, percent),
+      semanticsLabel: l10n.torRowSemantics(
+        torrent.name,
+        stateLabel,
+        percent,
+        spokenDetails,
+      ),
       onTap: onTap,
       onLongPress: onLongPress,
-      details: [
-        l10n.torDetailSize(formatBytes(l10n, torrent.size)),
-        if (torrent.dlSpeed > 0)
-          l10n.torDetailDown(formatSpeed(l10n, torrent.dlSpeed)),
-        if (torrent.upSpeed > 0)
-          l10n.torDetailUp(formatSpeed(l10n, torrent.upSpeed)),
-        if (active && torrent.eta != null)
-          l10n.torDetailEta(formatDuration(l10n, torrent.eta!)),
-        l10n.torDetailRatio(torrent.ratio),
-      ],
+      details: details,
     );
   }
 }

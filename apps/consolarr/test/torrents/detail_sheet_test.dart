@@ -6,6 +6,7 @@ import 'package:consolarr/features/torrents/presentation/torrent_detail_sheet.da
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:test_harness/test_harness.dart';
@@ -146,6 +147,24 @@ void main() {
     final closed = c.detailCalls;
     await tester.pump(const Duration(seconds: 30));
     expect(c.detailCalls, closed);
+  });
+
+  testWidgets('no refresh while the app lock is closed; one on unlock', (
+    tester,
+  ) async {
+    final c = FakeTorrentClient();
+    await _pump(tester, c, poll: const Duration(seconds: 5));
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(TorrentDetailSheet)),
+    );
+    container.read(testLockedProvider.notifier).set(true);
+    await tester.pump();
+    final locked = c.detailCalls;
+    await tester.pump(const Duration(seconds: 30));
+    expect(c.detailCalls, locked, reason: 'locked: the poll is silent');
+    container.read(testLockedProvider.notifier).set(false);
+    await tester.pumpAndSettle();
+    expect(c.detailCalls, locked + 1, reason: 'unlock refreshes once');
   });
 
   testWidgets(

@@ -67,6 +67,7 @@ class FakeTorrentClient implements TorrentClient {
   TorrentDetail? detail;
   AppError? detailError;
   int detailCalls = 0;
+  Completer<void>? detailGate;
 
   @override
   TorrentCapabilities capabilities = const TorrentCapabilities(
@@ -152,6 +153,7 @@ class FakeTorrentClient implements TorrentClient {
   @override
   Future<Result<TorrentDetail>> torrentDetail(String hash) async {
     detailCalls++;
+    await detailGate?.future;
     final e = detailError;
     if (e != null) return Result.err(e);
     return Result.ok(
