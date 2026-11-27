@@ -342,6 +342,26 @@ void main() {
 
   group('fail closed (M1)', () {
     test(
+      'a throwing support() resets authenticating and stays locked',
+      () async {
+        h = SettingsHarness(
+          stored: lockOn(),
+          auth: FakeDeviceAuthenticator()..supportError = StateError('boom'),
+        );
+        final c = await start(h);
+        await ctl(c).authenticate(reason: 'x');
+        expect(st(c).authenticating, isFalse);
+        expect(st(c).phase, LockPhase.locked);
+        expect(st(c).contentVisible, isFalse);
+        expect(h.auth.reasons, isEmpty, reason: 'no prompt without an answer');
+        // Unlock works again once the platform answers; no restart needed.
+        h.auth.supportError = null;
+        await ctl(c).authenticate(reason: 'x');
+        expect(st(c).phase, LockPhase.unlocked);
+      },
+    );
+
+    test(
       'an indeterminate support answer is retryable, not "removed"',
       () async {
         h = SettingsHarness(

@@ -24,6 +24,9 @@ class FakeDeviceAuthenticator implements DeviceAuthenticator {
 
   DeviceAuthSupport supportResult;
   int supportCalls = 0;
+
+  /// When set, `support` throws it.
+  Object? supportError;
   bool biometrics;
   final List<DeviceAuthResult> results;
   final List<String> reasons = [];
@@ -34,6 +37,7 @@ class FakeDeviceAuthenticator implements DeviceAuthenticator {
   @override
   Future<DeviceAuthSupport> support() async {
     supportCalls++;
+    if (supportError != null) throw supportError!;
     return supportResult;
   }
 

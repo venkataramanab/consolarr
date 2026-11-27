@@ -190,27 +190,32 @@ class AppLockController extends Notifier<AppLockState> {
     if (state.coolingDown(_now())) return;
     final auth = ref.read(deviceAuthenticatorProvider);
     state = state.copyWith(authenticating: true, lastAttemptFailed: false);
-    final support = await auth.support();
-    if (!ref.mounted) return;
-    switch (support) {
-      case DeviceAuthSupport.noSecureLock:
-        state = state.copyWith(
-          authenticating: false,
-          problem: LockProblem.secureLockRemoved,
-        );
-        return;
-      case DeviceAuthSupport.indeterminate:
-        // The platform could not be asked: retryable, never "removed".
-        state = state.copyWith(authenticating: false);
-        return;
-      case DeviceAuthSupport.available:
-        break;
+    try {
+      final support = await auth.support();
+      if (!ref.mounted) return;
+      switch (support) {
+        case DeviceAuthSupport.noSecureLock:
+          state = state.copyWith(
+            authenticating: false,
+            problem: LockProblem.secureLockRemoved,
+          );
+          return;
+        case DeviceAuthSupport.indeterminate:
+          // The platform could not be asked: retryable, never "removed".
+          state = state.copyWith(authenticating: false);
+          return;
+        case DeviceAuthSupport.available:
+          break;
+      }
+      final biometrics = await auth.hasBiometrics();
+      if (!ref.mounted) return;
+      final result = await auth.authenticate(reason: reason);
+      if (!ref.mounted) return;
+      _apply(result, biometrics: biometrics);
+    } on Object {
+      // A platform error is "could not ask": still locked, retryable.
+      if (ref.mounted) state = state.copyWith(authenticating: false);
     }
-    final biometrics = await auth.hasBiometrics();
-    if (!ref.mounted) return;
-    final result = await auth.authenticate(reason: reason);
-    if (!ref.mounted) return;
-    _apply(result, biometrics: biometrics);
   }
 
   void _apply(DeviceAuthResult result, {required bool biometrics}) {
