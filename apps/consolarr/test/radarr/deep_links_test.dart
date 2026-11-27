@@ -12,7 +12,6 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:test_harness/test_harness.dart';
 
-import 'harness.dart';
 import 'support.dart';
 
 const _v = HarnessVariant(
