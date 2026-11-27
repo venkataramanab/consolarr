@@ -148,6 +148,186 @@ abstract class AppLocalizations {
   /// **'About Consolarr'**
   String get homeAboutTooltip;
 
+  /// Plain-language message for a connection problem: wrong or missing credentials.
+  ///
+  /// In en, this message translates to:
+  /// **'The server rejected the credentials.'**
+  String get connErrorAuthFailedMessage;
+
+  /// Fix hint shown under the message for a connection problem: wrong or missing credentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the API key or the username and password, then test again.'**
+  String get connErrorAuthFailedHint;
+
+  /// Plain-language message for a connection problem: stored secrets lost, for example after Keystore loss.
+  ///
+  /// In en, this message translates to:
+  /// **'This server\'s saved credentials are missing.'**
+  String get connErrorNeedsCredentialsMessage;
+
+  /// Fix hint shown under the message for a connection problem: stored secrets lost, for example after Keystore loss.
+  ///
+  /// In en, this message translates to:
+  /// **'This can happen after a device restore or a lock screen change. Enter the credentials again.'**
+  String get connErrorNeedsCredentialsHint;
+
+  /// Plain-language message for a connection problem: request timed out.
+  ///
+  /// In en, this message translates to:
+  /// **'The server did not answer in time.'**
+  String get connErrorTimeoutMessage;
+
+  /// Fix hint shown under the message for a connection problem: request timed out.
+  ///
+  /// In en, this message translates to:
+  /// **'Check that it is running and reachable from this network, or try again.'**
+  String get connErrorTimeoutHint;
+
+  /// Plain-language message for a connection problem: pinned certificate changed (blocking).
+  ///
+  /// In en, this message translates to:
+  /// **'The server\'s certificate is different from the one you trusted.'**
+  String get connErrorTlsPinMismatchMessage;
+
+  /// Fix hint shown under the message for a connection problem: pinned certificate changed (blocking).
+  ///
+  /// In en, this message translates to:
+  /// **'Connections are blocked. Only trust the new certificate if you know the server\'s certificate was replaced.'**
+  String get connErrorTlsPinMismatchHint;
+
+  /// Plain-language message for a connection problem: untrusted or self-signed certificate (trust on first use).
+  ///
+  /// In en, this message translates to:
+  /// **'The server\'s certificate is not trusted by this device.'**
+  String get connErrorTlsUntrustedMessage;
+
+  /// Fix hint shown under the message for a connection problem: untrusted or self-signed certificate (trust on first use).
+  ///
+  /// In en, this message translates to:
+  /// **'If this is your own server with a self-signed certificate, review its fingerprint and choose whether to trust it.'**
+  String get connErrorTlsUntrustedHint;
+
+  /// Plain-language message for a connection problem: expired or not yet valid certificate.
+  ///
+  /// In en, this message translates to:
+  /// **'The server\'s certificate has expired or is not valid yet.'**
+  String get connErrorTlsExpiredMessage;
+
+  /// Fix hint shown under the message for a connection problem: expired or not yet valid certificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Renew the certificate on the server, or check the date on this device.'**
+  String get connErrorTlsExpiredHint;
+
+  /// Plain-language message for a connection problem: http refused without the per-server opt-in.
+  ///
+  /// In en, this message translates to:
+  /// **'This address uses plain http, which is not allowed for this server.'**
+  String get connErrorCleartextRefusedMessage;
+
+  /// Fix hint shown under the message for a connection problem: http refused without the per-server opt-in.
+  ///
+  /// In en, this message translates to:
+  /// **'Use an https address, or allow plain http for this server in its security settings if it is on a network you trust.'**
+  String get connErrorCleartextRefusedHint;
+
+  /// Plain-language message for a connection problem: server version too old or service not supported.
+  ///
+  /// In en, this message translates to:
+  /// **'This server version is not supported.'**
+  String get connErrorUnsupportedVersionMessage;
+
+  /// Fix hint shown under the message for a connection problem: server version too old or service not supported.
+  ///
+  /// In en, this message translates to:
+  /// **'Update the server to a current major version.'**
+  String get connErrorUnsupportedVersionHint;
+
+  /// Plain-language message for a connection problem: wrong address or path prefix (404).
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing was found at this address.'**
+  String get connErrorNotFoundMessage;
+
+  /// Fix hint shown under the message for a connection problem: wrong address or path prefix (404).
+  ///
+  /// In en, this message translates to:
+  /// **'Check the address, port and path prefix. A reverse proxy often needs a prefix such as /sonarr.'**
+  String get connErrorNotFoundHint;
+
+  /// Plain-language message for a connection problem: 5xx or unexpected HTTP failure.
+  ///
+  /// In en, this message translates to:
+  /// **'The server reported an error.'**
+  String get connErrorServerErrorMessage;
+
+  /// Fix hint shown under the message for a connection problem: 5xx or unexpected HTTP failure.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again in a moment. If it keeps happening, check the server\'s own logs.'**
+  String get connErrorServerErrorHint;
+
+  /// Plain-language message for a connection problem: connection refused, DNS failure or no network.
+  ///
+  /// In en, this message translates to:
+  /// **'The server could not be reached.'**
+  String get connErrorNetworkUnreachableMessage;
+
+  /// Fix hint shown under the message for a connection problem: connection refused, DNS failure or no network.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the address and port, that the server is running, and that this device is on the right network.'**
+  String get connErrorNetworkUnreachableHint;
+
+  /// Plain-language message for a connection problem: unexpected response body.
+  ///
+  /// In en, this message translates to:
+  /// **'The server\'s reply could not be understood.'**
+  String get connErrorParseErrorMessage;
+
+  /// Fix hint shown under the message for a connection problem: unexpected response body.
+  ///
+  /// In en, this message translates to:
+  /// **'Check that the address points at the right service and not at a login page or proxy.'**
+  String get connErrorParseErrorHint;
+
+  /// Plain-language message for a connection problem: redirect refused by the redirect policy.
+  ///
+  /// In en, this message translates to:
+  /// **'The server redirected the request somewhere that is not allowed.'**
+  String get connErrorRedirectRefusedMessage;
+
+  /// Fix hint shown under the message for a connection problem: redirect refused by the redirect policy.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the final address of the server directly, and https if it redirects from https to http.'**
+  String get connErrorRedirectRefusedHint;
+
+  /// Plain-language message for a connection problem: response over the size limit.
+  ///
+  /// In en, this message translates to:
+  /// **'The server\'s reply was too large.'**
+  String get connErrorResponseTooLargeMessage;
+
+  /// Fix hint shown under the message for a connection problem: response over the size limit.
+  ///
+  /// In en, this message translates to:
+  /// **'Check that the address points at the right service.'**
+  String get connErrorResponseTooLargeHint;
+
+  /// Plain-language message for a connection problem: form input rejected locally (credentials or query in address, bad path).
+  ///
+  /// In en, this message translates to:
+  /// **'The address or path is not valid.'**
+  String get connErrorInvalidInputMessage;
+
+  /// Fix hint shown under the message for a connection problem: form input rejected locally (credentials or query in address, bad path).
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an address like https://host:port without a username, password or key, and a path that starts with a slash.'**
+  String get connErrorInvalidInputHint;
+
   /// The app name, shown in the task switcher and as the accessible name of the app.
   ///
   /// In en, this message translates to:

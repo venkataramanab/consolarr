@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'package:design_system/src/radii.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// A masked text field with a reveal toggle, for API keys and passwords.
@@ -87,6 +88,10 @@ class _SecretTextFieldState extends State<SecretTextField> {
       decoration: InputDecoration(
         labelText: widget.label,
         helperText: widget.helperText,
+        helperStyle: Theme.of(context).textTheme.bodyMedium,
+        border: const OutlineInputBorder(borderRadius: ConsolarrRadii.card),
+        helperMaxLines: 3,
+        errorMaxLines: 3,
         errorText: widget.errorText,
         suffixIcon: IconButton(
           tooltip: _revealed ? widget.hideTooltip : widget.showTooltip,

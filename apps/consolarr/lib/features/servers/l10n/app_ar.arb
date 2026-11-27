@@ -1,0 +1,123 @@
+{
+  "@@locale": "ar",
+  "connErrorAuthFailedMessage": "رفض الخادم بيانات الاعتماد.",
+  "@connErrorAuthFailedMessage": {
+    "description": "Plain-language message for a connection problem: wrong or missing credentials."
+  },
+  "connErrorAuthFailedHint": "تحقّق من مفتاح API أو من اسم المستخدم وكلمة المرور ثم أعد الاختبار.",
+  "@connErrorAuthFailedHint": {
+    "description": "Fix hint shown under the message for a connection problem: wrong or missing credentials."
+  },
+  "connErrorNeedsCredentialsMessage": "بيانات اعتماد هذا الخادم المحفوظة مفقودة.",
+  "@connErrorNeedsCredentialsMessage": {
+    "description": "Plain-language message for a connection problem: stored secrets lost, for example after Keystore loss."
+  },
+  "connErrorNeedsCredentialsHint": "قد يحدث هذا بعد استعادة الجهاز أو تغيير قفل الشاشة. أدخل بيانات الاعتماد مرة أخرى.",
+  "@connErrorNeedsCredentialsHint": {
+    "description": "Fix hint shown under the message for a connection problem: stored secrets lost, for example after Keystore loss."
+  },
+  "connErrorTimeoutMessage": "لم يستجب الخادم في الوقت المناسب.",
+  "@connErrorTimeoutMessage": {
+    "description": "Plain-language message for a connection problem: request timed out."
+  },
+  "connErrorTimeoutHint": "تأكد من أنه يعمل ويمكن الوصول إليه من هذه الشبكة، أو حاول مرة أخرى.",
+  "@connErrorTimeoutHint": {
+    "description": "Fix hint shown under the message for a connection problem: request timed out."
+  },
+  "connErrorTlsPinMismatchMessage": "شهادة الخادم تختلف عن الشهادة التي وثقت بها.",
+  "@connErrorTlsPinMismatchMessage": {
+    "description": "Plain-language message for a connection problem: pinned certificate changed (blocking)."
+  },
+  "connErrorTlsPinMismatchHint": "الاتصالات محظورة. لا تثق بالشهادة الجديدة إلا إذا كنت تعلم أن شهادة الخادم قد استُبدلت.",
+  "@connErrorTlsPinMismatchHint": {
+    "description": "Fix hint shown under the message for a connection problem: pinned certificate changed (blocking)."
+  },
+  "connErrorTlsUntrustedMessage": "شهادة الخادم غير موثوقة على هذا الجهاز.",
+  "@connErrorTlsUntrustedMessage": {
+    "description": "Plain-language message for a connection problem: untrusted or self-signed certificate (trust on first use)."
+  },
+  "connErrorTlsUntrustedHint": "إذا كان هذا خادمك الخاص بشهادة موقّعة ذاتيًا، فراجع بصمتها واختر ما إذا كنت تثق بها.",
+  "@connErrorTlsUntrustedHint": {
+    "description": "Fix hint shown under the message for a connection problem: untrusted or self-signed certificate (trust on first use)."
+  },
+  "connErrorTlsExpiredMessage": "شهادة الخادم منتهية الصلاحية أو غير صالحة بعد.",
+  "@connErrorTlsExpiredMessage": {
+    "description": "Plain-language message for a connection problem: expired or not yet valid certificate."
+  },
+  "connErrorTlsExpiredHint": "جدّد الشهادة على الخادم، أو تحقّق من التاريخ على هذا الجهاز.",
+  "@connErrorTlsExpiredHint": {
+    "description": "Fix hint shown under the message for a connection problem: expired or not yet valid certificate."
+  },
+  "connErrorCleartextRefusedMessage": "يستخدم هذا العنوان http غير مشفّر، وهو غير مسموح لهذا الخادم.",
+  "@connErrorCleartextRefusedMessage": {
+    "description": "Plain-language message for a connection problem: http refused without the per-server opt-in."
+  },
+  "connErrorCleartextRefusedHint": "استخدم عنوان https، أو اسمح بـ http غير المشفّر لهذا الخادم من إعدادات الأمان إذا كان على شبكة تثق بها.",
+  "@connErrorCleartextRefusedHint": {
+    "description": "Fix hint shown under the message for a connection problem: http refused without the per-server opt-in."
+  },
+  "connErrorUnsupportedVersionMessage": "إصدار هذا الخادم غير مدعوم.",
+  "@connErrorUnsupportedVersionMessage": {
+    "description": "Plain-language message for a connection problem: server version too old or service not supported."
+  },
+  "connErrorUnsupportedVersionHint": "حدّث الخادم إلى إصدار رئيسي حديث.",
+  "@connErrorUnsupportedVersionHint": {
+    "description": "Fix hint shown under the message for a connection problem: server version too old or service not supported."
+  },
+  "connErrorNotFoundMessage": "لم يُعثر على شيء في هذا العنوان.",
+  "@connErrorNotFoundMessage": {
+    "description": "Plain-language message for a connection problem: wrong address or path prefix (404)."
+  },
+  "connErrorNotFoundHint": "تحقّق من العنوان والمنفذ وبادئة المسار. يحتاج الوكيل العكسي غالبًا إلى بادئة مثل /sonarr.",
+  "@connErrorNotFoundHint": {
+    "description": "Fix hint shown under the message for a connection problem: wrong address or path prefix (404)."
+  },
+  "connErrorServerErrorMessage": "أبلغ الخادم عن خطأ.",
+  "@connErrorServerErrorMessage": {
+    "description": "Plain-language message for a connection problem: 5xx or unexpected HTTP failure."
+  },
+  "connErrorServerErrorHint": "حاول مرة أخرى بعد قليل. إذا استمر ذلك، فراجع سجلات الخادم.",
+  "@connErrorServerErrorHint": {
+    "description": "Fix hint shown under the message for a connection problem: 5xx or unexpected HTTP failure."
+  },
+  "connErrorNetworkUnreachableMessage": "تعذّر الوصول إلى الخادم.",
+  "@connErrorNetworkUnreachableMessage": {
+    "description": "Plain-language message for a connection problem: connection refused, DNS failure or no network."
+  },
+  "connErrorNetworkUnreachableHint": "تحقّق من العنوان والمنفذ ومن أن الخادم يعمل وأن هذا الجهاز على الشبكة الصحيحة.",
+  "@connErrorNetworkUnreachableHint": {
+    "description": "Fix hint shown under the message for a connection problem: connection refused, DNS failure or no network."
+  },
+  "connErrorParseErrorMessage": "تعذّر فهم ردّ الخادم.",
+  "@connErrorParseErrorMessage": {
+    "description": "Plain-language message for a connection problem: unexpected response body."
+  },
+  "connErrorParseErrorHint": "تحقّق من أن العنوان يشير إلى الخدمة الصحيحة وليس إلى صفحة تسجيل دخول أو وكيل.",
+  "@connErrorParseErrorHint": {
+    "description": "Fix hint shown under the message for a connection problem: unexpected response body."
+  },
+  "connErrorRedirectRefusedMessage": "أعاد الخادم توجيه الطلب إلى وجهة غير مسموح بها.",
+  "@connErrorRedirectRefusedMessage": {
+    "description": "Plain-language message for a connection problem: redirect refused by the redirect policy."
+  },
+  "connErrorRedirectRefusedHint": "استخدم العنوان النهائي للخادم مباشرة، واستخدم https إذا كان يعيد التوجيه من https إلى http.",
+  "@connErrorRedirectRefusedHint": {
+    "description": "Fix hint shown under the message for a connection problem: redirect refused by the redirect policy."
+  },
+  "connErrorResponseTooLargeMessage": "كان ردّ الخادم كبيرًا جدًا.",
+  "@connErrorResponseTooLargeMessage": {
+    "description": "Plain-language message for a connection problem: response over the size limit."
+  },
+  "connErrorResponseTooLargeHint": "تحقّق من أن العنوان يشير إلى الخدمة الصحيحة.",
+  "@connErrorResponseTooLargeHint": {
+    "description": "Fix hint shown under the message for a connection problem: response over the size limit."
+  },
+  "connErrorInvalidInputMessage": "العنوان أو المسار غير صالح.",
+  "@connErrorInvalidInputMessage": {
+    "description": "Plain-language message for a connection problem: form input rejected locally (credentials or query in address, bad path)."
+  },
+  "connErrorInvalidInputHint": "أدخل عنوانًا مثل https://host:port دون اسم مستخدم أو كلمة مرور أو مفتاح، ومسارًا يبدأ بشرطة مائلة.",
+  "@connErrorInvalidInputHint": {
+    "description": "Fix hint shown under the message for a connection problem: form input rejected locally (credentials or query in address, bad path)."
+  }
+}

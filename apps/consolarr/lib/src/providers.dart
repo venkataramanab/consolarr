@@ -18,6 +18,19 @@ final crashReporterProvider = Provider<CrashReporter>(
 /// Analytics seam. No-op in the foss app.
 final analyticsProvider = Provider<Analytics>((ref) => const NoopAnalytics());
 
+/// Breadcrumb trail (navigation and API error categories), shared by the
+/// tracker and any crash reporter the Play entry point wires in.
+final breadcrumbsProvider = Provider<Breadcrumbs>((ref) => Breadcrumbs());
+
+/// The single entry point for typed analytics events. Closed-set parameters
+/// only; sends nothing unless the (opt-in) analytics seam is replaced.
+final eventTrackerProvider = Provider<EventTracker>(
+  (ref) => EventTracker(
+    analytics: ref.watch(analyticsProvider),
+    breadcrumbs: ref.watch(breadcrumbsProvider),
+  ),
+);
+
 /// Consent seam: everything off by default. Read lazily, never before the
 /// first frame.
 final consentStoreProvider = Provider<ConsentStore>(

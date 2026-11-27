@@ -151,6 +151,15 @@ Map<String, Widget Function()> componentSamples() => {
       label: 'API key',
       showTooltip: 'Show',
       hideTooltip: 'Hide',
+      helperText: 'Stored securely on this device',
+    ),
+  ),
+  'SecretTextField (long)': () => const Padding(
+    padding: EdgeInsets.all(16),
+    child: SecretTextField(
+      label: longText,
+      showTooltip: 'Show',
+      hideTooltip: 'Hide',
       helperText: longText,
     ),
   ),

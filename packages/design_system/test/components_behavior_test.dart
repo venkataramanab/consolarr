@@ -4,7 +4,6 @@ import 'package:design_system/design_system.dart';
 
 import 'dart:ui' show Tristate;
 
-import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:test_harness/test_harness.dart';

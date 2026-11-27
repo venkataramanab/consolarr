@@ -1,0 +1,123 @@
+{
+  "@@locale": "en",
+  "connErrorAuthFailedMessage": "The server rejected the credentials.",
+  "@connErrorAuthFailedMessage": {
+    "description": "Plain-language message for a connection problem: wrong or missing credentials."
+  },
+  "connErrorAuthFailedHint": "Check the API key or the username and password, then test again.",
+  "@connErrorAuthFailedHint": {
+    "description": "Fix hint shown under the message for a connection problem: wrong or missing credentials."
+  },
+  "connErrorNeedsCredentialsMessage": "This server's saved credentials are missing.",
+  "@connErrorNeedsCredentialsMessage": {
+    "description": "Plain-language message for a connection problem: stored secrets lost, for example after Keystore loss."
+  },
+  "connErrorNeedsCredentialsHint": "This can happen after a device restore or a lock screen change. Enter the credentials again.",
+  "@connErrorNeedsCredentialsHint": {
+    "description": "Fix hint shown under the message for a connection problem: stored secrets lost, for example after Keystore loss."
+  },
+  "connErrorTimeoutMessage": "The server did not answer in time.",
+  "@connErrorTimeoutMessage": {
+    "description": "Plain-language message for a connection problem: request timed out."
+  },
+  "connErrorTimeoutHint": "Check that it is running and reachable from this network, or try again.",
+  "@connErrorTimeoutHint": {
+    "description": "Fix hint shown under the message for a connection problem: request timed out."
+  },
+  "connErrorTlsPinMismatchMessage": "The server's certificate is different from the one you trusted.",
+  "@connErrorTlsPinMismatchMessage": {
+    "description": "Plain-language message for a connection problem: pinned certificate changed (blocking)."
+  },
+  "connErrorTlsPinMismatchHint": "Connections are blocked. Only trust the new certificate if you know the server's certificate was replaced.",
+  "@connErrorTlsPinMismatchHint": {
+    "description": "Fix hint shown under the message for a connection problem: pinned certificate changed (blocking)."
+  },
+  "connErrorTlsUntrustedMessage": "The server's certificate is not trusted by this device.",
+  "@connErrorTlsUntrustedMessage": {
+    "description": "Plain-language message for a connection problem: untrusted or self-signed certificate (trust on first use)."
+  },
+  "connErrorTlsUntrustedHint": "If this is your own server with a self-signed certificate, review its fingerprint and choose whether to trust it.",
+  "@connErrorTlsUntrustedHint": {
+    "description": "Fix hint shown under the message for a connection problem: untrusted or self-signed certificate (trust on first use)."
+  },
+  "connErrorTlsExpiredMessage": "The server's certificate has expired or is not valid yet.",
+  "@connErrorTlsExpiredMessage": {
+    "description": "Plain-language message for a connection problem: expired or not yet valid certificate."
+  },
+  "connErrorTlsExpiredHint": "Renew the certificate on the server, or check the date on this device.",
+  "@connErrorTlsExpiredHint": {
+    "description": "Fix hint shown under the message for a connection problem: expired or not yet valid certificate."
+  },
+  "connErrorCleartextRefusedMessage": "This address uses plain http, which is not allowed for this server.",
+  "@connErrorCleartextRefusedMessage": {
+    "description": "Plain-language message for a connection problem: http refused without the per-server opt-in."
+  },
+  "connErrorCleartextRefusedHint": "Use an https address, or allow plain http for this server in its security settings if it is on a network you trust.",
+  "@connErrorCleartextRefusedHint": {
+    "description": "Fix hint shown under the message for a connection problem: http refused without the per-server opt-in."
+  },
+  "connErrorUnsupportedVersionMessage": "This server version is not supported.",
+  "@connErrorUnsupportedVersionMessage": {
+    "description": "Plain-language message for a connection problem: server version too old or service not supported."
+  },
+  "connErrorUnsupportedVersionHint": "Update the server to a current major version.",
+  "@connErrorUnsupportedVersionHint": {
+    "description": "Fix hint shown under the message for a connection problem: server version too old or service not supported."
+  },
+  "connErrorNotFoundMessage": "Nothing was found at this address.",
+  "@connErrorNotFoundMessage": {
+    "description": "Plain-language message for a connection problem: wrong address or path prefix (404)."
+  },
+  "connErrorNotFoundHint": "Check the address, port and path prefix. A reverse proxy often needs a prefix such as /sonarr.",
+  "@connErrorNotFoundHint": {
+    "description": "Fix hint shown under the message for a connection problem: wrong address or path prefix (404)."
+  },
+  "connErrorServerErrorMessage": "The server reported an error.",
+  "@connErrorServerErrorMessage": {
+    "description": "Plain-language message for a connection problem: 5xx or unexpected HTTP failure."
+  },
+  "connErrorServerErrorHint": "Try again in a moment. If it keeps happening, check the server's own logs.",
+  "@connErrorServerErrorHint": {
+    "description": "Fix hint shown under the message for a connection problem: 5xx or unexpected HTTP failure."
+  },
+  "connErrorNetworkUnreachableMessage": "The server could not be reached.",
+  "@connErrorNetworkUnreachableMessage": {
+    "description": "Plain-language message for a connection problem: connection refused, DNS failure or no network."
+  },
+  "connErrorNetworkUnreachableHint": "Check the address and port, that the server is running, and that this device is on the right network.",
+  "@connErrorNetworkUnreachableHint": {
+    "description": "Fix hint shown under the message for a connection problem: connection refused, DNS failure or no network."
+  },
+  "connErrorParseErrorMessage": "The server's reply could not be understood.",
+  "@connErrorParseErrorMessage": {
+    "description": "Plain-language message for a connection problem: unexpected response body."
+  },
+  "connErrorParseErrorHint": "Check that the address points at the right service and not at a login page or proxy.",
+  "@connErrorParseErrorHint": {
+    "description": "Fix hint shown under the message for a connection problem: unexpected response body."
+  },
+  "connErrorRedirectRefusedMessage": "The server redirected the request somewhere that is not allowed.",
+  "@connErrorRedirectRefusedMessage": {
+    "description": "Plain-language message for a connection problem: redirect refused by the redirect policy."
+  },
+  "connErrorRedirectRefusedHint": "Use the final address of the server directly, and https if it redirects from https to http.",
+  "@connErrorRedirectRefusedHint": {
+    "description": "Fix hint shown under the message for a connection problem: redirect refused by the redirect policy."
+  },
+  "connErrorResponseTooLargeMessage": "The server's reply was too large.",
+  "@connErrorResponseTooLargeMessage": {
+    "description": "Plain-language message for a connection problem: response over the size limit."
+  },
+  "connErrorResponseTooLargeHint": "Check that the address points at the right service.",
+  "@connErrorResponseTooLargeHint": {
+    "description": "Fix hint shown under the message for a connection problem: response over the size limit."
+  },
+  "connErrorInvalidInputMessage": "The address or path is not valid.",
+  "@connErrorInvalidInputMessage": {
+    "description": "Plain-language message for a connection problem: form input rejected locally (credentials or query in address, bad path)."
+  },
+  "connErrorInvalidInputHint": "Enter an address like https://host:port without a username, password or key, and a path that starts with a slash.",
+  "@connErrorInvalidInputHint": {
+    "description": "Fix hint shown under the message for a connection problem: form input rejected locally (credentials or query in address, bad path)."
+  }
+}

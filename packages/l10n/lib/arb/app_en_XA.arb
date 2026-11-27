@@ -38,6 +38,126 @@
   "@homeAboutTooltip": {
     "description": "Tooltip and accessible label of the app bar button that opens the About screen."
   },
+  "connErrorAuthFailedMessage": "[Ţĥé šéŕṽéŕ ŕéĵéçţéð ţĥé çŕéðéñţîàļš.~~~~~~~~~~~~~~~]",
+  "@connErrorAuthFailedMessage": {
+    "description": "Plain-language message for a connection problem: wrong or missing credentials."
+  },
+  "connErrorAuthFailedHint": "[Çĥéçķ ţĥé ÀÞÎ ķéý öŕ ţĥé üšéŕñàɱé àñð þàššŵöŕð, ţĥéñ ţéšţ àĝàîñ.~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@connErrorAuthFailedHint": {
+    "description": "Fix hint shown under the message for a connection problem: wrong or missing credentials."
+  },
+  "connErrorNeedsCredentialsMessage": "[Ţĥîš šéŕṽéŕ'š šàṽéð çŕéðéñţîàļš àŕé ɱîššîñĝ.~~~~~~~~~~~~~~~~~~]",
+  "@connErrorNeedsCredentialsMessage": {
+    "description": "Plain-language message for a connection problem: stored secrets lost, for example after Keystore loss."
+  },
+  "connErrorNeedsCredentialsHint": "[Ţĥîš çàñ ĥàþþéñ àƒţéŕ à ðéṽîçé ŕéšţöŕé öŕ à ļöçķ šçŕééñ çĥàñĝé. Éñţéŕ ţĥé çŕéðéñţîàļš àĝàîñ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@connErrorNeedsCredentialsHint": {
+    "description": "Fix hint shown under the message for a connection problem: stored secrets lost, for example after Keystore loss."
+  },
+  "connErrorTimeoutMessage": "[Ţĥé šéŕṽéŕ ðîð ñöţ àñšŵéŕ îñ ţîɱé.~~~~~~~~~~~~~~]",
+  "@connErrorTimeoutMessage": {
+    "description": "Plain-language message for a connection problem: request timed out."
+  },
+  "connErrorTimeoutHint": "[Çĥéçķ ţĥàţ îţ îš ŕüññîñĝ àñð ŕéàçĥàƀļé ƒŕöɱ ţĥîš ñéţŵöŕķ, öŕ ţŕý àĝàîñ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@connErrorTimeoutHint": {
+    "description": "Fix hint shown under the message for a connection problem: request timed out."
+  },
+  "connErrorTlsPinMismatchMessage": "[Ţĥé šéŕṽéŕ'š çéŕţîƒîçàţé îš ðîƒƒéŕéñţ ƒŕöɱ ţĥé öñé ýöü ţŕüšţéð.~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@connErrorTlsPinMismatchMessage": {
+    "description": "Plain-language message for a connection problem: pinned certificate changed (blocking)."
+  },
+  "connErrorTlsPinMismatchHint": "[Çöññéçţîöñš àŕé ƀļöçķéð. Öñļý ţŕüšţ ţĥé ñéŵ çéŕţîƒîçàţé îƒ ýöü ķñöŵ ţĥé šéŕṽéŕ'š çéŕţîƒîçàţé ŵàš ŕéþļàçéð.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@connErrorTlsPinMismatchHint": {
+    "description": "Fix hint shown under the message for a connection problem: pinned certificate changed (blocking)."
+  },
+  "connErrorTlsUntrustedMessage": "[Ţĥé šéŕṽéŕ'š çéŕţîƒîçàţé îš ñöţ ţŕüšţéð ƀý ţĥîš ðéṽîçé.~~~~~~~~~~~~~~~~~~~~~~]",
+  "@connErrorTlsUntrustedMessage": {
+    "description": "Plain-language message for a connection problem: untrusted or self-signed certificate (trust on first use)."
+  },
+  "connErrorTlsUntrustedHint": "[Îƒ ţĥîš îš ýöüŕ öŵñ šéŕṽéŕ ŵîţĥ à šéļƒ-šîĝñéð çéŕţîƒîçàţé, ŕéṽîéŵ îţš ƒîñĝéŕþŕîñţ àñð çĥööšé ŵĥéţĥéŕ ţö ţŕüšţ îţ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@connErrorTlsUntrustedHint": {
+    "description": "Fix hint shown under the message for a connection problem: untrusted or self-signed certificate (trust on first use)."
+  },
+  "connErrorTlsExpiredMessage": "[Ţĥé šéŕṽéŕ'š çéŕţîƒîçàţé ĥàš éẋþîŕéð öŕ îš ñöţ ṽàļîð ýéţ.~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@connErrorTlsExpiredMessage": {
+    "description": "Plain-language message for a connection problem: expired or not yet valid certificate."
+  },
+  "connErrorTlsExpiredHint": "[Ŕéñéŵ ţĥé çéŕţîƒîçàţé öñ ţĥé šéŕṽéŕ, öŕ çĥéçķ ţĥé ðàţé öñ ţĥîš ðéṽîçé.~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@connErrorTlsExpiredHint": {
+    "description": "Fix hint shown under the message for a connection problem: expired or not yet valid certificate."
+  },
+  "connErrorCleartextRefusedMessage": "[Ţĥîš àððŕéšš üšéš þļàîñ ĥţţþ, ŵĥîçĥ îš ñöţ àļļöŵéð ƒöŕ ţĥîš šéŕṽéŕ.~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@connErrorCleartextRefusedMessage": {
+    "description": "Plain-language message for a connection problem: http refused without the per-server opt-in."
+  },
+  "connErrorCleartextRefusedHint": "[Üšé àñ ĥţţþš àððŕéšš, öŕ àļļöŵ þļàîñ ĥţţþ ƒöŕ ţĥîš šéŕṽéŕ îñ îţš šéçüŕîţý šéţţîñĝš îƒ îţ îš öñ à ñéţŵöŕķ ýöü ţŕüšţ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@connErrorCleartextRefusedHint": {
+    "description": "Fix hint shown under the message for a connection problem: http refused without the per-server opt-in."
+  },
+  "connErrorUnsupportedVersionMessage": "[Ţĥîš šéŕṽéŕ ṽéŕšîöñ îš ñöţ šüþþöŕţéð.~~~~~~~~~~~~~~~]",
+  "@connErrorUnsupportedVersionMessage": {
+    "description": "Plain-language message for a connection problem: server version too old or service not supported."
+  },
+  "connErrorUnsupportedVersionHint": "[Üþðàţé ţĥé šéŕṽéŕ ţö à çüŕŕéñţ ɱàĵöŕ ṽéŕšîöñ.~~~~~~~~~~~~~~~~~~]",
+  "@connErrorUnsupportedVersionHint": {
+    "description": "Fix hint shown under the message for a connection problem: server version too old or service not supported."
+  },
+  "connErrorNotFoundMessage": "[Ñöţĥîñĝ ŵàš ƒöüñð àţ ţĥîš àððŕéšš.~~~~~~~~~~~~~~]",
+  "@connErrorNotFoundMessage": {
+    "description": "Plain-language message for a connection problem: wrong address or path prefix (404)."
+  },
+  "connErrorNotFoundHint": "[Çĥéçķ ţĥé àððŕéšš, þöŕţ àñð þàţĥ þŕéƒîẋ. À ŕéṽéŕšé þŕöẋý öƒţéñ ñééðš à þŕéƒîẋ šüçĥ àš /šöñàŕŕ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@connErrorNotFoundHint": {
+    "description": "Fix hint shown under the message for a connection problem: wrong address or path prefix (404)."
+  },
+  "connErrorServerErrorMessage": "[Ţĥé šéŕṽéŕ ŕéþöŕţéð àñ éŕŕöŕ.~~~~~~~~~~~~]",
+  "@connErrorServerErrorMessage": {
+    "description": "Plain-language message for a connection problem: 5xx or unexpected HTTP failure."
+  },
+  "connErrorServerErrorHint": "[Ţŕý àĝàîñ îñ à ɱöɱéñţ. Îƒ îţ ķééþš ĥàþþéñîñĝ, çĥéçķ ţĥé šéŕṽéŕ'š öŵñ ļöĝš.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@connErrorServerErrorHint": {
+    "description": "Fix hint shown under the message for a connection problem: 5xx or unexpected HTTP failure."
+  },
+  "connErrorNetworkUnreachableMessage": "[Ţĥé šéŕṽéŕ çöüļð ñöţ ƀé ŕéàçĥéð.~~~~~~~~~~~~~]",
+  "@connErrorNetworkUnreachableMessage": {
+    "description": "Plain-language message for a connection problem: connection refused, DNS failure or no network."
+  },
+  "connErrorNetworkUnreachableHint": "[Çĥéçķ ţĥé àððŕéšš àñð þöŕţ, ţĥàţ ţĥé šéŕṽéŕ îš ŕüññîñĝ, àñð ţĥàţ ţĥîš ðéṽîçé îš öñ ţĥé ŕîĝĥţ ñéţŵöŕķ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@connErrorNetworkUnreachableHint": {
+    "description": "Fix hint shown under the message for a connection problem: connection refused, DNS failure or no network."
+  },
+  "connErrorParseErrorMessage": "[Ţĥé šéŕṽéŕ'š ŕéþļý çöüļð ñöţ ƀé üñðéŕšţööð.~~~~~~~~~~~~~~~~~~]",
+  "@connErrorParseErrorMessage": {
+    "description": "Plain-language message for a connection problem: unexpected response body."
+  },
+  "connErrorParseErrorHint": "[Çĥéçķ ţĥàţ ţĥé àððŕéšš þöîñţš àţ ţĥé ŕîĝĥţ šéŕṽîçé àñð ñöţ àţ à ļöĝîñ þàĝé öŕ þŕöẋý.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@connErrorParseErrorHint": {
+    "description": "Fix hint shown under the message for a connection problem: unexpected response body."
+  },
+  "connErrorRedirectRefusedMessage": "[Ţĥé šéŕṽéŕ ŕéðîŕéçţéð ţĥé ŕéǫüéšţ šöɱéŵĥéŕé ţĥàţ îš ñöţ àļļöŵéð.~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@connErrorRedirectRefusedMessage": {
+    "description": "Plain-language message for a connection problem: redirect refused by the redirect policy."
+  },
+  "connErrorRedirectRefusedHint": "[Üšé ţĥé ƒîñàļ àððŕéšš öƒ ţĥé šéŕṽéŕ ðîŕéçţļý, àñð ĥţţþš îƒ îţ ŕéðîŕéçţš ƒŕöɱ ĥţţþš ţö ĥţţþ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@connErrorRedirectRefusedHint": {
+    "description": "Fix hint shown under the message for a connection problem: redirect refused by the redirect policy."
+  },
+  "connErrorResponseTooLargeMessage": "[Ţĥé šéŕṽéŕ'š ŕéþļý ŵàš ţöö ļàŕĝé.~~~~~~~~~~~~~~]",
+  "@connErrorResponseTooLargeMessage": {
+    "description": "Plain-language message for a connection problem: response over the size limit."
+  },
+  "connErrorResponseTooLargeHint": "[Çĥéçķ ţĥàţ ţĥé àððŕéšš þöîñţš àţ ţĥé ŕîĝĥţ šéŕṽîçé.~~~~~~~~~~~~~~~~~~~~~]",
+  "@connErrorResponseTooLargeHint": {
+    "description": "Fix hint shown under the message for a connection problem: response over the size limit."
+  },
+  "connErrorInvalidInputMessage": "[Ţĥé àððŕéšš öŕ þàţĥ îš ñöţ ṽàļîð.~~~~~~~~~~~~~~]",
+  "@connErrorInvalidInputMessage": {
+    "description": "Plain-language message for a connection problem: form input rejected locally (credentials or query in address, bad path)."
+  },
+  "connErrorInvalidInputHint": "[Éñţéŕ àñ àððŕéšš ļîķé ĥţţþš://ĥöšţ:þöŕţ ŵîţĥöüţ à üšéŕñàɱé, þàššŵöŕð öŕ ķéý, àñð à þàţĥ ţĥàţ šţàŕţš ŵîţĥ à šļàšĥ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@connErrorInvalidInputHint": {
+    "description": "Fix hint shown under the message for a connection problem: form input rejected locally (credentials or query in address, bad path)."
+  },
   "appTitle": "[Çöñšöļàŕŕ~~~~]",
   "@appTitle": {
     "description": "The app name, shown in the task switcher and as the accessible name of the app."
