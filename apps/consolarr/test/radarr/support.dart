@@ -266,7 +266,6 @@ List<Override> radarrOverrides(
     commandPollIntervalProvider.overrideWithValue(Duration.zero),
     // Big libraries are filtered inline: a real isolate never completes under
     // the widget tester's fake clock.
-    appLockedProvider.overrideWithValue(false),
     movieRunnerProvider.overrideWithValue(
       movieRunner ?? <T>(T Function() c) async => c(),
     ),
