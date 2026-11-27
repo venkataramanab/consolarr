@@ -11,8 +11,6 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:test_harness/test_harness.dart';
 
-import '../servers/ui/support.dart';
-
 Widget _screen(String text) => FloatingTopBarScaffold(
   title: text,
   bodyBuilder: (context, padding) =>
