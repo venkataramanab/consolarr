@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:consolarr/consolarr.dart';
 import 'package:consolarr/features/settings/application/lock_controller.dart';
+import 'package:consolarr/features/settings/application/settings_providers.dart';
 import 'package:consolarr/features/settings/data/device_authenticator.dart';
 import 'package:consolarr/features/settings/domain/app_settings.dart';
 import 'package:consolarr/src/database/app_database.dart';
@@ -12,7 +13,7 @@ import 'package:design_system/design_system.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/rendering.dart' show SemanticsNode;
-import 'package:flutter/services.dart' show MethodChannel;
+import 'package:flutter/services.dart' show MethodChannel, SystemChannels;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
@@ -66,8 +67,6 @@ bool _semanticsContain(WidgetTester tester, String text) {
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
-
-  tearDown(() => PlatformSecureScreen.setBaseline(secure: false));
 
   group('cold start', () {
     testWidgets('the first frame is an opaque cover; no content is built '
@@ -275,15 +274,12 @@ void main() {
       await tester.pumpWidget(_app(h));
       await tester.pumpAndSettle();
       expect(h.secure.isSecure, isTrue);
-      expect(PlatformSecureScreen.baseline, isTrue);
       await _unmount(tester);
 
-      PlatformSecureScreen.setBaseline(secure: false);
       final off = SettingsHarness();
       await tester.pumpWidget(_app(off));
       await tester.pumpAndSettle();
       expect(off.secure.calls, isEmpty);
-      expect(PlatformSecureScreen.baseline, isFalse);
       await _unmount(tester);
     });
 
@@ -295,13 +291,36 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('a screen asking for secure:false cannot drop the baseline', (
-      tester,
-    ) async {
+    testWidgets('a screen asking for secure:false cannot drop the lock\'s '
+        'request, and the lock cannot drop a screen\'s', (tester) async {
       final h = SettingsHarness(stored: lockOn());
       await tester.pumpWidget(_app(h));
       await tester.pumpAndSettle();
-      // The platform implementation keeps the flag while the baseline holds.
+      expect(h.secure.isSecure, isTrue);
+      final editor = Object();
+      await h.secure.setSecure(secure: true, owner: editor);
+      await h.secure.setSecure(secure: false, owner: editor);
+      expect(h.secure.isSecure, isTrue, reason: 'the lock still needs it');
+
+      // The lock goes off while a revealed secret still needs the flag.
+      await h.secure.setSecure(secure: true, owner: editor);
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(ConsolarrApp)),
+      );
+      await container.read(settingsProvider.notifier).setLockEnabled(false);
+      await container
+          .read(settingsProvider.notifier)
+          .setBlockScreenshots(false);
+      await tester.pumpAndSettle();
+      expect(h.secure.isSecure, isTrue, reason: 'the editor still needs it');
+      await h.secure.setSecure(secure: false, owner: editor);
+      expect(h.secure.isSecure, isFalse);
+      await _unmount(tester);
+    });
+
+    test('the platform screen is reference counted and only real changes '
+        'reach the channel', () async {
+      TestWidgetsFlutterBinding.ensureInitialized();
       final calls = <bool>[];
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(
@@ -311,16 +330,96 @@ void main() {
               return null;
             },
           );
-      await const PlatformSecureScreen().setSecure(secure: false);
-      expect(calls, [true]);
-      PlatformSecureScreen.setBaseline(secure: false);
-      await const PlatformSecureScreen().setSecure(secure: false);
+      final screen = PlatformSecureScreen();
+      final a = Object();
+      final b = Object();
+      await screen.setSecure(secure: true, owner: a);
+      await screen.setSecure(secure: true, owner: b);
+      await screen.setSecure(secure: false, owner: a);
+      expect(calls, [true], reason: 'b still needs it');
+      await screen.setSecure(secure: false, owner: b);
       expect(calls, [true, false]);
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(
             const MethodChannel('consolarr/secure_screen'),
             null,
           );
+    });
+  });
+
+  group('fail closed and hidden mount', () {
+    testWidgets('the content is mounted hidden while the lock resolves, '
+        'without focus', (tester) async {
+      final h = SettingsHarness(stored: lockOn());
+      h.auth.hold = Completer<DeviceAuthResult>();
+      await tester.pumpWidget(_app(h));
+      // First frame: the lock is still resolving.
+      expect(find.byType(Navigator), findsNothing, reason: 'not visible');
+      expect(
+        find.byType(Navigator, skipOffstage: false),
+        findsWidgets,
+        reason: 'warm: built but hidden',
+      );
+      final excluded = tester
+          .widgetList<ExcludeFocus>(
+            find.byType(ExcludeFocus, skipOffstage: false),
+          )
+          .any((w) => w.excluding);
+      expect(excluded, isTrue);
+      await tester.pumpAndSettle();
+      // Locked: still hidden.
+      expect(find.byType(Navigator), findsNothing);
+      await _unmount(tester);
+    });
+
+    testWidgets('an unreadable store shows no content, is secure, and can '
+        'be retried', (tester) async {
+      final l10n = await _en();
+      final store = ThrowingSettingsStore(stored: lockOn(), failures: 2);
+      final h = SettingsHarness(store: store);
+      h.auth.hold = Completer<DeviceAuthResult>();
+      await tester.pumpWidget(_app(h));
+      await tester.pumpAndSettle();
+      expect(find.text(l10n.lockLoadFailedTitle), findsOneWidget);
+      expect(find.text(l10n.homeEmptyHeading), findsNothing);
+      expect(find.byType(Navigator), findsNothing);
+      expect(h.secure.isSecure, isTrue);
+      expect(h.auth.reasons, isEmpty);
+      await tester.tap(find.text(l10n.lockLoadFailedRetry));
+      await tester.pumpAndSettle();
+      // The retry read succeeds: the lock (on) is shown, never the content.
+      expect(find.text(l10n.lockScreenTitle), findsOneWidget);
+      expect(find.text(l10n.lockLoadFailedTitle), findsNothing);
+      await _unmount(tester);
+    });
+
+    testWidgets('system back never pops the routes behind the lock; on the '
+        'lock screen it leaves the app', (tester) async {
+      final h = SettingsHarness(stored: lockOn());
+      h.auth.hold = Completer<DeviceAuthResult>();
+      final platformCalls = <String>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          platformCalls.add(call.method);
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          null,
+        ),
+      );
+      await tester.pumpWidget(_app(h));
+      await tester.pumpAndSettle();
+      expect(await tester.binding.handlePopRoute(), isTrue);
+      expect(platformCalls, contains('SystemNavigator.pop'));
+      h.auth.hold!.complete(DeviceAuthResult.success);
+      await tester.pumpAndSettle();
+      // Unlocked: back is the router's again.
+      platformCalls.clear();
+      await tester.binding.handlePopRoute();
       await _unmount(tester);
     });
   });
@@ -346,6 +445,60 @@ void main() {
       expect(button.onPressed, isNull);
       h.clock.advance(lockCoolDown + const Duration(seconds: 1));
       await tester.pump(const Duration(seconds: 1));
+      await _unmount(tester);
+    });
+
+    testWidgets('the cool-down is a static live region and is announced '
+        'once when it ends, not every second', (tester) async {
+      final l10n = await _en();
+      final announcements = <String>[];
+      tester.binding.defaultBinaryMessenger
+          .setMockDecodedMessageHandler<dynamic>(SystemChannels.accessibility, (
+            message,
+          ) async {
+            final m = message as Map;
+            if (m['type'] == 'announce') {
+              announcements.add((m['data'] as Map)['message'] as String);
+            }
+            return null;
+          });
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger
+            .setMockDecodedMessageHandler<dynamic>(
+              SystemChannels.accessibility,
+              null,
+            ),
+      );
+      final handle = tester.ensureSemantics();
+      final h = SettingsHarness(
+        stored: lockOn(),
+        auth: FakeDeviceAuthenticator(results: [DeviceAuthResult.failed]),
+      );
+      await tester.pumpWidget(_app(h));
+      await tester.pumpAndSettle();
+      for (var i = 0; i < lockMaxAttempts - 1; i++) {
+        await tester.tap(find.text(l10n.lockUnlockButton));
+        await tester.pumpAndSettle();
+      }
+      expect(_semanticsContain(tester, l10n.lockCoolDownPaused), isTrue);
+      expect(
+        _semanticsContain(tester, l10n.lockCoolDown(30)),
+        isFalse,
+        reason: 'the ticking number is not in the semantics tree',
+      );
+      expect(find.text(l10n.lockCoolDown(30)), findsOneWidget);
+      // Ten ticks: nothing is announced.
+      for (var i = 0; i < 10; i++) {
+        h.clock.advance(const Duration(seconds: 1));
+        await tester.pump(const Duration(seconds: 1));
+      }
+      expect(announcements, isEmpty);
+      expect(_semanticsContain(tester, l10n.lockCoolDownPaused), isTrue);
+      h.clock.advance(const Duration(seconds: 21));
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 1));
+      expect(announcements, [l10n.lockCoolDownOver]);
+      handle.dispose();
       await _unmount(tester);
     });
 

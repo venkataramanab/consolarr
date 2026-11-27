@@ -658,5 +658,25 @@
   "checkLoadFailed": "تعذرت قراءة قائمة الخوادم.",
   "@checkLoadFailed": {
     "description": "Error headline on the connection check when the servers cannot be read."
+  },
+  "lockLoadFailedTitle": "تعذرت قراءة الإعدادات",
+  "@lockLoadFailedTitle": {
+    "description": "Headline of the lock screen shown when the stored settings cannot be read; the app stays closed."
+  },
+  "lockLoadFailedBody": "حفاظًا على أمانك يبقى كونسولار مغلقًا إلى أن تتم قراءة إعداداته.",
+  "@lockLoadFailedBody": {
+    "description": "Explains why the app is closed when the stored settings cannot be read."
+  },
+  "lockLoadFailedRetry": "حاول مجددًا",
+  "@lockLoadFailedRetry": {
+    "description": "Button that reads the stored settings again."
+  },
+  "lockCoolDownPaused": "محاولات كثيرة. فتح القفل متوقف مؤقتًا.",
+  "@lockCoolDownPaused": {
+    "description": "Spoken status while unlock attempts are paused; fixed text so the countdown is not read out every second."
+  },
+  "lockCoolDownOver": "يمكنك محاولة فتح القفل مجددًا.",
+  "@lockCoolDownOver": {
+    "description": "Announced once when the pause after too many unlock attempts has ended."
   }
 }

@@ -135,7 +135,8 @@ final secureHttpClientFactoryProvider = Provider<SecureHttpClientFactory>(
   (ref) => DefaultSecureHttpClientFactory(pins: ref.watch(pinStoreProvider)),
 );
 
-/// Window secure flag, set while secrets are visible.
+/// Window secure flag (reference counted by owner): set while secrets are
+/// visible, while the app lock is on and while screenshots are blocked.
 final secureScreenProvider = Provider<SecureScreen>(
-  (ref) => const PlatformSecureScreen(),
+  (ref) => PlatformSecureScreen(),
 );
