@@ -143,6 +143,14 @@ class _DiagnosticsPreviewScreenState
               ],
             ),
           ),
+        if (b.sections.last.body == '(empty)')
+          Padding(
+            padding: const EdgeInsets.only(bottom: ConsolarrSpacing.md),
+            child: Text(
+              l10n.diagPreviewEmptyLog,
+              style: theme.textTheme.bodySmall,
+            ),
+          ),
         if (_message != null)
           Padding(
             padding: const EdgeInsets.only(bottom: ConsolarrSpacing.md),

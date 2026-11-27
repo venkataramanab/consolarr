@@ -250,6 +250,32 @@ class FilterSelection {
 /// "clear all", an explicit "save as default" switch and Apply. Put it in
 /// [showGlassSheet].
 ///
+/// ```dart
+/// showGlassSheet<void>(
+///   context: context,
+///   title: l10n.filterTitle,
+///   closeLabel: l10n.commonClose,
+///   builder: (context) => FilterSheet(
+///     title: l10n.filterTitle,
+///     sections: [
+///       FilterSection(
+///         id: 'status',
+///         label: l10n.status,
+///         multiSelect: false,
+///         chips: [FilterChoice(id: 'ended', label: l10n.ended)],
+///       ),
+///     ],
+///     activeCount: selection.count,
+///     selection: selection,
+///     clearAllLabel: l10n.clearAll,
+///     saveAsDefaultLabel: l10n.saveAsDefault,
+///     applyLabel: l10n.apply,
+///     onApply: (selection, saveAsDefault) { /* ... */ },
+///     onClear: () { /* ... */ },
+///   ),
+/// );
+/// ```
+///
 /// [activeCount] is the number of filters currently applied to the list
 /// (shown beside the title and spoken as [activeCountLabel]); [selection] is
 /// the initial chip state. The sheet edits a draft; nothing changes until

@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:consolarr/consolarr.dart';
-import 'package:consolarr/features/settings/application/settings_providers.dart';
-import 'package:consolarr/features/settings/data/settings_store.dart';
 import 'package:consolarr/src/database/app_database.dart';
 import 'package:security/security.dart';
 import 'package:material_ui/material_ui.dart';

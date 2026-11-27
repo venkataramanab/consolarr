@@ -93,6 +93,7 @@ class SettingsHarness {
     Map<String, String>? stored,
     FakeDeviceAuthenticator? auth,
     TestClock? clock,
+    this.recordingSinks = true,
   }) : store = InMemorySettingsStore(stored),
        auth = auth ?? FakeDeviceAuthenticator(),
        clock = clock ?? TestClock();
@@ -105,14 +106,18 @@ class SettingsHarness {
   final RecordingAnalytics analytics = RecordingAnalytics();
   final RecordingCrashReporter crash = RecordingCrashReporter();
 
+  /// Whether the raw analytics and crash sinks are replaced by recorders
+  /// (false: the foss defaults, which are no-ops).
+  final bool recordingSinks;
+
   List<Override> get overrides => [
     settingsStoreProvider.overrideWithValue(store),
     deviceAuthenticatorProvider.overrideWithValue(auth),
     clockProvider.overrideWithValue(clock.call),
     secureScreenProvider.overrideWithValue(secure),
     externalActionsProvider.overrideWithValue(actions),
-    rawAnalyticsProvider.overrideWithValue(analytics),
-    rawCrashReporterProvider.overrideWithValue(crash),
+    if (recordingSinks) rawAnalyticsProvider.overrideWithValue(analytics),
+    if (recordingSinks) rawCrashReporterProvider.overrideWithValue(crash),
   ];
 
   /// A container with the first frame already marked done and the settings

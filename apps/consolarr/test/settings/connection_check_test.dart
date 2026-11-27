@@ -6,8 +6,6 @@ import 'package:consolarr/features/settings/application/connection_check.dart';
 import 'package:core/core.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../servers/ui/support.dart';
-
 class _Probe implements NetworkProbe {
   _Probe({this.resolvesOk = true, this.connectsOk = true});
 

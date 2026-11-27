@@ -6,7 +6,6 @@ import 'package:consolarr/consolarr.dart';
 import 'package:consolarr/features/settings/application/lock_controller.dart';
 import 'package:consolarr/features/settings/data/device_authenticator.dart';
 import 'package:consolarr/features/settings/domain/app_settings.dart';
-import 'package:consolarr/src/providers.dart';
 import 'package:consolarr/src/database/app_database.dart';
 import 'package:consolarr/src/platform/secure_screen.dart';
 import 'package:design_system/design_system.dart';
@@ -44,7 +43,13 @@ Future<void> _unmount(WidgetTester tester) async {
 }
 
 bool _semanticsContain(WidgetTester tester, String text) {
-  final root = tester.binding.pipelineOwner.semanticsOwner!.rootSemanticsNode!;
+  final root = tester
+      .binding
+      .renderViews
+      .first
+      .owner!
+      .semanticsOwner!
+      .rootSemanticsNode!;
   var found = false;
   void visit(SemanticsNode n) {
     final d = n.getSemanticsData();

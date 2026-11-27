@@ -7,11 +7,11 @@ import 'package:l10n/l10n.dart';
 /// every event of the areas this screen can describe has an entry (and no
 /// entry is stale), so the description cannot drift from what is sent.
 final Map<String, String Function(AppLocalizations)> privacyPayloadItems = {
-  'screen_viewed': (l) => l.privacyEventScreenViewed,
-  'server_added': (l) => l.privacyEventServerAdded,
-  'connection_test_result': (l) => l.privacyEventConnectionTest,
-  'certificate_decision': (l) => l.privacyEventCertificate,
-  'app_lock_toggled': (l) => l.privacyEventAppLock,
-  'consent_changed': (l) => l.privacyEventConsent,
-  'diagnostics_shared': (l) => l.privacyEventDiagnostics,
+  'screen_viewed': (l10n) => l10n.privacyEventScreenViewed,
+  'server_added': (l10n) => l10n.privacyEventServerAdded,
+  'connection_test_result': (l10n) => l10n.privacyEventConnectionTest,
+  'certificate_decision': (l10n) => l10n.privacyEventCertificate,
+  'app_lock_toggled': (l10n) => l10n.privacyEventAppLock,
+  'consent_changed': (l10n) => l10n.privacyEventConsent,
+  'diagnostics_shared': (l10n) => l10n.privacyEventDiagnostics,
 };

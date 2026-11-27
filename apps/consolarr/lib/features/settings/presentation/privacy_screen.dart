@@ -40,7 +40,7 @@ class PrivacyScreen extends ConsumerWidget {
         const SizedBox(height: ConsolarrSpacing.sm),
         for (final describe in [
           ...privacyPayloadItems.values,
-          (AppLocalizations l) => l.privacyEventOther,
+          (AppLocalizations l10n) => l10n.privacyEventOther,
         ])
           Padding(
             padding: const EdgeInsets.only(bottom: ConsolarrSpacing.sm),

@@ -275,9 +275,12 @@ class ConnectionCheckNotifier extends Notifier<ConnectionCheckState> {
     state = ConnectionCheckState(serverId: id);
   }
 
-  Future<void> run() async {
+  /// Runs the check for [serverId] (or the chosen server).
+  Future<void> run([String? serverId]) async {
+    if (state.running) return;
+    if (serverId != null && serverId != state.serverId) select(serverId);
     final id = state.serverId;
-    if (id == null || state.running) return;
+    if (id == null) return;
     final generation = ++_generation;
     state = ConnectionCheckState(
       serverId: id,

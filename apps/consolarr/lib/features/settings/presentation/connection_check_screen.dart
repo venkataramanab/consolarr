@@ -65,7 +65,7 @@ class ConnectionCheckScreen extends ConsumerWidget {
           EmptyState(icon: Icons.dns_outlined, headline: l10n.checkNoServers),
         ];
       } else {
-        final selected = _find(list, check.serverId);
+        final selected = _find(list, check.serverId) ?? list.first;
         children = [
           SettingsSection(
             title: l10n.checkChooseServer,
@@ -79,7 +79,7 @@ class ConnectionCheckScreen extends ConsumerWidget {
                   for (final s in list)
                     ChoiceOption(value: s.profile.id, label: s.profile.name),
                 ],
-                selected: selected?.profile.id,
+                selected: selected.profile.id,
                 onSelected: (id) {
                   if (id != null) {
                     ref.read(connectionCheckProvider.notifier).select(id);
@@ -90,9 +90,11 @@ class ConnectionCheckScreen extends ConsumerWidget {
           ),
           FilledButton.icon(
             style: FilledButton.styleFrom(minimumSize: Size(0, touch)),
-            onPressed: (selected == null || check.running)
+            onPressed: check.running
                 ? null
-                : ref.read(connectionCheckProvider.notifier).run,
+                : () => ref
+                      .read(connectionCheckProvider.notifier)
+                      .run(selected.profile.id),
             icon: const Icon(Icons.play_arrow),
             label: Text(
               check.result?.finished ?? false

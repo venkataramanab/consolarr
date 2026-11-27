@@ -49,6 +49,7 @@ class SettingsSection extends StatelessWidget {
             ),
             child: Semantics(
               header: true,
+              container: true,
               child: Text(
                 title,
                 style: theme.textTheme.labelLarge?.copyWith(
@@ -88,6 +89,14 @@ class SettingsSection extends StatelessWidget {
 /// A row of [title], optional [subtitle] and leading [icon]; tappable when
 /// [onTap] is set (a chevron that mirrors in right-to-left shows then).
 /// [value] is shown on the trailing side (the current choice).
+///
+/// ```dart
+/// SettingsRow(
+///   title: l10n.about,
+///   icon: Icons.info_outline,
+///   onTap: () => context.push('/about'),
+/// )
+/// ```
 class SettingsRow extends StatelessWidget {
   const SettingsRow({
     required this.title,
@@ -191,6 +200,14 @@ class SettingsRow extends StatelessWidget {
 
 /// A [SettingsRow]-shaped on/off switch. The whole row toggles; its state is
 /// announced as on/off, not only drawn.
+///
+/// ```dart
+/// SwitchRow(
+///   title: l10n.reduceMotion,
+///   value: reduced,
+///   onChanged: (on) => setReduced(on),
+/// )
+/// ```
 class SwitchRow extends StatelessWidget {
   const SwitchRow({
     required this.title,
@@ -293,6 +310,16 @@ class ChoiceOption<T> {
 /// A [SettingsRow] showing the current choice that opens a [showGlassSheet]
 /// with the options (a radio list; the selected one carries a check mark and
 /// is announced as selected).
+///
+/// ```dart
+/// ChoiceSheetRow<ThemeMode>(
+///   title: l10n.theme,
+///   closeLabel: l10n.commonClose,
+///   options: [ChoiceOption(value: ThemeMode.dark, label: l10n.dark)],
+///   selected: mode,
+///   onSelected: setMode,
+/// )
+/// ```
 class ChoiceSheetRow<T> extends StatelessWidget {
   const ChoiceSheetRow({
     required this.title,

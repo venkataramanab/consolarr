@@ -153,6 +153,9 @@ class SettingsScreen extends ConsumerWidget {
         bodyBuilder: (context, padding) => ListView(
           padding: padding,
           children: [
+            // Clear of the bar's fade edge, so the first heading keeps its
+            // contrast.
+            const SizedBox(height: ConsolarrSpacing.lg),
             for (var i = 0; i < sections.length; i++)
               StagedReveal(
                 revealKey: 'settings.hub',

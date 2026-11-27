@@ -162,7 +162,7 @@ final consentProvider = NotifierProvider<ConsentNotifier, ConsentState>(
 
 /// The opt-in in-app log (SET-04), fed by the redacting logger.
 final diagnosticsLogProvider = Provider<DiagnosticsLog>((ref) {
-  final log = DiagnosticsLog();
+  final log = DiagnosticsLog(clock: ref.read(clockProvider));
   ref.listen<AppSettings>(settingsProvider, (_, s) {
     log
       ..level = s.diagnosticsLevel
