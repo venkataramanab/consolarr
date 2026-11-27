@@ -104,66 +104,81 @@ class _NestedMenuState extends State<NestedMenu> {
     final backward = rtl
         ? LogicalKeyboardKey.arrowRight
         : LogicalKeyboardKey.arrowLeft;
-    return Semantics(
-      role: SemanticsRole.menu,
-      container: true,
-      explicitChildNodes: true,
-      scopesRoute: true,
-      namesRoute: true,
-      label: widget.semanticsLabel,
-      child: CallbackShortcuts(
-        bindings: {
-          const SingleActivator(LogicalKeyboardKey.escape): _back,
-          const SingleActivator(LogicalKeyboardKey.arrowDown): () =>
-              FocusScope.of(context).nextFocus(),
-          const SingleActivator(LogicalKeyboardKey.arrowUp): () =>
-              FocusScope.of(context).previousFocus(),
-          SingleActivator(backward): () {
-            if (_path.isNotEmpty) _back();
+    return PopScope(
+      // Android back steps out of a sub-menu before it closes the menu.
+      canPop: _path.isEmpty,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _back();
+      },
+      child: Semantics(
+        role: SemanticsRole.menu,
+        container: true,
+        explicitChildNodes: true,
+        scopesRoute: true,
+        namesRoute: true,
+        label: widget.semanticsLabel,
+        child: CallbackShortcuts(
+          bindings: {
+            const SingleActivator(LogicalKeyboardKey.escape): _back,
+            const SingleActivator(LogicalKeyboardKey.arrowDown): () =>
+                FocusScope.of(context).nextFocus(),
+            const SingleActivator(LogicalKeyboardKey.arrowUp): () =>
+                FocusScope.of(context).previousFocus(),
+            SingleActivator(backward): () {
+              if (_path.isNotEmpty) _back();
+            },
           },
-        },
-        child: FocusTraversalGroup(
-          child: Material(
-            color: roles.raised,
-            borderRadius: ConsolarrRadii.card,
-            clipBehavior: Clip.antiAlias,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: ConsolarrRadii.card,
-                border: Border.all(color: roles.track),
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (_path.isNotEmpty) ...[
-                      _MenuRow(
-                        key: ValueKey('back-${_path.length}'),
-                        label: _path.last.label,
-                        icon: Icons.arrow_back,
-                        isBack: true,
-                        autofocus: true,
-                        onActivate: _back,
-                        forwardKey: forward,
+          child: FocusTraversalGroup(
+            child: Material(
+              color: roles.raised,
+              borderRadius: ConsolarrRadii.card,
+              clipBehavior: Clip.antiAlias,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: ConsolarrRadii.card,
+                  border: Border.all(color: roles.track),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Announces the sub-menu that just opened.
+                      Semantics(
+                        key: const ValueKey('nested-menu-announcer'),
+                        liveRegion: true,
+                        container: true,
+                        label: _path.isEmpty ? null : _path.last.label,
+                        child: const SizedBox.shrink(),
                       ),
-                      Divider(height: 1, color: roles.track),
+                      if (_path.isNotEmpty) ...[
+                        _MenuRow(
+                          key: ValueKey('back-${_path.length}'),
+                          label: _path.last.label,
+                          icon: Icons.arrow_back,
+                          isBack: true,
+                          autofocus: true,
+                          onActivate: _back,
+                          forwardKey: forward,
+                        ),
+                        Divider(height: 1, color: roles.track),
+                      ],
+                      for (final item in _current)
+                        _MenuRow(
+                          key: ValueKey('${_path.length}-${item.label}'),
+                          label: item.label,
+                          icon: item.icon,
+                          destructive: item.destructive,
+                          enabled: item.enabled,
+                          disabledReason: item.disabledReason,
+                          expandable: item.hasChildren,
+                          onActivate: item.hasChildren
+                              ? () => _open(item)
+                              : () => _select(item),
+                          forwardKey: forward,
+                        ),
                     ],
-                    for (final item in _current)
-                      _MenuRow(
-                        key: ValueKey('${_path.length}-${item.label}'),
-                        label: item.label,
-                        icon: item.icon,
-                        destructive: item.destructive,
-                        enabled: item.enabled,
-                        disabledReason: item.disabledReason,
-                        expandable: item.hasChildren,
-                        onActivate: item.hasChildren
-                            ? () => _open(item)
-                            : () => _select(item),
-                        forwardKey: forward,
-                      ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -309,10 +324,13 @@ Future<void> showNestedMenu(
   String semanticsLabel,
 ) {
   final animate = ConsolarrEffects.of(context).animate;
-  final navigator = Navigator.of(context);
+  // The root navigator: the menu sits above the floating nav bar and survives
+  // tab switches.
+  final navigator = Navigator.of(context, rootNavigator: true);
   final themes = InheritedTheme.capture(from: context, to: navigator.context);
   return showGeneralDialog<void>(
     context: context,
+    useRootNavigator: true,
     barrierDismissible: true,
     barrierLabel: semanticsLabel,
     barrierColor: const Color(0x00000000),
