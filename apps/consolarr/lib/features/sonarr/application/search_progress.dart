@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:arr_api/arr_api.dart';
+import 'package:consolarr/features/settings/application/lock_controller.dart';
 import 'package:consolarr/features/sonarr/application/sonarr_session.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
@@ -185,15 +186,11 @@ class SearchProgressNotifier extends Notifier<SearchProgress> {
     }
 
     // What is in the queue before the search: only items that appear after
-    // it count as found. Nothing has been sent yet, so a failure here is safe
-    // to retry.
+    // it count as found. A failed read does not fail the search: the baseline
+    // is then unknown (null) and the outcome can never be reported as found.
     final before = await session.api.queue();
     if (stale()) return;
     final knownIds = before.valueOrNull?.map((i) => i.id).toSet();
-    if (knownIds == null) {
-      state = failed(before.errorOrNull!);
-      return;
-    }
     final started = await session.api.startCommand(target.request);
     if (stale()) return;
     final command = started.valueOrNull;
@@ -225,7 +222,7 @@ class SearchProgressNotifier extends Notifier<SearchProgress> {
   Future<SearchProgress> _poll(
     SonarrApi api,
     int commandId,
-    Set<int> knownIds,
+    Set<int>? knownIds,
     bool Function() stale,
   ) async {
     final delays = ref.read(searchPollDelaysProvider);
@@ -233,10 +230,11 @@ class SearchProgressNotifier extends Notifier<SearchProgress> {
     var errors = 0;
     for (final delay in delays) {
       await Future<void>.delayed(delay);
-      // Stop when the screen is gone; pause while the app is in background,
-      // but not forever.
+      // Stop when the screen is gone; pause while the app is in background
+      // or locked (the content stays mounted behind the lock), but not
+      // forever.
       var waited = 0;
-      while (!stale() && !_isForeground()) {
+      while (!stale() && (!_isForeground() || ref.read(appLockedProvider))) {
         if (++waited > pause.maxSteps) return const SearchTimedOut();
         await Future<void>.delayed(pause.step);
       }
@@ -270,7 +268,13 @@ class SearchProgressNotifier extends Notifier<SearchProgress> {
   /// A finished command does not say what it found: an item that was not in
   /// the queue before the search ([knownIds]) and belongs to the target means
   /// a release was grabbed. Items that were already queued never count.
-  Future<SearchProgress> _outcome(SonarrApi api, Set<int> knownIds) async {
+  ///
+  /// Without a baseline ([knownIds] is null: the queue could not be read
+  /// before the search) nothing can be told apart from what was already
+  /// queued, so the result is [SearchTimedOut] ("still searching, check the
+  /// queue"), never a guessed [SearchGrabbed] or [SearchNothingFound].
+  Future<SearchProgress> _outcome(SonarrApi api, Set<int>? knownIds) async {
+    if (knownIds == null) return const SearchTimedOut();
     final queue = await api.queue();
     final items = queue.valueOrNull;
     if (items == null) {

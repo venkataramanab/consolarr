@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:arr_api/arr_api.dart';
 import 'package:consolarr/features/arr_common/presentation/removal_dialog.dart';
+import 'package:consolarr/features/settings/application/lock_controller.dart';
 import 'package:consolarr/features/sonarr/application/sonarr_session.dart';
 import 'package:consolarr/features/sonarr/data/queue_repository.dart';
 import 'package:consolarr/src/providers.dart';
@@ -131,7 +132,9 @@ class QueueNotifier extends AsyncNotifier<QueueState> {
   }
 
   Future<void> _poll() async {
-    if (!_foreground) return;
+    // The content stays mounted behind the app lock: no request while locked.
+    // The next tick after unlock refreshes the list.
+    if (!_foreground || ref.read(appLockedProvider)) return;
     await refresh();
   }
 

@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:arr_api/arr_api.dart';
+import 'package:consolarr/features/settings/application/lock_controller.dart';
 import 'package:consolarr/features/sonarr/application/search_progress.dart';
 import 'package:consolarr/features/sonarr/application/sonarr_session.dart';
 import 'package:consolarr/src/providers.dart';
@@ -128,11 +129,20 @@ void main() {
     expect(await run(containerFor(none), missing), isA<SearchNothingFound>());
   });
 
-  test('a queue that cannot be read first fails without starting', () async {
+  test('an unreadable queue snapshot does not fail the search', () async {
     final api = ScriptedSonarrApi()
-      ..queueResult = const Result.err(AppError(ErrorCategory.timeout));
-    expect(await run(containerFor(api)), isA<SearchFailed>());
-    expect(api.count('startCommand'), 0);
+      ..commandResults = [Result.ok(_cmd(ArrCommandStatus.completed))]
+      ..queueSequence = [
+        const Result.err(AppError(ErrorCategory.timeout)),
+        Result.ok([fakeQueueItem(5)]),
+      ];
+    final c = containerFor(api);
+    final result = await run(c);
+    expect(api.count('startCommand'), 1, reason: 'the search still starts');
+    // Without a baseline the queued episode cannot be told from one that was
+    // already there: never a false "found" (nor a false "nothing found").
+    expect(result, isNot(isA<SearchGrabbed>()));
+    expect(result, isA<SearchTimedOut>());
   });
 
   test('a server switch mid-search drops the result', () async {
@@ -167,6 +177,45 @@ void main() {
     expect(c.read(searchProgressProvider(_episode)), isA<SearchIdle>());
     expect(first.count('command'), 0);
     expect(second.count('startCommand'), 0);
+  });
+
+  test('polling pauses while the app is locked and resumes after', () async {
+    final api = ScriptedSonarrApi()
+      ..commandResults = [Result.ok(_cmd(ArrCommandStatus.completed))];
+    final c = containerFor(api, polls: 2);
+    c.listen(searchProgressProvider(_episode), (_, _) {});
+    await c.read(sonarrSessionProvider.future);
+    c.read(testAppLockedProvider.notifier).locked = true;
+    final run = c.read(searchProgressProvider(_episode).notifier).start();
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    expect(api.count('command'), 0, reason: 'no status poll while locked');
+    expect(c.read(searchProgressProvider(_episode)), isA<SearchRunning>());
+    c.read(testAppLockedProvider.notifier).locked = false;
+    await run;
+    expect(api.count('command'), 1);
+    expect(c.read(searchProgressProvider(_episode)), isA<SearchNothingFound>());
+  });
+
+  test('a lock that never lifts times out after the bounded pause', () async {
+    final api = ScriptedSonarrApi();
+    final c = ProviderContainer(
+      retry: (_, _) => null,
+      overrides: [
+        ...sonarrTestOverrides(api),
+        searchPollDelaysProvider.overrideWithValue([Duration.zero]),
+        searchBackgroundPauseProvider.overrideWithValue((
+          step: Duration.zero,
+          maxSteps: 3,
+        )),
+      ],
+    );
+    addTearDown(c.dispose);
+    c.listen(searchProgressProvider(_episode), (_, _) {});
+    await c.read(sonarrSessionProvider.future);
+    c.read(testAppLockedProvider.notifier).locked = true;
+    await c.read(searchProgressProvider(_episode).notifier).start();
+    expect(c.read(searchProgressProvider(_episode)), isA<SearchTimedOut>());
+    expect(api.count('command'), 0);
   });
 
   testWidgets('the background pause is bounded', (tester) async {
@@ -306,6 +355,7 @@ void main() {
             List.filled(6, Duration.zero),
           ),
           clockProvider.overrideWithValue(DateTime.now),
+          appLockedProvider.overrideWithValue(false),
         ],
       );
       addTearDown(c.dispose);
@@ -340,7 +390,7 @@ void main() {
       expect(result, isA<SearchFailed>());
     });
 
-    test('5xx on start is reported once, without retrying', () async {
+    test('5xx is reported once per request, without retrying', () async {
       var requests = 0;
       final inner = StubAdapter((o) {
         requests++;
@@ -348,7 +398,9 @@ void main() {
       });
       final result = await runReal(sessionFor(const [], inner));
       expect(result, isA<SearchFailed>());
-      expect(requests, 1);
+      // The queue snapshot (which no longer blocks the search) and the
+      // start command: one request each, no retries.
+      expect(requests, 2);
     });
   });
 }

@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:arr_api/arr_api.dart';
+import 'package:consolarr/features/settings/application/lock_controller.dart';
 import 'package:consolarr/features/sonarr/application/sonarr_session.dart';
 import 'package:consolarr/features/sonarr/data/sonarr_prefs_store.dart';
 import 'package:consolarr/src/cache/payload_cache.dart';
@@ -186,6 +187,19 @@ class ScriptedSonarrApi extends FakeSonarrApi {
       _run('createTag', createTagResult, label);
 }
 
+/// Test switch behind `appLockedProvider`: `container.read(
+/// testAppLockedProvider.notifier).state = true` locks the app.
+final testAppLockedProvider = NotifierProvider<TestAppLocked, bool>(
+  TestAppLocked.new,
+);
+
+class TestAppLocked extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  set locked(bool value) => state = value;
+}
+
 /// Overrides that put a [ScriptedSonarrApi] (or any API) behind the Sonarr
 /// providers, with in-memory cache and preferences and a fixed clock.
 List<Override> sonarrTestOverrides(
@@ -210,6 +224,7 @@ List<Override> sonarrTestOverrides(
       prefs ?? MemorySonarrPrefsStore(),
     ),
     clockProvider.overrideWithValue(() => clockNow),
+    appLockedProvider.overrideWith((ref) => ref.watch(testAppLockedProvider)),
   ];
 }
 
@@ -238,6 +253,7 @@ class SwitchableSonarr {
     }),
     sonarrPrefsStoreProvider.overrideWithValue(MemorySonarrPrefsStore()),
     clockProvider.overrideWithValue(DateTime.now),
+    appLockedProvider.overrideWith((ref) => ref.watch(testAppLockedProvider)),
   ];
 
   void switchToSecond(ProviderContainer c) =>
@@ -334,9 +350,12 @@ ArrQueueItem fakeQueueItem(
   double progress = 0.5,
   int? seriesId = 1,
   List<ArrStatusMessage> messages = const [],
+  String? title,
+  String? downloadId,
 }) => ArrQueueItem(
   id: id,
-  title: 'Example.Show.S01E0$id.1080p.WEB-DL',
+  downloadId: downloadId,
+  title: title ?? 'Example.Show.S01E0$id.1080p.WEB-DL',
   state: state,
   size: 1000 * 1024 * 1024,
   sizeLeft: ((1 - progress) * 1000 * 1024 * 1024).round(),
@@ -359,9 +378,11 @@ ArrRelease fakeRelease(
   int size = 1024 * 1024 * 1024,
   int ageMinutes = 120,
   int? seeders = 10,
+  String? guid,
+  String? title,
 }) => ArrRelease(
-  guid: 'guid-$i',
-  title: 'Example.Show.S01E01.1080p.WEB-DL-GRP$i',
+  guid: guid ?? 'guid-$i',
+  title: title ?? 'Example.Show.S01E01.1080p.WEB-DL-GRP$i',
   indexerId: 1,
   indexer: 'Example Indexer',
   size: size,

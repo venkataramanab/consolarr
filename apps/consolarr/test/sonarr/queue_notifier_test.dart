@@ -172,6 +172,21 @@ void main() {
       },
     );
 
+    test('polling skips its tick while the app is locked', () async {
+      final api = ScriptedSonarrApi()
+        ..queueResult = Result.ok([fakeQueueItem(1)]);
+      final c = _container(api, poll: const Duration(milliseconds: 20));
+      await c.read(queueProvider.future);
+      c.read(testAppLockedProvider.notifier).locked = true;
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+      final before = api.count('queue');
+      await Future<void>.delayed(const Duration(milliseconds: 120));
+      expect(api.count('queue'), before, reason: 'no request while locked');
+      c.read(testAppLockedProvider.notifier).locked = false;
+      await Future<void>.delayed(const Duration(milliseconds: 120));
+      expect(api.count('queue'), greaterThan(before), reason: 'resumes');
+    });
+
     test('a hidden queue does not poll', () async {
       final api = ScriptedSonarrApi()
         ..queueResult = Result.ok([fakeQueueItem(1)]);
