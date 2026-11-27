@@ -26,17 +26,18 @@ String sonarrAddLocation({String? term}) => term == null || term.isEmpty
 
 /// The detail and add screens, as child routes of the Sonarr destination.
 ///
-/// TODO(w4d): pass as `AppDestination.children` and set
-/// `parentNavigatorKey: rootNavigatorKey` once W4d's route API is on `main`.
+/// Both are full-screen flows above the shell.
 final List<RouteBase> sonarrChildRoutes = [
   GoRoute(
     path: sonarrSeriesChildPath,
+    parentNavigatorKey: rootNavigatorKey,
     builder: (context, state) => SeriesDetailScreen(
       seriesId: int.tryParse(state.pathParameters['id'] ?? '') ?? -1,
     ),
   ),
   GoRoute(
     path: sonarrAddChildPath,
+    parentNavigatorKey: rootNavigatorKey,
     builder: (context, state) =>
         AddSeriesScreen(initialTerm: state.uri.queryParameters['term']),
   ),
@@ -52,5 +53,6 @@ final sonarrDestination = AppDestination(
   kinds: const {ServiceKind.sonarr},
   screen: ScreenName.sonarrLibrary,
   switcherKind: ServiceKind.sonarr,
+  children: sonarrChildRoutes,
   builder: (context, state) => const SonarrHomeScreen(),
 );
