@@ -1,7 +1,36 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Settings and design area. Add settings events here; screens merge into
-# screen_name.
+# screen_name. Enums, ints and bools only: no URL, host, title or path can be
+# reported by construction.
 enums:
   screen_name:
-    values: [settings, settings_appearance, settings_privacy, settings_backup]
-events: {}
+    values:
+      - settings
+      - settings_appearance
+      - settings_privacy
+      - settings_backup
+      - settings_lock
+      - settings_diagnostics
+      - settings_accessibility
+      - settings_language
+      - about
+  consent_purpose_param:
+    dart: ConsentPurposeParam
+    values: [crash_reports, analytics]
+  diagnostics_channel_param:
+    dart: DiagnosticsChannelParam
+    values: [file, github]
+events:
+  app_lock_toggled:
+    description: The app lock was switched on or off.
+    params:
+      enabled: {type: bool}
+  consent_changed:
+    description: The user changed a telemetry consent switch.
+    params:
+      purpose: {type: consent_purpose_param}
+      enabled: {type: bool}
+  diagnostics_shared:
+    description: The user shared a previewed diagnostics bundle.
+    params:
+      channel: {type: diagnostics_channel_param}

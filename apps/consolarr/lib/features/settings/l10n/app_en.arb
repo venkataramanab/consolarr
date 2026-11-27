@@ -1,0 +1,734 @@
+{
+  "@@locale": "en",
+  "navSettings": "Settings",
+  "@navSettings": {
+    "description": "Label of the Settings destination in the bottom navigation bar."
+  },
+  "settingsTitle": "Settings",
+  "@settingsTitle": {
+    "description": "Title of the Settings hub screen."
+  },
+  "settingsClose": "Close",
+  "@settingsClose": {
+    "description": "Label of the close button of a settings sheet."
+  },
+  "settingsSectionServers": "Servers",
+  "@settingsSectionServers": {
+    "description": "Heading of the servers group on the Settings hub."
+  },
+  "settingsServersRow": "Manage servers",
+  "@settingsServersRow": {
+    "description": "Settings row that opens the server list."
+  },
+  "settingsServersRowSubtitle": "Add, edit and check your servers",
+  "@settingsServersRowSubtitle": {
+    "description": "Subtitle of the Settings row that opens the server list."
+  },
+  "settingsSectionDisplay": "Display",
+  "@settingsSectionDisplay": {
+    "description": "Heading of the display group on the Settings hub."
+  },
+  "settingsThemeTitle": "Theme",
+  "@settingsThemeTitle": {
+    "description": "Title of the theme choice row and its sheet."
+  },
+  "settingsThemeDark": "Dark",
+  "@settingsThemeDark": {
+    "description": "Theme option: dark."
+  },
+  "settingsThemeLight": "Light",
+  "@settingsThemeLight": {
+    "description": "Theme option: light."
+  },
+  "settingsThemeSystem": "Follow system",
+  "@settingsThemeSystem": {
+    "description": "Theme option: follow the system setting."
+  },
+  "settingsSectionSecurity": "Security",
+  "@settingsSectionSecurity": {
+    "description": "Heading of the security group on the Settings hub."
+  },
+  "settingsLockRow": "App lock",
+  "@settingsLockRow": {
+    "description": "Settings row that opens the app lock screen."
+  },
+  "settingsLockOn": "On",
+  "@settingsLockOn": {
+    "description": "State text of a setting that is switched on."
+  },
+  "settingsLockOff": "Off",
+  "@settingsLockOff": {
+    "description": "State text of a setting that is switched off."
+  },
+  "settingsBlockScreenshotsTitle": "Block screenshots",
+  "@settingsBlockScreenshotsTitle": {
+    "description": "Title of the switch that blocks screenshots and hides the app in the recent apps list."
+  },
+  "settingsBlockScreenshotsSubtitle": "Hides the app in screenshots, screen recordings and the recent apps list",
+  "@settingsBlockScreenshotsSubtitle": {
+    "description": "Explanation under the block screenshots switch."
+  },
+  "settingsSectionPrivacy": "Privacy and consent",
+  "@settingsSectionPrivacy": {
+    "description": "Heading of the privacy group on the Settings hub."
+  },
+  "settingsPrivacyRow": "Privacy and consent",
+  "@settingsPrivacyRow": {
+    "description": "Settings row that opens the privacy and consent screen."
+  },
+  "settingsPrivacyRowSubtitle": "Crash reports and anonymous usage, both off",
+  "@settingsPrivacyRowSubtitle": {
+    "description": "Subtitle of the privacy row while both switches are off."
+  },
+  "settingsPrivacyRowSubtitleOn": "Some sharing is on",
+  "@settingsPrivacyRowSubtitleOn": {
+    "description": "Subtitle of the privacy row when at least one switch is on."
+  },
+  "settingsSectionLanguage": "Language",
+  "@settingsSectionLanguage": {
+    "description": "Heading of the language group on the Settings hub."
+  },
+  "settingsLanguageRow": "Language",
+  "@settingsLanguageRow": {
+    "description": "Settings row that opens the language screen."
+  },
+  "settingsSectionAccessibility": "Accessibility",
+  "@settingsSectionAccessibility": {
+    "description": "Heading of the accessibility group on the Settings hub."
+  },
+  "settingsAccessibilityRow": "Accessibility",
+  "@settingsAccessibilityRow": {
+    "description": "Settings row that opens the accessibility screen."
+  },
+  "settingsAccessibilityRowSubtitle": "Motion, touch targets and contrast",
+  "@settingsAccessibilityRowSubtitle": {
+    "description": "Subtitle of the accessibility row."
+  },
+  "settingsSectionDiagnostics": "Diagnostics",
+  "@settingsSectionDiagnostics": {
+    "description": "Heading of the diagnostics group on the Settings hub."
+  },
+  "settingsDiagnosticsRow": "Diagnostics",
+  "@settingsDiagnosticsRow": {
+    "description": "Settings row that opens the diagnostics screen."
+  },
+  "settingsDiagnosticsRowSubtitle": "Log, connection check and sharing",
+  "@settingsDiagnosticsRowSubtitle": {
+    "description": "Subtitle of the diagnostics row."
+  },
+  "settingsSectionAbout": "About",
+  "@settingsSectionAbout": {
+    "description": "Heading of the about group on the Settings hub."
+  },
+  "settingsAboutRow": "About Consolarr",
+  "@settingsAboutRow": {
+    "description": "Settings row that opens the About screen."
+  },
+  "lockSettingsTitle": "App lock",
+  "@lockSettingsTitle": {
+    "description": "Title of the app lock settings screen."
+  },
+  "lockSwitchTitle": "Lock Consolarr",
+  "@lockSwitchTitle": {
+    "description": "Title of the switch that turns the app lock on."
+  },
+  "lockSwitchSubtitle": "Ask for your device PIN, pattern, password or biometric to open the app",
+  "@lockSwitchSubtitle": {
+    "description": "Explanation under the app lock switch."
+  },
+  "lockNoSecureLock": "Set up a screen lock (PIN, pattern, password or biometric) in your device settings to use app lock.",
+  "@lockNoSecureLock": {
+    "description": "Explains why app lock cannot be turned on: the device has no secure screen lock."
+  },
+  "lockDelayTitle": "Lock again after",
+  "@lockDelayTitle": {
+    "description": "Title of the row that chooses how long the app may stay in the background before locking."
+  },
+  "lockDelayImmediately": "Immediately",
+  "@lockDelayImmediately": {
+    "description": "Lock delay option: lock as soon as the app is left."
+  },
+  "lockDelayMinutes": "{count, plural, =1{1 minute} other{{count} minutes}}",
+  "@lockDelayMinutes": {
+    "description": "Lock delay option in minutes.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of minutes.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "lockDelayHint": "How long Consolarr can stay in the background before it asks again. It always asks after a fresh start.",
+  "@lockDelayHint": {
+    "description": "Explanation under the lock delay row."
+  },
+  "lockReasonUnlock": "Unlock Consolarr",
+  "@lockReasonUnlock": {
+    "description": "Reason shown in the system unlock prompt."
+  },
+  "lockReasonEnable": "Confirm to turn on app lock",
+  "@lockReasonEnable": {
+    "description": "Reason shown in the system prompt when turning app lock on."
+  },
+  "lockReasonDisable": "Confirm to turn off app lock",
+  "@lockReasonDisable": {
+    "description": "Reason shown in the system prompt when turning app lock off."
+  },
+  "lockEnableNotConfirmed": "App lock was not turned on.",
+  "@lockEnableNotConfirmed": {
+    "description": "Message shown when confirming the app lock did not succeed."
+  },
+  "lockDisableNotConfirmed": "App lock stays on.",
+  "@lockDisableNotConfirmed": {
+    "description": "Message shown when confirming turning the app lock off did not succeed."
+  },
+  "lockScreenTitle": "Consolarr is locked",
+  "@lockScreenTitle": {
+    "description": "Headline of the lock screen."
+  },
+  "lockScreenBody": "Unlock with your device credential to continue.",
+  "@lockScreenBody": {
+    "description": "Body text of the lock screen."
+  },
+  "lockUnlockButton": "Unlock",
+  "@lockUnlockButton": {
+    "description": "Button on the lock screen that shows the system unlock prompt."
+  },
+  "lockFailedFeedback": "That did not work. Try again.",
+  "@lockFailedFeedback": {
+    "description": "Feedback on the lock screen after a failed unlock attempt."
+  },
+  "lockCoolDown": "Too many attempts. Try again in {seconds, plural, =1{1 second} other{{seconds} seconds}}.",
+  "@lockCoolDown": {
+    "description": "Lock screen message while unlock attempts are paused.",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "description": "Seconds left in the pause.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "lockBiometricsUnavailable": "Biometrics are not available. Use your device PIN, pattern or password.",
+  "@lockBiometricsUnavailable": {
+    "description": "Lock screen note: unlock falls back to the device credential."
+  },
+  "lockRemovedTitle": "Device lock removed",
+  "@lockRemovedTitle": {
+    "description": "Headline when the device screen lock was removed while app lock is on."
+  },
+  "lockRemovedBody": "This device no longer has a screen lock, so Consolarr cannot check who you are. Set a screen lock again, or turn off app lock.",
+  "@lockRemovedBody": {
+    "description": "Explains that the device lock method was removed."
+  },
+  "lockTurnOffButton": "Turn off app lock",
+  "@lockTurnOffButton": {
+    "description": "Button on the lock screen to turn app lock off."
+  },
+  "lockTurnOffConfirmBody": "Anyone who can open this device will be able to open Consolarr.",
+  "@lockTurnOffConfirmBody": {
+    "description": "Consequence stated before turning app lock off from the lock screen."
+  },
+  "lockTurnOffConfirm": "Turn off",
+  "@lockTurnOffConfirm": {
+    "description": "Button that confirms turning app lock off."
+  },
+  "lockKeepOn": "Keep app lock",
+  "@lockKeepOn": {
+    "description": "Button that cancels turning app lock off."
+  },
+  "lockCoverLabel": "Consolarr content is hidden",
+  "@lockCoverLabel": {
+    "description": "Accessible label of the cover shown while the app content is hidden."
+  },
+  "privacyTitle": "Privacy and consent",
+  "@privacyTitle": {
+    "description": "Title of the privacy and consent screen."
+  },
+  "privacyIntro": "Consolarr sends nothing about you by default. You can choose to share two separate things. Both are off, and you can withdraw at any time.",
+  "@privacyIntro": {
+    "description": "Introduction on the privacy and consent screen."
+  },
+  "privacyCrashTitle": "Crash reports",
+  "@privacyCrashTitle": {
+    "description": "Title of the crash reports consent switch."
+  },
+  "privacyCrashWhat": "When the app crashes, sends the kind of error, the app and Android version, and the last screens you opened (screen names only). Never addresses, keys, names or titles.",
+  "@privacyCrashWhat": {
+    "description": "Explains exactly what the crash reports switch sends."
+  },
+  "privacyAnalyticsTitle": "Anonymous usage",
+  "@privacyAnalyticsTitle": {
+    "description": "Title of the anonymous usage consent switch."
+  },
+  "privacyAnalyticsWhat": "Counts which screens and actions are used, as listed below. Never addresses, keys, names or titles. No account and no identity.",
+  "@privacyAnalyticsWhat": {
+    "description": "Explains exactly what the anonymous usage switch sends."
+  },
+  "privacyListHeading": "Exactly what can be sent",
+  "@privacyListHeading": {
+    "description": "Heading above the list of event kinds that can be sent."
+  },
+  "privacyEventScreenViewed": "Which screen was opened (the screen name only)",
+  "@privacyEventScreenViewed": {
+    "description": "Payload list item for the screen viewed event."
+  },
+  "privacyEventServerAdded": "That a server was added, and its kind (for example Sonarr)",
+  "@privacyEventServerAdded": {
+    "description": "Payload list item for the server added event."
+  },
+  "privacyEventConnectionTest": "Whether a connection test passed, or the kind of failure",
+  "@privacyEventConnectionTest": {
+    "description": "Payload list item for the connection test result event."
+  },
+  "privacyEventCertificate": "Whether you trusted, rejected or hit a changed certificate (no certificate details)",
+  "@privacyEventCertificate": {
+    "description": "Payload list item for the certificate decision event."
+  },
+  "privacyEventAppLock": "That app lock was switched on or off",
+  "@privacyEventAppLock": {
+    "description": "Payload list item for the app lock toggled event."
+  },
+  "privacyEventConsent": "That you changed one of these switches",
+  "@privacyEventConsent": {
+    "description": "Payload list item for the consent changed event."
+  },
+  "privacyEventDiagnostics": "That you shared diagnostics, and how (file or GitHub)",
+  "@privacyEventDiagnostics": {
+    "description": "Payload list item for the diagnostics shared event."
+  },
+  "privacyEventOther": "Other feature actions, as counts of closed choices only",
+  "@privacyEventOther": {
+    "description": "Payload list item covering events of other features."
+  },
+  "privacyWithdrawHint": "Turning a switch off stops collection at once and clears anything waiting to be sent.",
+  "@privacyWithdrawHint": {
+    "description": "Explains that withdrawing consent takes effect at once."
+  },
+  "privacyNoServiceNote": "This build contains no reporting service, so nothing is sent even when a switch is on.",
+  "@privacyNoServiceNote": {
+    "description": "Note shown when the build has no telemetry service installed."
+  },
+  "diagTitle": "Diagnostics",
+  "@diagTitle": {
+    "description": "Title of the diagnostics screen."
+  },
+  "diagLogSection": "In-app log",
+  "@diagLogSection": {
+    "description": "Heading of the in-app log group."
+  },
+  "diagLogSwitch": "Keep a log on this device",
+  "@diagLogSwitch": {
+    "description": "Title of the switch that turns the in-app log on."
+  },
+  "diagLogSwitchHint": "Off by default. Kept in memory only, never sent anywhere by itself, and cleared when you close the app.",
+  "@diagLogSwitchHint": {
+    "description": "Explanation under the log switch."
+  },
+  "diagLevelTitle": "Level",
+  "@diagLevelTitle": {
+    "description": "Title of the log level selector."
+  },
+  "diagLevelDebug": "Debug",
+  "@diagLevelDebug": {
+    "description": "Log level: debug."
+  },
+  "diagLevelInfo": "Info",
+  "@diagLevelInfo": {
+    "description": "Log level: info."
+  },
+  "diagLevelWarning": "Warning",
+  "@diagLevelWarning": {
+    "description": "Log level: warning."
+  },
+  "diagLevelError": "Error",
+  "@diagLevelError": {
+    "description": "Log level: error."
+  },
+  "diagOffTitle": "The log is off",
+  "@diagOffTitle": {
+    "description": "Headline shown when the log is off."
+  },
+  "diagOffBody": "Turn it on to record what happens while you reproduce a problem.",
+  "@diagOffBody": {
+    "description": "Hint shown when the log is off."
+  },
+  "diagEmptyTitle": "Nothing logged yet",
+  "@diagEmptyTitle": {
+    "description": "Headline shown when the log is on but empty."
+  },
+  "diagEmptyBody": "Entries appear here while the log is on.",
+  "@diagEmptyBody": {
+    "description": "Hint shown when the log is on but empty."
+  },
+  "diagFilterEmptyTitle": "No entries at this level",
+  "@diagFilterEmptyTitle": {
+    "description": "Headline shown when the level filter hides every entry."
+  },
+  "diagCapturing": "Capturing · {count, plural, =1{1 entry} other{{count} entries}}",
+  "@diagCapturing": {
+    "description": "Status of the running log with the number of entries.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of entries.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "diagFilterLabel": "Show level",
+  "@diagFilterLabel": {
+    "description": "Label of the log level filter."
+  },
+  "diagFilterAll": "All",
+  "@diagFilterAll": {
+    "description": "Log filter option: every level."
+  },
+  "diagClear": "Clear log",
+  "@diagClear": {
+    "description": "Button that clears the in-app log."
+  },
+  "diagRedactionNotice": "Addresses, keys, names, titles and file paths are removed from log lines before they are stored.",
+  "@diagRedactionNotice": {
+    "description": "Notice that log lines are redacted."
+  },
+  "diagShareButton": "Review and share…",
+  "@diagShareButton": {
+    "description": "Button that opens the diagnostics preview."
+  },
+  "diagCheckRow": "Connection check",
+  "@diagCheckRow": {
+    "description": "Row that opens the step-by-step connection check."
+  },
+  "diagCheckRowSubtitle": "Find out why a server does not connect",
+  "@diagCheckRowSubtitle": {
+    "description": "Subtitle of the connection check row."
+  },
+  "diagPreviewTitle": "Review before sharing",
+  "@diagPreviewTitle": {
+    "description": "Title of the diagnostics preview screen."
+  },
+  "diagPreviewIntro": "This is everything that will be shared. Nothing else is included.",
+  "@diagPreviewIntro": {
+    "description": "Introduction on the diagnostics preview screen."
+  },
+  "diagShareFile": "Share as text",
+  "@diagShareFile": {
+    "description": "Button that shares the diagnostics text through the system share sheet."
+  },
+  "diagOpenGithub": "Open a GitHub issue",
+  "@diagOpenGithub": {
+    "description": "Button that opens a pre-filled GitHub issue in the browser."
+  },
+  "diagGithubNote": "Opens github.com in your browser with a short summary filled in. The full text is not put in the address: share the file first and attach it to the issue.",
+  "@diagGithubNote": {
+    "description": "Explains what the GitHub issue button does."
+  },
+  "diagTruncationNote": "[Shortened: attach the shared diagnostics file]",
+  "@diagTruncationNote": {
+    "description": "Note appended to a GitHub issue body that was shortened."
+  },
+  "diagIssueTitle": "Consolarr diagnostics",
+  "@diagIssueTitle": {
+    "description": "Title of the pre-filled GitHub issue."
+  },
+  "diagOpenFailed": "Could not open the browser.",
+  "@diagOpenFailed": {
+    "description": "Message shown when the browser could not be opened."
+  },
+  "diagShareTruncationNote": "[Shortened to fit the share limit]",
+  "@diagShareTruncationNote": {
+    "description": "Note appended to the shared diagnostics text when it was cut to fit the share size limit."
+  },
+  "diagShareFailed": "Could not share the file.",
+  "@diagShareFailed": {
+    "description": "Message shown when the share sheet failed."
+  },
+  "checkTitle": "Connection check",
+  "@checkTitle": {
+    "description": "Title of the connection check screen."
+  },
+  "checkChooseServer": "Choose a server",
+  "@checkChooseServer": {
+    "description": "Heading above the server choice on the connection check screen."
+  },
+  "checkNoServers": "Add a server first to check its connection.",
+  "@checkNoServers": {
+    "description": "Shown when no server exists to check."
+  },
+  "checkRun": "Run check",
+  "@checkRun": {
+    "description": "Button that starts the connection check."
+  },
+  "checkRunAgain": "Run again",
+  "@checkRunAgain": {
+    "description": "Button that repeats the connection check."
+  },
+  "checkStepDns": "Name resolution",
+  "@checkStepDns": {
+    "description": "Connection check step: finding the server by its name."
+  },
+  "checkStepConnect": "Connection",
+  "@checkStepConnect": {
+    "description": "Connection check step: opening a connection."
+  },
+  "checkStepTls": "Secure connection",
+  "@checkStepTls": {
+    "description": "Connection check step: the encrypted connection and certificate."
+  },
+  "checkStepAuth": "Sign-in",
+  "@checkStepAuth": {
+    "description": "Connection check step: authentication."
+  },
+  "checkStepVersion": "API and version",
+  "@checkStepVersion": {
+    "description": "Connection check step: the service API and its version."
+  },
+  "checkStatePending": "Waiting",
+  "@checkStatePending": {
+    "description": "Connection check step state: not started."
+  },
+  "checkStateRunning": "Running",
+  "@checkStateRunning": {
+    "description": "Connection check step state: running."
+  },
+  "checkStatePass": "Passed",
+  "@checkStatePass": {
+    "description": "Connection check step state: passed."
+  },
+  "checkStateFail": "Failed",
+  "@checkStateFail": {
+    "description": "Connection check step state: failed."
+  },
+  "checkStateSkipped": "Not run",
+  "@checkStateSkipped": {
+    "description": "Connection check step state: skipped because an earlier step failed."
+  },
+  "checkStateNotNeeded": "Not needed",
+  "@checkStateNotNeeded": {
+    "description": "Connection check step state: not applicable for this server."
+  },
+  "checkDnsFailedMessage": "The server name could not be found.",
+  "@checkDnsFailedMessage": {
+    "description": "Connection check message when name resolution failed."
+  },
+  "checkDnsFailedHint": "Check the spelling of the address and that this device is on the right network or VPN.",
+  "@checkDnsFailedHint": {
+    "description": "Fix hint when name resolution failed."
+  },
+  "checkConnectFailedMessage": "The server did not accept a connection.",
+  "@checkConnectFailedMessage": {
+    "description": "Connection check message when the connection could not be opened."
+  },
+  "checkConnectFailedHint": "Check that the server is running, the port is right and no firewall blocks it.",
+  "@checkConnectFailedHint": {
+    "description": "Fix hint when the connection could not be opened."
+  },
+  "checkAllPassed": "Every step passed.",
+  "@checkAllPassed": {
+    "description": "Summary when every connection check step passed."
+  },
+  "checkServerVersion": "Server version {version}",
+  "@checkServerVersion": {
+    "description": "Server version reported by a passing connection check.",
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "description": "Version string reported by the server."
+      }
+    }
+  },
+  "checkSummaryFailed": "The check stopped at “{step}”.",
+  "@checkSummaryFailed": {
+    "description": "Summary naming the step where the connection check failed.",
+    "placeholders": {
+      "step": {
+        "type": "String",
+        "description": "Name of the failed step."
+      }
+    }
+  },
+  "a11yTitle": "Accessibility",
+  "@a11yTitle": {
+    "description": "Title of the accessibility screen."
+  },
+  "a11yMotionTitle": "Reduce motion",
+  "@a11yMotionTitle": {
+    "description": "Title of the reduce motion switch."
+  },
+  "a11yMotionSubtitle": "Turns off animations and moving effects, on top of your system setting",
+  "@a11yMotionSubtitle": {
+    "description": "Explanation under the reduce motion switch."
+  },
+  "a11yTargetsTitle": "Larger touch targets",
+  "@a11yTargetsTitle": {
+    "description": "Title of the larger touch targets switch."
+  },
+  "a11yTargetsSubtitle": "Makes buttons and rows taller and easier to hit",
+  "@a11yTargetsSubtitle": {
+    "description": "Explanation under the larger touch targets switch."
+  },
+  "a11yContrastTitle": "High contrast",
+  "@a11yContrastTitle": {
+    "description": "Title of the high contrast switch."
+  },
+  "a11yContrastSubtitle": "Stronger text and status colours on deeper surfaces",
+  "@a11yContrastSubtitle": {
+    "description": "Explanation under the high contrast switch."
+  },
+  "a11yFollowsSystem": "Text size and screen reader settings follow your device settings.",
+  "@a11yFollowsSystem": {
+    "description": "Note that font scale and screen reader come from the device."
+  },
+  "languageTitle": "Language",
+  "@languageTitle": {
+    "description": "Title of the language screen."
+  },
+  "languageFollowSystem": "Follow system",
+  "@languageFollowSystem": {
+    "description": "Language option: use the device language."
+  },
+  "languageHint": "Right-to-left languages mirror the whole layout.",
+  "@languageHint": {
+    "description": "Explanation on the language screen."
+  },
+  "aboutVersionTitle": "Version",
+  "@aboutVersionTitle": {
+    "description": "Title of the version row on the About screen."
+  },
+  "aboutVersionValue": "{version} ({build})",
+  "@aboutVersionValue": {
+    "description": "Version and build number shown on the About screen.",
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "description": "App version."
+      },
+      "build": {
+        "type": "String",
+        "description": "Build number."
+      }
+    }
+  },
+  "aboutLicensesRow": "Open-source licenses",
+  "@aboutLicensesRow": {
+    "description": "About row that opens the licenses page."
+  },
+  "aboutSourceRow": "Source code",
+  "@aboutSourceRow": {
+    "description": "About row that opens the project on GitHub."
+  },
+  "aboutSourceRowSubtitle": "Opens github.com in your browser",
+  "@aboutSourceRowSubtitle": {
+    "description": "Subtitle of the source code row."
+  },
+  "aboutPrivacyHeading": "Privacy statement",
+  "@aboutPrivacyHeading": {
+    "description": "Heading of the privacy statement on the About screen."
+  },
+  "aboutPrivacyBody": "Consolarr talks only to the servers you add. On its own it contacts no other host. It reaches others only if you choose: if you switch on crash reports or anonymous usage in a build that includes a reporting service, or if you tap “Open a GitHub issue” or “Source code”, which opens github.com in your browser. No account or identity is collected.",
+  "@aboutPrivacyBody": {
+    "description": "Privacy statement on the About screen listing every non-user host the app can contact."
+  },
+  "aboutOpenFailed": "Could not open the browser.",
+  "@aboutOpenFailed": {
+    "description": "Message shown when the browser could not be opened from the About screen."
+  },
+  "settingsCancel": "Cancel",
+  "@settingsCancel": {
+    "description": "Label of a button that cancels a confirmation."
+  },
+  "diagClearConfirmTitle": "Clear the log?",
+  "@diagClearConfirmTitle": {
+    "description": "Title of the confirmation before clearing the in-app log."
+  },
+  "diagClearConfirmBody": "The entries stored on this device are removed. This cannot be undone.",
+  "@diagClearConfirmBody": {
+    "description": "Consequence stated before clearing the in-app log."
+  },
+  "diagClearConfirm": "Clear",
+  "@diagClearConfirm": {
+    "description": "Button that confirms clearing the in-app log."
+  },
+  "diagPreviewEmptyLog": "The log is empty or off, so the bundle has no log lines.",
+  "@diagPreviewEmptyLog": {
+    "description": "Note on the diagnostics preview when there are no log lines."
+  },
+  "diagLoadFailed": "The diagnostics could not be prepared.",
+  "@diagLoadFailed": {
+    "description": "Error headline on the diagnostics preview."
+  },
+  "checkLoadFailed": "The server list could not be read.",
+  "@checkLoadFailed": {
+    "description": "Error headline on the connection check when the servers cannot be read."
+  },
+  "lockLoadFailedTitle": "Settings could not be read",
+  "@lockLoadFailedTitle": {
+    "description": "Headline of the lock screen shown when the stored settings cannot be read; the app stays closed."
+  },
+  "lockLoadFailedBody": "For your security Consolarr stays closed until its settings can be read.",
+  "@lockLoadFailedBody": {
+    "description": "Explains why the app is closed when the stored settings cannot be read."
+  },
+  "lockLoadFailedRetry": "Try again",
+  "@lockLoadFailedRetry": {
+    "description": "Button that reads the stored settings again."
+  },
+  "lockCoolDownPaused": "Too many attempts. Unlocking is paused for a moment.",
+  "@lockCoolDownPaused": {
+    "description": "Spoken status while unlock attempts are paused; fixed text so the countdown is not read out every second."
+  },
+  "lockCoolDownOver": "You can try unlocking again.",
+  "@lockCoolDownOver": {
+    "description": "Announced once when the pause after too many unlock attempts has ended."
+  },
+  "a11yTransparencyTitle": "Reduce transparency",
+  "@a11yTransparencyTitle": {
+    "description": "Title of the switch that replaces frosted glass with solid surfaces."
+  },
+  "a11yTransparencySubtitle": "Use solid backgrounds instead of frosted glass. Always on with high contrast.",
+  "@a11yTransparencySubtitle": {
+    "description": "Explanation under the reduce transparency switch."
+  },
+  "settingsRetry": "Try again",
+  "@settingsRetry": {
+    "description": "Retry button on settings screens that failed to load."
+  },
+  "diagLoadFailedTitle": "Diagnostics unavailable",
+  "@diagLoadFailedTitle": {
+    "description": "Error headline on the diagnostics preview when the bundle could not be prepared."
+  },
+  "diagLoadFailedHint": "Nothing was shared. Try again; if it keeps failing, restart the app.",
+  "@diagLoadFailedHint": {
+    "description": "Hint under the diagnostics preview error: nothing was shared and what to do."
+  },
+  "checkLoadFailedTitle": "Connection check unavailable",
+  "@checkLoadFailedTitle": {
+    "description": "Error headline on the connection check when the server list could not be read."
+  },
+  "checkLoadFailedHint": "Try again; if it keeps failing, restart the app.",
+  "@checkLoadFailedHint": {
+    "description": "Hint under the connection check error."
+  },
+  "checkRunFailed": "The check could not finish. Run it again.",
+  "@checkRunFailed": {
+    "description": "Shown when the connection check stopped because of an unexpected problem."
+  },
+  "diagAttachNote": "Please attach the diagnostics file that you shared from Consolarr to this issue.",
+  "@diagAttachNote": {
+    "description": "Line in the pre-filled GitHub issue asking the reporter to attach the shared diagnostics file."
+  },
+  "diagAnnounceOn": "Log capture is on",
+  "@diagAnnounceOn": {
+    "description": "Announced by the screen reader when the in-app log is switched on."
+  },
+  "diagAnnounceOff": "Log capture is off and the log was deleted",
+  "@diagAnnounceOff": {
+    "description": "Announced by the screen reader when the in-app log is switched off."
+  },
+  "diagAnnounceCleared": "Log cleared",
+  "@diagAnnounceCleared": {
+    "description": "Announced by the screen reader after the in-app log was cleared."
+  }
+}

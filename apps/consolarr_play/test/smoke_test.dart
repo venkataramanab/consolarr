@@ -7,7 +7,15 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets('play entry point renders the shared app', (tester) async {
-    await tester.pumpWidget(const ProviderScope(child: ConsolarrApp()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          // The lock gate waits for the stored settings; keep them in memory.
+          settingsStoreProvider.overrideWithValue(InMemorySettingsStore()),
+        ],
+        child: const ConsolarrApp(),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(Scaffold), findsWidgets);
     // Unmount so the database stream's cleanup timer fires before the test ends.

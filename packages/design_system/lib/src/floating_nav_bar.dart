@@ -4,6 +4,7 @@ import 'package:design_system/src/glass_bar.dart';
 import 'package:design_system/src/radii.dart';
 import 'package:design_system/src/roles_context.dart';
 import 'package:design_system/src/spacing.dart';
+import 'package:design_system/src/touch_targets.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// One destination of a [FloatingNavBar].
@@ -114,8 +115,8 @@ class _NavItem extends StatelessWidget {
         onTap: onTap,
         borderRadius: ConsolarrRadii.bar,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            minHeight: ConsolarrSpacing.minTapTarget,
+          constraints: BoxConstraints(
+            minHeight: TouchTargets.of(context).minimum,
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(

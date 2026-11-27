@@ -8,8 +8,10 @@ library;
 
 export 'src/analytics.dart';
 export 'src/breadcrumbs.dart';
+export 'src/consent_gating.dart';
 export 'src/consent_store.dart';
 export 'src/crash_reporter.dart';
+export 'src/diagnostics.dart';
 export 'src/event_tracker.dart';
 export 'src/events/catalog.dart';
 export 'src/logger.dart';
