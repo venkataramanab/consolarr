@@ -1,0 +1,15 @@
+{
+  "@@locale": "en",
+  "aboutTitle": "About",
+  "@aboutTitle": {
+    "description": "Title of the About screen app bar."
+  },
+  "aboutLicense": "Consolarr is free software, licensed under GPL-3.0-or-later.",
+  "@aboutLicense": {
+    "description": "Licensing statement on the About screen."
+  },
+  "aboutIndependence": "Consolarr is an independent project and is not affiliated with Sonarr, Radarr, the Servarr project or any other app.",
+  "@aboutIndependence": {
+    "description": "Disclaimer on the About screen stating that the project is independent."
+  }
+}

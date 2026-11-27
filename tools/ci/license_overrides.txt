@@ -1,0 +1,3 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Manually reviewed licences for packages the detector cannot classify.
+# Format: <package> <SPDX id>

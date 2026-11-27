@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+name: Setup Flutter workspace
+description: Installs the Flutter version pinned in .fvmrc and resolves the workspace.
+runs:
+  using: composite
+  steps:
+    - name: Read pinned Flutter version
+      id: version
+      shell: bash
+      run: echo "flutter=$(jq -r .flutter .fvmrc)" >> "$GITHUB_OUTPUT"
+
+    - name: Install Flutter
+      uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+      with:
+        channel: stable
+        flutter-version: ${{ steps.version.outputs.flutter }}
+        cache: true
+
+    - name: Resolve dependencies
+      shell: bash
+      run: |
+        flutter config --no-analytics
+        flutter pub get

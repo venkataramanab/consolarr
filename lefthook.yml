@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Install: `lefthook install` (https://github.com/evilmartians/lefthook).
+# Requires gitleaks on PATH (https://github.com/gitleaks/gitleaks).
+pre-commit:
+  parallel: true
+  commands:
+    gitleaks:
+      run: gitleaks protect --staged --redact --verbose --config .gitleaks.toml
+    spdx:
+      run: bash tools/ci/check_spdx.sh
+    format:
+      glob: "*.dart"
+      run: dart format --output=none --set-exit-if-changed {staged_files}

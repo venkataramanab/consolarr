@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Exact repo-relative paths of .dart files allowed to exceed 512 KB. Keep this
+# empty unless a file is provably inert and cannot be split: scanners (Semgrep,
+# the analyzer plugin) are slow on very large files and attackers pad files to
+# hide code. Entries need code-owner review (see .github/CODEOWNERS).

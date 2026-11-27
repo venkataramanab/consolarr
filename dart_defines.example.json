@@ -1,0 +1,5 @@
+{
+  "CONSOLARR_TELEMETRY_ENDPOINT": "https://telemetry.example/ingest",
+  "CONSOLARR_CRASH_DSN": "https://test-key-0000000000000000@crash.example/0",
+  "CONSOLARR_BUILD_CHANNEL": "dev"
+}

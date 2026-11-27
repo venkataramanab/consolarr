@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+name: l10n
+description: Generated localizations (merged from per-feature ARB files).
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.14.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.3
+  material_ui: ^1.11.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  generate: true

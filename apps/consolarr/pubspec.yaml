@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+name: consolarr
+description: Consolarr (foss) - remote control for self-hosted media services.
+publish_to: none
+version: 0.1.0+1
+resolution: workspace
+
+environment:
+  sdk: ^3.14.0
+
+dependencies:
+  material_ui: ^1.11.1
+  design_system:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  flutter_riverpod: ^3.5.0
+  go_router: ^18.1.4
+  l10n:
+  observability:
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  test_harness:
+
+flutter:
+  uses-material-design: true

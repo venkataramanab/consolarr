@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+title = "Consolarr gitleaks configuration"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Obviously fake fixture keys."
+# Anchored: only a secret whose entire value is a fake fixture key is ignored.
+# There is deliberately no path allowlist, so a real secret hidden in any file
+# (including example files) is still reported.
+regexes = [
+  '''^test-key-0{4,}$''',
+  '''^0123456789abcdef0123456789abcdef$''',
+]

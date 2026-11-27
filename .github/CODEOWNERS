@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Security-critical paths need a review from the project owner. Enable
+# "Require review from Code Owners" in the branch protection rules for main.
+/packages/security/**  @venkataramanab
+/tools/**              @venkataramanab
+/.github/**            @venkataramanab
+/.gitleaks.toml        @venkataramanab
+/.semgrepignore        @venkataramanab
+# Analyzer configuration (excludes can hide files from the custom lints), the
+# Semgrep rules and the CI check scripts that enforce them.
+/analysis_options.yaml  @venkataramanab
+analysis_options.yaml   @venkataramanab
+/tools/semgrep/**       @venkataramanab
+/tools/ci/**            @venkataramanab
+/tools/consolarr_lints/** @venkataramanab

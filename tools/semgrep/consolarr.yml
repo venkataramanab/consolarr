@@ -1,0 +1,93 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+rules:
+  - id: consolarr-bad-certificate-callback
+    languages: [dart]
+    severity: ERROR
+    message: >-
+      TLS trust may only be customised (badCertificateCallback,
+      onBadCertificate, setTrustedCertificates, withTrustedRoots: <anything but literal true>) in
+      packages/security/lib/src/http/secure_http_client_factory.dart.
+    # Applies to every Dart file, generated (*.g.dart) ones included.
+    pattern-regex: \b(?:badCertificateCallback|onBadCertificate|setTrustedCertificates(?:Bytes)?)\b|withTrustedRoots\s*:(?!\s*true\b)
+    paths:
+      include:
+        - "apps/"
+        - "packages/"
+      exclude:
+        - packages/security/lib/src/http/secure_http_client_factory.dart
+
+  - id: consolarr-http-overrides
+    languages: [dart]
+    severity: ERROR
+    message: >-
+      HttpOverrides can replace every HttpClient and its trust policy. It is
+      only allowed in the secure client factory and in the test harness's
+      access guard (which only observes client creation).
+    pattern-regex: \bHttpOverrides\b
+    paths:
+      include:
+        - "apps/"
+        - "packages/"
+      exclude:
+        - packages/security/lib/src/http/secure_http_client_factory.dart
+        - packages/test_harness/lib/src/access_guard.dart
+        - packages/test_harness/test/access_guard_test.dart
+
+  - id: consolarr-pin-confirmation-construction
+    languages: [dart]
+    severity: ERROR
+    message: >-
+      UserPinConfirmation proves the user accepted a certificate fingerprint.
+      Construct it only in the confirmation UI (apps/*/lib/features/) right
+      after the user's explicit accept, never in services or packages.
+      The rule matches the constructor name `userAccepted` itself, not the
+      class name, so `typedef C = UserPinConfirmation;`, import prefixes and
+      constructor tear-offs (`C.userAccepted`) cannot get around it.
+    pattern-regex: \buserAccepted\b
+    paths:
+      include:
+        - "apps/"
+        - "packages/"
+      exclude:
+        - "apps/*/lib/features/"
+        - "apps/*/test/"
+        - "packages/*/test/"
+        - packages/security/lib/src/pin_store.dart
+
+  - id: consolarr-direct-http-client
+    languages: [dart]
+    severity: ERROR
+    message: >-
+      Do not construct dart:io HttpClient directly; obtain clients from
+      SecureHttpClientFactory so one trust policy applies.
+    pattern-regex: \bHttpClient\s*\(
+    paths:
+      include:
+        - "apps/*/lib/"
+        - "packages/*/lib/"
+      exclude:
+        - packages/security/lib/
+        - packages/test_harness/lib/
+
+  - id: consolarr-cleartext-url-literal
+    languages: [dart]
+    severity: ERROR
+    message: >-
+      Hard-coded http:// URL. Use https, or a reserved example host in tests.
+    pattern-regex: |-
+      ["']http://(?!192\.0\.2\.|[A-Za-z0-9.-]*\.(example|invalid|test)\b|localhost\b)
+    paths:
+      include:
+        - "apps/*/lib/"
+        - "packages/*/lib/"
+
+  - id: consolarr-credentials-in-url-literal
+    languages: [dart]
+    severity: ERROR
+    message: URL literal contains credentials (user info). Keep credentials separate.
+    pattern-regex: |-
+      ["']https?://[^/\s"'@]+:[^/\s"'@]+@
+    paths:
+      include:
+        - "apps/*/lib/"
+        - "packages/*/lib/"
