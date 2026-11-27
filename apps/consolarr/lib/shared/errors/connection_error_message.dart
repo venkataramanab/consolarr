@@ -38,6 +38,20 @@ ErrorMessage connectionErrorMessage(AppLocalizations l10n, AppError error) {
     );
   }
   if (error.category == ErrorCategory.parseError &&
+      error.debugDetail == 'invalid port') {
+    return ErrorMessage(
+      message: l10n.connErrorInvalidPortMessage,
+      hint: l10n.connErrorInvalidPortHint,
+    );
+  }
+  if (error.category == ErrorCategory.parseError &&
+      error.debugDetail == 'host must be ascii') {
+    return ErrorMessage(
+      message: l10n.connErrorNonAsciiHostMessage,
+      hint: l10n.connErrorNonAsciiHostHint,
+    );
+  }
+  if (error.category == ErrorCategory.parseError &&
       _invalidInputDetails.contains(error.debugDetail)) {
     return ErrorMessage(
       message: l10n.connErrorInvalidInputMessage,
