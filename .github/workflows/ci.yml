@@ -6,8 +6,9 @@ on:
   push:
     branches: [main]
 
-# Least privilege by default. No secrets are used anywhere in this workflow:
-# every job must work on pull requests from forks.
+# Least privilege by default. The only secret is CLEANROOM_TERMS, read by the
+# repo-guard step alone; it is empty on pull requests from forks, where that
+# check is skipped. Every other job works without any secret.
 permissions:
   contents: read
 
@@ -45,10 +46,21 @@ jobs:
       - name: SPDX headers
         run: bash tools/ci/check_spdx.sh
 
-      - name: Generated l10n files are up to date
+      - name: No lint or Semgrep suppressions outside the allowlist
+        run: bash tools/ci/check_suppressions.sh
+
+      - name: CI guard self-tests (guards fail on planted violations)
+        run: bash tools/ci/selftest.sh
+
+      - name: Generated l10n files are up to date (tracked and untracked)
         run: |
           dart run packages/l10n/tool/build_l10n.dart
-          git diff --exit-code -- packages/l10n
+          changes=$(git status --porcelain -- packages/l10n)
+          if [ -n "$changes" ]; then
+            echo "::error::Generated l10n files are stale or untracked; run 'dart run melos run l10n' and commit:"
+            echo "$changes"
+            exit 1
+          fi
 
   test:
     name: Unit, widget and golden tests
@@ -99,21 +111,41 @@ jobs:
 
       - name: Repo guard (credential files, clean-room terms)
         env:
-          # Repository *variable* (not a secret). Empty/unset skips the term
-          # check. The script never prints the terms.
-          CLEANROOM_TERMS: ${{ vars.CLEANROOM_TERMS }}
+          # A repository *secret*, so the runner masks it in every log line
+          # (repository variables are printed in clear in the log header).
+          # Unavailable on pull requests from forks: the term check is then
+          # skipped cleanly. Runs on pushes to main and same-repo PRs. The
+          # script never prints terms, matching paths or matching lines.
+          CLEANROOM_TERMS: ${{ secrets.CLEANROOM_TERMS }}
         run: bash tools/ci/repo_guard.sh
 
-      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
-        with:
-          go-version: stable
-          cache: false
+      - name: Validate Gradle wrappers
+        uses: gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
 
-      - name: Install gitleaks and osv-scanner (Go module proxy, checksum-verified)
+      - name: Install gitleaks and osv-scanner (pinned releases, SHA-256 verified)
         run: |
-          go install github.com/gitleaks/gitleaks/v8@v8.30.1
-          go install github.com/google/osv-scanner/v2/cmd/osv-scanner@v2.7.1
-          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+          set -euo pipefail
+          tmp="$(mktemp -d)"
+          bin="$HOME/.local/bin"
+          mkdir -p "$bin"
+
+          curl --fail --silent --show-error --location --retry 3 \
+            --output "$tmp/gitleaks.tar.gz" \
+            https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  $tmp/gitleaks.tar.gz" | sha256sum -c -
+          tar -xzf "$tmp/gitleaks.tar.gz" -C "$tmp" gitleaks
+          install -m 0755 "$tmp/gitleaks" "$bin/gitleaks"
+
+          curl --fail --silent --show-error --location --retry 3 \
+            --output "$tmp/osv-scanner" \
+            https://github.com/google/osv-scanner/releases/download/v2.7.1/osv-scanner_linux_amd64
+          echo "fb7dab19a8bd9bbe5c3189f09d4b7ee1820c9553a23bac202648a56efd2f6ee8  $tmp/osv-scanner" | sha256sum -c -
+          install -m 0755 "$tmp/osv-scanner" "$bin/osv-scanner"
+
+          echo "$bin" >> "$GITHUB_PATH"
+
+      - name: gitleaks canary (a planted token must be detected)
+        run: bash tools/ci/gitleaks_canary.sh
 
       - name: gitleaks (history)
         run: gitleaks git --config .gitleaks.toml --redact --verbose .
@@ -121,8 +153,11 @@ jobs:
       - name: gitleaks (working tree)
         run: gitleaks dir --config .gitleaks.toml --redact --verbose .
 
-      - name: osv-scanner on pubspec.lock
-        run: osv-scanner scan source --lockfile=pubspec.lock
+      - name: osv-scanner on pubspec.lock files
+        run: >-
+          osv-scanner scan source
+          --lockfile=pubspec.lock
+          --lockfile=tools/consolarr_lints/pubspec.lock
 
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
@@ -130,7 +165,8 @@ jobs:
 
       - name: semgrep (project Dart rules)
         run: |
-          python -m pip install --disable-pip-version-check semgrep==1.187.0
+          python -m pip install --disable-pip-version-check --require-hashes --only-binary=:all: \
+            -r tools/ci/semgrep-requirements.txt
           semgrep scan --config tools/semgrep/consolarr.yml --error --metrics=off apps packages
 
       - name: semgrep (registry Dart rules, advisory)
@@ -140,7 +176,10 @@ jobs:
       - uses: ./.github/actions/setup-flutter
 
       - name: Dependency licences are GPL-3.0-or-later compatible
-        run: dart run tools/ci/check_licenses.dart pubspec.lock
+        run: |
+          (cd tools/consolarr_lints && dart pub get)
+          dart run tools/ci/check_licenses.dart pubspec.lock
+          dart run tools/ci/check_licenses.dart tools/consolarr_lints/pubspec.lock
 
   workflows:
     name: Lint workflows
@@ -150,14 +189,16 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
-        with:
-          go-version: stable
-          cache: false
-      - name: actionlint
+      - name: actionlint (pinned release, SHA-256 verified)
         run: |
-          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
-          "$(go env GOPATH)/bin/actionlint"
+          set -euo pipefail
+          tmp="$(mktemp -d)"
+          curl --fail --silent --show-error --location --retry 3 \
+            --output "$tmp/actionlint.tar.gz" \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  $tmp/actionlint.tar.gz" | sha256sum -c -
+          tar -xzf "$tmp/actionlint.tar.gz" -C "$tmp" actionlint
+          "$tmp/actionlint"
 
   build:
     name: Build ${{ matrix.app }} (debug + release size gate)
@@ -177,18 +218,42 @@ jobs:
           java-version: "21"
       - uses: ./.github/actions/setup-flutter
 
-      # No secrets: telemetry stays off and release builds fall back to the
-      # debug signing key because key.properties is absent.
+      # No secrets: telemetry stays off. Release builds refuse to run without
+      # key.properties unless debug signing is explicitly allowed; CI has no
+      # signing key, so it opts in (the APK is never published).
       - name: Debug APK
         working-directory: apps/${{ matrix.app }}
         run: flutter build apk --debug
 
+      - name: Merged manifest is hardened (debug)
+        working-directory: apps/${{ matrix.app }}
+        run: >-
+          python3 ../../tools/ci/check_merged_manifest.py
+          build/app/intermediates/merged_manifests/debug/processDebugManifest/AndroidManifest.xml
+
+      - name: Release build without opt-in is refused (no key.properties)
+        working-directory: apps/${{ matrix.app }}
+        run: |
+          if flutter build apk --release --target-platform android-arm64 >"$RUNNER_TEMP/refused.log" 2>&1; then
+            echo "::error::A release build without key.properties must fail."
+            exit 1
+          fi
+          grep -q "Release build refused" "$RUNNER_TEMP/refused.log"
+
       - name: Release APK (arm64, R8, obfuscated)
         working-directory: apps/${{ matrix.app }}
+        env:
+          ORG_GRADLE_PROJECT_consolarr.allowDebugSigning: "true"
         run: >-
           flutter build apk --release
           --target-platform android-arm64
           --obfuscate --split-debug-info=build/debug-info
+
+      - name: Merged manifest is hardened (release)
+        working-directory: apps/${{ matrix.app }}
+        run: >-
+          python3 ../../tools/ci/check_merged_manifest.py --release
+          build/app/intermediates/merged_manifests/release/processReleaseManifest/AndroidManifest.xml
 
       - name: APK size gate (20 MiB)
         working-directory: apps/${{ matrix.app }}

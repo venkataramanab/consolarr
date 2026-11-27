@@ -33,6 +33,24 @@ rules:
         - packages/test_harness/lib/src/access_guard.dart
         - packages/test_harness/test/access_guard_test.dart
 
+  - id: consolarr-pin-confirmation-construction
+    languages: [dart]
+    severity: ERROR
+    message: >-
+      UserPinConfirmation proves the user accepted a certificate fingerprint.
+      Construct it only in the confirmation UI (apps/*/lib/features/) right
+      after the user's explicit accept, never in services or packages.
+    pattern-regex: \bUserPinConfirmation\s*\.\s*userAccepted\b
+    paths:
+      include:
+        - "apps/"
+        - "packages/"
+      exclude:
+        - "apps/*/lib/features/"
+        - "apps/*/test/"
+        - "packages/*/test/"
+        - packages/security/lib/src/pin_store.dart
+
   - id: consolarr-direct-http-client
     languages: [dart]
     severity: ERROR

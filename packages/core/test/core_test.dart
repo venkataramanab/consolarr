@@ -87,6 +87,26 @@ void main() {
       expect(r.errorOrNull?.category, ErrorCategory.parseError);
     });
 
+    test('rejects query strings (secrets travel in query strings)', () {
+      for (final bad in [
+        'https://sonarr.example/?apikey=test-key-0000',
+        'https://sonarr.example/api?x=1',
+        'https://sonarr.example/?',
+        'http://192.0.2.10:8989/?token=t',
+      ]) {
+        final r = ServerProfile.parse(
+          id: 'p1',
+          name: 'Test',
+          kind: ServiceKind.sonarr,
+          address: bad,
+        );
+        expect(r.errorOrNull?.category, ErrorCategory.parseError, reason: bad);
+        expect(r.errorOrNull?.debugDetail, isNot(contains('test-key')));
+      }
+      // A path without a query is fine.
+      expect(build('https://sonarr.example/sonarr').isSecure, isTrue);
+    });
+
     test('rejects non-http schemes and garbage', () {
       for (final bad in ['ftp://host.example', 'not a url', '', '//host']) {
         final r = ServerProfile.parse(

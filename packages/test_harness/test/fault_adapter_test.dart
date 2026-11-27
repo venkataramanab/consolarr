@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -124,5 +125,60 @@ void main() {
     await dio.get<String>('https://a.example/1');
     await dio.get<String>('https://a.example/2');
     expect(adapter.requestCount, 2);
+  });
+
+  group('cancellation', () {
+    test('cancelling during injected latency aborts without waiting', () async {
+      final neverEnds = Completer<void>();
+      final adapter = FaultInjectingAdapter(
+        inner: StubAdapter.json(_body),
+        faults: const [LatencyFault(Duration(hours: 1))],
+        delay: (_) => neverEnds.future,
+      );
+      final dio = Dio(BaseOptions(baseUrl: 'https://sonarr.example'))
+        ..httpClientAdapter = adapter;
+      final token = CancelToken();
+      final request = dio.get<String>('/x', cancelToken: token);
+      final outcome = expectLater(
+        request,
+        throwsA(
+          isA<DioException>().having(
+            (e) => e.type,
+            'type',
+            DioExceptionType.cancel,
+          ),
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+      token.cancel('stop');
+      await outcome;
+    });
+
+    test('an already cancelled request never reaches the inner adapter', () {
+      var reached = false;
+      final adapter = FaultInjectingAdapter(
+        inner: StubAdapter((_) {
+          reached = true;
+          return ResponseBody.fromString('', 200);
+        }),
+      );
+      final options = RequestOptions(path: 'https://a.example/x');
+      expect(
+        adapter.fetch(options, null, Future<void>.value()),
+        throwsA(
+          isA<DioException>().having(
+            (e) => e.type,
+            'type',
+            DioExceptionType.cancel,
+          ),
+        ),
+      );
+      expect(reached, isFalse);
+    });
+
+    test('without cancellation requests complete as before', () async {
+      final r = await _dio([]).get<String>('/x');
+      expect(r.statusCode, 200);
+    });
   });
 }

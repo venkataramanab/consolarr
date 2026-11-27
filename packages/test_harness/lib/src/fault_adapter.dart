@@ -220,15 +220,66 @@ class FaultInjectingAdapter implements HttpClientAdapter {
     final key = '${options.method} ${options.uri}';
     final attempt = _attempts.update(key, (n) => n + 1, ifAbsent: () => 1);
 
-    for (final fault in faults) {
-      final synthetic = await fault.before(options, attempt, _delay);
-      if (synthetic != null) return synthetic;
+    // Honour Dio's cancellation: injected waits end immediately and the
+    // request fails with a cancel exception, like a real adapter would.
+    Future<T> cancellable<T>(Future<T> work) =>
+        _raceCancel(work, cancelFuture, options);
+    Future<void> delay(Duration d) => cancellable(_delay(d));
+
+    if (cancelFuture != null) {
+      // A future that is already complete reports on the next microtask.
+      var alreadyCancelled = false;
+      unawaited(cancelFuture.then((_) => alreadyCancelled = true));
+      await Future<void>.value();
+      if (alreadyCancelled) {
+        throw DioException.requestCancelled(
+          requestOptions: options,
+          reason: 'cancelled',
+        );
+      }
     }
-    var response = await inner.fetch(options, requestStream, cancelFuture);
-    for (final fault in faults) {
-      response = fault.after(options, response, attempt, _delay);
-    }
-    return response;
+
+    return cancellable(() async {
+      for (final fault in faults) {
+        final synthetic = await fault.before(options, attempt, delay);
+        if (synthetic != null) return synthetic;
+      }
+      var response = await inner.fetch(options, requestStream, cancelFuture);
+      for (final fault in faults) {
+        response = fault.after(options, response, attempt, delay);
+      }
+      return response;
+    }());
+  }
+
+  static Future<T> _raceCancel<T>(
+    Future<T> work,
+    Future<void>? cancelFuture,
+    RequestOptions options,
+  ) {
+    if (cancelFuture == null) return work;
+    final done = Completer<T>();
+    unawaited(
+      cancelFuture.then((_) {
+        if (!done.isCompleted) {
+          done.completeError(
+            DioException.requestCancelled(
+              requestOptions: options,
+              reason: 'cancelled',
+            ),
+          );
+        }
+      }),
+    );
+    work.then(
+      (v) {
+        if (!done.isCompleted) done.complete(v);
+      },
+      onError: (Object e, StackTrace st) {
+        if (!done.isCompleted) done.completeError(e, st);
+      },
+    );
+    return done.future;
   }
 
   @override

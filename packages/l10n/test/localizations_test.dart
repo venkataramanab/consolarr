@@ -35,4 +35,17 @@ void main() {
       );
     }
   });
+
+  test('the pseudo-locale is generated but excluded when asked', () {
+    final all = supportedLocalesFor(includePseudo: true);
+    final release = supportedLocalesFor(includePseudo: false);
+    expect(all.any(isPseudoLocale), isTrue);
+    expect(release.any(isPseudoLocale), isFalse);
+    expect(release, containsAll([const Locale('en'), const Locale('ar')]));
+    expect(release.length, all.length - 1);
+  });
+
+  test('app locales follow the build mode (tests are not release builds)', () {
+    expect(appSupportedLocales.any(isPseudoLocale), isTrue);
+  });
 }

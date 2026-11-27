@@ -8,6 +8,8 @@
 // The licence is detected from the LICENSE file in the local pub cache.
 // Unknown licences fail the check; resolve by reviewing the package and
 // adding it to tools/ci/license_overrides.txt (one `name  SPDX-id` per line).
+// AGPL, GPL-2.0-only and LGPL-2.1 texts are detected as such and rejected.
+// Self-test: dart run tools/ci/check_licenses_selftest.dart
 
 import 'dart:io';
 
@@ -35,12 +37,20 @@ String? detect(String text) {
   if (t.contains('mozilla public license') && t.contains('2.0')) {
     return 'MPL-2.0';
   }
-  if (t.contains('gnu lesser general public license') &&
-      t.contains('version 3')) {
-    return 'LGPL-3.0';
+  // The AGPL text quotes the GPL, so test for it (and the LGPL) first.
+  if (t.contains('gnu affero general public license')) {
+    final v3 = t.contains('version 3');
+    return v3 ? 'AGPL-3.0' : 'AGPL';
   }
-  if (t.contains('gnu general public license') && t.contains('version 3')) {
-    return 'GPL-3.0';
+  if (t.contains('gnu lesser general public license')) {
+    if (t.contains('version 3')) return 'LGPL-3.0';
+    if (t.contains('version 2.1')) return 'LGPL-2.1';
+    return 'LGPL';
+  }
+  if (t.contains('gnu general public license')) {
+    if (t.contains('version 3')) return 'GPL-3.0';
+    if (t.contains('version 2')) return 'GPL-2.0';
+    return 'GPL';
   }
   if (t.contains('permission is hereby granted, free of charge')) return 'MIT';
   if (t.contains(

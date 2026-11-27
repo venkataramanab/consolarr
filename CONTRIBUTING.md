@@ -14,17 +14,26 @@ Thanks for helping! Please read the [Code of Conduct](CODE_OF_CONDUCT.md) first.
    (every key needs an `@description`) and run `dart run melos run l10n`.
    The `consolarr_no_ui_string` lint enforces this; for genuinely non-UI
    strings use `// ignore: consolarr_no_ui_string -- <reason>`.
-4. **No `print` / `debugPrint`** outside the logger; **no
-   `badCertificateCallback`** outside
-   `packages/security/lib/src/http/secure_http_client_factory.dart`.
-5. **Nothing before the first frame.** Initialize lazily; the first-frame
+4. **No `print` / `debugPrint`** outside the logger; **no TLS trust APIs**
+   (`badCertificateCallback`, `onBadCertificate`, `HttpOverrides`,
+   `setTrustedCertificates`, `withTrustedRoots: false`) outside
+   `packages/security/lib/src/http/secure_http_client_factory.dart`. These
+   rules cannot be suppressed: CI fails on any `// ignore: consolarr_...`,
+   `// ignore_for_file: consolarr_...` or `nosemgrep` that is not listed in
+   `tools/ci/suppression_allowlist.txt` (changes there need CODEOWNERS
+   review).
+5. **No certificates or keys in the repository.** Tests that need a
+   certificate generate it at test time into `**/test/.generated/`
+   (git-ignored); committed `.pem`/`.key`/`.p12`/... files fail the repo guard
+   unless listed in `tools/ci/forbidden_files_allowlist.txt`.
+6. **Nothing before the first frame.** Initialize lazily; the first-frame
    test fails on network or database access.
-6. **Accessibility and RTL are not optional.** Add your screen to the
+7. **Accessibility and RTL are not optional.** Add your screen to the
    matrix tests (sizes x text scales x locales x themes) and the
    `meetsGuideline` checks.
-7. Every source file starts with
+8. Every source file starts with
    `SPDX-License-Identifier: GPL-3.0-or-later` (CI checks this).
-8. Do not add telemetry SDKs. If ever needed they go in `apps/consolarr_play`
+9. Do not add telemetry SDKs. If ever needed they go in `apps/consolarr_play`
    only, behind explicit opt-in.
 
 Follow the [Definition of Done](docs/contributing/definition-of-done.md); the

@@ -48,8 +48,17 @@ dart run melos run build:debug   # debug APKs for both apps
 dart run melos run build:release # obfuscated arm64 release APKs
 ```
 
-Builds need **no secrets**: telemetry is off and release builds are signed
-with the debug key unless you provide a git-ignored `key.properties`.
+Debug builds need **no secrets** and telemetry is off. A **release build fails
+without a git-ignored `key.properties`** so a debug-signed APK can never be
+shipped by accident. For a local, non-distributable release build (CI does this
+too) opt in explicitly:
+
+```sh
+ORG_GRADLE_PROJECT_consolarr.allowDebugSigning=true dart run melos run build:release
+# or: add consolarr.allowDebugSigning=true to ~/.gradle/gradle.properties
+```
+
+
 Release builds use `--obfuscate --split-debug-info` (keep the generated
 `build/debug-info` symbols to de-obfuscate stack traces).
 

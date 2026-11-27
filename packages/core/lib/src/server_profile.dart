@@ -9,8 +9,9 @@ enum ServiceKind { sonarr, radarr, qbittorrent, transmission, deluge }
 /// A configured server.
 ///
 /// Holds no secrets: credentials and API keys live in the secret store keyed
-/// by [id], and certificate pins in the pin store keyed by host. The [address]
-/// never contains user info (see [ServerProfile.parse]).
+/// by [id], and certificate pins in the pin store keyed by profile id, host and
+/// port. The [address] never contains user info or a query string (see
+/// [ServerProfile.parse]).
 class ServerProfile {
   const ServerProfile._({
     required this.id,
@@ -23,7 +24,8 @@ class ServerProfile {
   /// Validates and builds a profile.
   ///
   /// Fails with [ErrorCategory.parseError] when [address] is not an absolute
-  /// http(s) URL with a host, or contains credentials (user info).
+  /// http(s) URL with a host, or contains credentials (user info) or a query
+  /// string (API keys and tokens must never be stored in the address).
   static Result<ServerProfile> parse({
     required String id,
     required String name,
@@ -45,6 +47,15 @@ class ServerProfile {
         AppError(
           ErrorCategory.parseError,
           debugDetail: 'address must not contain credentials',
+        ),
+      );
+    }
+    // `uri.hasQuery` is also true for a bare trailing `?`.
+    if (uri.hasQuery) {
+      return const Result.err(
+        AppError(
+          ErrorCategory.parseError,
+          debugDetail: 'address must not contain a query string',
         ),
       );
     }

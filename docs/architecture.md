@@ -21,7 +21,7 @@ apps/consolarr_play ──────► consolarr   (Play entry point, only pl
 | Package | Kind | Depends on | Purpose |
 | --- | --- | --- | --- |
 | `core` | pure Dart | - | `ServerProfile`, `Result`/`AppError` + `ErrorCategory`, `CleartextPolicy`. |
-| `security` | pure Dart | `core`, `dio` | `SecretStore`, `PinStore`, `SecureHttpClientFactory` contracts. The only package allowed to touch TLS trust. |
+| `security` | pure Dart | `core`, `dio` | `SecretStore`, `PinStore` (+ `PinKey`, `UserPinConfirmation`, `decidePin`), `SecureHttpClientFactory` contracts. The only package allowed to touch TLS trust. |
 | `arr_api` | pure Dart | `core` | `SonarrApi` / `RadarrApi` interfaces. |
 | `torrent_clients` | pure Dart | `core` | `TorrentClient` interface. |
 | `observability` | pure Dart | - | `CrashReporter`, `Analytics`, `ConsentStore` + no-ops, `Redactor`, `AppLogger`. No SDKs. |
@@ -43,13 +43,18 @@ apps/consolarr_play ──────► consolarr   (Play entry point, only pl
 4. **`observability` has no third-party SDKs.** Telemetry SDKs may only be
    added to `apps/consolarr_play`, wired in by overriding Riverpod providers
    (`crashReporterProvider`, `analyticsProvider`, `consentStoreProvider`).
-   A test fails if the foss app (or a workspace package it depends on) gains a
-   telemetry dependency.
+   A test walks the resolved dependency graph (`dart pub deps --json`) and fails
+   if the foss app gains a telemetry dependency, direct or transitive.
 5. **`test_harness` is a dev dependency only**; production code never imports it.
-6. **All HTTP goes through `SecureHttpClientFactory`.** `badCertificateCallback`
-   is only allowed in
+6. **All HTTP goes through `SecureHttpClientFactory`.** TLS trust APIs
+   (`badCertificateCallback`, `onBadCertificate`, `HttpOverrides`,
+   `setTrustedCertificates`, `withTrustedRoots: false`) are only allowed in
    `packages/security/lib/src/http/secure_http_client_factory.dart` (lint +
-   Semgrep).
+   Semgrep; the test harness's access guard may name `HttpOverrides` to observe
+   client creation). The rule also covers generated `*.g.dart` files, and CI
+   fails on any `// ignore: consolarr_...` / `nosemgrep` suppression that is
+   not in `tools/ci/suppression_allowlist.txt`. `.github/CODEOWNERS` requires
+   the owner's review for `packages/security/**`, `tools/**` and `.github/**`.
 7. **No hardcoded user-facing text.** Strings live in per-feature ARB files.
 
 ## Application shell
@@ -67,6 +72,21 @@ configuration, so the manifest flag (`usesCleartextTraffic="false"`) only covers
 platform HTTP stacks. Per-server cleartext opt-in is therefore enforced in Dart
 by `CleartextPolicy` (package `core`), which every client factory must call.
 
+## Certificate pinning contract (TOFU)
+
+- A pin is addressed by `PinKey` (server-profile id, normalised host, explicit
+  port) and holds a SHA-256 `CertificateFingerprint`.
+- `decidePin` is evaluated for **every** TLS connection, not only when the
+  platform rejects the chain. A pinned server presenting a different
+  certificate is blocked even if that certificate chains to a system CA.
+- With no pin and an untrusted chain the verdict is `unpinnedUntrusted` and the
+  bad-certificate callback returns `false`; only the confirmation UI may then
+  create a pin.
+- `PinStore.write`/`clear` require a `UserPinConfirmation` bound to exactly the
+  key and fingerprint the user saw. A Semgrep rule rejects constructing it
+  outside the confirmation UI.
+- `ServerProfile.parse` rejects credentials and query strings in the address.
+
 ## Localization pipeline
 
 1. Hand-written ARB files per feature:
@@ -75,7 +95,9 @@ by `CleartextPolicy` (package `core`), which every client factory must call.
    `packages/l10n/lib/arb/`, generates `app_en_XA.arb` (accented, ~40% longer;
    never hand-edited) and runs `flutter gen-l10n`.
 3. `packages/l10n/test/l10n_keys_test.dart` fails on missing/extra keys, missing
-   `@description`, unused keys, or stale generated files.
+   `@description`, unused keys (real `l10n.<key>` / `AppLocalizations.of(..).<key>`
+   accessors only; comments and string contents are ignored) or stale generated
+   files.
 4. Use `appLocalizationsDelegates` (not the generated
    `AppLocalizations.localizationsDelegates`) with `MaterialApp`, because the
    Material library now lives in the `material_ui` package.
@@ -83,7 +105,13 @@ by `CleartextPolicy` (package `core`), which every client factory must call.
 ## Quality gates
 
 See `.github/workflows/ci.yml`. In short: format, analyze (VGA lints plus
-`tools/consolarr_lints`), SPDX, l10n drift, tests with coverage and goldens,
-gitleaks, osv-scanner, Semgrep, licence check, debug builds of both apps and an
-arm64 release APK size gate (20 MiB). A nightly workflow runs an emulator smoke
+`tools/consolarr_lints`), SPDX, suppression guard, l10n drift (including
+untracked files), tests with coverage and goldens, gitleaks (pinned release
+binary, checksum-verified, with a planted-token canary), osv-scanner (both
+lockfiles), Semgrep (hash-locked install), licence check, Gradle wrapper
+validation, repo guard (clean-room terms from a secret, never printed),
+debug builds of both apps with assertions on the **merged** Android manifest
+(only INTERNET requested, only the launcher activity exported) and an arm64
+release APK size gate (20 MiB). Release builds without `key.properties` are
+refused unless debug signing is explicitly allowed (CI does). A nightly workflow runs an emulator smoke
 test on API 34.

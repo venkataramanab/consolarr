@@ -20,7 +20,7 @@ class ConsolarrApp extends ConsumerWidget {
       darkTheme: ConsolarrTheme.dark(),
       themeMode: ref.watch(themeModeProvider),
       localizationsDelegates: appLocalizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
+      supportedLocales: appSupportedLocales,
       routerConfig: ref.watch(routerProvider),
     );
   }
