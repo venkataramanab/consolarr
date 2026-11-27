@@ -173,6 +173,9 @@ class FilterChoice {
   final String label;
 }
 
+/// Alias of [FilterChoice]: the name the stand-in filter sheets used.
+typedef FilterChipOption = FilterChoice;
+
 /// A group of chips: pick one ([multiSelect] false) or several.
 @immutable
 class FilterSection {

@@ -366,7 +366,7 @@ class ChoiceSheetRow<T> extends StatelessWidget {
           context: context,
           title: sheetTitle ?? title,
           closeLabel: closeLabel,
-          detents: const GlassSheetDetents(peek: 0.6),
+          detents: const GlassSheetDetents(peekFraction: 0.6),
           builder: (context) => _ChoiceList<T>(
             options: options,
             selected: selected,

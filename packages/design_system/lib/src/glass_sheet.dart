@@ -18,25 +18,33 @@ import 'package:material_ui/material_ui.dart';
 @immutable
 class GlassSheetDetents {
   const GlassSheetDetents({
-    this.peek = 0.5,
-    this.full = 0.92,
+    this.peekFraction = 0.5,
+    this.fullFraction = 0.92,
     this.initialFull = false,
-  }) : assert(peek > 0 && peek <= full && full <= 1);
+  }) : assert(
+         peekFraction > 0 && peekFraction <= fullFraction && fullFraction <= 1,
+       );
 
   /// A sheet that only has its full height.
-  const GlassSheetDetents.fullOnly() : this(peek: 0.92, full: 0.92);
+  const GlassSheetDetents.fullOnly() : this(peekFraction: 0.92);
+
+  /// Opens at the peek detent (about half the screen).
+  static const GlassSheetDetents peek = GlassSheetDetents();
+
+  /// Opens at the full detent.
+  static const GlassSheetDetents full = GlassSheetDetents(initialFull: true);
 
   /// Fraction of the screen height at the peek detent.
-  final double peek;
+  final double peekFraction;
 
   /// Fraction of the screen height at the full detent.
-  final double full;
+  final double fullFraction;
 
-  /// Open at [full] instead of [peek].
+  /// Open at [fullFraction] instead of [peekFraction].
   final bool initialFull;
 
   /// Whether there is nothing to toggle between.
-  bool get isSingle => peek >= full;
+  bool get isSingle => peekFraction >= fullFraction;
 }
 
 /// Shows a bottom sheet with Consolarr's conventions (NAV-11): a visible
@@ -56,20 +64,35 @@ class GlassSheetDetents {
 /// );
 /// ```
 ///
-/// [toggleDetentLabel] (optional) names the handle's tap action, "Expand or
-/// collapse". Content scrolls inside the sheet; do not add a scroll view of
-/// your own around [builder]'s result.
+/// Give exactly one body:
+///
+/// * [builder] for a short body: it scrolls inside the sheet's own scroll
+///   view (do not add one of your own);
+/// * [scrollBuilder] for a long, lazy list: the body is rendered unwrapped and
+///   receives the sheet's [ScrollController], so a `ListView.builder` stays
+///   lazy and dragging its content still moves the sheet between detents.
+///
+/// [toggleDetentLabel] (optional) names the handle's tap action; it defaults
+/// to the design system's own "Expand or collapse" text for the locale. The
+/// sheet opens on the **root** navigator, above the floating nav bar, so it
+/// survives tab switches and the bar cannot be tapped through the scrim.
 Future<T?> showGlassSheet<T>({
   required BuildContext context,
   required String title,
   required String closeLabel,
-  required WidgetBuilder builder,
+  WidgetBuilder? builder,
+  GlassSheetScrollBuilder? scrollBuilder,
   GlassSheetDetents detents = const GlassSheetDetents(),
   String? toggleDetentLabel,
 }) {
+  assert(
+    (builder == null) != (scrollBuilder == null),
+    'Give exactly one of builder and scrollBuilder.',
+  );
   final effects = ConsolarrEffects.of(context);
   return showModalBottomSheet<T>(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     useSafeArea: true,
     showDragHandle: false,
@@ -88,10 +111,25 @@ Future<T?> showGlassSheet<T>({
       closeLabel: closeLabel,
       detents: detents,
       toggleDetentLabel: toggleDetentLabel,
-      child: Builder(builder: builder),
+      scrollBuilder: scrollBuilder,
+      child: builder == null ? null : Builder(builder: builder),
     ),
   );
 }
+
+/// Builds a [showGlassSheet] body that scrolls with the sheet: attach
+/// [ScrollController] to the list.
+typedef GlassSheetScrollBuilder = Widget Function(
+  BuildContext context,
+  ScrollController controller,
+);
+
+/// The default handle label, in the languages the app ships. The design
+/// system has no l10n; pass `toggleDetentLabel` for anything else.
+String _defaultToggleLabel(BuildContext context) =>
+    Localizations.maybeLocaleOf(context)?.languageCode == 'ar'
+    ? '\u062a\u0648\u0633\u064a\u0639 \u0623\u0648 \u0637\u064a \u0627\u0644\u0646\u0627\u0641\u0630\u0629'
+    : 'Expand or collapse';
 
 /// The sheet surface used by [showGlassSheet]; exposed so tests and previews
 /// can render it without a route.
@@ -99,15 +137,24 @@ class GlassSheet extends StatefulWidget {
   const GlassSheet({
     required this.title,
     required this.closeLabel,
-    required this.child,
+    this.child,
+    this.scrollBuilder,
     this.detents = const GlassSheetDetents(),
     this.toggleDetentLabel,
     super.key,
-  });
+  }) : assert(
+         (child == null) != (scrollBuilder == null),
+         'Give exactly one of child and scrollBuilder.',
+       );
 
   final String title;
   final String closeLabel;
-  final Widget child;
+
+  /// A short body, scrolled by the sheet.
+  final Widget? child;
+
+  /// A long body that uses the sheet's scroll controller.
+  final GlassSheetScrollBuilder? scrollBuilder;
   final GlassSheetDetents detents;
   final String? toggleDetentLabel;
 
@@ -127,8 +174,10 @@ class _GlassSheetState extends State<GlassSheet> {
 
   Future<void> _toggle() async {
     if (!_controller.isAttached || widget.detents.isSingle) return;
-    final atFull = _controller.size >= widget.detents.full - 0.01;
-    final target = atFull ? widget.detents.peek : widget.detents.full;
+    final atFull = _controller.size >= widget.detents.fullFraction - 0.01;
+    final target = atFull
+        ? widget.detents.peekFraction
+        : widget.detents.fullFraction;
     final animate = ConsolarrEffects.of(context).animate;
     if (animate) {
       await _controller.animateTo(
@@ -155,15 +204,18 @@ class _GlassSheetState extends State<GlassSheet> {
 
     final handle = Semantics(
       key: const ValueKey('glass-sheet-handle'),
-      button: !detents.isSingle && widget.toggleDetentLabel != null,
-      label: widget.toggleDetentLabel,
+      button: !detents.isSingle,
+      label: detents.isSingle
+          ? null
+          : (widget.toggleDetentLabel ?? _defaultToggleLabel(context)),
       excludeSemantics: true,
       onTap: detents.isSingle ? null : _toggle,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: detents.isSingle ? null : _toggle,
         child: SizedBox(
-          height: ConsolarrSpacing.xl,
+          // A 48dp target around the 4dp visual handle.
+          height: 48,
           child: Center(
             child: DecoratedBox(
               decoration: BoxDecoration(
@@ -257,29 +309,33 @@ class _GlassSheetState extends State<GlassSheet> {
               controller: _controller,
               expand: false,
               initialChildSize: detents.initialFull
-                  ? detents.full
-                  : detents.peek,
+                  ? detents.fullFraction
+                  : detents.peekFraction,
               // Dragging below the peek detent dismisses the sheet.
-              minChildSize: detents.peek / 2,
-              maxChildSize: detents.full,
+              minChildSize: detents.peekFraction / 2,
+              maxChildSize: detents.fullFraction,
               snap: !detents.isSingle,
-              snapSizes: detents.isSingle ? null : [detents.peek, detents.full],
+              snapSizes: detents.isSingle
+                  ? null
+                  : [detents.peekFraction, detents.fullFraction],
               builder: (context, scrollController) => surface(
                 Column(
                   children: [
                     handle,
                     header,
                     Expanded(
-                      child: SingleChildScrollView(
-                        controller: scrollController,
-                        padding: const EdgeInsets.fromLTRB(
-                          ConsolarrSpacing.lg,
-                          ConsolarrSpacing.sm,
-                          ConsolarrSpacing.lg,
-                          ConsolarrSpacing.xl,
-                        ),
-                        child: widget.child,
-                      ),
+                      child: widget.scrollBuilder != null
+                          ? widget.scrollBuilder!(context, scrollController)
+                          : SingleChildScrollView(
+                              controller: scrollController,
+                              padding: const EdgeInsets.fromLTRB(
+                                ConsolarrSpacing.lg,
+                                ConsolarrSpacing.sm,
+                                ConsolarrSpacing.lg,
+                                ConsolarrSpacing.xl,
+                              ),
+                              child: widget.child,
+                            ),
                     ),
                   ],
                 ),
