@@ -404,10 +404,25 @@ class VisibleMoviesNotifier extends Notifier<VisibleMovies> {
       return _last = _visible(all, query, names);
     }
     unawaited(
-      _computeVisible(runner, all, query, names).then((result) {
-        if (!ref.mounted || generation != _generation) return;
-        state = _last = result;
-      }),
+      _computeVisible(runner, all, query, names).then(
+        (result) {
+          if (!ref.mounted || generation != _generation) return;
+          state = _last = result;
+        },
+        onError: (Object error) {
+          if (!ref.mounted || generation != _generation) return;
+          // Keep the previous results; only the error category is logged.
+          ref
+              .read(breadcrumbsProvider)
+              .add(
+                Breadcrumb.apiError(
+                  ErrorCategoryParam.parseError,
+                  ServiceKindParam.radarr,
+                ),
+              );
+          state = VisibleMovies(movies: _last.movies, groups: _last.groups);
+        },
+      ),
     );
     return VisibleMovies(
       movies: _last.movies,
@@ -778,11 +793,28 @@ class SearchStatusNotifier extends Notifier<Map<SearchKey, SearchPhase>> {
   /// Bumped by every build (server switch): polls of an earlier build stop.
   int _generation = 0;
 
+  String? _serverId;
+  bool _built = false;
+
   @override
   Map<SearchKey, SearchPhase> build() {
+    final serverId = ref.watch(
+      radarrContextProvider.select((c) => c.value?.serverId),
+    );
+    // The context resolving for the first time is not a server switch: an
+    // action started while it was loading keeps its build.
+    final resolved = _built && _serverId == null && serverId != null;
+    _built = true;
+    _serverId = serverId;
+    if (resolved) return state;
     _generation++;
-    ref.watch(radarrContextProvider.select((c) => c.value?.serverId));
     return const {};
+  }
+
+  /// A result that arrives for another build never leaves [key] busy.
+  void _clearIfOpen(SearchKey key) {
+    if (!ref.mounted) return;
+    if (state[key] == SearchPhase.starting) _set(key, null);
   }
 
   void _set(SearchKey key, SearchPhase? phase) {
@@ -812,10 +844,13 @@ class SearchStatusNotifier extends Notifier<Map<SearchKey, SearchPhase>> {
     Future<Result<ArrCommand>> Function(RadarrApi api) start,
     RadarrSearchKindParam kind,
   ) async {
-    final generation = _generation;
+    // Resolve the context first: a first action can arrive while it is still
+    // loading, and resolving it rebuilds this notifier (its generation bumps).
+    // The generation belongs to the build that runs the action.
     final context =
         ref.read(radarrContextProvider).value ?? await _activeContext(ref);
-    if (context == null || !ref.mounted || generation != _generation) return;
+    if (context == null || !ref.mounted) return;
+    final generation = _generation;
     final key = (context.serverId, movieId);
     bool stale() =>
         !ref.mounted ||
@@ -832,7 +867,10 @@ class SearchStatusNotifier extends Notifier<Map<SearchKey, SearchPhase>> {
     // Mark busy before the first await so a second tap cannot start twice.
     _set(key, SearchPhase.starting);
     final started = await start(context.api);
-    if (stale()) return;
+    if (stale()) {
+      _clearIfOpen(key);
+      return;
+    }
     final error = started.errorOrNull;
     if (error != null) {
       recordApiError(ref.read(breadcrumbsProvider), error);
@@ -945,10 +983,21 @@ class GrabNotifier extends Notifier<Map<String, GrabPhase>> {
   /// shows up against a release of server B.
   int _generation = 0;
 
+  String? _serverId;
+  bool _built = false;
+
   @override
   Map<String, GrabPhase> build() {
+    final serverId = ref.watch(
+      radarrContextProvider.select((c) => c.value?.serverId),
+    );
+    // The context resolving for the first time is not a server switch: an
+    // action started while it was loading keeps its build.
+    final resolved = _built && _serverId == null && serverId != null;
+    _built = true;
+    _serverId = serverId;
+    if (resolved) return state;
     _generation++;
-    ref.watch(radarrContextProvider.select((c) => c.value?.serverId));
     return const {};
   }
 
@@ -963,14 +1012,24 @@ class GrabNotifier extends Notifier<Map<String, GrabPhase>> {
     final current = state[key];
     if (current == GrabPhase.grabbing || current == GrabPhase.grabbed) return;
     if (current == GrabPhase.maybeSent && !confirmedResend) return;
-    final generation = _generation;
+    // Resolve the context first: a first tap can arrive while it is still
+    // loading, and resolving it rebuilds this notifier (its generation bumps).
+    // The generation belongs to the build that runs the grab.
     final context =
         ref.read(radarrContextProvider).value ?? await _activeContext(ref);
-    if (context == null || !ref.mounted || generation != _generation) return;
+    if (context == null || !ref.mounted) return;
+    final generation = _generation;
     if (state[key] == GrabPhase.grabbing) return;
     state = {...state, key: GrabPhase.grabbing};
     final result = await context.api.grab(release);
-    if (!ref.mounted || generation != _generation) return;
+    if (!ref.mounted) return;
+    if (generation != _generation) {
+      // Another build owns the map now: never leave the key busy.
+      if (state[key] == GrabPhase.grabbing) {
+        state = {...state}..remove(key);
+      }
+      return;
+    }
     final error = result.errorOrNull;
     if (error != null) recordApiError(ref.read(breadcrumbsProvider), error);
     state = {

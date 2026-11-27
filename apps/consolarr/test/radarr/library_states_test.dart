@@ -40,6 +40,28 @@ Map<String, FakeRadarrApi Function()> _states() => {
 };
 
 void main() {
+  // The full matrix (3 sizes x 2 scales x 3 locales x 2 themes) with
+  // `meetsGuideline` (via expectAccessible) for the states a person gets
+  // stuck in: nothing in the library, and a failed load.
+  group('empty and error: full matrix, accessible', () {
+    final states = _states();
+    for (final name in [
+      'empty',
+      'error network_unreachable',
+      'error auth_failed',
+    ]) {
+      testWidgets(name, (tester) async {
+        expect(states, contains(name));
+        await pumpMatrix(
+          tester,
+          (v) => radarrApp(v, states[name]!(), const RadarrScreen()),
+          variants: harnessMatrix(),
+          verify: (v) => expectAccessible(tester),
+        );
+      });
+    }
+  });
+
   group('every state: no overflow and accessible', () {
     for (final entry in _states().entries) {
       testWidgets(entry.key, (tester) async {
