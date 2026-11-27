@@ -393,6 +393,23 @@ void main() {
       await _unmount(tester);
     });
 
+    testWidgets('the platform never sees the secure flag drop while "try '
+        'again" reloads', (tester) async {
+      final l10n = await _en();
+      final store = ThrowingSettingsStore(stored: lockOn(), failures: 2);
+      final h = SettingsHarness(store: store);
+      h.auth.hold = Completer<DeviceAuthResult>();
+      await tester.pumpWidget(_app(h));
+      await tester.pumpAndSettle();
+      expect(h.secure.calls, [true]);
+      await tester.tap(find.text(l10n.lockLoadFailedRetry));
+      await tester.pumpAndSettle();
+      expect(find.text(l10n.lockScreenTitle), findsOneWidget);
+      expect(h.secure.calls, isNot(contains(false)));
+      expect(h.secure.isSecure, isTrue);
+      await _unmount(tester);
+    });
+
     testWidgets('system back never pops the routes behind the lock; on the '
         'lock screen it leaves the app', (tester) async {
       final h = SettingsHarness(stored: lockOn());

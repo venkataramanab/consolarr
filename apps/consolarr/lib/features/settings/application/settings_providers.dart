@@ -88,7 +88,9 @@ class SettingsNotifier extends Notifier<AppSettings> {
   Future<void> reload() async {
     if (_loading) return;
     ref.invalidate(storedRowsProvider);
-    state = AppSettings.defaults;
+    // Not the plain defaults: `loadFailed` stays set so the window stays
+    // secure (and the content hidden) until the new read resolves.
+    state = AppSettings.defaults.copyWith(loadFailed: true);
     await _load();
   }
 
