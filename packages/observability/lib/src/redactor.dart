@@ -148,7 +148,9 @@ class Redactor {
     );
     out = out.replaceAllMapped(_scheme, (m) => '${m[1]}${m[2]}$placeholder');
     out = out.replaceAllMapped(_dashedHeader, (m) {
-      return isSensitiveHeaderName(m[1]!) ? '${m[1]}${m[2]}$placeholder' : m[0]!;
+      return isSensitiveHeaderName(m[1]!)
+          ? '${m[1]}${m[2]}$placeholder'
+          : m[0]!;
     });
     out = _redactKeyValues(out);
     out = out.replaceAll(_jwt, placeholder);

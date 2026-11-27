@@ -45,7 +45,11 @@ List<String> _dirtyLines() => [
 void main() {
   group('DiagnosticsScrubber', () {
     const scrubber = DiagnosticsScrubber(
-      knownValues: ['alice-the-admin', 'Fake Show Title S01E01', 'hunter2-canary'],
+      knownValues: [
+        'alice-the-admin',
+        'Fake Show Title S01E01',
+        'hunter2-canary',
+      ],
     );
 
     test('removes every canary from dirty lines', () {
@@ -70,7 +74,10 @@ void main() {
     });
 
     test('known values are removed case-insensitively', () {
-      expect(scrubber.scrub('user ALICE-THE-ADMIN logged'), isNot(contains('ALICE')));
+      expect(
+        scrubber.scrub('user ALICE-THE-ADMIN logged'),
+        isNot(contains('ALICE')),
+      );
     });
   });
 
@@ -124,22 +131,24 @@ void main() {
       expect(n, 2);
     });
 
-    test('AppLogger feeds it; the log level is independent of the sink level',
-        () {
-      final log = DiagnosticsLog()
-        ..enabled = true
-        ..level = LogLevel.debug;
-      final sunk = <String>[];
-      final logger = AppLogger(
-        sink: (l, m) => sunk.add(m),
-        diagnostics: log,
-      );
-      logger.debug('detail');
-      logger.error('failed', error: 'password=hunter2-canary');
-      expect(sunk, hasLength(1));
-      expect(log.entries, hasLength(2));
-      expect(log.entries.map((e) => e.message).join(), isNot(contains('hunter2')));
-    });
+    test(
+      'AppLogger feeds it; the log level is independent of the sink level',
+      () {
+        final log = DiagnosticsLog()
+          ..enabled = true
+          ..level = LogLevel.debug;
+        final sunk = <String>[];
+        final logger = AppLogger(sink: (l, m) => sunk.add(m), diagnostics: log);
+        logger.debug('detail');
+        logger.error('failed', error: 'password=hunter2-canary');
+        expect(sunk, hasLength(1));
+        expect(log.entries, hasLength(2));
+        expect(
+          log.entries.map((e) => e.message).join(),
+          isNot(contains('hunter2')),
+        );
+      },
+    );
   });
 
   group('DiagnosticsBundle', () {
@@ -232,7 +241,10 @@ void main() {
         body: List.filled(5000, 'line with spaces & symbols é').join('\n'),
         truncationNote: 'ATTACH THE FILE',
       );
-      expect(uri.toString().length, lessThanOrEqualTo(GithubIssueLink.maxUrlLength));
+      expect(
+        uri.toString().length,
+        lessThanOrEqualTo(GithubIssueLink.maxUrlLength),
+      );
       expect(uri.queryParameters['body'], contains('ATTACH THE FILE'));
     });
 

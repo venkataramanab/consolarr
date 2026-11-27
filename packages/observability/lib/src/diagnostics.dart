@@ -133,7 +133,9 @@ class DiagnosticsScrubber {
   static final _doubleQuoted = RegExp(r'"[^"\r\n]{1,200}"');
   static final _singleQuoted = RegExp(r"(?<![\w])'[^'\r\n]{1,200}'(?!\w)");
   static final _ipv4 = RegExp(r'\b\d{1,3}(?:\.\d{1,3}){3}\b');
-  static final _ipv6 = RegExp(r'\b[0-9a-fA-F]{1,4}(?::[0-9a-fA-F]{0,4}){2,7}\b');
+  static final _ipv6 = RegExp(
+    r'\b[0-9a-fA-F]{1,4}(?::[0-9a-fA-F]{0,4}){2,7}\b',
+  );
   static final _timeLike = RegExp(r'^\d{1,2}(?::\d{1,2}){1,2}$');
   static final _host = RegExp(
     r'\b[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?(?:\.[a-z0-9\-]+)*\.[a-z]{2,}\b',
@@ -144,7 +146,10 @@ class DiagnosticsScrubber {
     var out = line;
     for (final v in knownValues) {
       if (v.length < 3) continue;
-      out = out.replaceAll(RegExp(RegExp.escape(v), caseSensitive: false), _mark);
+      out = out.replaceAll(
+        RegExp(RegExp.escape(v), caseSensitive: false),
+        _mark,
+      );
     }
     out = out.replaceAll(_magnet, _mark);
     out = redactor.redactText(out);

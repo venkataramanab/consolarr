@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:consolarr/consolarr.dart';
+import 'package:consolarr/features/settings/application/settings_providers.dart';
+import 'package:consolarr/features/settings/data/settings_store.dart';
 import 'package:consolarr/src/database/app_database.dart';
 import 'package:security/security.dart';
 import 'package:material_ui/material_ui.dart';
@@ -73,7 +75,11 @@ void main() {
   testWidgets('telemetry seams default to no-ops with consent off', (
     tester,
   ) async {
-    final container = ProviderContainer();
+    final container = ProviderContainer(
+      overrides: [
+        settingsStoreProvider.overrideWithValue(InMemorySettingsStore()),
+      ],
+    );
     addTearDown(container.dispose);
     final consent = await container.read(consentStoreProvider).load();
     expect(consent.crashReports, isFalse);

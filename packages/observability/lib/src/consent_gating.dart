@@ -75,10 +75,7 @@ class ConsentManager {
     required this.breadcrumbs,
   }) : _rawAnalytics = analytics,
        _rawCrash = crashReporter {
-    this.analytics = ConsentGatedAnalytics(
-      analytics,
-      () => _state.analytics,
-    );
+    this.analytics = ConsentGatedAnalytics(analytics, () => _state.analytics);
     this.crashReporter = ConsentGatedCrashReporter(
       crashReporter,
       () => _state.crashReports,
@@ -95,6 +92,7 @@ class ConsentManager {
   late final CrashReporter crashReporter;
 
   ConsentState _state = ConsentState.none;
+  bool _changedByUser = false;
   final List<void Function()> _listeners = [];
 
   ConsentState get state => _state;
@@ -105,11 +103,14 @@ class ConsentManager {
   /// Reads the stored choice (call after the first frame) and applies it.
   Future<void> load() async {
     final loaded = await store.load();
+    // A choice made while the store was being read wins over the stored one.
+    if (_changedByUser) return;
     await _apply(loaded, persist: false);
   }
 
   /// Switches one purpose.
   Future<void> set(ConsentPurpose purpose, {required bool enabled}) {
+    _changedByUser = true;
     final next = switch (purpose) {
       ConsentPurpose.crashReports => _state.copyWith(crashReports: enabled),
       ConsentPurpose.analytics => _state.copyWith(analytics: enabled),

@@ -2,9 +2,14 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <!-- The only permission the app requests. Anything else must be asked for
-         at the point of use with a rationale. -->
+    <!-- Permissions: INTERNET, and USE_BIOMETRIC for the opt-in app lock.
+         Anything else must be asked for at the point of use with a
+         rationale. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- App lock (SET-02): the platform authenticator (biometric with
+         device-credential fallback). Used only when the user turns the lock
+         on. -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
 
     <!-- allowBackup=false and empty extraction rules: no secrets or server
          records may leave the device through cloud or cable backups.
@@ -53,6 +58,12 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT" />
             <data android:mimeType="text/plain" />
+        </intent>
+        <!-- Opening the project page or a pre-filled issue in the browser,
+             on an explicit tap (https only). -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
         </intent>
     </queries>
 </manifest>

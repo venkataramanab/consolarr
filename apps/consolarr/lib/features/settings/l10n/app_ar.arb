@@ -1,0 +1,662 @@
+{
+  "@@locale": "ar",
+  "navSettings": "الإعدادات",
+  "@navSettings": {
+    "description": "Label of the Settings destination in the bottom navigation bar."
+  },
+  "settingsTitle": "الإعدادات",
+  "@settingsTitle": {
+    "description": "Title of the Settings hub screen."
+  },
+  "settingsClose": "إغلاق",
+  "@settingsClose": {
+    "description": "Label of the close button of a settings sheet."
+  },
+  "settingsSectionServers": "الخوادم",
+  "@settingsSectionServers": {
+    "description": "Heading of the servers group on the Settings hub."
+  },
+  "settingsServersRow": "إدارة الخوادم",
+  "@settingsServersRow": {
+    "description": "Settings row that opens the server list."
+  },
+  "settingsServersRowSubtitle": "أضف خوادمك وعدّلها وافحصها",
+  "@settingsServersRowSubtitle": {
+    "description": "Subtitle of the Settings row that opens the server list."
+  },
+  "settingsSectionDisplay": "العرض",
+  "@settingsSectionDisplay": {
+    "description": "Heading of the display group on the Settings hub."
+  },
+  "settingsThemeTitle": "المظهر",
+  "@settingsThemeTitle": {
+    "description": "Title of the theme choice row and its sheet."
+  },
+  "settingsThemeDark": "داكن",
+  "@settingsThemeDark": {
+    "description": "Theme option: dark."
+  },
+  "settingsThemeLight": "فاتح",
+  "@settingsThemeLight": {
+    "description": "Theme option: light."
+  },
+  "settingsThemeSystem": "اتباع النظام",
+  "@settingsThemeSystem": {
+    "description": "Theme option: follow the system setting."
+  },
+  "settingsSectionSecurity": "الأمان",
+  "@settingsSectionSecurity": {
+    "description": "Heading of the security group on the Settings hub."
+  },
+  "settingsLockRow": "قفل التطبيق",
+  "@settingsLockRow": {
+    "description": "Settings row that opens the app lock screen."
+  },
+  "settingsLockOn": "مفعّل",
+  "@settingsLockOn": {
+    "description": "State text of a setting that is switched on."
+  },
+  "settingsLockOff": "متوقف",
+  "@settingsLockOff": {
+    "description": "State text of a setting that is switched off."
+  },
+  "settingsBlockScreenshotsTitle": "منع لقطات الشاشة",
+  "@settingsBlockScreenshotsTitle": {
+    "description": "Title of the switch that blocks screenshots and hides the app in the recent apps list."
+  },
+  "settingsBlockScreenshotsSubtitle": "يخفي التطبيق في لقطات الشاشة وتسجيلها وقائمة التطبيقات الأخيرة",
+  "@settingsBlockScreenshotsSubtitle": {
+    "description": "Explanation under the block screenshots switch."
+  },
+  "settingsSectionPrivacy": "الخصوصية والموافقة",
+  "@settingsSectionPrivacy": {
+    "description": "Heading of the privacy group on the Settings hub."
+  },
+  "settingsPrivacyRow": "الخصوصية والموافقة",
+  "@settingsPrivacyRow": {
+    "description": "Settings row that opens the privacy and consent screen."
+  },
+  "settingsPrivacyRowSubtitle": "تقارير الأعطال والاستخدام المجهول، وكلاهما متوقف",
+  "@settingsPrivacyRowSubtitle": {
+    "description": "Subtitle of the privacy row while both switches are off."
+  },
+  "settingsPrivacyRowSubtitleOn": "بعض المشاركة مفعّلة",
+  "@settingsPrivacyRowSubtitleOn": {
+    "description": "Subtitle of the privacy row when at least one switch is on."
+  },
+  "settingsSectionLanguage": "اللغة",
+  "@settingsSectionLanguage": {
+    "description": "Heading of the language group on the Settings hub."
+  },
+  "settingsLanguageRow": "اللغة",
+  "@settingsLanguageRow": {
+    "description": "Settings row that opens the language screen."
+  },
+  "settingsSectionAccessibility": "إمكانية الوصول",
+  "@settingsSectionAccessibility": {
+    "description": "Heading of the accessibility group on the Settings hub."
+  },
+  "settingsAccessibilityRow": "إمكانية الوصول",
+  "@settingsAccessibilityRow": {
+    "description": "Settings row that opens the accessibility screen."
+  },
+  "settingsAccessibilityRowSubtitle": "الحركة وأهداف اللمس والتباين",
+  "@settingsAccessibilityRowSubtitle": {
+    "description": "Subtitle of the accessibility row."
+  },
+  "settingsSectionDiagnostics": "التشخيص",
+  "@settingsSectionDiagnostics": {
+    "description": "Heading of the diagnostics group on the Settings hub."
+  },
+  "settingsDiagnosticsRow": "التشخيص",
+  "@settingsDiagnosticsRow": {
+    "description": "Settings row that opens the diagnostics screen."
+  },
+  "settingsDiagnosticsRowSubtitle": "السجل وفحص الاتصال والمشاركة",
+  "@settingsDiagnosticsRowSubtitle": {
+    "description": "Subtitle of the diagnostics row."
+  },
+  "settingsSectionAbout": "حول",
+  "@settingsSectionAbout": {
+    "description": "Heading of the about group on the Settings hub."
+  },
+  "settingsAboutRow": "حول كونسولار",
+  "@settingsAboutRow": {
+    "description": "Settings row that opens the About screen."
+  },
+  "lockSettingsTitle": "قفل التطبيق",
+  "@lockSettingsTitle": {
+    "description": "Title of the app lock settings screen."
+  },
+  "lockSwitchTitle": "قفل كونسولار",
+  "@lockSwitchTitle": {
+    "description": "Title of the switch that turns the app lock on."
+  },
+  "lockSwitchSubtitle": "اطلب رمز PIN أو النمط أو كلمة مرور الجهاز أو القياسات الحيوية لفتح التطبيق",
+  "@lockSwitchSubtitle": {
+    "description": "Explanation under the app lock switch."
+  },
+  "lockNoSecureLock": "اضبط قفل شاشة (PIN أو نمط أو كلمة مرور أو قياسات حيوية) في إعدادات جهازك لاستخدام قفل التطبيق.",
+  "@lockNoSecureLock": {
+    "description": "Explains why app lock cannot be turned on: the device has no secure screen lock."
+  },
+  "lockDelayTitle": "القفل مجددًا بعد",
+  "@lockDelayTitle": {
+    "description": "Title of the row that chooses how long the app may stay in the background before locking."
+  },
+  "lockDelayImmediately": "فورًا",
+  "@lockDelayImmediately": {
+    "description": "Lock delay option: lock as soon as the app is left."
+  },
+  "lockDelayMinutes": "{count, plural, =1{دقيقة واحدة} =2{دقيقتان} few{{count} دقائق} many{{count} دقيقة} other{{count} دقيقة}}",
+  "@lockDelayMinutes": {
+    "description": "Lock delay option in minutes.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of minutes.",
+        "format": "decimalPatternDigits"
+      }
+    }
+  },
+  "lockDelayHint": "المدة التي يمكن أن يبقى فيها كونسولار في الخلفية قبل أن يطلب التحقق مجددًا. يطلب دائمًا بعد التشغيل من جديد.",
+  "@lockDelayHint": {
+    "description": "Explanation under the lock delay row."
+  },
+  "lockReasonUnlock": "افتح قفل كونسولار",
+  "@lockReasonUnlock": {
+    "description": "Reason shown in the system unlock prompt."
+  },
+  "lockReasonEnable": "أكّد لتفعيل قفل التطبيق",
+  "@lockReasonEnable": {
+    "description": "Reason shown in the system prompt when turning app lock on."
+  },
+  "lockReasonDisable": "أكّد لإيقاف قفل التطبيق",
+  "@lockReasonDisable": {
+    "description": "Reason shown in the system prompt when turning app lock off."
+  },
+  "lockEnableNotConfirmed": "لم يتم تفعيل قفل التطبيق.",
+  "@lockEnableNotConfirmed": {
+    "description": "Message shown when confirming the app lock did not succeed."
+  },
+  "lockDisableNotConfirmed": "يبقى قفل التطبيق مفعّلًا.",
+  "@lockDisableNotConfirmed": {
+    "description": "Message shown when confirming turning the app lock off did not succeed."
+  },
+  "lockScreenTitle": "كونسولار مقفل",
+  "@lockScreenTitle": {
+    "description": "Headline of the lock screen."
+  },
+  "lockScreenBody": "افتح القفل ببيانات اعتماد جهازك للمتابعة.",
+  "@lockScreenBody": {
+    "description": "Body text of the lock screen."
+  },
+  "lockUnlockButton": "فتح القفل",
+  "@lockUnlockButton": {
+    "description": "Button on the lock screen that shows the system unlock prompt."
+  },
+  "lockFailedFeedback": "لم تنجح المحاولة. حاول مرة أخرى.",
+  "@lockFailedFeedback": {
+    "description": "Feedback on the lock screen after a failed unlock attempt."
+  },
+  "lockCoolDown": "محاولات كثيرة. حاول مجددًا بعد {seconds, plural, =1{ثانية واحدة} =2{ثانيتين} few{{seconds} ثوانٍ} many{{seconds} ثانية} other{{seconds} ثانية}}.",
+  "@lockCoolDown": {
+    "description": "Lock screen message while unlock attempts are paused.",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "description": "Seconds left in the pause.",
+        "format": "decimalPatternDigits"
+      }
+    }
+  },
+  "lockBiometricsUnavailable": "القياسات الحيوية غير متاحة. استخدم رمز PIN أو النمط أو كلمة مرور الجهاز.",
+  "@lockBiometricsUnavailable": {
+    "description": "Lock screen note: unlock falls back to the device credential."
+  },
+  "lockRemovedTitle": "تمت إزالة قفل الجهاز",
+  "@lockRemovedTitle": {
+    "description": "Headline when the device screen lock was removed while app lock is on."
+  },
+  "lockRemovedBody": "لم يعد لهذا الجهاز قفل شاشة، لذا لا يستطيع كونسولار التحقق من هويتك. اضبط قفل الشاشة مجددًا أو أوقف قفل التطبيق.",
+  "@lockRemovedBody": {
+    "description": "Explains that the device lock method was removed."
+  },
+  "lockTurnOffButton": "إيقاف قفل التطبيق",
+  "@lockTurnOffButton": {
+    "description": "Button on the lock screen to turn app lock off."
+  },
+  "lockTurnOffConfirmBody": "سيتمكن أي شخص يستطيع فتح هذا الجهاز من فتح كونسولار.",
+  "@lockTurnOffConfirmBody": {
+    "description": "Consequence stated before turning app lock off from the lock screen."
+  },
+  "lockTurnOffConfirm": "إيقاف",
+  "@lockTurnOffConfirm": {
+    "description": "Button that confirms turning app lock off."
+  },
+  "lockKeepOn": "إبقاء قفل التطبيق",
+  "@lockKeepOn": {
+    "description": "Button that cancels turning app lock off."
+  },
+  "lockCoverLabel": "محتوى كونسولار مخفي",
+  "@lockCoverLabel": {
+    "description": "Accessible label of the cover shown while the app content is hidden."
+  },
+  "privacyTitle": "الخصوصية والموافقة",
+  "@privacyTitle": {
+    "description": "Title of the privacy and consent screen."
+  },
+  "privacyIntro": "لا يرسل كونسولار أي شيء عنك افتراضيًا. يمكنك اختيار مشاركة أمرين منفصلين. كلاهما متوقف ويمكنك الانسحاب في أي وقت.",
+  "@privacyIntro": {
+    "description": "Introduction on the privacy and consent screen."
+  },
+  "privacyCrashTitle": "تقارير الأعطال",
+  "@privacyCrashTitle": {
+    "description": "Title of the crash reports consent switch."
+  },
+  "privacyCrashWhat": "عند تعطل التطبيق يرسل نوع الخطأ وإصدار التطبيق وأندرويد وآخر الشاشات التي فتحتها (أسماء الشاشات فقط). لا يرسل أبدًا العناوين أو المفاتيح أو الأسماء أو العناوين الفنية.",
+  "@privacyCrashWhat": {
+    "description": "Explains exactly what the crash reports switch sends."
+  },
+  "privacyAnalyticsTitle": "الاستخدام المجهول",
+  "@privacyAnalyticsTitle": {
+    "description": "Title of the anonymous usage consent switch."
+  },
+  "privacyAnalyticsWhat": "يعدّ الشاشات والإجراءات المستخدمة كما هو مدرج أدناه. لا يرسل أبدًا العناوين أو المفاتيح أو الأسماء أو العناوين الفنية. لا حساب ولا هوية.",
+  "@privacyAnalyticsWhat": {
+    "description": "Explains exactly what the anonymous usage switch sends."
+  },
+  "privacyListHeading": "ما يمكن إرساله بالضبط",
+  "@privacyListHeading": {
+    "description": "Heading above the list of event kinds that can be sent."
+  },
+  "privacyEventScreenViewed": "أي شاشة فُتحت (اسم الشاشة فقط)",
+  "@privacyEventScreenViewed": {
+    "description": "Payload list item for the screen viewed event."
+  },
+  "privacyEventServerAdded": "أن خادمًا أُضيف ونوعه (مثل Sonarr)",
+  "@privacyEventServerAdded": {
+    "description": "Payload list item for the server added event."
+  },
+  "privacyEventConnectionTest": "هل نجح اختبار الاتصال أو نوع الفشل",
+  "@privacyEventConnectionTest": {
+    "description": "Payload list item for the connection test result event."
+  },
+  "privacyEventCertificate": "هل وثقت بالشهادة أو رفضتها أو تغيّرت (دون تفاصيل الشهادة)",
+  "@privacyEventCertificate": {
+    "description": "Payload list item for the certificate decision event."
+  },
+  "privacyEventAppLock": "أن قفل التطبيق فُعّل أو أُوقف",
+  "@privacyEventAppLock": {
+    "description": "Payload list item for the app lock toggled event."
+  },
+  "privacyEventConsent": "أنك غيّرت أحد هذين المفتاحين",
+  "@privacyEventConsent": {
+    "description": "Payload list item for the consent changed event."
+  },
+  "privacyEventDiagnostics": "أنك شاركت التشخيص وكيف (ملف أو GitHub)",
+  "@privacyEventDiagnostics": {
+    "description": "Payload list item for the diagnostics shared event."
+  },
+  "privacyEventOther": "إجراءات ميزات أخرى كأعداد لخيارات محددة فقط",
+  "@privacyEventOther": {
+    "description": "Payload list item covering events of other features."
+  },
+  "privacyWithdrawHint": "إيقاف المفتاح يوقف الجمع فورًا ويمسح كل ما ينتظر الإرسال.",
+  "@privacyWithdrawHint": {
+    "description": "Explains that withdrawing consent takes effect at once."
+  },
+  "privacyNoServiceNote": "لا يحتوي هذا الإصدار على خدمة إبلاغ، لذا لا يُرسل شيء حتى لو كان المفتاح مفعّلًا.",
+  "@privacyNoServiceNote": {
+    "description": "Note shown when the build has no telemetry service installed."
+  },
+  "diagTitle": "التشخيص",
+  "@diagTitle": {
+    "description": "Title of the diagnostics screen."
+  },
+  "diagLogSection": "السجل داخل التطبيق",
+  "@diagLogSection": {
+    "description": "Heading of the in-app log group."
+  },
+  "diagLogSwitch": "الاحتفاظ بسجل على هذا الجهاز",
+  "@diagLogSwitch": {
+    "description": "Title of the switch that turns the in-app log on."
+  },
+  "diagLogSwitchHint": "متوقف افتراضيًا. يُحفظ في الذاكرة فقط ولا يُرسل من تلقاء نفسه ويُمسح عند إغلاق التطبيق.",
+  "@diagLogSwitchHint": {
+    "description": "Explanation under the log switch."
+  },
+  "diagLevelTitle": "المستوى",
+  "@diagLevelTitle": {
+    "description": "Title of the log level selector."
+  },
+  "diagLevelDebug": "تصحيح",
+  "@diagLevelDebug": {
+    "description": "Log level: debug."
+  },
+  "diagLevelInfo": "معلومات",
+  "@diagLevelInfo": {
+    "description": "Log level: info."
+  },
+  "diagLevelWarning": "تحذير",
+  "@diagLevelWarning": {
+    "description": "Log level: warning."
+  },
+  "diagLevelError": "خطأ",
+  "@diagLevelError": {
+    "description": "Log level: error."
+  },
+  "diagOffTitle": "السجل متوقف",
+  "@diagOffTitle": {
+    "description": "Headline shown when the log is off."
+  },
+  "diagOffBody": "فعّله لتسجيل ما يحدث أثناء إعادة إنتاج مشكلة.",
+  "@diagOffBody": {
+    "description": "Hint shown when the log is off."
+  },
+  "diagEmptyTitle": "لم يُسجّل شيء بعد",
+  "@diagEmptyTitle": {
+    "description": "Headline shown when the log is on but empty."
+  },
+  "diagEmptyBody": "تظهر الإدخالات هنا ما دام السجل مفعّلًا.",
+  "@diagEmptyBody": {
+    "description": "Hint shown when the log is on but empty."
+  },
+  "diagFilterEmptyTitle": "لا إدخالات بهذا المستوى",
+  "@diagFilterEmptyTitle": {
+    "description": "Headline shown when the level filter hides every entry."
+  },
+  "diagCapturing": "جارٍ التسجيل · {count, plural, =1{إدخال واحد} =2{إدخالان} few{{count} إدخالات} many{{count} إدخالًا} other{{count} إدخال}}",
+  "@diagCapturing": {
+    "description": "Status of the running log with the number of entries.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of entries.",
+        "format": "decimalPatternDigits"
+      }
+    }
+  },
+  "diagFilterLabel": "عرض المستوى",
+  "@diagFilterLabel": {
+    "description": "Label of the log level filter."
+  },
+  "diagFilterAll": "الكل",
+  "@diagFilterAll": {
+    "description": "Log filter option: every level."
+  },
+  "diagClear": "مسح السجل",
+  "@diagClear": {
+    "description": "Button that clears the in-app log."
+  },
+  "diagRedactionNotice": "تُزال العناوين والمفاتيح والأسماء والعناوين الفنية ومسارات الملفات من أسطر السجل قبل تخزينها.",
+  "@diagRedactionNotice": {
+    "description": "Notice that log lines are redacted."
+  },
+  "diagShareButton": "مراجعة ومشاركة…",
+  "@diagShareButton": {
+    "description": "Button that opens the diagnostics preview."
+  },
+  "diagCheckRow": "فحص الاتصال",
+  "@diagCheckRow": {
+    "description": "Row that opens the step-by-step connection check."
+  },
+  "diagCheckRowSubtitle": "اكتشف سبب تعذر اتصال خادم",
+  "@diagCheckRowSubtitle": {
+    "description": "Subtitle of the connection check row."
+  },
+  "diagPreviewTitle": "المراجعة قبل المشاركة",
+  "@diagPreviewTitle": {
+    "description": "Title of the diagnostics preview screen."
+  },
+  "diagPreviewIntro": "هذا كل ما ستتم مشاركته. لا يُضاف شيء آخر.",
+  "@diagPreviewIntro": {
+    "description": "Introduction on the diagnostics preview screen."
+  },
+  "diagShareFile": "مشاركة كملف",
+  "@diagShareFile": {
+    "description": "Button that shares the diagnostics file through the system share sheet."
+  },
+  "diagOpenGithub": "فتح مشكلة على GitHub",
+  "@diagOpenGithub": {
+    "description": "Button that opens a pre-filled GitHub issue in the browser."
+  },
+  "diagGithubNote": "يفتح github.com في المتصفح مع هذا النص. يُقتطع النص الطويل؛ أرفق الملف المشارك بالمشكلة.",
+  "@diagGithubNote": {
+    "description": "Explains what the GitHub issue button does."
+  },
+  "diagTruncationNote": "[مقتطع: أرفق ملف التشخيص المشارك]",
+  "@diagTruncationNote": {
+    "description": "Note appended to a GitHub issue body that was shortened."
+  },
+  "diagIssueTitle": "تشخيص كونسولار",
+  "@diagIssueTitle": {
+    "description": "Title of the pre-filled GitHub issue."
+  },
+  "diagOpenFailed": "تعذر فتح المتصفح.",
+  "@diagOpenFailed": {
+    "description": "Message shown when the browser could not be opened."
+  },
+  "diagShareFailed": "تعذرت مشاركة الملف.",
+  "@diagShareFailed": {
+    "description": "Message shown when the share sheet failed."
+  },
+  "checkTitle": "فحص الاتصال",
+  "@checkTitle": {
+    "description": "Title of the connection check screen."
+  },
+  "checkChooseServer": "اختر خادمًا",
+  "@checkChooseServer": {
+    "description": "Heading above the server choice on the connection check screen."
+  },
+  "checkNoServers": "أضف خادمًا أولًا لفحص اتصاله.",
+  "@checkNoServers": {
+    "description": "Shown when no server exists to check."
+  },
+  "checkRun": "تشغيل الفحص",
+  "@checkRun": {
+    "description": "Button that starts the connection check."
+  },
+  "checkRunAgain": "تشغيل مجددًا",
+  "@checkRunAgain": {
+    "description": "Button that repeats the connection check."
+  },
+  "checkStepDns": "تحليل الاسم",
+  "@checkStepDns": {
+    "description": "Connection check step: finding the server by its name."
+  },
+  "checkStepConnect": "الاتصال",
+  "@checkStepConnect": {
+    "description": "Connection check step: opening a connection."
+  },
+  "checkStepTls": "الاتصال الآمن",
+  "@checkStepTls": {
+    "description": "Connection check step: the encrypted connection and certificate."
+  },
+  "checkStepAuth": "تسجيل الدخول",
+  "@checkStepAuth": {
+    "description": "Connection check step: authentication."
+  },
+  "checkStepVersion": "الواجهة والإصدار",
+  "@checkStepVersion": {
+    "description": "Connection check step: the service API and its version."
+  },
+  "checkStatePending": "في الانتظار",
+  "@checkStatePending": {
+    "description": "Connection check step state: not started."
+  },
+  "checkStateRunning": "قيد التشغيل",
+  "@checkStateRunning": {
+    "description": "Connection check step state: running."
+  },
+  "checkStatePass": "نجح",
+  "@checkStatePass": {
+    "description": "Connection check step state: passed."
+  },
+  "checkStateFail": "فشل",
+  "@checkStateFail": {
+    "description": "Connection check step state: failed."
+  },
+  "checkStateSkipped": "لم يُشغَّل",
+  "@checkStateSkipped": {
+    "description": "Connection check step state: skipped because an earlier step failed."
+  },
+  "checkStateNotNeeded": "غير مطلوب",
+  "@checkStateNotNeeded": {
+    "description": "Connection check step state: not applicable for this server."
+  },
+  "checkDnsFailedMessage": "تعذر العثور على اسم الخادم.",
+  "@checkDnsFailedMessage": {
+    "description": "Connection check message when name resolution failed."
+  },
+  "checkDnsFailedHint": "تحقق من كتابة العنوان ومن أن هذا الجهاز على الشبكة أو VPN الصحيحة.",
+  "@checkDnsFailedHint": {
+    "description": "Fix hint when name resolution failed."
+  },
+  "checkConnectFailedMessage": "لم يقبل الخادم الاتصال.",
+  "@checkConnectFailedMessage": {
+    "description": "Connection check message when the connection could not be opened."
+  },
+  "checkConnectFailedHint": "تحقق من أن الخادم يعمل وأن المنفذ صحيح وأن جدار حماية لا يحجبه.",
+  "@checkConnectFailedHint": {
+    "description": "Fix hint when the connection could not be opened."
+  },
+  "checkAllPassed": "نجحت كل الخطوات.",
+  "@checkAllPassed": {
+    "description": "Summary when every connection check step passed."
+  },
+  "checkServerVersion": "إصدار الخادم {version}",
+  "@checkServerVersion": {
+    "description": "Server version reported by a passing connection check.",
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "description": "Version string reported by the server."
+      }
+    }
+  },
+  "checkSummaryFailed": "توقف الفحص عند «{step}».",
+  "@checkSummaryFailed": {
+    "description": "Summary naming the step where the connection check failed.",
+    "placeholders": {
+      "step": {
+        "type": "String",
+        "description": "Name of the failed step."
+      }
+    }
+  },
+  "a11yTitle": "إمكانية الوصول",
+  "@a11yTitle": {
+    "description": "Title of the accessibility screen."
+  },
+  "a11yMotionTitle": "تقليل الحركة",
+  "@a11yMotionTitle": {
+    "description": "Title of the reduce motion switch."
+  },
+  "a11yMotionSubtitle": "يوقف الرسوم المتحركة والتأثيرات المتحركة إضافة إلى إعداد النظام",
+  "@a11yMotionSubtitle": {
+    "description": "Explanation under the reduce motion switch."
+  },
+  "a11yTargetsTitle": "أهداف لمس أكبر",
+  "@a11yTargetsTitle": {
+    "description": "Title of the larger touch targets switch."
+  },
+  "a11yTargetsSubtitle": "يجعل الأزرار والصفوف أطول وأسهل في الضغط",
+  "@a11yTargetsSubtitle": {
+    "description": "Explanation under the larger touch targets switch."
+  },
+  "a11yContrastTitle": "تباين عالٍ",
+  "@a11yContrastTitle": {
+    "description": "Title of the high contrast switch."
+  },
+  "a11yContrastSubtitle": "نصوص وألوان حالة أقوى على أسطح أعمق",
+  "@a11yContrastSubtitle": {
+    "description": "Explanation under the high contrast switch."
+  },
+  "a11yFollowsSystem": "يتبع حجم النص وإعدادات قارئ الشاشة إعدادات جهازك.",
+  "@a11yFollowsSystem": {
+    "description": "Note that font scale and screen reader come from the device."
+  },
+  "languageTitle": "اللغة",
+  "@languageTitle": {
+    "description": "Title of the language screen."
+  },
+  "languageFollowSystem": "اتباع النظام",
+  "@languageFollowSystem": {
+    "description": "Language option: use the device language."
+  },
+  "languageHint": "تعكس اللغات من اليمين إلى اليسار التخطيط بالكامل.",
+  "@languageHint": {
+    "description": "Explanation on the language screen."
+  },
+  "aboutVersionTitle": "الإصدار",
+  "@aboutVersionTitle": {
+    "description": "Title of the version row on the About screen."
+  },
+  "aboutVersionValue": "{version} ({build})",
+  "@aboutVersionValue": {
+    "description": "Version and build number shown on the About screen.",
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "description": "App version."
+      },
+      "build": {
+        "type": "String",
+        "description": "Build number."
+      }
+    }
+  },
+  "aboutLicensesRow": "تراخيص المصدر المفتوح",
+  "@aboutLicensesRow": {
+    "description": "About row that opens the licenses page."
+  },
+  "aboutSourceRow": "الشيفرة المصدرية",
+  "@aboutSourceRow": {
+    "description": "About row that opens the project on GitHub."
+  },
+  "aboutSourceRowSubtitle": "يفتح github.com في المتصفح",
+  "@aboutSourceRowSubtitle": {
+    "description": "Subtitle of the source code row."
+  },
+  "aboutPrivacyHeading": "بيان الخصوصية",
+  "@aboutPrivacyHeading": {
+    "description": "Heading of the privacy statement on the About screen."
+  },
+  "aboutPrivacyBody": "يتحدث كونسولار مع الخوادم التي تضيفها فقط. ولا يتصل بأي مضيف آخر من تلقاء نفسه. لا يصل إلى غيرها إلا باختيارك: إذا فعّلت تقارير الأعطال أو الاستخدام المجهول في إصدار يتضمن خدمة إبلاغ، أو إذا ضغطت «فتح مشكلة على GitHub» أو «الشيفرة المصدرية» فيُفتح github.com في المتصفح. لا يُجمع أي حساب أو هوية.",
+  "@aboutPrivacyBody": {
+    "description": "Privacy statement on the About screen listing every non-user host the app can contact."
+  },
+  "aboutOpenFailed": "تعذر فتح المتصفح.",
+  "@aboutOpenFailed": {
+    "description": "Message shown when the browser could not be opened from the About screen."
+  },
+  "settingsCancel": "إلغاء",
+  "@settingsCancel": {
+    "description": "Label of a button that cancels a confirmation."
+  },
+  "diagClearConfirmTitle": "مسح السجل؟",
+  "@diagClearConfirmTitle": {
+    "description": "Title of the confirmation before clearing the in-app log."
+  },
+  "diagClearConfirmBody": "تُحذف الإدخالات المخزنة على هذا الجهاز. لا يمكن التراجع عن ذلك.",
+  "@diagClearConfirmBody": {
+    "description": "Consequence stated before clearing the in-app log."
+  },
+  "diagClearConfirm": "مسح",
+  "@diagClearConfirm": {
+    "description": "Button that confirms clearing the in-app log."
+  },
+  "diagPreviewEmptyLog": "السجل فارغ أو متوقف، لذا لا تحتوي الحزمة على أسطر سجل.",
+  "@diagPreviewEmptyLog": {
+    "description": "Note on the diagnostics preview when there are no log lines."
+  },
+  "diagLoadFailed": "تعذر تجهيز التشخيص.",
+  "@diagLoadFailed": {
+    "description": "Error headline on the diagnostics preview."
+  },
+  "checkLoadFailed": "تعذرت قراءة قائمة الخوادم.",
+  "@checkLoadFailed": {
+    "description": "Error headline on the connection check when the servers cannot be read."
+  }
+}

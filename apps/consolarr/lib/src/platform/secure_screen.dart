@@ -9,13 +9,29 @@ abstract interface class SecureScreen {
 }
 
 /// Android `FLAG_SECURE` through the `consolarr/secure_screen` channel.
+///
+/// The window also has a **baseline** the app lock and the "block
+/// screenshots" switch require ([setBaseline]): a screen that asks for
+/// `secure: false` (for example the server editor once its secrets are hidden
+/// again) never removes the flag while the baseline is on.
 class PlatformSecureScreen implements SecureScreen {
   const PlatformSecureScreen();
 
   static const _channel = MethodChannel('consolarr/secure_screen');
 
+  static bool _baseline = false;
+
+  /// Whether the whole window must stay secure regardless of single screens.
+  static bool get baseline => _baseline;
+
+  /// Sets the baseline (no channel call). The app lock gate sets it, then
+  /// asks the `SecureScreen` seam to apply the window state.
+  static void setBaseline({required bool secure}) => _baseline = secure;
+
   @override
-  Future<void> setSecure({required bool secure}) async {
+  Future<void> setSecure({required bool secure}) => _apply(secure || _baseline);
+
+  Future<void> _apply(bool secure) async {
     try {
       await _channel.invokeMethod<void>('setSecure', {'secure': secure});
     } on MissingPluginException {

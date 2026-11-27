@@ -30,6 +30,17 @@ class _Crash implements CrashReporter {
   }) async => errors.add(error);
 }
 
+class _SlowStore implements ConsentStore {
+  @override
+  Future<ConsentState> load() async {
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+    return ConsentState.none;
+  }
+
+  @override
+  Future<void> save(ConsentState state) async {}
+}
+
 void main() {
   late _Analytics analytics;
   late _Crash crash;
@@ -58,16 +69,18 @@ void main() {
     expect(manager.state, ConsentState.none);
   });
 
-  test('with consent off zero calls reach analytics or the crash reporter',
-      () async {
-    await tracker.track(const ScreenViewedEvent(screen: ScreenName.settings));
-    await manager.crashReporter.recordError('x', null);
-    await manager.crashReporter.recordError('y', null, fatal: true);
-    expect(analytics.events, isEmpty);
-    expect(crash.errors, isEmpty);
-    // Breadcrumbs stay local.
-    expect(crumbs.entries, isNotEmpty);
-  });
+  test(
+    'with consent off zero calls reach analytics or the crash reporter',
+    () async {
+      await tracker.track(const ScreenViewedEvent(screen: ScreenName.settings));
+      await manager.crashReporter.recordError('x', null);
+      await manager.crashReporter.recordError('y', null, fatal: true);
+      expect(analytics.events, isEmpty);
+      expect(crash.errors, isEmpty);
+      // Breadcrumbs stay local.
+      expect(crumbs.entries, isNotEmpty);
+    },
+  );
 
   test('analytics consent forwards events but not errors', () async {
     await manager.set(ConsentPurpose.analytics, enabled: true);
@@ -85,25 +98,27 @@ void main() {
     expect(crash.errors, ['x']);
   });
 
-  test('turning a toggle off stops collection at once and clears queued data',
-      () async {
-    await manager.set(ConsentPurpose.crashReports, enabled: true);
-    await manager.set(ConsentPurpose.analytics, enabled: true);
-    await tracker.track(const ScreenViewedEvent(screen: ScreenName.settings));
-    expect(crumbs.entries, isNotEmpty);
+  test(
+    'turning a toggle off stops collection at once and clears queued data',
+    () async {
+      await manager.set(ConsentPurpose.crashReports, enabled: true);
+      await manager.set(ConsentPurpose.analytics, enabled: true);
+      await tracker.track(const ScreenViewedEvent(screen: ScreenName.settings));
+      expect(crumbs.entries, isNotEmpty);
 
-    await manager.set(ConsentPurpose.crashReports, enabled: false);
-    expect(crash.enabledCalls.last, isFalse);
-    expect(crumbs.entries, isEmpty, reason: 'crash trail cleared');
-    await manager.crashReporter.recordError('after', null);
-    expect(crash.errors, isEmpty);
+      await manager.set(ConsentPurpose.crashReports, enabled: false);
+      expect(crash.enabledCalls.last, isFalse);
+      expect(crumbs.entries, isEmpty, reason: 'crash trail cleared');
+      await manager.crashReporter.recordError('after', null);
+      expect(crash.errors, isEmpty);
 
-    await manager.set(ConsentPurpose.analytics, enabled: false);
-    expect(analytics.enabledCalls.last, isFalse);
-    final before = analytics.events.length;
-    await tracker.track(const ScreenViewedEvent(screen: ScreenName.settings));
-    expect(analytics.events.length, before);
-  });
+      await manager.set(ConsentPurpose.analytics, enabled: false);
+      expect(analytics.enabledCalls.last, isFalse);
+      final before = analytics.events.length;
+      await tracker.track(const ScreenViewedEvent(screen: ScreenName.settings));
+      expect(analytics.events.length, before);
+    },
+  );
 
   test('state persists and is restored on load', () async {
     await manager.set(ConsentPurpose.analytics, enabled: true);
@@ -126,6 +141,22 @@ void main() {
     await manager.set(ConsentPurpose.analytics, enabled: true);
     expect(n, 1);
   });
+
+  test(
+    'a choice made while loading is not overwritten by the stored state',
+    () async {
+      final slow = ConsentManager(
+        store: _SlowStore(),
+        analytics: analytics,
+        crashReporter: crash,
+        breadcrumbs: crumbs,
+      );
+      final loading = slow.load();
+      await slow.set(ConsentPurpose.analytics, enabled: true);
+      await loading;
+      expect(slow.state.analytics, isTrue);
+    },
+  );
 
   test('the loaded state is applied to the sinks without a toggle', () async {
     await store.save(const ConsentState(analytics: true));
