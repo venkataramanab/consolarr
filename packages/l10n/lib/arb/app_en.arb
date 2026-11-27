@@ -161,5 +161,681 @@
   "appTitle": "Consolarr",
   "@appTitle": {
     "description": "The app name, shown in the task switcher and as the accessible name of the app."
+  },
+  "sonarrTitle": "Series",
+  "@sonarrTitle": {
+    "description": "Title of the Sonarr series library screen and its floating top bar."
+  },
+  "sonarrSwitchToListTooltip": "Show as list",
+  "@sonarrSwitchToListTooltip": {
+    "description": "Tooltip and accessible name of the top bar button that switches the series library from the poster grid to the list."
+  },
+  "sonarrSwitchToGridTooltip": "Show as grid",
+  "@sonarrSwitchToGridTooltip": {
+    "description": "Tooltip and accessible name of the top bar button that switches the series library from the list to the poster grid."
+  },
+  "sonarrLoadingLabel": "Loading series",
+  "@sonarrLoadingLabel": {
+    "description": "Accessible label of the skeleton shown while the series library loads."
+  },
+  "sonarrRetry": "Try again",
+  "@sonarrRetry": {
+    "description": "Label of the retry button on error and offline states of the series library."
+  },
+  "sonarrEmptyHeadline": "No series yet",
+  "@sonarrEmptyHeadline": {
+    "description": "Headline of the empty series library state when Sonarr has no series."
+  },
+  "sonarrEmptyMessage": "Series you add in Sonarr will show up here.",
+  "@sonarrEmptyMessage": {
+    "description": "Hint under the empty series library headline."
+  },
+  "sonarrEmptyAction": "Refresh",
+  "@sonarrEmptyAction": {
+    "description": "Primary action of the empty series library state; reloads the list."
+  },
+  "sonarrNoServerHeadline": "No Sonarr server",
+  "@sonarrNoServerHeadline": {
+    "description": "Headline shown in the series library when no Sonarr server has been added."
+  },
+  "sonarrNoServerMessage": "Add your Sonarr server to browse your series.",
+  "@sonarrNoServerMessage": {
+    "description": "Hint under the no-server headline of the series library."
+  },
+  "sonarrNoServerAction": "Add a server",
+  "@sonarrNoServerAction": {
+    "description": "Primary action of the no-server state; opens the servers screen."
+  },
+  "sonarrOpenServers": "Check server settings",
+  "@sonarrOpenServers": {
+    "description": "Secondary action on series library errors that are fixed in the server settings (credentials, certificate)."
+  },
+  "sonarrErrorTitle": "Couldn't load your series",
+  "@sonarrErrorTitle": {
+    "description": "Headline of the series library error state for connection and server problems."
+  },
+  "sonarrErrorAuthTitle": "Sonarr rejected the sign-in",
+  "@sonarrErrorAuthTitle": {
+    "description": "Headline of the series library error state when the credentials are wrong or missing."
+  },
+  "sonarrErrorVersionTitle": "Unsupported Sonarr version",
+  "@sonarrErrorVersionTitle": {
+    "description": "Headline of the series library error state when the Sonarr version is too old."
+  },
+  "sonarrErrorAuthMessage": "The API key or password was not accepted.",
+  "@sonarrErrorAuthMessage": {
+    "description": "Plain-language cause shown in the series library error state (Auth)."
+  },
+  "sonarrErrorAuthHint": "Check the credentials in the server settings.",
+  "@sonarrErrorAuthHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Auth)."
+  },
+  "sonarrErrorNeedsCredentialsMessage": "The saved credentials for this server are missing.",
+  "@sonarrErrorNeedsCredentialsMessage": {
+    "description": "Plain-language cause shown in the series library error state (NeedsCredentials)."
+  },
+  "sonarrErrorNeedsCredentialsHint": "Enter the API key or password again in the server settings.",
+  "@sonarrErrorNeedsCredentialsHint": {
+    "description": "Likely fix shown under the cause in the series library error state (NeedsCredentials)."
+  },
+  "sonarrErrorNetworkMessage": "Sonarr could not be reached.",
+  "@sonarrErrorNetworkMessage": {
+    "description": "Plain-language cause shown in the series library error state (Network)."
+  },
+  "sonarrErrorNetworkHint": "Check that you are on the right network and that the address and port are correct.",
+  "@sonarrErrorNetworkHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Network)."
+  },
+  "sonarrErrorTimeoutMessage": "Sonarr took too long to answer.",
+  "@sonarrErrorTimeoutMessage": {
+    "description": "Plain-language cause shown in the series library error state (Timeout)."
+  },
+  "sonarrErrorTimeoutHint": "Try again in a moment, or check that the server is running and not overloaded.",
+  "@sonarrErrorTimeoutHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Timeout)."
+  },
+  "sonarrErrorVersionMessage": "This Sonarr version is too old for Consolarr.",
+  "@sonarrErrorVersionMessage": {
+    "description": "Plain-language cause shown in the series library error state (Version)."
+  },
+  "sonarrErrorVersionHint": "Update Sonarr to version 3 or newer.",
+  "@sonarrErrorVersionHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Version)."
+  },
+  "sonarrErrorServerMessage": "Sonarr reported an internal problem.",
+  "@sonarrErrorServerMessage": {
+    "description": "Plain-language cause shown in the series library error state (Server)."
+  },
+  "sonarrErrorServerHint": "Check the Sonarr logs, then try again.",
+  "@sonarrErrorServerHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Server)."
+  },
+  "sonarrErrorParseMessage": "Sonarr sent an answer the app could not read.",
+  "@sonarrErrorParseMessage": {
+    "description": "Plain-language cause shown in the series library error state (Parse)."
+  },
+  "sonarrErrorParseHint": "Make sure the address points to Sonarr and not to another service.",
+  "@sonarrErrorParseHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Parse)."
+  },
+  "sonarrErrorNotFoundMessage": "Nothing answered at this address.",
+  "@sonarrErrorNotFoundMessage": {
+    "description": "Plain-language cause shown in the series library error state (NotFound)."
+  },
+  "sonarrErrorNotFoundHint": "Check the address and the path prefix, for example /sonarr behind a reverse proxy.",
+  "@sonarrErrorNotFoundHint": {
+    "description": "Likely fix shown under the cause in the series library error state (NotFound)."
+  },
+  "sonarrErrorTlsMessage": "The server's certificate is not trusted.",
+  "@sonarrErrorTlsMessage": {
+    "description": "Plain-language cause shown in the series library error state (Tls)."
+  },
+  "sonarrErrorTlsHint": "Review the certificate in the server settings before trusting it.",
+  "@sonarrErrorTlsHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Tls)."
+  },
+  "sonarrErrorCleartextMessage": "This server uses plain http, which is not allowed.",
+  "@sonarrErrorCleartextMessage": {
+    "description": "Plain-language cause shown in the series library error state (Cleartext)."
+  },
+  "sonarrErrorCleartextHint": "Use https, or allow plain http for this server in its settings.",
+  "@sonarrErrorCleartextHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Cleartext)."
+  },
+  "sonarrErrorGenericMessage": "Something went wrong while talking to Sonarr.",
+  "@sonarrErrorGenericMessage": {
+    "description": "Plain-language cause shown in the series library error state (Generic)."
+  },
+  "sonarrErrorGenericHint": "Try again, and check the server settings if it keeps happening.",
+  "@sonarrErrorGenericHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Generic)."
+  },
+  "sonarrOfflineMessage": "Offline. Showing your saved series.",
+  "@sonarrOfflineMessage": {
+    "description": "Message of the banner above cached series when Sonarr cannot be reached."
+  },
+  "sonarrUpdatedAgo": "Updated {age}",
+  "@sonarrUpdatedAgo": {
+    "description": "Age line of the offline banner, for example \"Updated 5 minutes ago\".",
+    "placeholders": {
+      "age": {
+        "type": "String",
+        "description": "Relative age such as \"5 minutes ago\"."
+      }
+    }
+  },
+  "sonarrAgeJustNow": "just now",
+  "@sonarrAgeJustNow": {
+    "description": "Relative age used when cached data is less than a minute old."
+  },
+  "sonarrAgeMinutes": "{count, plural, =1{1 minute ago} other{{count} minutes ago}}",
+  "@sonarrAgeMinutes": {
+    "description": "Relative age in minutes for the offline banner.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole minutes."
+      }
+    }
+  },
+  "sonarrAgeHours": "{count, plural, =1{1 hour ago} other{{count} hours ago}}",
+  "@sonarrAgeHours": {
+    "description": "Relative age in hours for the offline banner.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole hours."
+      }
+    }
+  },
+  "sonarrAgeDays": "{count, plural, =1{1 day ago} other{{count} days ago}}",
+  "@sonarrAgeDays": {
+    "description": "Relative age in days for the offline banner.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole days."
+      }
+    }
+  },
+  "sonarrStatusContinuing": "Continuing",
+  "@sonarrStatusContinuing": {
+    "description": "Badge text for a series that is still airing."
+  },
+  "sonarrStatusEnded": "Ended",
+  "@sonarrStatusEnded": {
+    "description": "Badge text for a series that has ended."
+  },
+  "sonarrStatusUpcoming": "Upcoming",
+  "@sonarrStatusUpcoming": {
+    "description": "Badge text for a series that has not started airing."
+  },
+  "sonarrStatusDeleted": "Deleted",
+  "@sonarrStatusDeleted": {
+    "description": "Badge text for a series that was removed from the metadata source."
+  },
+  "sonarrMonitored": "Monitored",
+  "@sonarrMonitored": {
+    "description": "Text saying Sonarr monitors the series for new episodes."
+  },
+  "sonarrUnmonitored": "Unmonitored",
+  "@sonarrUnmonitored": {
+    "description": "Badge and text saying Sonarr does not monitor the series."
+  },
+  "sonarrEpisodesShort": "{have}/{total}",
+  "@sonarrEpisodesShort": {
+    "description": "Compact episode progress on a poster card: downloaded over total.",
+    "placeholders": {
+      "have": {
+        "type": "int",
+        "description": "Downloaded episodes."
+      },
+      "total": {
+        "type": "int",
+        "description": "Total episodes."
+      }
+    }
+  },
+  "sonarrEpisodesProgress": "{total, plural, =1{{have}/1 episode} other{{have}/{total} episodes}}",
+  "@sonarrEpisodesProgress": {
+    "description": "Episode progress in the series list: downloaded over total episodes.",
+    "placeholders": {
+      "have": {
+        "type": "int",
+        "description": "Downloaded episodes."
+      },
+      "total": {
+        "type": "int",
+        "description": "Total episodes."
+      }
+    }
+  },
+  "sonarrSeasonCount": "{count, plural, =1{1 season} other{{count} seasons}}",
+  "@sonarrSeasonCount": {
+    "description": "Number of seasons of a series.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Season count."
+      }
+    }
+  },
+  "sonarrSizeMb": "{size} MB",
+  "@sonarrSizeMb": {
+    "description": "Size on disk in megabytes.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Number with one decimal."
+      }
+    }
+  },
+  "sonarrSizeGb": "{size} GB",
+  "@sonarrSizeGb": {
+    "description": "Size on disk in gigabytes.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Number with one decimal."
+      }
+    }
+  },
+  "sonarrSizeTb": "{size} TB",
+  "@sonarrSizeTb": {
+    "description": "Size on disk in terabytes.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Number with one decimal."
+      }
+    }
+  },
+  "sonarrNextAiringToday": "Airs today",
+  "@sonarrNextAiringToday": {
+    "description": "Relative label for a series whose next episode airs today."
+  },
+  "sonarrNextAiringTomorrow": "Airs tomorrow",
+  "@sonarrNextAiringTomorrow": {
+    "description": "Relative label for a series whose next episode airs tomorrow."
+  },
+  "sonarrNextAiringInDays": "{days, plural, =1{Airs in 1 day} other{Airs in {days} days}}",
+  "@sonarrNextAiringInDays": {
+    "description": "Relative label for the next episode airing in a number of days.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days until the episode airs."
+      }
+    }
+  },
+  "sonarrSeriesSemantics": "{title}, {details}",
+  "@sonarrSeriesSemantics": {
+    "description": "Screen reader label of a series card: the title followed by its status details.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Series title (plain text from the server)."
+      },
+      "details": {
+        "type": "String",
+        "description": "Status, monitoring and episode summary."
+      }
+    }
+  },
+  "torrentsTitle": "Torrents",
+  "@torrentsTitle": {
+    "description": "Title of the torrent list screen top bar."
+  },
+  "torCount": "{count, plural, =0{No torrents} =1{1 torrent} other{{count} torrents}}",
+  "@torCount": {
+    "description": "Number of torrents shown in the speed header.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "How many torrents the client reports."
+      }
+    }
+  },
+  "torSpeedDown": "Download",
+  "@torSpeedDown": {
+    "description": "Label of the global download speed in the speed header."
+  },
+  "torSpeedUp": "Upload",
+  "@torSpeedUp": {
+    "description": "Label of the global upload speed in the speed header."
+  },
+  "torSpeedIdle": "Idle",
+  "@torSpeedIdle": {
+    "description": "Shown instead of a speed when nothing is transferring."
+  },
+  "torSpeedPartial": "Speed information is unavailable right now.",
+  "@torSpeedPartial": {
+    "description": "Shown in the speed header when only the transfer statistics failed to load while the torrent list loaded."
+  },
+  "torSpeedOffline": "Offline",
+  "@torSpeedOffline": {
+    "description": "Shown in the speed header while the server is unreachable."
+  },
+  "torSpeedHeaderSemantics": "Download {down}, upload {up}, {count, plural, =0{no torrents} =1{1 torrent} other{{count} torrents}}",
+  "@torSpeedHeaderSemantics": {
+    "description": "Spoken summary of the speed header for screen readers.",
+    "placeholders": {
+      "down": {
+        "type": "String",
+        "description": "Formatted download speed."
+      },
+      "up": {
+        "type": "String",
+        "description": "Formatted upload speed."
+      },
+      "count": {
+        "type": "int",
+        "description": "Number of torrents."
+      }
+    }
+  },
+  "torStateDownloading": "Downloading",
+  "@torStateDownloading": {
+    "description": "Torrent state: actively downloading."
+  },
+  "torStateStalled": "Stalled",
+  "@torStateStalled": {
+    "description": "Torrent state: no peers are sending data."
+  },
+  "torStateChecking": "Checking",
+  "@torStateChecking": {
+    "description": "Torrent state: verifying files on disk."
+  },
+  "torStateQueued": "Queued",
+  "@torStateQueued": {
+    "description": "Torrent state: waiting for a free slot."
+  },
+  "torStateSeeding": "Seeding",
+  "@torStateSeeding": {
+    "description": "Torrent state: complete and uploading to peers."
+  },
+  "torStatePaused": "Paused",
+  "@torStatePaused": {
+    "description": "Torrent state: paused by the user."
+  },
+  "torStateFinished": "Finished",
+  "@torStateFinished": {
+    "description": "Torrent state: complete and idle."
+  },
+  "torStateError": "Error",
+  "@torStateError": {
+    "description": "Torrent state: the client reports an error for this torrent."
+  },
+  "torStateUnknown": "Unknown",
+  "@torStateUnknown": {
+    "description": "Torrent state: the client reported a state the app does not know."
+  },
+  "torProgressPercent": "{value}",
+  "@torProgressPercent": {
+    "description": "Percentage of a torrent that is complete, for example 45%.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Fraction from 0 to 1.",
+        "format": "percentPattern",
+        "optionalParameters": {
+          "decimalDigits": 0
+        }
+      }
+    }
+  },
+  "torRowSemantics": "{name}, {state}, {percent} complete",
+  "@torRowSemantics": {
+    "description": "Spoken description of a torrent row: name, state and percentage in words.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Torrent name (plain text)."
+      },
+      "state": {
+        "type": "String",
+        "description": "State label."
+      },
+      "percent": {
+        "type": "String",
+        "description": "Formatted percentage."
+      }
+    }
+  },
+  "torDetailSize": "{size}",
+  "@torDetailSize": {
+    "description": "Total size of a torrent in the row metadata.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Formatted size."
+      }
+    }
+  },
+  "torDetailDown": "Down {speed}",
+  "@torDetailDown": {
+    "description": "Download speed of one torrent in the row metadata.",
+    "placeholders": {
+      "speed": {
+        "type": "String",
+        "description": "Formatted speed."
+      }
+    }
+  },
+  "torDetailUp": "Up {speed}",
+  "@torDetailUp": {
+    "description": "Upload speed of one torrent in the row metadata.",
+    "placeholders": {
+      "speed": {
+        "type": "String",
+        "description": "Formatted speed."
+      }
+    }
+  },
+  "torDetailEta": "{time} left",
+  "@torDetailEta": {
+    "description": "Estimated time remaining in the row metadata.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "description": "Formatted duration."
+      }
+    }
+  },
+  "torDetailRatio": "Ratio {ratio}",
+  "@torDetailRatio": {
+    "description": "Share ratio in the row metadata.",
+    "placeholders": {
+      "ratio": {
+        "type": "double",
+        "description": "Upload to download ratio.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 2
+        }
+      }
+    }
+  },
+  "torSpeedPerSecond": "{size}/s",
+  "@torSpeedPerSecond": {
+    "description": "A speed: a formatted size per second.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Formatted size."
+      }
+    }
+  },
+  "torUnitB": "{value} B",
+  "@torUnitB": {
+    "description": "Size in bytes.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 0
+        }
+      }
+    }
+  },
+  "torUnitKB": "{value} KB",
+  "@torUnitKB": {
+    "description": "Size in kilobytes.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "torUnitMB": "{value} MB",
+  "@torUnitMB": {
+    "description": "Size in megabytes.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "torUnitGB": "{value} GB",
+  "@torUnitGB": {
+    "description": "Size in gigabytes.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "torUnitTB": "{value} TB",
+  "@torUnitTB": {
+    "description": "Size in terabytes.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 2
+        }
+      }
+    }
+  },
+  "torDurationSeconds": "{count}s",
+  "@torDurationSeconds": {
+    "description": "A duration in seconds, short form.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Seconds."
+      }
+    }
+  },
+  "torDurationMinutes": "{count}m",
+  "@torDurationMinutes": {
+    "description": "A duration in minutes, short form.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Minutes."
+      }
+    }
+  },
+  "torDurationHoursMinutes": "{hours}h {minutes}m",
+  "@torDurationHoursMinutes": {
+    "description": "A duration in hours and minutes, short form.",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "description": "Hours."
+      },
+      "minutes": {
+        "type": "int",
+        "description": "Minutes."
+      }
+    }
+  },
+  "torDurationDaysHours": "{days}d {hours}h",
+  "@torDurationDaysHours": {
+    "description": "A duration in days and hours, short form.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days."
+      },
+      "hours": {
+        "type": "int",
+        "description": "Hours."
+      }
+    }
+  },
+  "torEmptyHeadline": "No torrents yet",
+  "@torEmptyHeadline": {
+    "description": "Headline when the client has no torrents."
+  },
+  "torEmptyMessage": "Torrents you add in your client will show up here.",
+  "@torEmptyMessage": {
+    "description": "Hint under the empty headline."
+  },
+  "torNoServerHeadline": "No torrent client yet",
+  "@torNoServerHeadline": {
+    "description": "Headline when no torrent client server is configured."
+  },
+  "torNoServerMessage": "Add a qBittorrent server to see your torrents.",
+  "@torNoServerMessage": {
+    "description": "Hint when no torrent client server is configured."
+  },
+  "torNoServerAction": "Add a server",
+  "@torNoServerAction": {
+    "description": "Button that opens the server setup."
+  },
+  "torErrorHeadline": "Can't load torrents",
+  "@torErrorHeadline": {
+    "description": "Headline of the error state of the torrent list."
+  },
+  "torRetry": "Try again",
+  "@torRetry": {
+    "description": "Button that retries loading the torrent list."
+  },
+  "torOfflineMessage": "Can't reach the server. Showing the last data.",
+  "@torOfflineMessage": {
+    "description": "Banner text while offline with cached torrents."
+  },
+  "torOfflineAge": "Updated {time} ago",
+  "@torOfflineAge": {
+    "description": "Age of the data shown under the offline banner.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "description": "Formatted duration."
+      }
+    }
+  },
+  "torOfflineJustNow": "Updated just now",
+  "@torOfflineJustNow": {
+    "description": "Age text when the data is less than a few seconds old."
+  },
+  "torReconnect": "Reconnect",
+  "@torReconnect": {
+    "description": "Button on the offline banner that tries to reach the server again."
+  },
+  "torSpeedLimitsHint": "Open speed limits",
+  "@torSpeedLimitsHint": {
+    "description": "Accessible hint of the speed header when it can be tapped."
   }
 }

@@ -3,6 +3,7 @@
 import 'package:consolarr/features/servers/application/auth_headers.dart';
 import 'package:consolarr/features/servers/application/error_messages.dart';
 import 'package:consolarr/features/servers/application/servers_providers.dart';
+import 'package:consolarr/features/servers/domain/server_models.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
 import 'package:dio/dio.dart';
@@ -27,10 +28,26 @@ class ServerConnection {
 /// prompt. Rebuilds when the server list changes.
 ///
 /// Feature tests override this with a fake connection.
+/// Typed app errors (missing credentials, ...) are answers, not glitches:
+/// never auto-retry them.
+Duration? _noRetry(int retryCount, Object error) => null;
+
+String _signature(List<ServerEntry> list) =>
+    [for (final e in list) '${e.profile.hashCode}/${e.needsCredentials}']
+        .join(',');
+
 final activeConnectionProvider =
-    FutureProvider.family<ServerConnection?, ServiceKind>((ref, kind) async {
-      await ref.watch(serversProvider.future);
+    FutureProvider.family<ServerConnection?, ServiceKind>(retry: _noRetry, (
+      ref,
+      kind,
+    ) async {
       final repo = ref.watch(serverRepositoryProvider);
+      // Rebuild when the server list really changes (not on first emission).
+      final seen = _signature(await repo.watchAll().first);
+      ref.listen(serversProvider, (_, next) {
+        final list = next.value;
+        if (list != null && _signature(list) != seen) ref.invalidateSelf();
+      });
       final id = await repo.activeId(kind);
       if (id == null) return null;
       final entry = await repo.find(id);

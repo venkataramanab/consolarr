@@ -3,5 +3,69 @@
   "appTitle": "كونسولار",
   "@appTitle": {
     "description": "The app name, shown in the task switcher and as the accessible name of the app."
+  },
+  "navHome": "الرئيسية",
+  "@navHome": {
+    "description": "Label of the Home destination in the bottom navigation bar."
+  },
+  "navSonarr": "المسلسلات",
+  "@navSonarr": {
+    "description": "Label of the Sonarr (TV series) destination in the bottom navigation bar."
+  },
+  "navTorrents": "التورنت",
+  "@navTorrents": {
+    "description": "Label of the torrent client destination in the bottom navigation bar."
+  },
+  "navServers": "الخوادم",
+  "@navServers": {
+    "description": "Label of the Servers destination in the bottom navigation bar."
+  },
+  "navSelectedHint": "محدد",
+  "@navSelectedHint": {
+    "description": "Accessibility hint announced for the currently selected navigation destination."
+  },
+  "switcherTitle": "تبديل الخادم",
+  "@switcherTitle": {
+    "description": "Title of the sheet that lets the user pick the active server for a service."
+  },
+  "switcherTooltip": "تبديل الخادم",
+  "@switcherTooltip": {
+    "description": "Tooltip and accessible label of the top bar button that opens the server switcher."
+  },
+  "switcherActive": "نشط",
+  "@switcherActive": {
+    "description": "Text marking the currently active server in the server switcher."
+  },
+  "switcherEmpty": "لا توجد خوادم من هذا النوع بعد.",
+  "@switcherEmpty": {
+    "description": "Message in the server switcher when no server of the service type exists."
+  },
+  "healthHealthy": "متصل",
+  "@healthHealthy": {
+    "description": "Short health status text: the server answered correctly."
+  },
+  "healthChecking": "جارٍ الفحص",
+  "@healthChecking": {
+    "description": "Short health status text: a health check is running."
+  },
+  "healthDegraded": "بطيء أو به أخطاء",
+  "@healthDegraded": {
+    "description": "Short health status text: the server answers but with errors or very slowly."
+  },
+  "healthUnauthorized": "بيانات الاعتماد غير صحيحة",
+  "@healthUnauthorized": {
+    "description": "Short health status text: the server rejected the credentials."
+  },
+  "healthUnreachable": "غير متصل",
+  "@healthUnreachable": {
+    "description": "Short health status text: the server cannot be reached."
+  },
+  "homeSetupCta": "إعداد خادم",
+  "@homeSetupCta": {
+    "description": "Primary button on the Home screen that starts first-run server setup."
+  },
+  "homeServicesHeading": "خدماتك",
+  "@homeServicesHeading": {
+    "description": "Heading above the list of configured services on the Home screen."
   }
 }

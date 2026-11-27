@@ -161,5 +161,681 @@
   "appTitle": "كونسولار",
   "@appTitle": {
     "description": "The app name, shown in the task switcher and as the accessible name of the app."
+  },
+  "sonarrTitle": "المسلسلات",
+  "@sonarrTitle": {
+    "description": "Title of the Sonarr series library screen and its floating top bar."
+  },
+  "sonarrSwitchToListTooltip": "العرض كقائمة",
+  "@sonarrSwitchToListTooltip": {
+    "description": "Tooltip and accessible name of the top bar button that switches the series library from the poster grid to the list."
+  },
+  "sonarrSwitchToGridTooltip": "العرض كشبكة",
+  "@sonarrSwitchToGridTooltip": {
+    "description": "Tooltip and accessible name of the top bar button that switches the series library from the list to the poster grid."
+  },
+  "sonarrLoadingLabel": "جارٍ تحميل المسلسلات",
+  "@sonarrLoadingLabel": {
+    "description": "Accessible label of the skeleton shown while the series library loads."
+  },
+  "sonarrRetry": "حاول مرة أخرى",
+  "@sonarrRetry": {
+    "description": "Label of the retry button on error and offline states of the series library."
+  },
+  "sonarrEmptyHeadline": "لا توجد مسلسلات بعد",
+  "@sonarrEmptyHeadline": {
+    "description": "Headline of the empty series library state when Sonarr has no series."
+  },
+  "sonarrEmptyMessage": "ستظهر هنا المسلسلات التي تضيفها في Sonarr.",
+  "@sonarrEmptyMessage": {
+    "description": "Hint under the empty series library headline."
+  },
+  "sonarrEmptyAction": "تحديث",
+  "@sonarrEmptyAction": {
+    "description": "Primary action of the empty series library state; reloads the list."
+  },
+  "sonarrNoServerHeadline": "لا يوجد خادم Sonarr",
+  "@sonarrNoServerHeadline": {
+    "description": "Headline shown in the series library when no Sonarr server has been added."
+  },
+  "sonarrNoServerMessage": "أضف خادم Sonarr لتصفح مسلسلاتك.",
+  "@sonarrNoServerMessage": {
+    "description": "Hint under the no-server headline of the series library."
+  },
+  "sonarrNoServerAction": "إضافة خادم",
+  "@sonarrNoServerAction": {
+    "description": "Primary action of the no-server state; opens the servers screen."
+  },
+  "sonarrOpenServers": "فحص إعدادات الخادم",
+  "@sonarrOpenServers": {
+    "description": "Secondary action on series library errors that are fixed in the server settings (credentials, certificate)."
+  },
+  "sonarrErrorTitle": "تعذّر تحميل مسلسلاتك",
+  "@sonarrErrorTitle": {
+    "description": "Headline of the series library error state for connection and server problems."
+  },
+  "sonarrErrorAuthTitle": "رفض Sonarr تسجيل الدخول",
+  "@sonarrErrorAuthTitle": {
+    "description": "Headline of the series library error state when the credentials are wrong or missing."
+  },
+  "sonarrErrorVersionTitle": "إصدار Sonarr غير مدعوم",
+  "@sonarrErrorVersionTitle": {
+    "description": "Headline of the series library error state when the Sonarr version is too old."
+  },
+  "sonarrErrorAuthMessage": "لم يتم قبول مفتاح API أو كلمة المرور.",
+  "@sonarrErrorAuthMessage": {
+    "description": "Plain-language cause shown in the series library error state (Auth)."
+  },
+  "sonarrErrorAuthHint": "تحقق من بيانات الاعتماد في إعدادات الخادم.",
+  "@sonarrErrorAuthHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Auth)."
+  },
+  "sonarrErrorNeedsCredentialsMessage": "بيانات الاعتماد المحفوظة لهذا الخادم مفقودة.",
+  "@sonarrErrorNeedsCredentialsMessage": {
+    "description": "Plain-language cause shown in the series library error state (NeedsCredentials)."
+  },
+  "sonarrErrorNeedsCredentialsHint": "أدخل مفتاح API أو كلمة المرور مرة أخرى في إعدادات الخادم.",
+  "@sonarrErrorNeedsCredentialsHint": {
+    "description": "Likely fix shown under the cause in the series library error state (NeedsCredentials)."
+  },
+  "sonarrErrorNetworkMessage": "تعذّر الوصول إلى Sonarr.",
+  "@sonarrErrorNetworkMessage": {
+    "description": "Plain-language cause shown in the series library error state (Network)."
+  },
+  "sonarrErrorNetworkHint": "تأكد من أنك على الشبكة الصحيحة وأن العنوان والمنفذ صحيحان.",
+  "@sonarrErrorNetworkHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Network)."
+  },
+  "sonarrErrorTimeoutMessage": "استغرق Sonarr وقتًا طويلًا للرد.",
+  "@sonarrErrorTimeoutMessage": {
+    "description": "Plain-language cause shown in the series library error state (Timeout)."
+  },
+  "sonarrErrorTimeoutHint": "حاول مرة أخرى بعد قليل، أو تأكد من أن الخادم يعمل وغير مثقل.",
+  "@sonarrErrorTimeoutHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Timeout)."
+  },
+  "sonarrErrorVersionMessage": "إصدار Sonarr هذا قديم جدًا بالنسبة إلى Consolarr.",
+  "@sonarrErrorVersionMessage": {
+    "description": "Plain-language cause shown in the series library error state (Version)."
+  },
+  "sonarrErrorVersionHint": "حدّث Sonarr إلى الإصدار 3 أو أحدث.",
+  "@sonarrErrorVersionHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Version)."
+  },
+  "sonarrErrorServerMessage": "أبلغ Sonarr عن مشكلة داخلية.",
+  "@sonarrErrorServerMessage": {
+    "description": "Plain-language cause shown in the series library error state (Server)."
+  },
+  "sonarrErrorServerHint": "افحص سجلات Sonarr ثم حاول مرة أخرى.",
+  "@sonarrErrorServerHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Server)."
+  },
+  "sonarrErrorParseMessage": "أرسل Sonarr ردًا لم يتمكن التطبيق من قراءته.",
+  "@sonarrErrorParseMessage": {
+    "description": "Plain-language cause shown in the series library error state (Parse)."
+  },
+  "sonarrErrorParseHint": "تأكد من أن العنوان يشير إلى Sonarr وليس إلى خدمة أخرى.",
+  "@sonarrErrorParseHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Parse)."
+  },
+  "sonarrErrorNotFoundMessage": "لم يرد أي شيء على هذا العنوان.",
+  "@sonarrErrorNotFoundMessage": {
+    "description": "Plain-language cause shown in the series library error state (NotFound)."
+  },
+  "sonarrErrorNotFoundHint": "تحقق من العنوان وبادئة المسار، مثل /sonarr خلف وكيل عكسي.",
+  "@sonarrErrorNotFoundHint": {
+    "description": "Likely fix shown under the cause in the series library error state (NotFound)."
+  },
+  "sonarrErrorTlsMessage": "شهادة الخادم غير موثوقة.",
+  "@sonarrErrorTlsMessage": {
+    "description": "Plain-language cause shown in the series library error state (Tls)."
+  },
+  "sonarrErrorTlsHint": "راجع الشهادة في إعدادات الخادم قبل الوثوق بها.",
+  "@sonarrErrorTlsHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Tls)."
+  },
+  "sonarrErrorCleartextMessage": "يستخدم هذا الخادم http غير المشفّر وهو غير مسموح.",
+  "@sonarrErrorCleartextMessage": {
+    "description": "Plain-language cause shown in the series library error state (Cleartext)."
+  },
+  "sonarrErrorCleartextHint": "استخدم https، أو اسمح بـ http غير المشفّر لهذا الخادم في إعداداته.",
+  "@sonarrErrorCleartextHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Cleartext)."
+  },
+  "sonarrErrorGenericMessage": "حدث خطأ أثناء التواصل مع Sonarr.",
+  "@sonarrErrorGenericMessage": {
+    "description": "Plain-language cause shown in the series library error state (Generic)."
+  },
+  "sonarrErrorGenericHint": "حاول مرة أخرى، وافحص إعدادات الخادم إذا استمرت المشكلة.",
+  "@sonarrErrorGenericHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Generic)."
+  },
+  "sonarrOfflineMessage": "غير متصل. يتم عرض المسلسلات المحفوظة.",
+  "@sonarrOfflineMessage": {
+    "description": "Message of the banner above cached series when Sonarr cannot be reached."
+  },
+  "sonarrUpdatedAgo": "حُدّث {age}",
+  "@sonarrUpdatedAgo": {
+    "description": "Age line of the offline banner, for example \"Updated 5 minutes ago\".",
+    "placeholders": {
+      "age": {
+        "type": "String",
+        "description": "Relative age such as \"5 minutes ago\"."
+      }
+    }
+  },
+  "sonarrAgeJustNow": "الآن",
+  "@sonarrAgeJustNow": {
+    "description": "Relative age used when cached data is less than a minute old."
+  },
+  "sonarrAgeMinutes": "{count, plural, =1{قبل دقيقة} =2{قبل دقيقتين} few{قبل {count} دقائق} other{قبل {count} دقيقة}}",
+  "@sonarrAgeMinutes": {
+    "description": "Relative age in minutes for the offline banner.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole minutes."
+      }
+    }
+  },
+  "sonarrAgeHours": "{count, plural, =1{قبل ساعة} =2{قبل ساعتين} few{قبل {count} ساعات} other{قبل {count} ساعة}}",
+  "@sonarrAgeHours": {
+    "description": "Relative age in hours for the offline banner.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole hours."
+      }
+    }
+  },
+  "sonarrAgeDays": "{count, plural, =1{قبل يوم} =2{قبل يومين} few{قبل {count} أيام} other{قبل {count} يومًا}}",
+  "@sonarrAgeDays": {
+    "description": "Relative age in days for the offline banner.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole days."
+      }
+    }
+  },
+  "sonarrStatusContinuing": "مستمر",
+  "@sonarrStatusContinuing": {
+    "description": "Badge text for a series that is still airing."
+  },
+  "sonarrStatusEnded": "انتهى",
+  "@sonarrStatusEnded": {
+    "description": "Badge text for a series that has ended."
+  },
+  "sonarrStatusUpcoming": "قريبًا",
+  "@sonarrStatusUpcoming": {
+    "description": "Badge text for a series that has not started airing."
+  },
+  "sonarrStatusDeleted": "محذوف",
+  "@sonarrStatusDeleted": {
+    "description": "Badge text for a series that was removed from the metadata source."
+  },
+  "sonarrMonitored": "مراقَب",
+  "@sonarrMonitored": {
+    "description": "Text saying Sonarr monitors the series for new episodes."
+  },
+  "sonarrUnmonitored": "غير مراقَب",
+  "@sonarrUnmonitored": {
+    "description": "Badge and text saying Sonarr does not monitor the series."
+  },
+  "sonarrEpisodesShort": "{have}/{total}",
+  "@sonarrEpisodesShort": {
+    "description": "Compact episode progress on a poster card: downloaded over total.",
+    "placeholders": {
+      "have": {
+        "type": "int",
+        "description": "Downloaded episodes."
+      },
+      "total": {
+        "type": "int",
+        "description": "Total episodes."
+      }
+    }
+  },
+  "sonarrEpisodesProgress": "{total, plural, =1{{have}/1 حلقة} =2{{have}/2 حلقتان} few{{have}/{total} حلقات} other{{have}/{total} حلقة}}",
+  "@sonarrEpisodesProgress": {
+    "description": "Episode progress in the series list: downloaded over total episodes.",
+    "placeholders": {
+      "have": {
+        "type": "int",
+        "description": "Downloaded episodes."
+      },
+      "total": {
+        "type": "int",
+        "description": "Total episodes."
+      }
+    }
+  },
+  "sonarrSeasonCount": "{count, plural, =1{موسم واحد} =2{موسمان} few{{count} مواسم} other{{count} موسمًا}}",
+  "@sonarrSeasonCount": {
+    "description": "Number of seasons of a series.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Season count."
+      }
+    }
+  },
+  "sonarrSizeMb": "{size} ميغابايت",
+  "@sonarrSizeMb": {
+    "description": "Size on disk in megabytes.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Number with one decimal."
+      }
+    }
+  },
+  "sonarrSizeGb": "{size} غيغابايت",
+  "@sonarrSizeGb": {
+    "description": "Size on disk in gigabytes.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Number with one decimal."
+      }
+    }
+  },
+  "sonarrSizeTb": "{size} تيرابايت",
+  "@sonarrSizeTb": {
+    "description": "Size on disk in terabytes.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Number with one decimal."
+      }
+    }
+  },
+  "sonarrNextAiringToday": "يُعرض اليوم",
+  "@sonarrNextAiringToday": {
+    "description": "Relative label for a series whose next episode airs today."
+  },
+  "sonarrNextAiringTomorrow": "يُعرض غدًا",
+  "@sonarrNextAiringTomorrow": {
+    "description": "Relative label for a series whose next episode airs tomorrow."
+  },
+  "sonarrNextAiringInDays": "{days, plural, =1{يُعرض بعد يوم} =2{يُعرض بعد يومين} few{يُعرض بعد {days} أيام} other{يُعرض بعد {days} يومًا}}",
+  "@sonarrNextAiringInDays": {
+    "description": "Relative label for the next episode airing in a number of days.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days until the episode airs."
+      }
+    }
+  },
+  "sonarrSeriesSemantics": "{title}، {details}",
+  "@sonarrSeriesSemantics": {
+    "description": "Screen reader label of a series card: the title followed by its status details.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Series title (plain text from the server)."
+      },
+      "details": {
+        "type": "String",
+        "description": "Status, monitoring and episode summary."
+      }
+    }
+  },
+  "torrentsTitle": "التورنتات",
+  "@torrentsTitle": {
+    "description": "Title of the torrent list screen top bar."
+  },
+  "torCount": "{count, plural, =0{لا توجد تورنتات} =1{تورنت واحد} =2{تورنتان} few{{count} تورنتات} many{{count} تورنتًا} other{{count} تورنت}}",
+  "@torCount": {
+    "description": "Number of torrents shown in the speed header.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "How many torrents the client reports."
+      }
+    }
+  },
+  "torSpeedDown": "التنزيل",
+  "@torSpeedDown": {
+    "description": "Label of the global download speed in the speed header."
+  },
+  "torSpeedUp": "الرفع",
+  "@torSpeedUp": {
+    "description": "Label of the global upload speed in the speed header."
+  },
+  "torSpeedIdle": "خامل",
+  "@torSpeedIdle": {
+    "description": "Shown instead of a speed when nothing is transferring."
+  },
+  "torSpeedPartial": "معلومات السرعة غير متاحة حاليًا.",
+  "@torSpeedPartial": {
+    "description": "Shown in the speed header when only the transfer statistics failed to load while the torrent list loaded."
+  },
+  "torSpeedOffline": "غير متصل",
+  "@torSpeedOffline": {
+    "description": "Shown in the speed header while the server is unreachable."
+  },
+  "torSpeedHeaderSemantics": "التنزيل {down}، الرفع {up}، {count, plural, =0{لا توجد تورنتات} =1{تورنت واحد} =2{تورنتان} few{{count} تورنتات} many{{count} تورنتًا} other{{count} تورنت}}",
+  "@torSpeedHeaderSemantics": {
+    "description": "Spoken summary of the speed header for screen readers.",
+    "placeholders": {
+      "down": {
+        "type": "String",
+        "description": "Formatted download speed."
+      },
+      "up": {
+        "type": "String",
+        "description": "Formatted upload speed."
+      },
+      "count": {
+        "type": "int",
+        "description": "Number of torrents."
+      }
+    }
+  },
+  "torStateDownloading": "جارٍ التنزيل",
+  "@torStateDownloading": {
+    "description": "Torrent state: actively downloading."
+  },
+  "torStateStalled": "متوقف مؤقتًا",
+  "@torStateStalled": {
+    "description": "Torrent state: no peers are sending data."
+  },
+  "torStateChecking": "جارٍ الفحص",
+  "@torStateChecking": {
+    "description": "Torrent state: verifying files on disk."
+  },
+  "torStateQueued": "في الانتظار",
+  "@torStateQueued": {
+    "description": "Torrent state: waiting for a free slot."
+  },
+  "torStateSeeding": "جارٍ البذر",
+  "@torStateSeeding": {
+    "description": "Torrent state: complete and uploading to peers."
+  },
+  "torStatePaused": "متوقف",
+  "@torStatePaused": {
+    "description": "Torrent state: paused by the user."
+  },
+  "torStateFinished": "اكتمل",
+  "@torStateFinished": {
+    "description": "Torrent state: complete and idle."
+  },
+  "torStateError": "خطأ",
+  "@torStateError": {
+    "description": "Torrent state: the client reports an error for this torrent."
+  },
+  "torStateUnknown": "غير معروف",
+  "@torStateUnknown": {
+    "description": "Torrent state: the client reported a state the app does not know."
+  },
+  "torProgressPercent": "{value}",
+  "@torProgressPercent": {
+    "description": "Percentage of a torrent that is complete, for example 45%.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Fraction from 0 to 1.",
+        "format": "percentPattern",
+        "optionalParameters": {
+          "decimalDigits": 0
+        }
+      }
+    }
+  },
+  "torRowSemantics": "{name}، {state}، اكتمل {percent}",
+  "@torRowSemantics": {
+    "description": "Spoken description of a torrent row: name, state and percentage in words.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Torrent name (plain text)."
+      },
+      "state": {
+        "type": "String",
+        "description": "State label."
+      },
+      "percent": {
+        "type": "String",
+        "description": "Formatted percentage."
+      }
+    }
+  },
+  "torDetailSize": "{size}",
+  "@torDetailSize": {
+    "description": "Total size of a torrent in the row metadata.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Formatted size."
+      }
+    }
+  },
+  "torDetailDown": "تنزيل {speed}",
+  "@torDetailDown": {
+    "description": "Download speed of one torrent in the row metadata.",
+    "placeholders": {
+      "speed": {
+        "type": "String",
+        "description": "Formatted speed."
+      }
+    }
+  },
+  "torDetailUp": "رفع {speed}",
+  "@torDetailUp": {
+    "description": "Upload speed of one torrent in the row metadata.",
+    "placeholders": {
+      "speed": {
+        "type": "String",
+        "description": "Formatted speed."
+      }
+    }
+  },
+  "torDetailEta": "المتبقي {time}",
+  "@torDetailEta": {
+    "description": "Estimated time remaining in the row metadata.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "description": "Formatted duration."
+      }
+    }
+  },
+  "torDetailRatio": "النسبة {ratio}",
+  "@torDetailRatio": {
+    "description": "Share ratio in the row metadata.",
+    "placeholders": {
+      "ratio": {
+        "type": "double",
+        "description": "Upload to download ratio.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 2
+        }
+      }
+    }
+  },
+  "torSpeedPerSecond": "{size}/ث",
+  "@torSpeedPerSecond": {
+    "description": "A speed: a formatted size per second.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Formatted size."
+      }
+    }
+  },
+  "torUnitB": "{value} بايت",
+  "@torUnitB": {
+    "description": "Size in bytes.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 0
+        }
+      }
+    }
+  },
+  "torUnitKB": "{value} ك.ب",
+  "@torUnitKB": {
+    "description": "Size in kilobytes.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "torUnitMB": "{value} م.ب",
+  "@torUnitMB": {
+    "description": "Size in megabytes.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "torUnitGB": "{value} ج.ب",
+  "@torUnitGB": {
+    "description": "Size in gigabytes.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "torUnitTB": "{value} ت.ب",
+  "@torUnitTB": {
+    "description": "Size in terabytes.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 2
+        }
+      }
+    }
+  },
+  "torDurationSeconds": "{count} ث",
+  "@torDurationSeconds": {
+    "description": "A duration in seconds, short form.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Seconds."
+      }
+    }
+  },
+  "torDurationMinutes": "{count} د",
+  "@torDurationMinutes": {
+    "description": "A duration in minutes, short form.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Minutes."
+      }
+    }
+  },
+  "torDurationHoursMinutes": "{hours} س {minutes} د",
+  "@torDurationHoursMinutes": {
+    "description": "A duration in hours and minutes, short form.",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "description": "Hours."
+      },
+      "minutes": {
+        "type": "int",
+        "description": "Minutes."
+      }
+    }
+  },
+  "torDurationDaysHours": "{days} ي {hours} س",
+  "@torDurationDaysHours": {
+    "description": "A duration in days and hours, short form.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days."
+      },
+      "hours": {
+        "type": "int",
+        "description": "Hours."
+      }
+    }
+  },
+  "torEmptyHeadline": "لا توجد تورنتات بعد",
+  "@torEmptyHeadline": {
+    "description": "Headline when the client has no torrents."
+  },
+  "torEmptyMessage": "ستظهر هنا التورنتات التي تضيفها في العميل.",
+  "@torEmptyMessage": {
+    "description": "Hint under the empty headline."
+  },
+  "torNoServerHeadline": "لا يوجد عميل تورنت بعد",
+  "@torNoServerHeadline": {
+    "description": "Headline when no torrent client server is configured."
+  },
+  "torNoServerMessage": "أضف خادم qBittorrent لعرض التورنتات.",
+  "@torNoServerMessage": {
+    "description": "Hint when no torrent client server is configured."
+  },
+  "torNoServerAction": "إضافة خادم",
+  "@torNoServerAction": {
+    "description": "Button that opens the server setup."
+  },
+  "torErrorHeadline": "تعذّر تحميل التورنتات",
+  "@torErrorHeadline": {
+    "description": "Headline of the error state of the torrent list."
+  },
+  "torRetry": "حاول مرة أخرى",
+  "@torRetry": {
+    "description": "Button that retries loading the torrent list."
+  },
+  "torOfflineMessage": "تعذّر الوصول إلى الخادم. تُعرض آخر البيانات.",
+  "@torOfflineMessage": {
+    "description": "Banner text while offline with cached torrents."
+  },
+  "torOfflineAge": "آخر تحديث قبل {time}",
+  "@torOfflineAge": {
+    "description": "Age of the data shown under the offline banner.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "description": "Formatted duration."
+      }
+    }
+  },
+  "torOfflineJustNow": "تم التحديث الآن",
+  "@torOfflineJustNow": {
+    "description": "Age text when the data is less than a few seconds old."
+  },
+  "torReconnect": "إعادة الاتصال",
+  "@torReconnect": {
+    "description": "Button on the offline banner that tries to reach the server again."
+  },
+  "torSpeedLimitsHint": "فتح حدود السرعة",
+  "@torSpeedLimitsHint": {
+    "description": "Accessible hint of the speed header when it can be tapped."
   }
 }

@@ -1,0 +1,323 @@
+{
+  "@@locale": "en",
+  "sonarrTitle": "Series",
+  "@sonarrTitle": {
+    "description": "Title of the Sonarr series library screen and its floating top bar."
+  },
+  "sonarrSwitchToListTooltip": "Show as list",
+  "@sonarrSwitchToListTooltip": {
+    "description": "Tooltip and accessible name of the top bar button that switches the series library from the poster grid to the list."
+  },
+  "sonarrSwitchToGridTooltip": "Show as grid",
+  "@sonarrSwitchToGridTooltip": {
+    "description": "Tooltip and accessible name of the top bar button that switches the series library from the list to the poster grid."
+  },
+  "sonarrLoadingLabel": "Loading series",
+  "@sonarrLoadingLabel": {
+    "description": "Accessible label of the skeleton shown while the series library loads."
+  },
+  "sonarrRetry": "Try again",
+  "@sonarrRetry": {
+    "description": "Label of the retry button on error and offline states of the series library."
+  },
+  "sonarrEmptyHeadline": "No series yet",
+  "@sonarrEmptyHeadline": {
+    "description": "Headline of the empty series library state when Sonarr has no series."
+  },
+  "sonarrEmptyMessage": "Series you add in Sonarr will show up here.",
+  "@sonarrEmptyMessage": {
+    "description": "Hint under the empty series library headline."
+  },
+  "sonarrEmptyAction": "Refresh",
+  "@sonarrEmptyAction": {
+    "description": "Primary action of the empty series library state; reloads the list."
+  },
+  "sonarrNoServerHeadline": "No Sonarr server",
+  "@sonarrNoServerHeadline": {
+    "description": "Headline shown in the series library when no Sonarr server has been added."
+  },
+  "sonarrNoServerMessage": "Add your Sonarr server to browse your series.",
+  "@sonarrNoServerMessage": {
+    "description": "Hint under the no-server headline of the series library."
+  },
+  "sonarrNoServerAction": "Add a server",
+  "@sonarrNoServerAction": {
+    "description": "Primary action of the no-server state; opens the servers screen."
+  },
+  "sonarrOpenServers": "Check server settings",
+  "@sonarrOpenServers": {
+    "description": "Secondary action on series library errors that are fixed in the server settings (credentials, certificate)."
+  },
+  "sonarrErrorTitle": "Couldn't load your series",
+  "@sonarrErrorTitle": {
+    "description": "Headline of the series library error state for connection and server problems."
+  },
+  "sonarrErrorAuthTitle": "Sonarr rejected the sign-in",
+  "@sonarrErrorAuthTitle": {
+    "description": "Headline of the series library error state when the credentials are wrong or missing."
+  },
+  "sonarrErrorVersionTitle": "Unsupported Sonarr version",
+  "@sonarrErrorVersionTitle": {
+    "description": "Headline of the series library error state when the Sonarr version is too old."
+  },
+  "sonarrErrorAuthMessage": "The API key or password was not accepted.",
+  "@sonarrErrorAuthMessage": {
+    "description": "Plain-language cause shown in the series library error state (Auth)."
+  },
+  "sonarrErrorAuthHint": "Check the credentials in the server settings.",
+  "@sonarrErrorAuthHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Auth)."
+  },
+  "sonarrErrorNeedsCredentialsMessage": "The saved credentials for this server are missing.",
+  "@sonarrErrorNeedsCredentialsMessage": {
+    "description": "Plain-language cause shown in the series library error state (NeedsCredentials)."
+  },
+  "sonarrErrorNeedsCredentialsHint": "Enter the API key or password again in the server settings.",
+  "@sonarrErrorNeedsCredentialsHint": {
+    "description": "Likely fix shown under the cause in the series library error state (NeedsCredentials)."
+  },
+  "sonarrErrorNetworkMessage": "Sonarr could not be reached.",
+  "@sonarrErrorNetworkMessage": {
+    "description": "Plain-language cause shown in the series library error state (Network)."
+  },
+  "sonarrErrorNetworkHint": "Check that you are on the right network and that the address and port are correct.",
+  "@sonarrErrorNetworkHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Network)."
+  },
+  "sonarrErrorTimeoutMessage": "Sonarr took too long to answer.",
+  "@sonarrErrorTimeoutMessage": {
+    "description": "Plain-language cause shown in the series library error state (Timeout)."
+  },
+  "sonarrErrorTimeoutHint": "Try again in a moment, or check that the server is running and not overloaded.",
+  "@sonarrErrorTimeoutHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Timeout)."
+  },
+  "sonarrErrorVersionMessage": "This Sonarr version is too old for Consolarr.",
+  "@sonarrErrorVersionMessage": {
+    "description": "Plain-language cause shown in the series library error state (Version)."
+  },
+  "sonarrErrorVersionHint": "Update Sonarr to version 3 or newer.",
+  "@sonarrErrorVersionHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Version)."
+  },
+  "sonarrErrorServerMessage": "Sonarr reported an internal problem.",
+  "@sonarrErrorServerMessage": {
+    "description": "Plain-language cause shown in the series library error state (Server)."
+  },
+  "sonarrErrorServerHint": "Check the Sonarr logs, then try again.",
+  "@sonarrErrorServerHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Server)."
+  },
+  "sonarrErrorParseMessage": "Sonarr sent an answer the app could not read.",
+  "@sonarrErrorParseMessage": {
+    "description": "Plain-language cause shown in the series library error state (Parse)."
+  },
+  "sonarrErrorParseHint": "Make sure the address points to Sonarr and not to another service.",
+  "@sonarrErrorParseHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Parse)."
+  },
+  "sonarrErrorNotFoundMessage": "Nothing answered at this address.",
+  "@sonarrErrorNotFoundMessage": {
+    "description": "Plain-language cause shown in the series library error state (NotFound)."
+  },
+  "sonarrErrorNotFoundHint": "Check the address and the path prefix, for example /sonarr behind a reverse proxy.",
+  "@sonarrErrorNotFoundHint": {
+    "description": "Likely fix shown under the cause in the series library error state (NotFound)."
+  },
+  "sonarrErrorTlsMessage": "The server's certificate is not trusted.",
+  "@sonarrErrorTlsMessage": {
+    "description": "Plain-language cause shown in the series library error state (Tls)."
+  },
+  "sonarrErrorTlsHint": "Review the certificate in the server settings before trusting it.",
+  "@sonarrErrorTlsHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Tls)."
+  },
+  "sonarrErrorCleartextMessage": "This server uses plain http, which is not allowed.",
+  "@sonarrErrorCleartextMessage": {
+    "description": "Plain-language cause shown in the series library error state (Cleartext)."
+  },
+  "sonarrErrorCleartextHint": "Use https, or allow plain http for this server in its settings.",
+  "@sonarrErrorCleartextHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Cleartext)."
+  },
+  "sonarrErrorGenericMessage": "Something went wrong while talking to Sonarr.",
+  "@sonarrErrorGenericMessage": {
+    "description": "Plain-language cause shown in the series library error state (Generic)."
+  },
+  "sonarrErrorGenericHint": "Try again, and check the server settings if it keeps happening.",
+  "@sonarrErrorGenericHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Generic)."
+  },
+  "sonarrOfflineMessage": "Offline. Showing your saved series.",
+  "@sonarrOfflineMessage": {
+    "description": "Message of the banner above cached series when Sonarr cannot be reached."
+  },
+  "sonarrUpdatedAgo": "Updated {age}",
+  "@sonarrUpdatedAgo": {
+    "description": "Age line of the offline banner, for example \"Updated 5 minutes ago\".",
+    "placeholders": {
+      "age": {
+        "type": "String",
+        "description": "Relative age such as \"5 minutes ago\"."
+      }
+    }
+  },
+  "sonarrAgeJustNow": "just now",
+  "@sonarrAgeJustNow": {
+    "description": "Relative age used when cached data is less than a minute old."
+  },
+  "sonarrAgeMinutes": "{count, plural, =1{1 minute ago} other{{count} minutes ago}}",
+  "@sonarrAgeMinutes": {
+    "description": "Relative age in minutes for the offline banner.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole minutes."
+      }
+    }
+  },
+  "sonarrAgeHours": "{count, plural, =1{1 hour ago} other{{count} hours ago}}",
+  "@sonarrAgeHours": {
+    "description": "Relative age in hours for the offline banner.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole hours."
+      }
+    }
+  },
+  "sonarrAgeDays": "{count, plural, =1{1 day ago} other{{count} days ago}}",
+  "@sonarrAgeDays": {
+    "description": "Relative age in days for the offline banner.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole days."
+      }
+    }
+  },
+  "sonarrStatusContinuing": "Continuing",
+  "@sonarrStatusContinuing": {
+    "description": "Badge text for a series that is still airing."
+  },
+  "sonarrStatusEnded": "Ended",
+  "@sonarrStatusEnded": {
+    "description": "Badge text for a series that has ended."
+  },
+  "sonarrStatusUpcoming": "Upcoming",
+  "@sonarrStatusUpcoming": {
+    "description": "Badge text for a series that has not started airing."
+  },
+  "sonarrStatusDeleted": "Deleted",
+  "@sonarrStatusDeleted": {
+    "description": "Badge text for a series that was removed from the metadata source."
+  },
+  "sonarrMonitored": "Monitored",
+  "@sonarrMonitored": {
+    "description": "Text saying Sonarr monitors the series for new episodes."
+  },
+  "sonarrUnmonitored": "Unmonitored",
+  "@sonarrUnmonitored": {
+    "description": "Badge and text saying Sonarr does not monitor the series."
+  },
+  "sonarrEpisodesShort": "{have}/{total}",
+  "@sonarrEpisodesShort": {
+    "description": "Compact episode progress on a poster card: downloaded over total.",
+    "placeholders": {
+      "have": {
+        "type": "int",
+        "description": "Downloaded episodes."
+      },
+      "total": {
+        "type": "int",
+        "description": "Total episodes."
+      }
+    }
+  },
+  "sonarrEpisodesProgress": "{total, plural, =1{{have}/1 episode} other{{have}/{total} episodes}}",
+  "@sonarrEpisodesProgress": {
+    "description": "Episode progress in the series list: downloaded over total episodes.",
+    "placeholders": {
+      "have": {
+        "type": "int",
+        "description": "Downloaded episodes."
+      },
+      "total": {
+        "type": "int",
+        "description": "Total episodes."
+      }
+    }
+  },
+  "sonarrSeasonCount": "{count, plural, =1{1 season} other{{count} seasons}}",
+  "@sonarrSeasonCount": {
+    "description": "Number of seasons of a series.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Season count."
+      }
+    }
+  },
+  "sonarrSizeMb": "{size} MB",
+  "@sonarrSizeMb": {
+    "description": "Size on disk in megabytes.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Number with one decimal."
+      }
+    }
+  },
+  "sonarrSizeGb": "{size} GB",
+  "@sonarrSizeGb": {
+    "description": "Size on disk in gigabytes.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Number with one decimal."
+      }
+    }
+  },
+  "sonarrSizeTb": "{size} TB",
+  "@sonarrSizeTb": {
+    "description": "Size on disk in terabytes.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Number with one decimal."
+      }
+    }
+  },
+  "sonarrNextAiringToday": "Airs today",
+  "@sonarrNextAiringToday": {
+    "description": "Relative label for a series whose next episode airs today."
+  },
+  "sonarrNextAiringTomorrow": "Airs tomorrow",
+  "@sonarrNextAiringTomorrow": {
+    "description": "Relative label for a series whose next episode airs tomorrow."
+  },
+  "sonarrNextAiringInDays": "{days, plural, =1{Airs in 1 day} other{Airs in {days} days}}",
+  "@sonarrNextAiringInDays": {
+    "description": "Relative label for the next episode airing in a number of days.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days until the episode airs."
+      }
+    }
+  },
+  "sonarrSeriesSemantics": "{title}, {details}",
+  "@sonarrSeriesSemantics": {
+    "description": "Screen reader label of a series card: the title followed by its status details.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Series title (plain text from the server)."
+      },
+      "details": {
+        "type": "String",
+        "description": "Status, monitoring and episode summary."
+      }
+    }
+  }
+}

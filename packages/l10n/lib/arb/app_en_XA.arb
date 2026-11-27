@@ -161,5 +161,681 @@
   "appTitle": "[Çöñšöļàŕŕ~~~~]",
   "@appTitle": {
     "description": "The app name, shown in the task switcher and as the accessible name of the app."
+  },
+  "sonarrTitle": "[Šéŕîéš~~~]",
+  "@sonarrTitle": {
+    "description": "Title of the Sonarr series library screen and its floating top bar."
+  },
+  "sonarrSwitchToListTooltip": "[Šĥöŵ àš ļîšţ~~~~~]",
+  "@sonarrSwitchToListTooltip": {
+    "description": "Tooltip and accessible name of the top bar button that switches the series library from the poster grid to the list."
+  },
+  "sonarrSwitchToGridTooltip": "[Šĥöŵ àš ĝŕîð~~~~~]",
+  "@sonarrSwitchToGridTooltip": {
+    "description": "Tooltip and accessible name of the top bar button that switches the series library from the list to the poster grid."
+  },
+  "sonarrLoadingLabel": "[Ļöàðîñĝ šéŕîéš~~~~~~]",
+  "@sonarrLoadingLabel": {
+    "description": "Accessible label of the skeleton shown while the series library loads."
+  },
+  "sonarrRetry": "[Ţŕý àĝàîñ~~~~]",
+  "@sonarrRetry": {
+    "description": "Label of the retry button on error and offline states of the series library."
+  },
+  "sonarrEmptyHeadline": "[Ñö šéŕîéš ýéţ~~~~~~]",
+  "@sonarrEmptyHeadline": {
+    "description": "Headline of the empty series library state when Sonarr has no series."
+  },
+  "sonarrEmptyMessage": "[Šéŕîéš ýöü àðð îñ Šöñàŕŕ ŵîļļ šĥöŵ üþ ĥéŕé.~~~~~~~~~~~~~~~~~~]",
+  "@sonarrEmptyMessage": {
+    "description": "Hint under the empty series library headline."
+  },
+  "sonarrEmptyAction": "[Ŕéƒŕéšĥ~~~]",
+  "@sonarrEmptyAction": {
+    "description": "Primary action of the empty series library state; reloads the list."
+  },
+  "sonarrNoServerHeadline": "[Ñö Šöñàŕŕ šéŕṽéŕ~~~~~~~]",
+  "@sonarrNoServerHeadline": {
+    "description": "Headline shown in the series library when no Sonarr server has been added."
+  },
+  "sonarrNoServerMessage": "[Àðð ýöüŕ Šöñàŕŕ šéŕṽéŕ ţö ƀŕöŵšé ýöüŕ šéŕîéš.~~~~~~~~~~~~~~~~~~]",
+  "@sonarrNoServerMessage": {
+    "description": "Hint under the no-server headline of the series library."
+  },
+  "sonarrNoServerAction": "[Àðð à šéŕṽéŕ~~~~~]",
+  "@sonarrNoServerAction": {
+    "description": "Primary action of the no-server state; opens the servers screen."
+  },
+  "sonarrOpenServers": "[Çĥéçķ šéŕṽéŕ šéţţîñĝš~~~~~~~~~]",
+  "@sonarrOpenServers": {
+    "description": "Secondary action on series library errors that are fixed in the server settings (credentials, certificate)."
+  },
+  "sonarrErrorTitle": "[Çöüļðñ'ţ ļöàð ýöüŕ šéŕîéš~~~~~~~~~~]",
+  "@sonarrErrorTitle": {
+    "description": "Headline of the series library error state for connection and server problems."
+  },
+  "sonarrErrorAuthTitle": "[Šöñàŕŕ ŕéĵéçţéð ţĥé šîĝñ-îñ~~~~~~~~~~~]",
+  "@sonarrErrorAuthTitle": {
+    "description": "Headline of the series library error state when the credentials are wrong or missing."
+  },
+  "sonarrErrorVersionTitle": "[Üñšüþþöŕţéð Šöñàŕŕ ṽéŕšîöñ~~~~~~~~~~~]",
+  "@sonarrErrorVersionTitle": {
+    "description": "Headline of the series library error state when the Sonarr version is too old."
+  },
+  "sonarrErrorAuthMessage": "[Ţĥé ÀÞÎ ķéý öŕ þàššŵöŕð ŵàš ñöţ àççéþţéð.~~~~~~~~~~~~~~~~~]",
+  "@sonarrErrorAuthMessage": {
+    "description": "Plain-language cause shown in the series library error state (Auth)."
+  },
+  "sonarrErrorAuthHint": "[Çĥéçķ ţĥé çŕéðéñţîàļš îñ ţĥé šéŕṽéŕ šéţţîñĝš.~~~~~~~~~~~~~~~~~~]",
+  "@sonarrErrorAuthHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Auth)."
+  },
+  "sonarrErrorNeedsCredentialsMessage": "[Ţĥé šàṽéð çŕéðéñţîàļš ƒöŕ ţĥîš šéŕṽéŕ àŕé ɱîššîñĝ.~~~~~~~~~~~~~~~~~~~~]",
+  "@sonarrErrorNeedsCredentialsMessage": {
+    "description": "Plain-language cause shown in the series library error state (NeedsCredentials)."
+  },
+  "sonarrErrorNeedsCredentialsHint": "[Éñţéŕ ţĥé ÀÞÎ ķéý öŕ þàššŵöŕð àĝàîñ îñ ţĥé šéŕṽéŕ šéţţîñĝš.~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@sonarrErrorNeedsCredentialsHint": {
+    "description": "Likely fix shown under the cause in the series library error state (NeedsCredentials)."
+  },
+  "sonarrErrorNetworkMessage": "[Šöñàŕŕ çöüļð ñöţ ƀé ŕéàçĥéð.~~~~~~~~~~~~]",
+  "@sonarrErrorNetworkMessage": {
+    "description": "Plain-language cause shown in the series library error state (Network)."
+  },
+  "sonarrErrorNetworkHint": "[Çĥéçķ ţĥàţ ýöü àŕé öñ ţĥé ŕîĝĥţ ñéţŵöŕķ àñð ţĥàţ ţĥé àððŕéšš àñð þöŕţ àŕé çöŕŕéçţ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@sonarrErrorNetworkHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Network)."
+  },
+  "sonarrErrorTimeoutMessage": "[Šöñàŕŕ ţööķ ţöö ļöñĝ ţö àñšŵéŕ.~~~~~~~~~~~~~]",
+  "@sonarrErrorTimeoutMessage": {
+    "description": "Plain-language cause shown in the series library error state (Timeout)."
+  },
+  "sonarrErrorTimeoutHint": "[Ţŕý àĝàîñ îñ à ɱöɱéñţ, öŕ çĥéçķ ţĥàţ ţĥé šéŕṽéŕ îš ŕüññîñĝ àñð ñöţ öṽéŕļöàðéð.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@sonarrErrorTimeoutHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Timeout)."
+  },
+  "sonarrErrorVersionMessage": "[Ţĥîš Šöñàŕŕ ṽéŕšîöñ îš ţöö öļð ƒöŕ Çöñšöļàŕŕ.~~~~~~~~~~~~~~~~~~]",
+  "@sonarrErrorVersionMessage": {
+    "description": "Plain-language cause shown in the series library error state (Version)."
+  },
+  "sonarrErrorVersionHint": "[Üþðàţé Šöñàŕŕ ţö ṽéŕšîöñ 3 öŕ ñéŵéŕ.~~~~~~~~~~~~~~~]",
+  "@sonarrErrorVersionHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Version)."
+  },
+  "sonarrErrorServerMessage": "[Šöñàŕŕ ŕéþöŕţéð àñ îñţéŕñàļ þŕöƀļéɱ.~~~~~~~~~~~~~~~]",
+  "@sonarrErrorServerMessage": {
+    "description": "Plain-language cause shown in the series library error state (Server)."
+  },
+  "sonarrErrorServerHint": "[Çĥéçķ ţĥé Šöñàŕŕ ļöĝš, ţĥéñ ţŕý àĝàîñ.~~~~~~~~~~~~~~~~]",
+  "@sonarrErrorServerHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Server)."
+  },
+  "sonarrErrorParseMessage": "[Šöñàŕŕ šéñţ àñ àñšŵéŕ ţĥé àþþ çöüļð ñöţ ŕéàð.~~~~~~~~~~~~~~~~~~]",
+  "@sonarrErrorParseMessage": {
+    "description": "Plain-language cause shown in the series library error state (Parse)."
+  },
+  "sonarrErrorParseHint": "[Ṁàķé šüŕé ţĥé àððŕéšš þöîñţš ţö Šöñàŕŕ àñð ñöţ ţö àñöţĥéŕ šéŕṽîçé.~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@sonarrErrorParseHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Parse)."
+  },
+  "sonarrErrorNotFoundMessage": "[Ñöţĥîñĝ àñšŵéŕéð àţ ţĥîš àððŕéšš.~~~~~~~~~~~~~~]",
+  "@sonarrErrorNotFoundMessage": {
+    "description": "Plain-language cause shown in the series library error state (NotFound)."
+  },
+  "sonarrErrorNotFoundHint": "[Çĥéçķ ţĥé àððŕéšš àñð ţĥé þàţĥ þŕéƒîẋ, ƒöŕ éẋàɱþļé /šöñàŕŕ ƀéĥîñð à ŕéṽéŕšé þŕöẋý.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@sonarrErrorNotFoundHint": {
+    "description": "Likely fix shown under the cause in the series library error state (NotFound)."
+  },
+  "sonarrErrorTlsMessage": "[Ţĥé šéŕṽéŕ'š çéŕţîƒîçàţé îš ñöţ ţŕüšţéð.~~~~~~~~~~~~~~~~]",
+  "@sonarrErrorTlsMessage": {
+    "description": "Plain-language cause shown in the series library error state (Tls)."
+  },
+  "sonarrErrorTlsHint": "[Ŕéṽîéŵ ţĥé çéŕţîƒîçàţé îñ ţĥé šéŕṽéŕ šéţţîñĝš ƀéƒöŕé ţŕüšţîñĝ îţ.~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@sonarrErrorTlsHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Tls)."
+  },
+  "sonarrErrorCleartextMessage": "[Ţĥîš šéŕṽéŕ üšéš þļàîñ ĥţţþ, ŵĥîçĥ îš ñöţ àļļöŵéð.~~~~~~~~~~~~~~~~~~~~]",
+  "@sonarrErrorCleartextMessage": {
+    "description": "Plain-language cause shown in the series library error state (Cleartext)."
+  },
+  "sonarrErrorCleartextHint": "[Üšé ĥţţþš, öŕ àļļöŵ þļàîñ ĥţţþ ƒöŕ ţĥîš šéŕṽéŕ îñ îţš šéţţîñĝš.~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@sonarrErrorCleartextHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Cleartext)."
+  },
+  "sonarrErrorGenericMessage": "[Šöɱéţĥîñĝ ŵéñţ ŵŕöñĝ ŵĥîļé ţàļķîñĝ ţö Šöñàŕŕ.~~~~~~~~~~~~~~~~~~]",
+  "@sonarrErrorGenericMessage": {
+    "description": "Plain-language cause shown in the series library error state (Generic)."
+  },
+  "sonarrErrorGenericHint": "[Ţŕý àĝàîñ, àñð çĥéçķ ţĥé šéŕṽéŕ šéţţîñĝš îƒ îţ ķééþš ĥàþþéñîñĝ.~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@sonarrErrorGenericHint": {
+    "description": "Likely fix shown under the cause in the series library error state (Generic)."
+  },
+  "sonarrOfflineMessage": "[Öƒƒļîñé. Šĥöŵîñĝ ýöüŕ šàṽéð šéŕîéš.~~~~~~~~~~~~~~]",
+  "@sonarrOfflineMessage": {
+    "description": "Message of the banner above cached series when Sonarr cannot be reached."
+  },
+  "sonarrUpdatedAgo": "[Üþðàţéð ~~~~{age}]",
+  "@sonarrUpdatedAgo": {
+    "description": "Age line of the offline banner, for example \"Updated 5 minutes ago\".",
+    "placeholders": {
+      "age": {
+        "type": "String",
+        "description": "Relative age such as \"5 minutes ago\"."
+      }
+    }
+  },
+  "sonarrAgeJustNow": "[ĵüšţ ñöŵ~~~~]",
+  "@sonarrAgeJustNow": {
+    "description": "Relative age used when cached data is less than a minute old."
+  },
+  "sonarrAgeMinutes": "{count,plural, =1{1 ɱîñüţé àĝö~~~~~} other{{count} ɱîñüţéš àĝö~~~~~}}",
+  "@sonarrAgeMinutes": {
+    "description": "Relative age in minutes for the offline banner.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole minutes."
+      }
+    }
+  },
+  "sonarrAgeHours": "{count,plural, =1{1 ĥöüŕ àĝö~~~~} other{{count} ĥöüŕš àĝö~~~~}}",
+  "@sonarrAgeHours": {
+    "description": "Relative age in hours for the offline banner.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole hours."
+      }
+    }
+  },
+  "sonarrAgeDays": "{count,plural, =1{1 ðàý àĝö~~~~} other{{count} ðàýš àĝö~~~~}}",
+  "@sonarrAgeDays": {
+    "description": "Relative age in days for the offline banner.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole days."
+      }
+    }
+  },
+  "sonarrStatusContinuing": "[Çöñţîñüîñĝ~~~~]",
+  "@sonarrStatusContinuing": {
+    "description": "Badge text for a series that is still airing."
+  },
+  "sonarrStatusEnded": "[Éñðéð~~]",
+  "@sonarrStatusEnded": {
+    "description": "Badge text for a series that has ended."
+  },
+  "sonarrStatusUpcoming": "[Üþçöɱîñĝ~~~~]",
+  "@sonarrStatusUpcoming": {
+    "description": "Badge text for a series that has not started airing."
+  },
+  "sonarrStatusDeleted": "[Ðéļéţéð~~~]",
+  "@sonarrStatusDeleted": {
+    "description": "Badge text for a series that was removed from the metadata source."
+  },
+  "sonarrMonitored": "[Ṁöñîţöŕéð~~~~]",
+  "@sonarrMonitored": {
+    "description": "Text saying Sonarr monitors the series for new episodes."
+  },
+  "sonarrUnmonitored": "[Üñɱöñîţöŕéð~~~~~]",
+  "@sonarrUnmonitored": {
+    "description": "Badge and text saying Sonarr does not monitor the series."
+  },
+  "sonarrEpisodesShort": "[{have}/~{total}]",
+  "@sonarrEpisodesShort": {
+    "description": "Compact episode progress on a poster card: downloaded over total.",
+    "placeholders": {
+      "have": {
+        "type": "int",
+        "description": "Downloaded episodes."
+      },
+      "total": {
+        "type": "int",
+        "description": "Total episodes."
+      }
+    }
+  },
+  "sonarrEpisodesProgress": "{total,plural, =1{{have}/1 éþîšöðé~~~~} other{{have}/~{total} éþîšöðéš~~~~}}",
+  "@sonarrEpisodesProgress": {
+    "description": "Episode progress in the series list: downloaded over total episodes.",
+    "placeholders": {
+      "have": {
+        "type": "int",
+        "description": "Downloaded episodes."
+      },
+      "total": {
+        "type": "int",
+        "description": "Total episodes."
+      }
+    }
+  },
+  "sonarrSeasonCount": "{count,plural, =1{1 šéàšöñ~~~~} other{{count} šéàšöñš~~~~}}",
+  "@sonarrSeasonCount": {
+    "description": "Number of seasons of a series.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Season count."
+      }
+    }
+  },
+  "sonarrSizeMb": "[{size} Ṁß~~]",
+  "@sonarrSizeMb": {
+    "description": "Size on disk in megabytes.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Number with one decimal."
+      }
+    }
+  },
+  "sonarrSizeGb": "[{size} Ĝß~~]",
+  "@sonarrSizeGb": {
+    "description": "Size on disk in gigabytes.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Number with one decimal."
+      }
+    }
+  },
+  "sonarrSizeTb": "[{size} Ţß~~]",
+  "@sonarrSizeTb": {
+    "description": "Size on disk in terabytes.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Number with one decimal."
+      }
+    }
+  },
+  "sonarrNextAiringToday": "[Àîŕš ţöðàý~~~~]",
+  "@sonarrNextAiringToday": {
+    "description": "Relative label for a series whose next episode airs today."
+  },
+  "sonarrNextAiringTomorrow": "[Àîŕš ţöɱöŕŕöŵ~~~~~~]",
+  "@sonarrNextAiringTomorrow": {
+    "description": "Relative label for a series whose next episode airs tomorrow."
+  },
+  "sonarrNextAiringInDays": "{days,plural, =1{Àîŕš îñ 1 ðàý~~~~~~} other{Àîŕš îñ ~~~~{days} ðàýš~~}}",
+  "@sonarrNextAiringInDays": {
+    "description": "Relative label for the next episode airing in a number of days.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days until the episode airs."
+      }
+    }
+  },
+  "sonarrSeriesSemantics": "[{title}, ~{details}]",
+  "@sonarrSeriesSemantics": {
+    "description": "Screen reader label of a series card: the title followed by its status details.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Series title (plain text from the server)."
+      },
+      "details": {
+        "type": "String",
+        "description": "Status, monitoring and episode summary."
+      }
+    }
+  },
+  "torrentsTitle": "[Ţöŕŕéñţš~~~~]",
+  "@torrentsTitle": {
+    "description": "Title of the torrent list screen top bar."
+  },
+  "torCount": "{count,plural, =0{Ñö ţöŕŕéñţš~~~~~} =1{1 ţöŕŕéñţ~~~~} other{{count} ţöŕŕéñţš~~~~}}",
+  "@torCount": {
+    "description": "Number of torrents shown in the speed header.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "How many torrents the client reports."
+      }
+    }
+  },
+  "torSpeedDown": "[Ðöŵñļöàð~~~~]",
+  "@torSpeedDown": {
+    "description": "Label of the global download speed in the speed header."
+  },
+  "torSpeedUp": "[Üþļöàð~~~]",
+  "@torSpeedUp": {
+    "description": "Label of the global upload speed in the speed header."
+  },
+  "torSpeedIdle": "[Îðļé~~]",
+  "@torSpeedIdle": {
+    "description": "Shown instead of a speed when nothing is transferring."
+  },
+  "torSpeedPartial": "[Šþééð îñƒöŕɱàţîöñ îš üñàṽàîļàƀļé ŕîĝĥţ ñöŵ.~~~~~~~~~~~~~~~~~~]",
+  "@torSpeedPartial": {
+    "description": "Shown in the speed header when only the transfer statistics failed to load while the torrent list loaded."
+  },
+  "torSpeedOffline": "[Öƒƒļîñé~~~]",
+  "@torSpeedOffline": {
+    "description": "Shown in the speed header while the server is unreachable."
+  },
+  "torSpeedHeaderSemantics": "Ðöŵñļöàð ~~~~{down}, üþļöàð ~~~~{up}, ~{count,plural, =0{ñö ţöŕŕéñţš~~~~~} =1{1 ţöŕŕéñţ~~~~} other{{count} ţöŕŕéñţš~~~~}}",
+  "@torSpeedHeaderSemantics": {
+    "description": "Spoken summary of the speed header for screen readers.",
+    "placeholders": {
+      "down": {
+        "type": "String",
+        "description": "Formatted download speed."
+      },
+      "up": {
+        "type": "String",
+        "description": "Formatted upload speed."
+      },
+      "count": {
+        "type": "int",
+        "description": "Number of torrents."
+      }
+    }
+  },
+  "torStateDownloading": "[Ðöŵñļöàðîñĝ~~~~~]",
+  "@torStateDownloading": {
+    "description": "Torrent state: actively downloading."
+  },
+  "torStateStalled": "[Šţàļļéð~~~]",
+  "@torStateStalled": {
+    "description": "Torrent state: no peers are sending data."
+  },
+  "torStateChecking": "[Çĥéçķîñĝ~~~~]",
+  "@torStateChecking": {
+    "description": "Torrent state: verifying files on disk."
+  },
+  "torStateQueued": "[Ǫüéüéð~~~]",
+  "@torStateQueued": {
+    "description": "Torrent state: waiting for a free slot."
+  },
+  "torStateSeeding": "[Šééðîñĝ~~~]",
+  "@torStateSeeding": {
+    "description": "Torrent state: complete and uploading to peers."
+  },
+  "torStatePaused": "[Þàüšéð~~~]",
+  "@torStatePaused": {
+    "description": "Torrent state: paused by the user."
+  },
+  "torStateFinished": "[Ƒîñîšĥéð~~~~]",
+  "@torStateFinished": {
+    "description": "Torrent state: complete and idle."
+  },
+  "torStateError": "[Éŕŕöŕ~~]",
+  "@torStateError": {
+    "description": "Torrent state: the client reports an error for this torrent."
+  },
+  "torStateUnknown": "[Üñķñöŵñ~~~]",
+  "@torStateUnknown": {
+    "description": "Torrent state: the client reported a state the app does not know."
+  },
+  "torProgressPercent": "[{value}]",
+  "@torProgressPercent": {
+    "description": "Percentage of a torrent that is complete, for example 45%.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Fraction from 0 to 1.",
+        "format": "percentPattern",
+        "optionalParameters": {
+          "decimalDigits": 0
+        }
+      }
+    }
+  },
+  "torRowSemantics": "[{name}, ~{state}, ~{percent} çöɱþļéţé~~~~]",
+  "@torRowSemantics": {
+    "description": "Spoken description of a torrent row: name, state and percentage in words.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Torrent name (plain text)."
+      },
+      "state": {
+        "type": "String",
+        "description": "State label."
+      },
+      "percent": {
+        "type": "String",
+        "description": "Formatted percentage."
+      }
+    }
+  },
+  "torDetailSize": "[{size}]",
+  "@torDetailSize": {
+    "description": "Total size of a torrent in the row metadata.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Formatted size."
+      }
+    }
+  },
+  "torDetailDown": "[Ðöŵñ ~~{speed}]",
+  "@torDetailDown": {
+    "description": "Download speed of one torrent in the row metadata.",
+    "placeholders": {
+      "speed": {
+        "type": "String",
+        "description": "Formatted speed."
+      }
+    }
+  },
+  "torDetailUp": "[Üþ ~~{speed}]",
+  "@torDetailUp": {
+    "description": "Upload speed of one torrent in the row metadata.",
+    "placeholders": {
+      "speed": {
+        "type": "String",
+        "description": "Formatted speed."
+      }
+    }
+  },
+  "torDetailEta": "[{time} ļéƒţ~~]",
+  "@torDetailEta": {
+    "description": "Estimated time remaining in the row metadata.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "description": "Formatted duration."
+      }
+    }
+  },
+  "torDetailRatio": "[Ŕàţîö ~~~{ratio}]",
+  "@torDetailRatio": {
+    "description": "Share ratio in the row metadata.",
+    "placeholders": {
+      "ratio": {
+        "type": "double",
+        "description": "Upload to download ratio.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 2
+        }
+      }
+    }
+  },
+  "torSpeedPerSecond": "[{size}/š~]",
+  "@torSpeedPerSecond": {
+    "description": "A speed: a formatted size per second.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Formatted size."
+      }
+    }
+  },
+  "torUnitB": "[{value} ß~]",
+  "@torUnitB": {
+    "description": "Size in bytes.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 0
+        }
+      }
+    }
+  },
+  "torUnitKB": "[{value} Ķß~~]",
+  "@torUnitKB": {
+    "description": "Size in kilobytes.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "torUnitMB": "[{value} Ṁß~~]",
+  "@torUnitMB": {
+    "description": "Size in megabytes.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "torUnitGB": "[{value} Ĝß~~]",
+  "@torUnitGB": {
+    "description": "Size in gigabytes.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "torUnitTB": "[{value} Ţß~~]",
+  "@torUnitTB": {
+    "description": "Size in terabytes.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 2
+        }
+      }
+    }
+  },
+  "torDurationSeconds": "[{count}š~]",
+  "@torDurationSeconds": {
+    "description": "A duration in seconds, short form.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Seconds."
+      }
+    }
+  },
+  "torDurationMinutes": "[{count}ɱ~]",
+  "@torDurationMinutes": {
+    "description": "A duration in minutes, short form.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Minutes."
+      }
+    }
+  },
+  "torDurationHoursMinutes": "[{hours}ĥ ~{minutes}ɱ~]",
+  "@torDurationHoursMinutes": {
+    "description": "A duration in hours and minutes, short form.",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "description": "Hours."
+      },
+      "minutes": {
+        "type": "int",
+        "description": "Minutes."
+      }
+    }
+  },
+  "torDurationDaysHours": "[{days}ð ~{hours}ĥ~]",
+  "@torDurationDaysHours": {
+    "description": "A duration in days and hours, short form.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days."
+      },
+      "hours": {
+        "type": "int",
+        "description": "Hours."
+      }
+    }
+  },
+  "torEmptyHeadline": "[Ñö ţöŕŕéñţš ýéţ~~~~~~]",
+  "@torEmptyHeadline": {
+    "description": "Headline when the client has no torrents."
+  },
+  "torEmptyMessage": "[Ţöŕŕéñţš ýöü àðð îñ ýöüŕ çļîéñţ ŵîļļ šĥöŵ üþ ĥéŕé.~~~~~~~~~~~~~~~~~~~~]",
+  "@torEmptyMessage": {
+    "description": "Hint under the empty headline."
+  },
+  "torNoServerHeadline": "[Ñö ţöŕŕéñţ çļîéñţ ýéţ~~~~~~~~~]",
+  "@torNoServerHeadline": {
+    "description": "Headline when no torrent client server is configured."
+  },
+  "torNoServerMessage": "[Àðð à ǫßîţţöŕŕéñţ šéŕṽéŕ ţö šéé ýöüŕ ţöŕŕéñţš.~~~~~~~~~~~~~~~~~~~]",
+  "@torNoServerMessage": {
+    "description": "Hint when no torrent client server is configured."
+  },
+  "torNoServerAction": "[Àðð à šéŕṽéŕ~~~~~]",
+  "@torNoServerAction": {
+    "description": "Button that opens the server setup."
+  },
+  "torErrorHeadline": "[Çàñ'ţ ļöàð ţöŕŕéñţš~~~~~~~~]",
+  "@torErrorHeadline": {
+    "description": "Headline of the error state of the torrent list."
+  },
+  "torRetry": "[Ţŕý àĝàîñ~~~~]",
+  "@torRetry": {
+    "description": "Button that retries loading the torrent list."
+  },
+  "torOfflineMessage": "[Çàñ'ţ ŕéàçĥ ţĥé šéŕṽéŕ. Šĥöŵîñĝ ţĥé ļàšţ ðàţà.~~~~~~~~~~~~~~~~~~~]",
+  "@torOfflineMessage": {
+    "description": "Banner text while offline with cached torrents."
+  },
+  "torOfflineAge": "[Üþðàţéð ~~~~{time} àĝö~~]",
+  "@torOfflineAge": {
+    "description": "Age of the data shown under the offline banner.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "description": "Formatted duration."
+      }
+    }
+  },
+  "torOfflineJustNow": "[Üþðàţéð ĵüšţ ñöŵ~~~~~~~]",
+  "@torOfflineJustNow": {
+    "description": "Age text when the data is less than a few seconds old."
+  },
+  "torReconnect": "[Ŕéçöññéçţ~~~~]",
+  "@torReconnect": {
+    "description": "Button on the offline banner that tries to reach the server again."
+  },
+  "torSpeedLimitsHint": "[Öþéñ šþééð ļîɱîţš~~~~~~~]",
+  "@torSpeedLimitsHint": {
+    "description": "Accessible hint of the speed header when it can be tapped."
   }
 }

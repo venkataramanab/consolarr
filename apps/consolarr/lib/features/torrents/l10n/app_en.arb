@@ -1,0 +1,359 @@
+{
+  "@@locale": "en",
+  "torrentsTitle": "Torrents",
+  "@torrentsTitle": {
+    "description": "Title of the torrent list screen top bar."
+  },
+  "torCount": "{count, plural, =0{No torrents} =1{1 torrent} other{{count} torrents}}",
+  "@torCount": {
+    "description": "Number of torrents shown in the speed header.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "How many torrents the client reports."
+      }
+    }
+  },
+  "torSpeedDown": "Download",
+  "@torSpeedDown": {
+    "description": "Label of the global download speed in the speed header."
+  },
+  "torSpeedUp": "Upload",
+  "@torSpeedUp": {
+    "description": "Label of the global upload speed in the speed header."
+  },
+  "torSpeedIdle": "Idle",
+  "@torSpeedIdle": {
+    "description": "Shown instead of a speed when nothing is transferring."
+  },
+  "torSpeedPartial": "Speed information is unavailable right now.",
+  "@torSpeedPartial": {
+    "description": "Shown in the speed header when only the transfer statistics failed to load while the torrent list loaded."
+  },
+  "torSpeedOffline": "Offline",
+  "@torSpeedOffline": {
+    "description": "Shown in the speed header while the server is unreachable."
+  },
+  "torSpeedHeaderSemantics": "Download {down}, upload {up}, {count, plural, =0{no torrents} =1{1 torrent} other{{count} torrents}}",
+  "@torSpeedHeaderSemantics": {
+    "description": "Spoken summary of the speed header for screen readers.",
+    "placeholders": {
+      "down": {
+        "type": "String",
+        "description": "Formatted download speed."
+      },
+      "up": {
+        "type": "String",
+        "description": "Formatted upload speed."
+      },
+      "count": {
+        "type": "int",
+        "description": "Number of torrents."
+      }
+    }
+  },
+  "torStateDownloading": "Downloading",
+  "@torStateDownloading": {
+    "description": "Torrent state: actively downloading."
+  },
+  "torStateStalled": "Stalled",
+  "@torStateStalled": {
+    "description": "Torrent state: no peers are sending data."
+  },
+  "torStateChecking": "Checking",
+  "@torStateChecking": {
+    "description": "Torrent state: verifying files on disk."
+  },
+  "torStateQueued": "Queued",
+  "@torStateQueued": {
+    "description": "Torrent state: waiting for a free slot."
+  },
+  "torStateSeeding": "Seeding",
+  "@torStateSeeding": {
+    "description": "Torrent state: complete and uploading to peers."
+  },
+  "torStatePaused": "Paused",
+  "@torStatePaused": {
+    "description": "Torrent state: paused by the user."
+  },
+  "torStateFinished": "Finished",
+  "@torStateFinished": {
+    "description": "Torrent state: complete and idle."
+  },
+  "torStateError": "Error",
+  "@torStateError": {
+    "description": "Torrent state: the client reports an error for this torrent."
+  },
+  "torStateUnknown": "Unknown",
+  "@torStateUnknown": {
+    "description": "Torrent state: the client reported a state the app does not know."
+  },
+  "torProgressPercent": "{value}",
+  "@torProgressPercent": {
+    "description": "Percentage of a torrent that is complete, for example 45%.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Fraction from 0 to 1.",
+        "format": "percentPattern",
+        "optionalParameters": {
+          "decimalDigits": 0
+        }
+      }
+    }
+  },
+  "torRowSemantics": "{name}, {state}, {percent} complete",
+  "@torRowSemantics": {
+    "description": "Spoken description of a torrent row: name, state and percentage in words.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Torrent name (plain text)."
+      },
+      "state": {
+        "type": "String",
+        "description": "State label."
+      },
+      "percent": {
+        "type": "String",
+        "description": "Formatted percentage."
+      }
+    }
+  },
+  "torDetailSize": "{size}",
+  "@torDetailSize": {
+    "description": "Total size of a torrent in the row metadata.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Formatted size."
+      }
+    }
+  },
+  "torDetailDown": "Down {speed}",
+  "@torDetailDown": {
+    "description": "Download speed of one torrent in the row metadata.",
+    "placeholders": {
+      "speed": {
+        "type": "String",
+        "description": "Formatted speed."
+      }
+    }
+  },
+  "torDetailUp": "Up {speed}",
+  "@torDetailUp": {
+    "description": "Upload speed of one torrent in the row metadata.",
+    "placeholders": {
+      "speed": {
+        "type": "String",
+        "description": "Formatted speed."
+      }
+    }
+  },
+  "torDetailEta": "{time} left",
+  "@torDetailEta": {
+    "description": "Estimated time remaining in the row metadata.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "description": "Formatted duration."
+      }
+    }
+  },
+  "torDetailRatio": "Ratio {ratio}",
+  "@torDetailRatio": {
+    "description": "Share ratio in the row metadata.",
+    "placeholders": {
+      "ratio": {
+        "type": "double",
+        "description": "Upload to download ratio.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 2
+        }
+      }
+    }
+  },
+  "torSpeedPerSecond": "{size}/s",
+  "@torSpeedPerSecond": {
+    "description": "A speed: a formatted size per second.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Formatted size."
+      }
+    }
+  },
+  "torUnitB": "{value} B",
+  "@torUnitB": {
+    "description": "Size in bytes.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 0
+        }
+      }
+    }
+  },
+  "torUnitKB": "{value} KB",
+  "@torUnitKB": {
+    "description": "Size in kilobytes.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "torUnitMB": "{value} MB",
+  "@torUnitMB": {
+    "description": "Size in megabytes.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "torUnitGB": "{value} GB",
+  "@torUnitGB": {
+    "description": "Size in gigabytes.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "torUnitTB": "{value} TB",
+  "@torUnitTB": {
+    "description": "Size in terabytes.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 2
+        }
+      }
+    }
+  },
+  "torDurationSeconds": "{count}s",
+  "@torDurationSeconds": {
+    "description": "A duration in seconds, short form.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Seconds."
+      }
+    }
+  },
+  "torDurationMinutes": "{count}m",
+  "@torDurationMinutes": {
+    "description": "A duration in minutes, short form.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Minutes."
+      }
+    }
+  },
+  "torDurationHoursMinutes": "{hours}h {minutes}m",
+  "@torDurationHoursMinutes": {
+    "description": "A duration in hours and minutes, short form.",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "description": "Hours."
+      },
+      "minutes": {
+        "type": "int",
+        "description": "Minutes."
+      }
+    }
+  },
+  "torDurationDaysHours": "{days}d {hours}h",
+  "@torDurationDaysHours": {
+    "description": "A duration in days and hours, short form.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days."
+      },
+      "hours": {
+        "type": "int",
+        "description": "Hours."
+      }
+    }
+  },
+  "torEmptyHeadline": "No torrents yet",
+  "@torEmptyHeadline": {
+    "description": "Headline when the client has no torrents."
+  },
+  "torEmptyMessage": "Torrents you add in your client will show up here.",
+  "@torEmptyMessage": {
+    "description": "Hint under the empty headline."
+  },
+  "torNoServerHeadline": "No torrent client yet",
+  "@torNoServerHeadline": {
+    "description": "Headline when no torrent client server is configured."
+  },
+  "torNoServerMessage": "Add a qBittorrent server to see your torrents.",
+  "@torNoServerMessage": {
+    "description": "Hint when no torrent client server is configured."
+  },
+  "torNoServerAction": "Add a server",
+  "@torNoServerAction": {
+    "description": "Button that opens the server setup."
+  },
+  "torErrorHeadline": "Can't load torrents",
+  "@torErrorHeadline": {
+    "description": "Headline of the error state of the torrent list."
+  },
+  "torRetry": "Try again",
+  "@torRetry": {
+    "description": "Button that retries loading the torrent list."
+  },
+  "torOfflineMessage": "Can't reach the server. Showing the last data.",
+  "@torOfflineMessage": {
+    "description": "Banner text while offline with cached torrents."
+  },
+  "torOfflineAge": "Updated {time} ago",
+  "@torOfflineAge": {
+    "description": "Age of the data shown under the offline banner.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "description": "Formatted duration."
+      }
+    }
+  },
+  "torOfflineJustNow": "Updated just now",
+  "@torOfflineJustNow": {
+    "description": "Age text when the data is less than a few seconds old."
+  },
+  "torReconnect": "Reconnect",
+  "@torReconnect": {
+    "description": "Button on the offline banner that tries to reach the server again."
+  },
+  "torSpeedLimitsHint": "Open speed limits",
+  "@torSpeedLimitsHint": {
+    "description": "Accessible hint of the speed header when it can be tapped."
+  }
+}

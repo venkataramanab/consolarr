@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'package:consolarr/features/shell/presentation/shell_chrome.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
@@ -109,6 +110,9 @@ class _FloatingTopBarScaffoldState extends State<FloatingTopBarScaffold> {
                                 ),
                               ),
                             ),
+                            if (ShellChrome.maybeOf(context)?.switcher
+                                case final switcher?)
+                              switcher,
                             ...widget.actions,
                           ],
                         ),

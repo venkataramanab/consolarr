@@ -3,5 +3,69 @@
   "appTitle": "Consolarr",
   "@appTitle": {
     "description": "The app name, shown in the task switcher and as the accessible name of the app."
+  },
+  "navHome": "Home",
+  "@navHome": {
+    "description": "Label of the Home destination in the bottom navigation bar."
+  },
+  "navSonarr": "Series",
+  "@navSonarr": {
+    "description": "Label of the Sonarr (TV series) destination in the bottom navigation bar."
+  },
+  "navTorrents": "Torrents",
+  "@navTorrents": {
+    "description": "Label of the torrent client destination in the bottom navigation bar."
+  },
+  "navServers": "Servers",
+  "@navServers": {
+    "description": "Label of the Servers destination in the bottom navigation bar."
+  },
+  "navSelectedHint": "Selected",
+  "@navSelectedHint": {
+    "description": "Accessibility hint announced for the currently selected navigation destination."
+  },
+  "switcherTitle": "Switch server",
+  "@switcherTitle": {
+    "description": "Title of the sheet that lets the user pick the active server for a service."
+  },
+  "switcherTooltip": "Switch server",
+  "@switcherTooltip": {
+    "description": "Tooltip and accessible label of the top bar button that opens the server switcher."
+  },
+  "switcherActive": "Active",
+  "@switcherActive": {
+    "description": "Text marking the currently active server in the server switcher."
+  },
+  "switcherEmpty": "No servers of this type yet.",
+  "@switcherEmpty": {
+    "description": "Message in the server switcher when no server of the service type exists."
+  },
+  "healthHealthy": "Online",
+  "@healthHealthy": {
+    "description": "Short health status text: the server answered correctly."
+  },
+  "healthChecking": "Checking",
+  "@healthChecking": {
+    "description": "Short health status text: a health check is running."
+  },
+  "healthDegraded": "Slow or erroring",
+  "@healthDegraded": {
+    "description": "Short health status text: the server answers but with errors or very slowly."
+  },
+  "healthUnauthorized": "Wrong credentials",
+  "@healthUnauthorized": {
+    "description": "Short health status text: the server rejected the credentials."
+  },
+  "healthUnreachable": "Offline",
+  "@healthUnreachable": {
+    "description": "Short health status text: the server cannot be reached."
+  },
+  "homeSetupCta": "Set up a server",
+  "@homeSetupCta": {
+    "description": "Primary button on the Home screen that starts first-run server setup."
+  },
+  "homeServicesHeading": "Your services",
+  "@homeServicesHeading": {
+    "description": "Heading above the list of configured services on the Home screen."
   }
 }
