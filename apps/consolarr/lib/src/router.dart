@@ -42,7 +42,9 @@ GoRouter buildRouter({
         branches: [
           for (final d in destinations ?? appDestinations)
             StatefulShellBranch(
-              routes: [GoRoute(path: d.route, builder: d.builder)],
+              routes: [
+                GoRoute(path: d.route, builder: d.builder, routes: d.children),
+              ],
             ),
         ],
       ),
@@ -50,33 +52,31 @@ GoRouter buildRouter({
       // secure-flagged form has the whole window.
       GoRoute(
         path: AppRoutes.serverNew,
-        parentNavigatorKey: _rootKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => ServerEditorScreen(
           initialKind: _kindFrom(state.uri.queryParameters['kind']),
         ),
       ),
       GoRoute(
         path: '/servers/:id',
-        parentNavigatorKey: _rootKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) =>
             ServerEditorScreen(serverId: state.pathParameters['id']),
       ),
       GoRoute(
         path: AppRoutes.onboarding,
-        parentNavigatorKey: _rootKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const OnboardingScreen(),
       ),
       GoRoute(
         path: AppRoutes.about,
-        parentNavigatorKey: _rootKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const AboutScreen(),
       ),
     ],
-    navigatorKey: _rootKey,
+    navigatorKey: rootNavigatorKey,
   );
 }
-
-final GlobalKey<NavigatorState> _rootKey = GlobalKey<NavigatorState>();
 
 ServiceKind? _kindFrom(String? name) {
   if (name == null) return null;
