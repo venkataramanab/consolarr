@@ -274,9 +274,4 @@ void main() {
       expect(watch.elapsedMilliseconds, lessThan(1000));
     });
   });
-
-  test(
-    'fake data helper is available',
-    () => expect(fakeSeriesList(2), hasLength(2)),
-  );
 }
