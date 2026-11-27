@@ -61,7 +61,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     final media = MediaQuery.of(context);
     WidgetsBinding.instance.addPostFrameCallback((_) => _trackBranch(current));
 
-    final switcherKind = appDestinations[current].switcherKind;
+    final switcherKinds = appDestinations[current].effectiveSwitcherKinds;
 
     return PopScope(
       canPop: current == 0,
@@ -90,9 +90,13 @@ class _AppShellState extends ConsumerState<AppShell> {
                 child: child!,
               ),
               child: ShellChrome(
-                switcher: switcherKind == null
+                switcher: switcherKinds.isEmpty
                     ? null
-                    : ServerSwitcherButton(kind: switcherKind),
+                    : ServerSwitcherButton(
+                        kinds: switcherKinds,
+                        selectionKey:
+                            '${appDestinations[current].id}.selected_kind',
+                      ),
                 child: shell,
               ),
             ),

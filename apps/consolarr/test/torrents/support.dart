@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:consolarr/features/torrents/application/torrents_providers.dart';
 import 'package:consolarr/features/torrents/presentation/torrent_list_screen.dart';
+import 'package:consolarr/src/database/app_database.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,10 +15,9 @@ import 'package:test_harness/test_harness.dart';
 import 'package:torrent_clients/torrent_clients.dart';
 
 /// A scriptable [TorrentClient]. Results can be swapped between polls.
-class FakeTorrentClient
-    with UnsupportedTorrentActions
-    implements TorrentClient {
+class FakeTorrentClient implements TorrentClient {
   FakeTorrentClient({
+    this.kind = ServiceKind.qbittorrent,
     List<Torrent> torrents = const [],
     TransferInfo? transfer = const TransferInfo(
       dlSpeed: 1536,
@@ -43,11 +44,114 @@ class FakeTorrentClient
   void failTransfer() =>
       _transfer = const Result.err(AppError(ErrorCategory.serverError));
 
+  /// What the actions answer with (`null` = success) and what they received.
+  AppError? actionError;
+  Completer<void>? actionGate;
+  final List<String> calls = [];
+  final List<String> addedLinks = [];
+  final List<AddTorrentOptions> addedOptions = [];
+  bool? lastDeleteFiles;
+  SpeedLimitsState limits = const SpeedLimitsState(
+    download: 0,
+    upload: 0,
+    alternativeActive: false,
+  );
+  AppError? limitsError;
+  GlobalLimits? lastLimits;
+  TorrentDetail? detail;
+  AppError? detailError;
+  int detailCalls = 0;
+
+  @override
+  TorrentCapabilities capabilities = const TorrentCapabilities(
+    alternativeSpeed: true,
+    labelModel: LabelModel.category,
+    tags: true,
+  );
+
+  Future<Result<void>> _act(String name) async {
+    calls.add(name);
+    await actionGate?.future;
+    final e = actionError;
+    return e == null ? const Result.ok(null) : Result.err(e);
+  }
+
+  @override
+  Future<Result<void>> pause(List<String> hashes) => _act('pause');
+
+  @override
+  Future<Result<void>> resume(List<String> hashes) => _act('resume');
+
+  @override
+  Future<Result<void>> delete(
+    List<String> hashes, {
+    required bool deleteFiles,
+  }) {
+    lastDeleteFiles = deleteFiles;
+    return _act('delete');
+  }
+
+  @override
+  Future<Result<void>> addMagnetOrUrl(
+    String link, {
+    AddTorrentOptions options = const AddTorrentOptions(),
+  }) {
+    addedLinks.add(link);
+    addedOptions.add(options);
+    return _act('addLink');
+  }
+
+  @override
+  Future<Result<void>> addFile(
+    Uint8List bytes, {
+    required String fileName,
+    AddTorrentOptions options = const AddTorrentOptions(),
+  }) {
+    addedOptions.add(options);
+    return _act('addFile');
+  }
+
+  @override
+  Future<Result<SpeedLimitsState>> globalLimits() async {
+    final e = limitsError;
+    return e == null ? Result.ok(limits) : Result.err(e);
+  }
+
+  @override
+  Future<Result<void>> setGlobalLimits(GlobalLimits l) {
+    lastLimits = l;
+    return _act('setLimits');
+  }
+
+  @override
+  Future<Result<void>> setAlternativeSpeed(bool enabled) => _act('alt');
+
+  @override
+  Future<Result<TorrentDetail>> torrentDetail(String hash) async {
+    detailCalls++;
+    final e = detailError;
+    if (e != null) return Result.err(e);
+    return Result.ok(
+      detail ??
+          TorrentDetail(
+            torrent: sampleTorrent(1),
+            savePath: '/downloads/example',
+            seeds: 3,
+            seedsTotal: 10,
+            peers: 2,
+            peersTotal: 7,
+            availability: 1.5,
+            downloaded: 1024 * 1024 * 300,
+            uploaded: 1024 * 1024 * 50,
+          ),
+    );
+  }
+
   @override
   void forgetSession() {}
 
   @override
-  ServiceKind get kind => ServiceKind.qbittorrent;
+  final ServiceKind kind;
 
   @override
   Future<Result<String>> fetchVersion() async => const Result.ok('v4.6.3');
@@ -96,6 +200,13 @@ List<Torrent> allStates() => [
     ),
 ];
 
+/// An in-memory database for the preferences the screens read.
+final testDatabaseOverride = databaseProvider.overrideWith((ref) {
+  final db = AppDatabase.memory();
+  ref.onDispose(db.close);
+  return db;
+});
+
 final fixedNow = DateTime.utc(2026, 1, 1, 12);
 
 /// The torrent screen under the harness (reduced motion), without a
@@ -138,6 +249,7 @@ Widget screenApp(
 }) {
   return ProviderScope(
     overrides: [
+      testDatabaseOverride,
       torrentClientProvider.overrideWith((ref) => client()),
       torrentPollIntervalProvider.overrideWithValue(pollInterval),
       clockProvider.overrideWithValue(() => fixedNow),

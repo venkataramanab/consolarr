@@ -22,6 +22,11 @@ final torrentsDestination = AppDestination(
     ServiceKind.deluge,
   },
   screen: ScreenName.torrentList,
-  switcherKind: ServiceKind.qbittorrent,
+  // Every torrent client's servers are listed together in the switcher.
+  switcherKinds: const {
+    ServiceKind.qbittorrent,
+    ServiceKind.transmission,
+    ServiceKind.deluge,
+  },
   builder: (context, state) => const TorrentListScreen(),
 );

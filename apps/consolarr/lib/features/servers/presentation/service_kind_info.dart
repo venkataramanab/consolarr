@@ -6,7 +6,12 @@ import 'package:material_ui/material_ui.dart';
 
 /// Service types the editor offers. Add a kind here (and its client) to
 /// extend the picker; nothing else in the form changes.
-const supportedServiceKinds = [ServiceKind.sonarr, ServiceKind.qbittorrent];
+const supportedServiceKinds = [
+  ServiceKind.sonarr,
+  ServiceKind.qbittorrent,
+  ServiceKind.transmission,
+  ServiceKind.deluge,
+];
 
 /// Authentication modes a service offers, strongest first.
 List<AuthMode> authModesFor(ServiceKind kind) => switch (kind) {
@@ -37,6 +42,8 @@ String serviceKindDescription(AppLocalizations l10n, ServiceKind kind) =>
     switch (kind) {
       ServiceKind.sonarr => l10n.serverKindSonarrDescription,
       ServiceKind.qbittorrent => l10n.serverKindQbittorrentDescription,
+      ServiceKind.transmission => l10n.torKindTransmissionDescription,
+      ServiceKind.deluge => l10n.torKindDelugeDescription,
       _ => l10n.serverKindOtherDescription,
     };
 

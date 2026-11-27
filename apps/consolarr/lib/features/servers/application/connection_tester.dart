@@ -40,14 +40,38 @@ Future<ConnectionTestOutcome> _probeQBittorrent(
   ).fetchVersion()).map((v) => (v, _major(v))),
 );
 
+Future<ConnectionTestOutcome> _probeTransmission(
+  Dio dio,
+  ServerProfile profile,
+  ServerCredentials credentials,
+) async => _fromResult(
+  (await TransmissionClient(
+    dio: dio,
+    username: credentials.username,
+    password: credentials.password,
+  ).fetchVersion()).map((v) => (v, _major(v))),
+);
+
+Future<ConnectionTestOutcome> _probeDeluge(
+  Dio dio,
+  ServerProfile profile,
+  ServerCredentials credentials,
+) async => _fromResult(
+  (await DelugeClient(
+    dio: dio,
+    password: credentials.password,
+  ).fetchVersion()).map((v) => (v, _major(v))),
+);
+
 /// Connection probes per service kind. A new service registers its probe here
 /// (and in `supportedServiceKinds`); there is deliberately no catch-all, so a
 /// kind is never reported as something it is not.
 final Map<ServiceKind, ConnectionProbe> connectionProbes = {
   ServiceKind.sonarr: _probeSonarr,
   ServiceKind.qbittorrent: _probeQBittorrent,
-  // ServiceKind.radarr: (W4 Radarr), ServiceKind.transmission and
-  // ServiceKind.deluge: (W4 Torrents).
+  ServiceKind.transmission: _probeTransmission,
+  ServiceKind.deluge: _probeDeluge,
+  // ServiceKind.radarr: (W4 Radarr).
 };
 
 /// The outcome for a kind that has no probe registered. It is not reachable

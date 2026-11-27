@@ -48,6 +48,7 @@ void main() {
   });
 
   List<Override> overrides() => [
+    testDatabaseOverride,
     torrentClientProvider.overrideWith(
       (ref) async => clients[ref.watch(_activeId)],
     ),

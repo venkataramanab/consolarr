@@ -187,6 +187,40 @@ class Torrent {
   /// A secondary label (Transmission's first label); plain text.
   final String? label;
 
+  /// Value equality, so a list row can skip rebuilding when its own data did
+  /// not change between polls.
+  @override
+  bool operator ==(Object other) =>
+      other is Torrent &&
+      other.hash == hash &&
+      other.name == name &&
+      other.state == state &&
+      other.progress == progress &&
+      other.size == size &&
+      other.dlSpeed == dlSpeed &&
+      other.upSpeed == upSpeed &&
+      other.ratio == ratio &&
+      other.eta == eta &&
+      other.addedOn == addedOn &&
+      other.category == category &&
+      other.label == label;
+
+  @override
+  int get hashCode => Object.hash(
+    hash,
+    name,
+    state,
+    progress,
+    size,
+    dlSpeed,
+    upSpeed,
+    ratio,
+    eta,
+    addedOn,
+    category,
+    label,
+  );
+
   /// Omits the name so logs never carry media titles.
   @override
   String toString() => 'Torrent(${state.name})';

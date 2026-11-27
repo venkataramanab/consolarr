@@ -3,4 +3,29 @@
 enums:
   screen_name:
     values: [torrent_list, torrent_detail, torrent_add, torrent_speed_limits]
-events: {}
+  torrent_source_param:
+    dart: TorrentSourceParam
+    values: [magnet, url, file]
+  torrent_action_param:
+    dart: TorrentActionParam
+    values: [pause, resume, pause_all, resume_all, remove, remove_with_data]
+  torrent_outcome_param:
+    dart: TorrentOutcomeParam
+    values: [success, failed, unsupported]
+events:
+  torrent_added:
+    description: A torrent was added; carries the source type and client kind only.
+    params:
+      source: {type: torrent_source_param}
+      client: {type: service_kind_param}
+      outcome: {type: torrent_outcome_param}
+  torrent_action:
+    description: A pause, resume or remove action finished.
+    params:
+      action: {type: torrent_action_param}
+      outcome: {type: torrent_outcome_param}
+  speed_limits_changed:
+    description: Global speed limits or the alternative-limits switch were applied.
+    params:
+      client: {type: service_kind_param}
+      outcome: {type: torrent_outcome_param}

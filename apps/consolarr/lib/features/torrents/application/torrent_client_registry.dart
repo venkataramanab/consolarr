@@ -13,6 +13,8 @@ class TorrentClientContext {
     required this.profile,
     required this.credentials,
     required this.onRowsSkipped,
+    this.hostId,
+    this.onHostConnected,
   });
 
   final Dio dio;
@@ -21,6 +23,12 @@ class TorrentClientContext {
 
   /// Reports the number (only) of malformed rows a client skipped.
   final void Function(int skipped) onRowsSkipped;
+
+  /// The daemon host remembered for this server (Deluge).
+  final String? hostId;
+
+  /// Remembers the daemon host the client connected to (Deluge).
+  final void Function(String hostId)? onHostConnected;
 }
 
 typedef TorrentClientFactory = TorrentClient Function(TorrentClientContext c);
@@ -41,6 +49,24 @@ final Map<ServiceKind, TorrentClientFactory> torrentClientFactories = {
         : null,
     onRowsSkipped: c.onRowsSkipped,
   ),
-  // ServiceKind.transmission: (W4 Torrents) TransmissionClient(...)
-  // ServiceKind.deluge: (W4 Torrents) DelugeClient(...)
+  ServiceKind.transmission: (c) => TransmissionClient(
+    dio: c.dio,
+    username: c.profile.authMode == AuthMode.basic
+        ? c.credentials.username
+        : null,
+    password: c.profile.authMode == AuthMode.basic
+        ? c.credentials.password
+        : null,
+    onRowsSkipped: c.onRowsSkipped,
+  ),
+  // Deluge Web has a password only; a username in the editor is ignored.
+  ServiceKind.deluge: (c) => DelugeClient(
+    dio: c.dio,
+    password: c.profile.authMode == AuthMode.basic
+        ? c.credentials.password
+        : null,
+    hostId: c.hostId,
+    onHostConnected: c.onHostConnected,
+    onRowsSkipped: c.onRowsSkipped,
+  ),
 };
