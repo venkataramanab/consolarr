@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:isolate';
 import 'dart:typed_data';
 
-import 'package:core/core.dart';
 import 'package:dio/dio.dart';
 import 'package:test/test.dart';
 import 'package:torrent_clients/torrent_clients.dart';

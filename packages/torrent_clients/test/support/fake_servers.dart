@@ -353,6 +353,25 @@ class FakeDeluge extends FakeServer {
   final List<String> labels = [];
   int uploads = 0;
 
+  /// Torrent ids `core.remove_torrent` refuses.
+  final Set<String> failRemove = {};
+
+  /// Torrent ids `core.pause_torrent` reports as failed (Deluge 2.x answers
+  /// with a list of `[id, message]`).
+  final Set<String> failPause = {};
+
+  /// New torrents are inserted first (so they are not the "last" row).
+  bool addPrepends = false;
+
+  /// The hash the next added torrent gets.
+  String addedHash = 'c' * 40;
+
+  /// Torrent ids the label plugin is asked to label.
+  final List<String> labelled = [];
+
+  /// The daemon connection dropped: `core.*` answers "Not connected".
+  void dropDaemon() => connected = false;
+
   @override
   late final FakeAdapter adapter = FakeAdapter(_handle);
 
@@ -394,6 +413,15 @@ class FakeDeluge extends FakeServer {
         jsonEncode({
           'result': null,
           'error': {'message': 'Not authenticated', 'code': 1},
+          'id': req['id'],
+        }),
+      );
+    }
+    if (!connected && method.startsWith('core.')) {
+      return FakeAdapter.reply(
+        jsonEncode({
+          'result': null,
+          'error': {'message': 'Not connected.', 'code': 4},
           'id': req['id'],
         }),
       );
@@ -462,10 +490,26 @@ class FakeDeluge extends FakeServer {
         };
       case 'core.pause_torrent' || 'core.resume_torrent':
         final ids = (params.first! as List).cast<String>();
+        final failed = <List<String>>[];
         for (final t in torrents) {
-          if (ids.contains(t.hash)) t.paused = method == 'core.pause_torrent';
+          if (!ids.contains(t.hash)) continue;
+          if (failPause.contains(t.hash)) {
+            failed.add([t.hash, 'Torrent is in an invalid state']);
+          } else {
+            t.paused = method == 'core.pause_torrent';
+          }
         }
+        if (failed.isNotEmpty) result = failed;
       case 'core.remove_torrent':
+        if (failRemove.contains(params[0])) {
+          return FakeAdapter.reply(
+            jsonEncode({
+              'result': null,
+              'error': {'message': 'Torrent does not exist', 'code': 4},
+              'id': req['id'],
+            }),
+          );
+        }
         lastDeleteData = params[1] as bool;
         torrents.removeWhere((t) => t.hash == params[0]);
         result = true;
@@ -493,8 +537,22 @@ class FakeDeluge extends FakeServer {
       case 'label.get_labels':
         result = labels;
       case 'label.add':
-        labels.add(params.first! as String);
+        final name = params.first! as String;
+        if (!RegExp(r'^[a-z0-9_\-.]+$').hasMatch(name)) {
+          return FakeAdapter.reply(
+            jsonEncode({
+              'result': null,
+              'error': {
+                'message': 'Invalid label, valid characters:[a-z0-9_-]',
+                'code': 4,
+              },
+              'id': req['id'],
+            }),
+          );
+        }
+        labels.add(name);
       case 'label.set_torrent':
+        labelled.add(params[0]! as String);
         lastLabel = params[1] as String;
         for (final t in torrents) {
           if (t.hash == params[0]) t.label = lastLabel;
@@ -517,7 +575,16 @@ class FakeDeluge extends FakeServer {
     addCalls++;
     lastSavePath = options['download_location'] as String?;
     lastAddPaused = options['add_paused'] == true;
-    torrents.add(FakeTorrent('c' * 40, 'Example Added', paused: lastAddPaused));
-    return 'c' * 40;
+    final added = FakeTorrent(
+      addedHash,
+      'Example Added',
+      paused: lastAddPaused,
+    );
+    if (addPrepends) {
+      torrents.insert(0, added);
+    } else {
+      torrents.add(added);
+    }
+    return addedHash;
   }
 }

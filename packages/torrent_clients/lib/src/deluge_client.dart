@@ -111,11 +111,27 @@ ParsedRows<Torrent> parseDelugeList(String body) {
 /// A list response reduced to what must cross an isolate boundary: the rows
 /// or a flag for the error kind (typed errors are built on the UI isolate).
 class DelugeListOutcome {
-  const DelugeListOutcome({this.rows, this.notAuthenticated = false});
+  const DelugeListOutcome({
+    this.rows,
+    this.notAuthenticated = false,
+    this.notConnected = false,
+  });
 
   final ParsedRows<Torrent>? rows;
   final bool notAuthenticated;
+
+  /// The web UI lost its daemon connection.
+  final bool notConnected;
 }
+
+bool _isNotConnected(Object? message) =>
+    message is String && message.toLowerCase().contains('not connected');
+
+/// Whether [label] can be used by the Deluge label plugin after lowercasing
+/// (`a-z`, `0-9`, `_`, `-`, `.`). Names with spaces or other characters are
+/// refused by the plugin.
+bool isValidDelugeLabel(String label) =>
+    RegExp(r'^[a-z0-9_.\-]+$').hasMatch(label.toLowerCase());
 
 /// Parses a `core.get_torrents_status` response, noting an authentication
 /// error instead of throwing it. Top level so it can run in an isolate.
@@ -125,6 +141,9 @@ DelugeListOutcome parseDelugeListResponse(String body) {
   if (error is Map) {
     if (error['code'] == 1 || error['message'] == 'Not authenticated') {
       return const DelugeListOutcome(notAuthenticated: true);
+    }
+    if (_isNotConnected(error['message'])) {
+      return const DelugeListOutcome(notConnected: true);
     }
     throw const FormatException('rpc error');
   }
@@ -218,6 +237,15 @@ class DelugeClient implements TorrentClient, DaemonHostSelection {
         if (retry) return _call(method, params, retry: false);
         throw const AppError(ErrorCategory.authFailed);
       }
+      if (_isNotConnected(message) &&
+          (method.startsWith('core.') || method.startsWith('label.'))) {
+        _connected = false;
+        if (retry) {
+          await _ensureConnected();
+          return _call(method, params, retry: false);
+        }
+        throw const AppError(ErrorCategory.networkUnreachable);
+      }
       throw AppError(
         message is String && message.contains('Unknown')
             ? ErrorCategory.notFound
@@ -248,11 +276,21 @@ class DelugeClient implements TorrentClient, DaemonHostSelection {
   }
 
   void _captureCookie(Response<String> response) {
+    // A redirect to another origin must not plant a session cookie.
+    if (!_sameOrigin(response.realUri, Uri.parse(_dio.options.baseUrl))) return;
     for (final c in response.headers['set-cookie'] ?? const <String>[]) {
       final pair = c.split(';').first.trim();
       if (pair.startsWith('_session_id=')) _cookie = pair;
     }
   }
+
+  static bool _sameOrigin(Uri a, Uri b) =>
+      a.scheme == b.scheme &&
+      a.host.toLowerCase() == b.host.toLowerCase() &&
+      _port(a) == _port(b);
+
+  static int _port(Uri u) =>
+      u.hasPort ? u.port : (u.scheme == 'https' ? 443 : 80);
 
   Future<void> _login() async {
     final password = _password;
@@ -381,6 +419,15 @@ class DelugeClient implements TorrentClient, DaemonHostSelection {
           if (parsed.skipped > 0) onRowsSkipped?.call(parsed.skipped);
           return parsed.items;
         }
+        if (outcome.notConnected) {
+          // The daemon dropped: reconnect once, then give up as unreachable.
+          _connected = false;
+          if (attempt == 1) {
+            throw const AppError(ErrorCategory.networkUnreachable);
+          }
+          await _ensureConnected();
+          continue;
+        }
         // Session expired: log in again once.
         _cookie = null;
         _connected = false;
@@ -430,12 +477,32 @@ class DelugeClient implements TorrentClient, DaemonHostSelection {
   );
 
   Future<void> _bulk(String v1, String v2, List<String> hashes) async {
+    Object? result;
     try {
-      await _result(v1, [hashes]);
+      result = await _result(v1, [hashes]);
     } on AppError catch (e) {
       if (e.category != ErrorCategory.notFound) rethrow;
-      await _result(v2, [hashes]);
+      result = await _result(v2, [hashes]);
     }
+    // Deluge 2.x answers with the `[id, message]` pairs that failed.
+    final failed = <String>[
+      if (result is List)
+        for (final f in result)
+          if (f is List && f.isNotEmpty && f.first is String) f.first as String,
+    ];
+    _throwFailures(failed, hashes.length, ErrorCategory.serverError);
+  }
+
+  /// Nothing to do without failures; the plain error when every torrent
+  /// failed; a [PartialActionFailure] otherwise.
+  void _throwFailures(List<String> failed, int total, ErrorCategory category) {
+    if (failed.isEmpty) return;
+    if (failed.length >= total) throw AppError(category);
+    throw PartialActionFailure(
+      category: category,
+      failed: failed,
+      total: total,
+    );
   }
 
   @override
@@ -444,9 +511,24 @@ class DelugeClient implements TorrentClient, DaemonHostSelection {
     required bool deleteFiles,
   }) => guardResult(
     () => _connectedCall(() async {
-      for (final h in hashes) {
-        await _result('core.remove_torrent', [h, deleteFiles]);
+      final failed = <String>[];
+      var category = ErrorCategory.serverError;
+      for (var i = 0; i < hashes.length; i++) {
+        try {
+          await _result('core.remove_torrent', [hashes[i], deleteFiles]);
+        } on AppError catch (e) {
+          if (failed.isEmpty) category = e.category;
+          if (e.category == ErrorCategory.serverError ||
+              e.category == ErrorCategory.notFound) {
+            failed.add(hashes[i]);
+          } else {
+            // The connection or session is gone: the rest cannot succeed.
+            failed.addAll(hashes.sublist(i));
+            break;
+          }
+        }
       }
+      _throwFailures(failed, hashes.length, category);
     }),
   );
 
@@ -456,16 +538,27 @@ class DelugeClient implements TorrentClient, DaemonHostSelection {
     if (o.paused) 'add_paused': true,
   };
 
+  /// Best effort: the torrent is already added, so a label problem is a
+  /// warning ([AddWarning.labelNotApplied]) and never an error.
   Future<void> _applyLabel(String? hash, AddTorrentOptions o) async {
-    final label = o.category;
-    if (label == null || label.isEmpty || hash == null) return;
-    await _detectLabels();
-    if (_hasLabels != true) return;
-    final labels = await _result('label.get_labels');
-    if (labels is List && !labels.contains(label)) {
-      await _result('label.add', [label]);
+    final requested = o.category;
+    if (requested == null || requested.isEmpty) return;
+    try {
+      await _detectLabels();
+      if (_hasLabels != true) return;
+      final label = requested.toLowerCase();
+      if (hash == null || !isValidDelugeLabel(label)) {
+        o.onWarning?.call(AddWarning.labelNotApplied);
+        return;
+      }
+      final labels = await _result('label.get_labels');
+      if (labels is List && !labels.contains(label)) {
+        await _result('label.add', [label]);
+      }
+      await _result('label.set_torrent', [hash, label]);
+    } on AppError {
+      o.onWarning?.call(AddWarning.labelNotApplied);
     }
-    await _result('label.set_torrent', [hash, label]);
   }
 
   @override
@@ -474,7 +567,7 @@ class DelugeClient implements TorrentClient, DaemonHostSelection {
     AddTorrentOptions options = const AddTorrentOptions(),
   }) => guardResult(
     () => _connectedCall(() async {
-      final isMagnet = link.startsWith('magnet:');
+      final isMagnet = link.trimLeft().toLowerCase().startsWith('magnet:');
       final hash = await _result(
         isMagnet ? 'core.add_torrent_magnet' : 'core.add_torrent_url',
         [link, _options(options)],
@@ -497,6 +590,9 @@ class DelugeClient implements TorrentClient, DaemonHostSelection {
     AddTorrentOptions options = const AddTorrentOptions(),
   }) => guardResult(
     () => _connectedCall(() async {
+      final wantsLabel =
+          options.category != null && options.category!.isNotEmpty;
+      final before = wantsLabel ? await _hashes() : null;
       final response = await _dio.postUri<String>(
         _url('upload'),
         data: FormData.fromMap({
@@ -517,31 +613,45 @@ class DelugeClient implements TorrentClient, DaemonHostSelection {
           {'path': files.first, 'options': _options(options)},
         ],
       ]);
-      // The web call does not return the hash; the label is applied to the
-      // newest torrent only when the caller asked for one.
-      if (options.category != null && options.category!.isNotEmpty) {
-        final hash = await _newestHash();
-        await _applyLabel(hash, options);
+      // The web call does not return the hash: the new torrent is the one
+      // that was not in the list before.
+      if (before != null) {
+        await _applyLabel(await _newHash(before), options);
       }
     }),
   );
 
-  Future<String?> _newestHash() async {
-    final r = await _result('core.get_torrents_status', [
-      <String, Object?>{},
-      ['time_added'],
-    ]);
-    if (r is! Map) return null;
-    String? best;
-    num bestTime = -1;
-    for (final e in r.entries) {
-      final t = e.value is Map ? (e.value as Map)['time_added'] : null;
-      if (e.key is String && t is num && t > bestTime) {
-        bestTime = t;
-        best = e.key as String;
-      }
+  Future<Set<String>?> _hashes() async {
+    try {
+      final r = await _result('core.get_torrents_status', [
+        <String, Object?>{},
+        ['name'],
+      ]);
+      if (r is! Map) return null;
+      return {
+        for (final k in r.keys)
+          if (k is String) k,
+      };
+    } on AppError {
+      return null;
     }
-    return best;
+  }
+
+  /// The single hash that is in the list now but was not in [before] (the web
+  /// UI adds in the background, so look a few times); `null` when none or
+  /// several appeared.
+  Future<String?> _newHash(Set<String> before) async {
+    for (var attempt = 0; attempt < 4; attempt++) {
+      if (attempt > 0) {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      }
+      final now = await _hashes();
+      if (now == null) return null;
+      final added = now.difference(before);
+      if (added.length == 1) return added.single;
+      if (added.length > 1) return null;
+    }
+    return null;
   }
 
   static const _kib = 1024;

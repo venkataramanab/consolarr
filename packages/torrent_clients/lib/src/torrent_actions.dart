@@ -20,6 +20,27 @@ class UnsupportedAction extends AppError {
   static bool isIt(AppError error) => error is UnsupportedAction;
 }
 
+/// Something that went wrong after a torrent was added successfully.
+enum AddWarning {
+  /// The torrent was added but the label/category could not be applied.
+  labelNotApplied,
+}
+
+/// Some, but not all, of the torrents of a bulk action failed. [failed] holds
+/// their ids (hashes), [total] the number of torrents the action was for. The
+/// error `category` is that of the first failure. When every torrent fails the
+/// plain error is returned instead.
+class PartialActionFailure extends AppError {
+  PartialActionFailure({
+    required ErrorCategory category,
+    required this.failed,
+    required this.total,
+  }) : super(category, debugDetail: '${failed.length} of $total failed');
+
+  final List<String> failed;
+  final int total;
+}
+
 /// Options for adding a torrent. Every field is optional; a client ignores
 /// what its server cannot do.
 class AddTorrentOptions {
@@ -28,6 +49,7 @@ class AddTorrentOptions {
     this.category,
     this.tags = const [],
     this.paused = false,
+    this.onWarning,
   });
 
   final String? savePath;
@@ -38,6 +60,10 @@ class AddTorrentOptions {
   /// qBittorrent tags or Transmission labels.
   final List<String> tags;
   final bool paused;
+
+  /// Called (on success of the add) with a warning the user should see, for
+  /// example when the label could not be applied.
+  final void Function(AddWarning warning)? onWarning;
 }
 
 /// One file inside a torrent.
