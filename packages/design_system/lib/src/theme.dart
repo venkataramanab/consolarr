@@ -2,16 +2,39 @@
 
 import 'package:design_system/src/color_roles.dart';
 import 'package:design_system/src/radii.dart';
-import 'package:design_system/src/spacing.dart';
+import 'package:design_system/src/roles_context.dart';
+import 'package:design_system/src/touch_targets.dart';
 import 'package:design_system/src/type_scale.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Builds Material themes from Consolarr tokens.
 abstract final class ConsolarrTheme {
-  static ThemeData dark() => _build(ConsolarrColorRoles.dark);
-  static ThemeData light() => _build(ConsolarrColorRoles.light);
+  /// The dark theme; [highContrast] selects the high-contrast roles and
+  /// [touchTargets] the minimum size of Material buttons.
+  static ThemeData dark({
+    bool highContrast = false,
+    TouchTargets touchTargets = TouchTargets.standard,
+  }) => _build(
+    ConsolarrColorRoles.forBrightness(
+      Brightness.dark,
+      highContrast: highContrast,
+    ),
+    touchTargets,
+  );
 
-  static ThemeData _build(ConsolarrColorRoles c) {
+  /// The light theme; see [dark].
+  static ThemeData light({
+    bool highContrast = false,
+    TouchTargets touchTargets = TouchTargets.standard,
+  }) => _build(
+    ConsolarrColorRoles.forBrightness(
+      Brightness.light,
+      highContrast: highContrast,
+    ),
+    touchTargets,
+  );
+
+  static ThemeData _build(ConsolarrColorRoles c, TouchTargets touch) {
     final scheme = ColorScheme(
       brightness: c.brightness,
       primary: c.accent,
@@ -70,11 +93,12 @@ abstract final class ConsolarrTheme {
       ),
       iconButtonTheme: IconButtonThemeData(
         style: IconButton.styleFrom(
-          minimumSize: const Size.square(ConsolarrSpacing.minTapTarget),
+          minimumSize: touch.size,
           foregroundColor: c.textPrimary,
         ),
       ),
       visualDensity: VisualDensity.standard,
+      extensions: [ConsolarrRolesExtension(c)],
     );
   }
 }

@@ -3,6 +3,7 @@
 import 'package:design_system/src/radii.dart';
 import 'package:design_system/src/roles_context.dart';
 import 'package:design_system/src/spacing.dart';
+import 'package:design_system/src/touch_targets.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// List-mode row for a media item: thumbnail, title, dot-separated metadata
@@ -58,8 +59,8 @@ class MediaListTile extends StatelessWidget {
           onTap: onTap,
           onLongPress: onLongPress,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              minHeight: ConsolarrSpacing.minTapTarget,
+            constraints: BoxConstraints(
+              minHeight: TouchTargets.of(context).minimum,
             ),
             child: Padding(
               padding: const EdgeInsets.all(ConsolarrSpacing.sm),

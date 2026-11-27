@@ -156,6 +156,164 @@ Map<String, Widget Function()> componentSamples() => {
       helperText: longText,
     ),
   ),
+
+  'GlassSheet': () => SizedBox(
+    height: 560,
+    child: GlassSheet(
+      title: longText,
+      closeLabel: 'Close',
+      toggleDetentLabel: 'Expand or collapse',
+      detents: const GlassSheetDetents(initialFull: true),
+      child: const Text(longText),
+    ),
+  ),
+  'NestedMenu': () => Padding(
+    padding: const EdgeInsets.all(16),
+    child: NestedMenu(
+      semanticsLabel: 'More actions',
+      items: [
+        const NestedMenuItem(label: longText, icon: Icons.sort),
+        NestedMenuItem(
+          label: 'Sort by',
+          icon: Icons.sort,
+          children: [NestedMenuItem(label: 'Title', onSelected: () {})],
+        ),
+        NestedMenuItem(
+          label: 'Delete',
+          icon: Icons.delete_outline,
+          destructive: true,
+          onSelected: () {},
+        ),
+        const NestedMenuItem(
+          label: 'Search',
+          icon: Icons.search,
+          enabled: false,
+          disabledReason: longText,
+        ),
+      ],
+    ),
+  ),
+  'SortSheet': () => Padding(
+    padding: const EdgeInsets.all(16),
+    child: SortSheet<int>(
+      title: 'Sort',
+      showTitle: true,
+      options: const [
+        SortOption(key: 0, label: longText),
+        SortOption(key: 1, label: 'Added'),
+      ],
+      selected: 0,
+      ascending: true,
+      ascendingLabel: 'Ascending',
+      descendingLabel: 'Descending',
+      saveAsDefaultLabel: 'Save as default for this list',
+      applyLabel: 'Apply',
+      onApply: (_, _, _) {},
+    ),
+  ),
+  'FilterSheet': () => Padding(
+    padding: const EdgeInsets.all(16),
+    child: FilterSheet(
+      title: 'Filter',
+      activeCount: 2,
+      activeCountLabel: '2 filters active',
+      selection: const FilterSelection({
+        'status': {'continuing'},
+        'tags': {'a'},
+      }),
+      sections: const [
+        FilterSection(
+          id: 'status',
+          label: 'Status',
+          multiSelect: false,
+          chips: [
+            FilterChoice(id: 'continuing', label: 'Continuing'),
+            FilterChoice(id: 'ended', label: longText),
+          ],
+        ),
+        FilterSection(
+          id: 'tags',
+          label: 'Tags',
+          chips: [
+            FilterChoice(id: 'a', label: 'Tag A'),
+            FilterChoice(id: 'b', label: 'Tag B'),
+          ],
+        ),
+      ],
+      clearAllLabel: 'Clear all',
+      saveAsDefaultLabel: 'Save as default for this list',
+      applyLabel: 'Apply',
+      onApply: (_, _) {},
+      onClear: () {},
+    ),
+  ),
+  'SelectionBar': () => Padding(
+    padding: const EdgeInsets.all(16),
+    child: SelectionBar(
+      selectedCount: 3,
+      countLabel: '3 selected of a very long list of items',
+      exitLabel: 'Exit selection',
+      selectAllLabel: 'Select all',
+      onExit: () {},
+      onSelectAll: () {},
+      actions: [
+        SelectionAction(icon: Icons.pause, label: 'Pause', onPressed: () {}),
+        SelectionAction(
+          icon: Icons.delete_outline,
+          label: 'Delete',
+          destructive: true,
+          onPressed: () {},
+        ),
+      ],
+    ),
+  ),
+  'StagedReveal': () => const StagedReveal(
+    revealKey: 'sample',
+    order: 1,
+    child: Padding(padding: EdgeInsets.all(16), child: Text(longText)),
+  ),
+  'SettingsSection': () => Padding(
+    padding: const EdgeInsets.all(16),
+    child: SettingsSection(
+      title: longText,
+      footer: longText,
+      children: [
+        SettingsRow(
+          title: longText,
+          subtitle: longText,
+          icon: Icons.language,
+          value: longText,
+          onTap: () {},
+        ),
+        SwitchRow(
+          title: longText,
+          subtitle: longText,
+          icon: Icons.lock_outline,
+          value: true,
+          onChanged: (_) {},
+        ),
+        ChoiceSheetRow<int>(
+          title: 'Theme',
+          icon: Icons.palette_outlined,
+          closeLabel: 'Close',
+          options: const [
+            ChoiceOption(value: 0, label: 'Dark'),
+            ChoiceOption(value: 1, label: longText, hint: 'Hint'),
+          ],
+          selected: 1,
+          onSelected: (_) {},
+        ),
+      ],
+    ),
+  ),
+  'SettingsRow (disabled)': () => Padding(
+    padding: const EdgeInsets.all(16),
+    child: SettingsRow(title: longText, enabled: false, onTap: () {}),
+  ),
+  'SwitchRow (off, disabled)': () => const Padding(
+    padding: EdgeInsets.all(16),
+    child: SwitchRow(title: longText, value: false, onChanged: null),
+  ),
 };
 
 CertificateTrustSheet _trustSheet(CertificateSheetVariant variant) =>

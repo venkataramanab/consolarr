@@ -66,6 +66,58 @@ class ConsolarrColorRoles {
     error: Color(0xFFB3261E),
   );
 
+  /// High-contrast dark variant: near-white text on deeper surfaces, text and
+  /// status colours at WCAG AAA (7:1) on every surface, a more visible track.
+  static const darkHighContrast = ConsolarrColorRoles(
+    brightness: Brightness.dark,
+    chrome: Color(0xFF0B0D10),
+    page: Color(0xFF0F1216),
+    card: Color(0xFF161A20),
+    raised: Color(0xFF1E232B),
+    track: Color(0xFF2B323D),
+    textPrimary: Color(0xFFFFFFFF),
+    textSecondary: Color(0xFFE6EAF0),
+    textTertiary: Color(0xFFCFD6E1),
+    accent: Color(0xFF86E3F1),
+    onAccent: Color(0xFF020A0C),
+    success: Color(0xFF9BF0B6),
+    warning: Color(0xFFFFD98A),
+    error: Color(0xFFFFB3B3),
+  );
+
+  /// High-contrast light variant (AAA on every surface).
+  static const lightHighContrast = ConsolarrColorRoles(
+    brightness: Brightness.light,
+    chrome: Color(0xFFE9EDF3),
+    page: Color(0xFFFFFFFF),
+    card: Color(0xFFFFFFFF),
+    raised: Color(0xFFFFFFFF),
+    track: Color(0xFFDDE2EA),
+    textPrimary: Color(0xFF000000),
+    textSecondary: Color(0xFF1B222D),
+    textTertiary: Color(0xFF2F3947),
+    accent: Color(0xFF004B59),
+    onAccent: Color(0xFFFFFFFF),
+    success: Color(0xFF0B4F26),
+    warning: Color(0xFF5C3A00),
+    error: Color(0xFF8C1A13),
+  );
+
+  /// The roles for [brightness], in the high-contrast variant when asked.
+  static ConsolarrColorRoles forBrightness(
+    Brightness brightness, {
+    bool highContrast = false,
+  }) => switch ((brightness, highContrast)) {
+    (Brightness.dark, false) => dark,
+    (Brightness.dark, true) => darkHighContrast,
+    (Brightness.light, false) => light,
+    (Brightness.light, true) => lightHighContrast,
+  };
+
+  /// Whether this is one of the high-contrast variants.
+  bool get isHighContrast =>
+      identical(this, darkHighContrast) || identical(this, lightHighContrast);
+
   final Brightness brightness;
 
   // Surface ladder, outermost to innermost.

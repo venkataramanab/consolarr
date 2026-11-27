@@ -8,7 +8,85 @@ void main() {
   const palettes = {
     'dark': ConsolarrColorRoles.dark,
     'light': ConsolarrColorRoles.light,
+    'dark high contrast': ConsolarrColorRoles.darkHighContrast,
+    'light high contrast': ConsolarrColorRoles.lightHighContrast,
   };
+
+  group('high contrast variants (WCAG AAA, 7:1)', () {
+    for (final name in ['dark high contrast', 'light high contrast']) {
+      final c = palettes[name]!;
+      test('$name: text tiers incl. tertiary, accent and status roles', () {
+        for (final fg in [...c.textTiers, c.accent, ...c.statusColors]) {
+          for (final surface in c.surfaces) {
+            expect(
+              contrastRatio(fg, surface),
+              greaterThanOrEqualTo(7),
+              reason: '$name $fg on $surface',
+            );
+          }
+        }
+        expect(contrastRatio(c.onAccent, c.accent), greaterThanOrEqualTo(7));
+      });
+
+      test('$name: is at least as strong as the normal variant', () {
+        final normal = ConsolarrColorRoles.forBrightness(c.brightness);
+        for (var i = 0; i < 3; i++) {
+          expect(
+            contrastRatio(c.textTiers[i], c.page),
+            greaterThanOrEqualTo(
+              contrastRatio(normal.textTiers[i], normal.page),
+            ),
+          );
+        }
+        expect(c.isHighContrast, isTrue);
+        expect(normal.isHighContrast, isFalse);
+      });
+    }
+
+    test('dark high-contrast surfaces keep an ascending ladder', () {
+      final lums = ConsolarrColorRoles.darkHighContrast.surfaces
+          .map((s) => s.computeLuminance())
+          .toList();
+      expect(lums, orderedEquals([...lums]..sort()));
+    });
+  });
+
+  test('forBrightness picks all four variants', () {
+    expect(
+      ConsolarrColorRoles.forBrightness(Brightness.dark),
+      ConsolarrColorRoles.dark,
+    );
+    expect(
+      ConsolarrColorRoles.forBrightness(Brightness.light, highContrast: true),
+      ConsolarrColorRoles.lightHighContrast,
+    );
+  });
+
+  test('theme carries the roles variant', () {
+    expect(
+      ConsolarrTheme.dark(highContrast: true)
+          .extension<ConsolarrRolesExtension>()!
+          .roles,
+      ConsolarrColorRoles.darkHighContrast,
+    );
+    expect(
+      ConsolarrTheme.light().extension<ConsolarrRolesExtension>()!.roles,
+      ConsolarrColorRoles.light,
+    );
+  });
+
+  test('touch targets: standard 48, large larger', () {
+    expect(TouchTargets.standard.minimum, 48);
+    expect(TouchTargets.large.minimum, greaterThan(48));
+    expect(
+      ConsolarrTheme.dark(touchTargets: TouchTargets.large)
+          .iconButtonTheme
+          .style!
+          .minimumSize!
+          .resolve({}),
+      TouchTargets.large.size,
+    );
+  });
 
   group('WCAG AA contrast', () {
     palettes.forEach((name, c) {
