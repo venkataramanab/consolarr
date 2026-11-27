@@ -41,8 +41,9 @@ In progress: Radarr, Transmission and Deluge support, and torrent actions
   changed certificate blocks the connection until you re-trust it.
 - No ads.
 - The F-Droid/foss build contains **no telemetry SDKs at all**.
-- Telemetry in the Play build is **opt-in and off by default**, and never
-  sends hostnames, URLs, keys or titles.
+- The Play build currently contains no telemetry SDKs either. Any telemetry
+  added there in future will be opt-in, off by default, and will never send
+  hostnames, URLs, API keys or media titles.
 - Diagnostics are redacted and shown for review before you share anything.
 
 See [SECURITY.md](SECURITY.md) for the security posture and how to report
@@ -50,7 +51,8 @@ vulnerabilities privately.
 
 ## Accessibility and languages
 
-TalkBack support, text scaling up to 200%, reduced motion and high contrast.
+TalkBack support, reduced motion and high contrast; layouts are tested at
+200% text scale.
 Available in English and Arabic (right-to-left); there are no hardcoded
 user-facing strings.
 
