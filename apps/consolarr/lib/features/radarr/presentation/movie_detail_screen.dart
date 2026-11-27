@@ -3,6 +3,7 @@
 import 'package:arr_api/arr_api.dart';
 import 'package:consolarr/features/radarr/application/radarr_providers.dart';
 import 'package:consolarr/features/radarr/domain/availability.dart';
+import 'package:consolarr/features/radarr/domain/dates.dart';
 import 'package:consolarr/features/radarr/presentation/common.dart';
 import 'package:consolarr/features/radarr/presentation/edit_sheet.dart';
 import 'package:consolarr/features/radarr/presentation/movie_views.dart';
@@ -127,7 +128,7 @@ class _Content extends ConsumerWidget {
         .where((p) => p.id == movie.qualityProfileId)
         .map((p) => p.name)
         .firstOrNull;
-    final searchPhase = ref.watch(searchStatusProvider)[movie.id];
+    final searchPhase = ref.watch(searchPhaseProvider(movie.id));
     final trailer = trailerUri(movie.youTubeTrailerId);
     final dpr = MediaQuery.devicePixelRatioOf(context);
     final width = MediaQuery.sizeOf(context).width;
@@ -253,14 +254,27 @@ class _Content extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (profileName != null)
-                        Text('${l10n.radarrQualityProfile}: $profileName'),
+                        Text(
+                          l10n.radarrLabelValue(
+                            l10n.radarrQualityProfile,
+                            profileName,
+                          ),
+                        ),
                       Text(
-                        '${l10n.radarrMinimumAvailability}: '
-                        '${minimumAvailabilityText(l10n, movie.minimumAvailability)}',
+                        l10n.radarrLabelValue(
+                          l10n.radarrMinimumAvailability,
+                          minimumAvailabilityText(
+                            l10n,
+                            movie.minimumAvailability,
+                          ),
+                        ),
                       ),
                       if (movie.genres.isNotEmpty)
                         Text(
-                          '${l10n.radarrGenres}: ${movie.genres.join(', ')}',
+                          l10n.radarrLabelValue(
+                            l10n.radarrGenres,
+                            movie.genres.join(', '),
+                          ),
                         ),
                       if (movie.collectionTitle != null)
                         Text(l10n.radarrInCollection(movie.collectionTitle!)),
@@ -330,7 +344,8 @@ class _AvailabilityBanner extends StatelessWidget {
     final label = availabilityText(l10n, availability);
     final text = date == null
         ? label
-        : l10n.radarrAvailabilityOn(label, date.toLocal());
+        : // Date-only value (midnight UTC): show the day it names.
+          l10n.radarrAvailabilityOn(label, calendarDayOf(date));
     return Semantics(
       container: true,
       label: text,
@@ -358,7 +373,8 @@ class _Actions extends ConsumerWidget {
     final busy =
         searchPhase != null &&
         searchPhase != SearchPhase.done &&
-        searchPhase != SearchPhase.failed;
+        searchPhase != SearchPhase.failed &&
+        searchPhase != SearchPhase.stillRunning;
     final (progressText, progressIcon) = switch (searchPhase) {
       SearchPhase.starting => (
         l10n.radarrSearchStarting,
@@ -368,6 +384,10 @@ class _Actions extends ConsumerWidget {
       SearchPhase.searching => (l10n.radarrSearchRunning, Icons.search),
       SearchPhase.done => (l10n.radarrSearchDone, Icons.check_circle_outline),
       SearchPhase.failed => (l10n.radarrSearchFailed, Icons.error_outline),
+      SearchPhase.stillRunning => (
+        l10n.radarrSearchStillRunning,
+        Icons.schedule,
+      ),
       null => (null, null),
     };
     return Column(

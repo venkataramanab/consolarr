@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:arr_api/arr_api.dart';
+import 'package:consolarr/features/arr_common/presentation/group_header_row.dart';
 import 'package:consolarr/features/radarr/application/radarr_providers.dart';
+import 'package:consolarr/features/radarr/domain/dates.dart';
 import 'package:consolarr/features/radarr/presentation/common.dart';
 import 'package:consolarr/features/radarr/presentation/navigation.dart';
 import 'package:consolarr/features/radarr/presentation/screen_view.dart';
@@ -15,13 +17,39 @@ import 'package:observability/observability.dart';
 
 /// Calendar (RAD-10): cinema, digital and physical dates by day, filtered by
 /// type. Cached for the offline view.
-class CalendarPage extends ConsumerWidget {
+class CalendarPage extends ConsumerStatefulWidget {
   const CalendarPage({required this.padding, super.key});
 
   final EdgeInsets padding;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CalendarPage> createState() => _CalendarPageState();
+}
+
+/// One row of the calendar list: a day header or a movie of that day.
+sealed class _Row {
+  const _Row();
+}
+
+final class _DayRow extends _Row {
+  const _DayRow(this.day, this.count);
+  final DateTime day;
+  final int count;
+}
+
+final class _EntryRow extends _Row {
+  const _EntryRow(this.entry);
+  final CalendarEntry entry;
+}
+
+class _CalendarPageState extends ConsumerState<CalendarPage> {
+  /// Days the user folded away.
+  final Set<DateTime> _collapsed = {};
+
+  EdgeInsets get padding => widget.padding;
+
+  @override
+  Widget build(BuildContext context) {
     final async = ref.watch(calendarProvider);
     final types = ref.watch(calendarTypesProvider);
     final now = ref.watch(clockProvider)();
@@ -89,95 +117,110 @@ class CalendarPage extends ConsumerWidget {
       from: start,
       to: end,
     );
-    final theme = Theme.of(context);
     final days = <DateTime, List<CalendarEntry>>{};
     for (final e in entries) {
-      final local = e.date.toLocal();
-      days
-          .putIfAbsent(DateTime(local.year, local.month, local.day), () => [])
-          .add(e);
+      // Release dates are date-only (midnight UTC): group by that day.
+      days.putIfAbsent(calendarDayOf(e.date), () => []).add(e);
     }
-    final dayKeys = days.keys.toList();
     final today = DateTime(now.year, now.month, now.day);
+    final rows = <_Row>[
+      for (final day in days.keys) ...[
+        _DayRow(day, days[day]!.length),
+        if (!_collapsed.contains(day))
+          for (final e in days[day]!) _EntryRow(e),
+      ],
+    ];
+    // One list for everything, so a long calendar builds only what is shown.
+    final head = <Widget>[
+      if (snapshot.isOffline)
+        Padding(
+          padding: const EdgeInsets.only(bottom: ConsolarrSpacing.sm),
+          child: offlineBanner(
+            context,
+            fetchedAt: snapshot.fetchedAt,
+            now: now,
+            onRetry: refresh,
+          ),
+        ),
+      Wrap(
+        spacing: ConsolarrSpacing.sm,
+        children: [
+          for (final t in ReleaseType.values)
+            FilterChip(
+              avatar: Icon(releaseTypeIcon(t), size: 18),
+              label: Text(releaseTypeText(l10n, t)),
+              selected: types.contains(t),
+              materialTapTargetSize: MaterialTapTargetSize.padded,
+              onSelected: (_) =>
+                  ref.read(calendarTypesProvider.notifier).toggle(t),
+            ),
+        ],
+      ),
+    ];
     return RefreshIndicator(
       onRefresh: refresh,
-      child: ListView(
+      child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: padding,
-        children: [
-          if (snapshot.isOffline)
-            Padding(
-              padding: const EdgeInsets.only(bottom: ConsolarrSpacing.sm),
-              child: offlineBanner(
-                context,
-                fetchedAt: snapshot.fetchedAt,
-                now: now,
-                onRetry: refresh,
-              ),
-            ),
-          Wrap(
-            spacing: ConsolarrSpacing.sm,
-            children: [
-              for (final t in ReleaseType.values)
-                FilterChip(
-                  avatar: Icon(releaseTypeIcon(t), size: 18),
-                  label: Text(releaseTypeText(l10n, t)),
-                  selected: types.contains(t),
-                  onSelected: (_) =>
-                      ref.read(calendarTypesProvider.notifier).toggle(t),
-                ),
-            ],
-          ),
-          if (entries.isEmpty)
-            SizedBox(
+        itemCount: head.length + (entries.isEmpty ? 1 : rows.length),
+        itemBuilder: (context, i) {
+          if (i < head.length) return head[i];
+          if (entries.isEmpty) {
+            return SizedBox(
               height: 320,
               child: EmptyState(
                 icon: Icons.event_busy_outlined,
                 headline: l10n.radarrCalendarEmptyHeadline,
                 message: l10n.radarrCalendarEmptyMessage,
               ),
-            )
-          else
-            for (final day in dayKeys) ...[
-              Padding(
+            );
+          }
+          final row = rows[i - head.length];
+          switch (row) {
+            case _DayRow(:final day, :final count):
+              final title = day == today
+                  ? l10n.radarrCalendarToday(day)
+                  : l10n.radarrCalendarDay(day);
+              return Padding(
                 padding: const EdgeInsets.only(
                   top: ConsolarrSpacing.md,
                   bottom: ConsolarrSpacing.xs,
                 ),
-                child: Semantics(
-                  header: true,
-                  child: Text(
-                    day == today
-                        ? l10n.radarrCalendarToday(day)
-                        : l10n.radarrCalendarDay(day),
-                    style: theme.textTheme.titleSmall,
+                child: ArrGroupHeader(
+                  key: ValueKey('day-$day'),
+                  title: title,
+                  countText: l10n.radarrCalendarDayCount(count),
+                  expanded: !_collapsed.contains(day),
+                  semanticsLabel: l10n.radarrCalendarGroupSemantics(title),
+                  onToggle: () => setState(() {
+                    if (!_collapsed.remove(day)) _collapsed.add(day);
+                  }),
+                ),
+              );
+            case _EntryRow(:final entry):
+              return Padding(
+                padding: const EdgeInsets.only(bottom: ConsolarrSpacing.sm),
+                child: MediaListTile(
+                  key: ValueKey('${entry.movie.id}-${entry.type.name}'),
+                  title: entry.movie.title,
+                  metadata: [
+                    releaseTypeText(l10n, entry.type),
+                    if (entry.movie.year != null) '${entry.movie.year}',
+                  ],
+                  semanticsLabel: l10n.radarrCalendarSemantics(
+                    entry.movie.title,
+                    releaseTypeText(l10n, entry.type),
+                  ),
+                  onTap: () => openMovie(context, entry.movie.id),
+                  trailing: StatusChip(
+                    label: releaseTypeText(l10n, entry.type),
+                    icon: releaseTypeIcon(entry.type),
+                    tone: StatusTone.info,
                   ),
                 ),
-              ),
-              for (final e in days[day]!)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: ConsolarrSpacing.sm),
-                  child: MediaListTile(
-                    key: ValueKey('${e.movie.id}-${e.type.name}'),
-                    title: e.movie.title,
-                    metadata: [
-                      releaseTypeText(l10n, e.type),
-                      if (e.movie.year != null) '${e.movie.year}',
-                    ],
-                    semanticsLabel: l10n.radarrCalendarSemantics(
-                      e.movie.title,
-                      releaseTypeText(l10n, e.type),
-                    ),
-                    onTap: () => openMovie(context, e.movie.id),
-                    trailing: StatusChip(
-                      label: releaseTypeText(l10n, e.type),
-                      icon: releaseTypeIcon(e.type),
-                      tone: StatusTone.info,
-                    ),
-                  ),
-                ),
-            ],
-        ],
+              );
+          }
+        },
       ),
     );
   }

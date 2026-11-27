@@ -201,7 +201,9 @@ void main() {
           ),
           isEmpty,
         );
-        expect(watch.elapsedMilliseconds, lessThan(5000));
+        // 13 queries over 10,000 movies take about 0.2 s on a CI machine; one
+        // second leaves headroom without hiding a slowdown.
+        expect(watch.elapsedMilliseconds, lessThan(1000));
       });
     }
   });

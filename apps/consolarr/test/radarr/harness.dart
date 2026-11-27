@@ -36,6 +36,7 @@ Widget radarrApp(
   bool reduceMotion = true,
   bool includeContext = true,
   ArtworkSource? artwork,
+  MovieRunner? movieRunner,
 }) {
   return ProviderScope(
     overrides: [
@@ -44,6 +45,7 @@ Widget radarrApp(
         cache: cache,
         prefs: prefs,
         includeContext: includeContext,
+        movieRunner: movieRunner,
       ),
       artworkSourceProvider.overrideWithValue(artwork),
       ...extra,

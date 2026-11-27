@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:arr_api/arr_api.dart';
 import 'package:consolarr/features/radarr/application/radarr_providers.dart';
 import 'package:consolarr/features/radarr/data/radarr_prefs.dart';
+import 'package:consolarr/features/settings/application/lock_controller.dart';
 import 'package:consolarr/src/cache/payload_cache.dart';
 import 'package:consolarr/features/radarr/data/radarr_repository.dart';
 import 'package:consolarr/src/providers.dart';
@@ -253,6 +254,7 @@ List<Override> radarrOverrides(
   MemoryPayloadCache? cache,
   MemoryPrefs? prefs,
   bool includeContext = true,
+  MovieRunner? movieRunner,
 }) {
   final context = contextFor(api, cache: cache);
   return [
@@ -261,6 +263,12 @@ List<Override> radarrOverrides(
     radarrPrefsProvider.overrideWithValue(prefs ?? MemoryPrefs()),
     clockProvider.overrideWithValue(() => fixedNow),
     commandPollIntervalProvider.overrideWithValue(Duration.zero),
+    // Big libraries are filtered inline: a real isolate never completes under
+    // the widget tester's fake clock.
+    appLockedProvider.overrideWithValue(false),
+    movieRunnerProvider.overrideWithValue(
+      movieRunner ?? <T>(T Function() c) async => c(),
+    ),
   ];
 }
 

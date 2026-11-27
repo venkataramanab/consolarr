@@ -55,6 +55,7 @@ String availabilityText(AppLocalizations l10n, Availability a) => switch (a) {
 
 String minimumAvailabilityText(AppLocalizations l10n, MinimumAvailability m) =>
     switch (m) {
+      MinimumAvailability.tba => l10n.radarrMinTba,
       MinimumAvailability.announced => l10n.radarrMinAnnounced,
       MinimumAvailability.inCinemas => l10n.radarrMinInCinemas,
       MinimumAvailability.released => l10n.radarrMinReleased,

@@ -189,10 +189,14 @@ void main() {
       (v) => radarrApp(v, api, const RadarrScreen()),
       variants: phone,
     );
-    for (final tip in ['Sort', 'Filter', 'Jump to']) {
-      await tester.tap(find.byTooltip(tip).first);
+    for (final tap in [
+      find.textContaining('Sort:'),
+      find.textContaining('Filter'),
+      find.byTooltip('Jump to'),
+    ]) {
+      await tester.tap(tap.first);
       await tester.pumpAndSettle();
-      expect(find.byTooltip('Close'), findsOneWidget, reason: tip);
+      expect(find.byTooltip('Close'), findsOneWidget, reason: '$tap');
       await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
     }

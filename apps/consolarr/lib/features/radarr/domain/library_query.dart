@@ -284,3 +284,49 @@ List<MovieGroup> groupMovies(List<RadarrMovie> rows, MovieSortKey key) {
   if (bucket.isNotEmpty) out.add(MovieGroup(current!, bucket));
   return out;
 }
+
+/// Ids of the removable chips of [f], in display order: `monitored`, `file`,
+/// `availability:<name>`, `profile:<id>`, `tag:<id>`, `collection:<name>`.
+List<String> activeFilterIds(MovieFilter f) => [
+  if (f.monitored != MonitoredFilter.any) 'monitored',
+  if (f.file != FileFilter.any) 'file',
+  for (final a in f.availability) 'availability:${a.name}',
+  for (final p in f.qualityProfiles) 'profile:$p',
+  for (final t in f.tags) 'tag:$t',
+  for (final c in f.collections) 'collection:$c',
+];
+
+/// [f] without the criterion behind chip [id] (see [activeFilterIds]).
+MovieFilter removeFilter(MovieFilter f, String id) {
+  final colon = id.indexOf(':');
+  final kind = colon < 0 ? id : id.substring(0, colon);
+  final value = colon < 0 ? '' : id.substring(colon + 1);
+  return MovieFilter(
+    monitored: kind == 'monitored' ? MonitoredFilter.any : f.monitored,
+    file: kind == 'file' ? FileFilter.any : f.file,
+    availability: kind == 'availability'
+        ? {
+            for (final a in f.availability)
+              if (a.name != value) a,
+          }
+        : f.availability,
+    qualityProfiles: kind == 'profile'
+        ? {
+            for (final p in f.qualityProfiles)
+              if ('$p' != value) p,
+          }
+        : f.qualityProfiles,
+    tags: kind == 'tag'
+        ? {
+            for (final t in f.tags)
+              if ('$t' != value) t,
+          }
+        : f.tags,
+    collections: kind == 'collection'
+        ? {
+            for (final c in f.collections)
+              if (c != value) c,
+          }
+        : f.collections,
+  );
+}

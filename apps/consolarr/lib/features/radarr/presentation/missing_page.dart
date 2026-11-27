@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:arr_api/arr_api.dart';
+import 'package:consolarr/features/arr_common/presentation/search_status_button.dart';
 import 'package:consolarr/features/radarr/application/radarr_providers.dart';
 import 'package:consolarr/features/radarr/domain/availability.dart';
 import 'package:consolarr/features/radarr/domain/wanted.dart';
@@ -102,14 +103,16 @@ class MissingPage extends ConsumerWidget {
     Future<void> Function() refresh,
     AppLocalizations l10n,
   ) {
-    final rows = wantedMovies(snapshot.value, scope, now);
-    final phases = ref.watch(searchStatusProvider);
-    final allPhase = phases[SearchStatusNotifier.allMissingKey];
+    // Computed once per library and scope; scrolling never sorts again.
+    final rows = ref.watch(wantedMoviesProvider(scope));
+    final allPhase = ref.watch(
+      searchPhaseProvider(SearchStatusNotifier.allMissingKey),
+    );
     final offline = snapshot.isOffline;
     final allBusy =
-        allPhase != null &&
-        allPhase != SearchPhase.done &&
-        allPhase != SearchPhase.failed;
+        allPhase == SearchPhase.starting ||
+        allPhase == SearchPhase.queued ||
+        allPhase == SearchPhase.searching;
     final (allText, allIcon) = switch (allPhase) {
       SearchPhase.starting => (
         l10n.radarrSearchStarting,
@@ -122,68 +125,78 @@ class MissingPage extends ConsumerWidget {
         Icons.check_circle_outline,
       ),
       SearchPhase.failed => (l10n.radarrSearchFailed, Icons.error_outline),
+      SearchPhase.stillRunning => (
+        l10n.radarrSearchStillRunning,
+        Icons.schedule,
+      ),
       null => (null, null),
     };
+    // Upcoming movies cannot be found yet: "search all" is not offered there.
+    final canSearchAll = scope != WantedScope.upcoming && rows.isNotEmpty;
+    final head = <Widget>[
+      if (offline)
+        Padding(
+          padding: const EdgeInsets.only(bottom: ConsolarrSpacing.sm),
+          child: offlineBanner(
+            context,
+            fetchedAt: snapshot.fetchedAt,
+            now: now,
+            onRetry: refresh,
+          ),
+        ),
+      Wrap(
+        spacing: ConsolarrSpacing.sm,
+        children: [
+          for (final s in WantedScope.values)
+            ChoiceChip(
+              label: Text(scopeText(l10n, s)),
+              selected: s == scope,
+              materialTapTargetSize: MaterialTapTargetSize.padded,
+              onSelected: (_) => ref.read(wantedScopeProvider.notifier).set(s),
+            ),
+        ],
+      ),
+      if (canSearchAll)
+        Padding(
+          padding: const EdgeInsets.only(top: ConsolarrSpacing.sm),
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: OutlinedButton.icon(
+              onPressed: offline || allBusy
+                  ? null
+                  : () => _confirmAll(context, ref),
+              icon: const Icon(Icons.search),
+              label: Text(l10n.radarrSearchAllMissing),
+            ),
+          ),
+        ),
+      if (allText != null)
+        Padding(
+          padding: const EdgeInsets.only(top: ConsolarrSpacing.sm),
+          child: Semantics(
+            liveRegion: true,
+            child: StatusChip(
+              label: allText,
+              icon: allIcon!,
+              tone: allPhase == SearchPhase.failed
+                  ? StatusTone.error
+                  : allPhase == SearchPhase.done
+                  ? StatusTone.success
+                  : StatusTone.info,
+            ),
+          ),
+        ),
+    ];
     return RefreshIndicator(
       onRefresh: refresh,
-      child: ListView(
+      child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: padding,
-        children: [
-          if (offline)
-            Padding(
-              padding: const EdgeInsets.only(bottom: ConsolarrSpacing.sm),
-              child: offlineBanner(
-                context,
-                fetchedAt: snapshot.fetchedAt,
-                now: now,
-                onRetry: refresh,
-              ),
-            ),
-          Wrap(
-            spacing: ConsolarrSpacing.sm,
-            children: [
-              for (final s in WantedScope.values)
-                ChoiceChip(
-                  label: Text(scopeText(l10n, s)),
-                  selected: s == scope,
-                  onSelected: (_) =>
-                      ref.read(wantedScopeProvider.notifier).set(s),
-                ),
-            ],
-          ),
-          if (rows.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: ConsolarrSpacing.sm),
-              child: Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: OutlinedButton.icon(
-                  onPressed: offline || allBusy
-                      ? null
-                      : () => _confirmAll(context, ref),
-                  icon: const Icon(Icons.search),
-                  label: Text(l10n.radarrSearchAllMissing),
-                ),
-              ),
-            ),
-          if (allText != null)
-            Padding(
-              padding: const EdgeInsets.only(top: ConsolarrSpacing.sm),
-              child: Semantics(
-                liveRegion: true,
-                child: StatusChip(
-                  label: allText,
-                  icon: allIcon!,
-                  tone: allPhase == SearchPhase.failed
-                      ? StatusTone.error
-                      : allPhase == SearchPhase.done
-                      ? StatusTone.success
-                      : StatusTone.info,
-                ),
-              ),
-            ),
-          if (rows.isEmpty)
-            SizedBox(
+        itemCount: head.length + (rows.isEmpty ? 1 : rows.length),
+        itemBuilder: (context, i) {
+          if (i < head.length) return head[i];
+          if (rows.isEmpty) {
+            return SizedBox(
               height: 320,
               child: EmptyState(
                 icon: Icons.task_alt,
@@ -196,20 +209,20 @@ class MissingPage extends ConsumerWidget {
                   _ => l10n.radarrMissingEmptyMessage,
                 },
               ),
-            )
-          else
-            for (final m in rows)
-              Padding(
-                padding: const EdgeInsets.only(top: ConsolarrSpacing.sm),
-                child: _MissingRow(
-                  key: ValueKey(m.id),
-                  movie: m,
-                  now: now,
-                  phase: phases[m.id],
-                  offline: offline,
-                ),
-              ),
-        ],
+            );
+          }
+          final m = rows[i - head.length];
+          return Padding(
+            padding: const EdgeInsets.only(top: ConsolarrSpacing.sm),
+            child: _MissingRow(
+              key: ValueKey(m.id),
+              movie: m,
+              now: now,
+              offline: offline,
+              searchable: scope != WantedScope.upcoming,
+            ),
+          );
+        },
       ),
     );
   }
@@ -239,56 +252,70 @@ class MissingPage extends ConsumerWidget {
   }
 }
 
+/// How a search [phase] shows on the shared search control.
+ArrSearchStatus searchStatusOf(SearchPhase? phase) => switch (phase) {
+  null => ArrSearchStatus.idle,
+  SearchPhase.starting ||
+  SearchPhase.queued ||
+  SearchPhase.searching => ArrSearchStatus.searching,
+  SearchPhase.done => ArrSearchStatus.finished,
+  SearchPhase.failed => ArrSearchStatus.failed,
+  SearchPhase.stillRunning => ArrSearchStatus.stillRunning,
+};
+
+/// The localized strings of the shared search control for [title].
+ArrSearchLabels searchLabels(AppLocalizations l10n, String title) =>
+    ArrSearchLabels(
+      search: l10n.radarrSearchMovieNamed(title),
+      searching: l10n.radarrSearchRunning,
+      grabbed: l10n.radarrSearchDone,
+      nothingFound: l10n.radarrSearchDone,
+      failed: l10n.radarrSearchFailed,
+      retry: l10n.radarrRetry,
+      finished: l10n.radarrSearchDone,
+      stillRunning: l10n.radarrSearchStillRunning,
+    );
+
 class _MissingRow extends ConsumerWidget {
   const _MissingRow({
     required this.movie,
     required this.now,
-    required this.phase,
     required this.offline,
+    required this.searchable,
     super.key,
   });
 
   final RadarrMovie movie;
   final DateTime now;
-  final SearchPhase? phase;
   final bool offline;
+  final bool searchable;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    // Only this row rebuilds when its own search changes.
+    final phase = ref.watch(searchPhaseProvider(movie.id));
     final a = availabilityOf(movie, now);
-    final busy =
-        phase != null &&
-        phase != SearchPhase.done &&
-        phase != SearchPhase.failed;
-    final phaseText = switch (phase) {
-      SearchPhase.starting => l10n.radarrSearchStarting,
-      SearchPhase.queued => l10n.radarrSearchQueued,
-      SearchPhase.searching => l10n.radarrSearchRunning,
-      SearchPhase.done => l10n.radarrSearchDone,
-      SearchPhase.failed => l10n.radarrSearchFailed,
-      null => null,
-    };
     return MediaListTile(
       title: movie.title,
       metadata: [
         if (movie.year != null) '${movie.year}',
         availabilityText(l10n, a),
-        ?phaseText,
       ],
       semanticsLabel: l10n.radarrMissingRowSemantics(
         movie.title,
-        [availabilityText(l10n, a), ?phaseText].join(', '),
+        availabilityText(l10n, a),
       ),
       onTap: () => openMovie(context, movie.id),
-      trailing: IconButton(
-        tooltip: l10n.radarrSearchMovieNamed(movie.title),
-        icon: busy ? const Icon(Icons.hourglass_top) : const Icon(Icons.search),
-        onPressed: offline || busy
-            ? null
-            : () =>
+      trailing: !searchable
+          ? null
+          : ArrSearchButton(
+              status: searchStatusOf(phase),
+              labels: searchLabels(l10n, movie.title),
+              enabled: !offline,
+              onSearch: () =>
                   ref.read(searchStatusProvider.notifier).searchMovie(movie.id),
-      ),
+            ),
     );
   }
 }

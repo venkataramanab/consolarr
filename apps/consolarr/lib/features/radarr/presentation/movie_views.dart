@@ -149,6 +149,16 @@ double listRowExtent(double textScale) =>
 /// Two title lines, two metadata lines and the tile padding, at scale 1.0.
 const double _listRowBase = 112;
 
+/// Columns of the poster grid for [width] (the same rule as
+/// `SliverGridDelegateWithMaxCrossAxisExtent`).
+int gridColumns(double width) =>
+    (width / (posterMaxExtent + ConsolarrSpacing.sm)).ceil().clamp(1, 12);
+
+/// Height of a poster tile: 2:3 artwork at text scale 1, growing with the
+/// text size so the title, year and badges drawn over it never clip.
+double gridTileExtent(double tileWidth, double textScale) =>
+    tileWidth * 1.5 * (1 + 0.5 * (textScale.clamp(1.0, 3.0) - 1));
+
 /// Where each group starts, for the jump control (RAD-01).
 List<double> groupOffsets(
   List<MovieGroup> groups, {
@@ -158,10 +168,12 @@ List<double> groupOffsets(
 }) {
   final out = <double>[];
   var offset = 0.0;
-  final columns = (width / posterMaxExtent).ceil().clamp(1, 12);
+  final columns = gridColumns(width);
   const gap = ConsolarrSpacing.sm;
   final tileWidth = (width - (columns - 1) * gap) / columns;
-  final rowExtent = grid ? tileWidth * 1.5 + gap : listRowExtent(textScale);
+  final rowExtent = grid
+      ? gridTileExtent(tileWidth, textScale) + gap
+      : listRowExtent(textScale);
   for (final g in groups) {
     out.add(offset);
     final header = g.label.isEmpty ? 0.0 : groupHeaderHeight;
@@ -190,7 +202,22 @@ class MovieGroupsSliver extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final extent = listRowExtent(MediaQuery.textScalerOf(context).scale(1));
+    final scale = MediaQuery.textScalerOf(context).scale(1);
+    final extent = listRowExtent(scale);
+    if (!grid) return _slivers(extent, null);
+    return SliverLayoutBuilder(
+      builder: (context, constraints) {
+        final columns = gridColumns(constraints.crossAxisExtent);
+        final tileWidth =
+            (constraints.crossAxisExtent -
+                (columns - 1) * ConsolarrSpacing.sm) /
+            columns;
+        return _slivers(extent, gridTileExtent(tileWidth, scale));
+      },
+    );
+  }
+
+  Widget _slivers(double extent, double? tileExtent) {
     return SliverMainAxisGroup(
       slivers: [
         for (final g in groups) ...[
@@ -198,11 +225,11 @@ class MovieGroupsSliver extends StatelessWidget {
             SliverToBoxAdapter(child: _GroupHeader(label: g.label)),
           if (grid)
             SliverGrid(
-              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                 maxCrossAxisExtent: posterMaxExtent,
                 mainAxisSpacing: ConsolarrSpacing.sm,
                 crossAxisSpacing: ConsolarrSpacing.sm,
-                childAspectRatio: 2 / 3,
+                mainAxisExtent: tileExtent,
               ),
               delegate: SliverChildBuilderDelegate(
                 (context, i) => MoviePosterTile(
