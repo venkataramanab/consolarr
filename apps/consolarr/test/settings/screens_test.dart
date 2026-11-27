@@ -17,6 +17,7 @@ import 'package:consolarr/features/settings/presentation/settings_screen.dart';
 import 'package:consolarr/features/about/about_screen.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:l10n/l10n.dart';
@@ -291,6 +292,35 @@ void main() {
       expect(c.read(localeProvider), isNull);
     });
 
+    testWidgets('each endonym is spoken in its own language', (tester) async {
+      final handle = tester.ensureSemantics();
+      await _pump(tester, ScreenHarness(), const LanguageScreen());
+      final locales = <String, Locale?>{};
+      void visit(SemanticsNode n) {
+        final d = n.getSemanticsData();
+        if (d.label == 'العربية' || d.label == 'English') {
+          locales[d.label] = d.locale;
+        }
+        n.visitChildren((c) {
+          visit(c);
+          return true;
+        });
+      }
+
+      visit(
+        tester
+            .binding
+            .renderViews
+            .first
+            .owner!
+            .semanticsOwner!
+            .rootSemanticsNode!,
+      );
+      expect(locales['العربية'], const Locale('ar'));
+      expect(locales['English'], const Locale('en'));
+      handle.dispose();
+    });
+
     testWidgets('accessible across the stress variants', (tester) async {
       await pumpMatrix(
         tester,
@@ -517,9 +547,8 @@ void main() {
       }
     });
 
-    testWidgets('a long log is truncated in the address with a note', (
-      tester,
-    ) async {
+    testWidgets('the address carries a short summary and a note to attach '
+        'the file, never the log', (tester) async {
       final l10n = await _en();
       final lines = [
         for (var i = 0; i < 400; i++) 'line $i of a long running problem',
@@ -533,11 +562,18 @@ void main() {
       await tester.tap(find.text(l10n.diagOpenGithub));
       await tester.pumpAndSettle();
       final url = h.base.actions.opened.single;
+      expect(url.scheme, 'https');
+      expect(url.host, 'github.com');
       expect(
         url.toString().length,
         lessThanOrEqualTo(GithubIssueLink.maxUrlLength),
       );
-      expect(url.queryParameters['body'], contains(l10n.diagTruncationNote));
+      final body = url.queryParameters['body']!;
+      expect(body, contains(l10n.diagAttachNote));
+      expect(body, contains('Android API 34'));
+      expect(body, isNot(contains('line 399')));
+      expect(body, isNot(contains('long running problem')));
+      expect(body.length, lessThan(1000));
       // The shared file is complete.
       await tester.tap(find.text(l10n.diagShareFile));
       await tester.pumpAndSettle();

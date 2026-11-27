@@ -253,11 +253,15 @@ class ConnectionCheckState {
     this.serverId,
     this.running = false,
     this.result,
+    this.failed = false,
   });
 
   final String? serverId;
   final bool running;
   final ConnectionCheckResult? result;
+
+  /// The run stopped because of an unexpected error (not a failed step).
+  final bool failed;
 }
 
 final networkProbeProvider = Provider<NetworkProbe>(
@@ -287,25 +291,41 @@ class ConnectionCheckNotifier extends Notifier<ConnectionCheckState> {
       running: true,
       result: ConnectionCheckResult.pending(),
     );
-    final repo = ref.read(serverRepositoryProvider);
-    final entry = await repo.find(id);
-    if (!ref.mounted || generation != _generation) return;
-    if (entry == null) {
-      state = ConnectionCheckState(serverId: id);
-      return;
-    }
-    final credentials = await repo.loadCredentials(entry.profile);
-    final check = ConnectionCheck(
-      probe: ref.read(networkProbeProvider),
-      tester: ref.read(healthTesterProvider),
-    );
-    await for (final result in check.run(entry.profile, credentials)) {
+    try {
+      final repo = ref.read(serverRepositoryProvider);
+      final entry = await repo.find(id);
       if (!ref.mounted || generation != _generation) return;
-      state = ConnectionCheckState(
-        serverId: id,
-        running: !result.finished,
-        result: result,
+      if (entry == null) {
+        state = ConnectionCheckState(serverId: id);
+        return;
+      }
+      final credentials = await repo.loadCredentials(entry.profile);
+      final check = ConnectionCheck(
+        probe: ref.read(networkProbeProvider),
+        tester: ref.read(healthTesterProvider),
       );
+      await for (final result in check.run(entry.profile, credentials)) {
+        if (!ref.mounted || generation != _generation) return;
+        state = ConnectionCheckState(
+          serverId: id,
+          running: !result.finished,
+          result: result,
+        );
+      }
+    } on Object {
+      // Never stay "running": show that the check could not finish.
+      if (ref.mounted && generation == _generation) {
+        state = ConnectionCheckState(serverId: id, failed: true);
+      }
+    } finally {
+      // A stream that ended without a finished result also ends the run.
+      if (ref.mounted && generation == _generation && state.running) {
+        state = ConnectionCheckState(
+          serverId: id,
+          result: state.result,
+          failed: state.result?.finished != true,
+        );
+      }
     }
   }
 }

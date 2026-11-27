@@ -51,10 +51,10 @@ class ConnectionCheckScreen extends ConsumerWidget {
     } else if (servers.hasError) {
       children = [
         ErrorState(
-          headline: l10n.checkLoadFailed,
+          headline: l10n.checkLoadFailedTitle,
           message: l10n.checkLoadFailed,
-          hint: l10n.checkLoadFailed,
-          retryLabel: l10n.checkRun,
+          hint: l10n.checkLoadFailedHint,
+          retryLabel: l10n.settingsRetry,
           onRetry: () => ref.invalidate(uiServersProvider),
         ),
       ];
@@ -103,6 +103,14 @@ class ConnectionCheckScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: ConsolarrSpacing.lg),
+          if (check.failed)
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                l10n.checkRunFailed,
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+            ),
           if (check.result != null) _Steps(result: check.result!),
         ];
       }

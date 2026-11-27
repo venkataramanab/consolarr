@@ -308,7 +308,7 @@ class DiagnosticsSection {
 /// what the shared file contains byte for byte ([bytes]) and what the GitHub
 /// issue body is built from. Nothing outside the sections is included.
 class DiagnosticsBundle {
-  const DiagnosticsBundle._(this.sections, this.text);
+  const DiagnosticsBundle._(this.sections, this.text, this.logIsEmpty);
 
   /// Section titles are English: the bundle is read by maintainers.
   factory DiagnosticsBundle.build({
@@ -355,11 +355,26 @@ class DiagnosticsBundle {
       'Consolarr diagnostics',
       for (final section in sections) '## ${section.title}\n${section.body}',
     ].join('\n\n');
-    return DiagnosticsBundle._(List.unmodifiable(sections), text);
+    return DiagnosticsBundle._(
+      List.unmodifiable(sections),
+      text,
+      entries.isEmpty,
+    );
   }
 
   final List<DiagnosticsSection> sections;
   final String text;
+
+  /// The log section has no lines (the log is off or empty).
+  final bool logIsEmpty;
+
+  /// A short summary for a pre-filled issue: every section except the log.
+  /// The full [text] travels as a shared file, never in an address.
+  String get summaryText => [
+    'Consolarr diagnostics',
+    for (final section in sections)
+      if (section.id != 'log') '## ${section.title}\n${section.body}',
+  ].join('\n\n');
 
   /// UTF-8 bytes of [text]: exactly what the share sheet receives.
   List<int> get bytes => utf8.encode(text);
@@ -372,14 +387,23 @@ abstract final class GithubIssueLink {
   /// below the common 8 KB limit.
   static const maxUrlLength = 6000;
 
+  /// The only host an issue address may point to.
+  static const expectedHost = 'github.com';
+
   static Uri build({
     required Uri repository,
     required String title,
     required String body,
     String truncationNote = '[truncated: attach the shared file]',
   }) {
-    if (repository.scheme != 'https' || repository.host.isEmpty) {
-      throw ArgumentError.value(repository, 'repository', 'must be https');
+    // Exactly https://github.com: the app never builds an address for any
+    // other host (a look-alike host or a plain-http address is refused).
+    if (repository.scheme != 'https' || repository.host != expectedHost) {
+      throw ArgumentError.value(
+        repository,
+        'repository',
+        'must be https://$expectedHost',
+      );
     }
     final base = repository.path.endsWith('/')
         ? repository.path.substring(0, repository.path.length - 1)

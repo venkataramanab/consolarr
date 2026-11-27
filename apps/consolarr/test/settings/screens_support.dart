@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:consolarr/features/servers/domain/server_repository.dart';
 import 'package:consolarr/features/servers/application/servers_providers.dart';
 import 'package:consolarr/features/servers/domain/server_models.dart';
 import 'package:consolarr/features/settings/application/connection_check.dart';
@@ -67,6 +68,9 @@ class ScreenHarness {
     List<ServerEntry> servers = const [],
     this.supportPending = false,
     bool recordingSinks = true,
+    this.serversStream,
+    this.healthTester,
+    this.uiServers,
   }) : base = SettingsHarness(
          stored: stored,
          auth: auth,
@@ -80,16 +84,27 @@ class ScreenHarness {
   final List<ServerEntry> serverList;
   final bool supportPending;
 
+  /// Replaces the stream behind `serversProvider` (errors, delays).
+  final Stream<List<ServerEntry>> Function()? serversStream;
+
+  /// Replaces the tester the connection check uses.
+  final ConnectionTester? healthTester;
+
+  /// Replaces the UI server list (for example an error).
+  final AsyncValue<List<ServerEntry>>? uiServers;
+
   List<Override> get overrides => [
     // Screens are shown after the first frame.
     firstFrameDoneProvider.overrideWith(_DoneFirstFrame.new),
     serverRepositoryProvider.overrideWithValue(ui.repo),
     connectionTesterProvider.overrideWithValue(ui.tester),
-    healthTesterProvider.overrideWithValue(ui.tester),
+    healthTesterProvider.overrideWithValue(healthTester ?? ui.tester),
     pinStoreProvider.overrideWithValue(ui.pins),
     ...base.overrides,
-    uiServersProvider.overrideWithValue(AsyncData(serverList)),
-    serversProvider.overrideWith((ref) => Stream.value(serverList)),
+    uiServersProvider.overrideWithValue(uiServers ?? AsyncData(serverList)),
+    serversProvider.overrideWith(
+      (ref) => serversStream?.call() ?? Stream.value(serverList),
+    ),
     networkProbeProvider.overrideWithValue(const OkProbe()),
     if (supportPending)
       deviceAuthSupportProvider.overrideWith(

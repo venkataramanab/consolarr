@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'dart:async';
+
 import 'package:consolarr/features/settings/application/diagnostics_providers.dart';
 import 'package:consolarr/features/settings/application/settings_providers.dart';
 import 'package:consolarr/features/settings/presentation/settings_page.dart';
 import 'package:consolarr/features/settings/settings_paths.dart';
 import 'package:design_system/design_system.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:l10n/l10n.dart';
@@ -58,7 +61,31 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen> {
         ],
       ),
     );
-    if (ok ?? false) ref.read(diagnosticsLogViewProvider.notifier).clear();
+    if (ok ?? false) {
+      ref.read(diagnosticsLogViewProvider.notifier).clear();
+      _announce(l10n.diagAnnounceCleared);
+    }
+  }
+
+  /// Said once on a change of state (on, off, cleared); the running count is
+  /// not a live region.
+  void _announce(String message) {
+    if (!mounted) return;
+    unawaited(
+      SemanticsService.sendAnnouncement(
+        View.of(context),
+        message,
+        Directionality.of(context),
+      ),
+    );
+  }
+
+  Future<void> _setEnabled(bool value) async {
+    final l10n = context.l10n;
+    final stored = await ref
+        .read(settingsProvider.notifier)
+        .setDiagnosticsEnabled(value);
+    if (stored) _announce(value ? l10n.diagAnnounceOn : l10n.diagAnnounceOff);
   }
 
   @override
@@ -70,10 +97,17 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen> {
     final settings = ref.watch(settingsProvider);
     final notifier = ref.read(settingsProvider.notifier);
     final bottom = MediaQuery.paddingOf(context).bottom;
-    final shown = [
-      for (final e in view.entries)
-        if (_filter == null || e.level == _filter) e,
-    ].reversed.toList();
+    // Newest first. The rows are read lazily from the buffer; only the
+    // indexes of matching lines are kept when a level filter is on.
+    final matches = _filter == null
+        ? null
+        : [
+            for (var i = view.length - 1; i >= 0; i--)
+              if (view.entryAt(i).level == _filter) i,
+          ];
+    final shownCount = matches?.length ?? view.length;
+    LogEntry entryFor(int row) =>
+        view.entryAt(matches == null ? view.length - 1 - row : matches[row]);
 
     Widget status;
     if (!view.enabled) {
@@ -82,13 +116,13 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen> {
         headline: l10n.diagOffTitle,
         message: l10n.diagOffBody,
       );
-    } else if (view.entries.isEmpty) {
+    } else if (view.isEmpty) {
       status = EmptyState(
         icon: Icons.hourglass_empty,
         headline: l10n.diagEmptyTitle,
         message: l10n.diagEmptyBody,
       );
-    } else if (shown.isEmpty) {
+    } else if (shownCount == 0) {
       status = EmptyState(
         icon: Icons.filter_alt_off_outlined,
         headline: l10n.diagFilterEmptyTitle,
@@ -122,7 +156,7 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen> {
                           title: l10n.diagLogSwitch,
                           icon: Icons.receipt_long_outlined,
                           value: settings.diagnosticsEnabled,
-                          onChanged: notifier.setDiagnosticsEnabled,
+                          onChanged: _setEnabled,
                         ),
                         ChoiceSheetRow<LogLevel>(
                           title: l10n.diagLevelTitle,
@@ -162,8 +196,10 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen> {
                       Row(
                         children: [
                           Expanded(
+                            // Not a live region: the count changes with every
+                            // log line. State changes are announced instead.
                             child: Semantics(
-                              liveRegion: true,
+                              container: true,
                               child: Row(
                                 children: [
                                   const ExcludeSemantics(
@@ -175,7 +211,7 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen> {
                                   const SizedBox(width: ConsolarrSpacing.sm),
                                   Flexible(
                                     child: Text(
-                                      l10n.diagCapturing(view.entries.length),
+                                      l10n.diagCapturing(view.length),
                                       style: theme.textTheme.labelLarge,
                                     ),
                                   ),
@@ -189,9 +225,7 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen> {
                                 TouchTargets.of(context).minimum,
                               ),
                             ),
-                            onPressed: view.entries.isEmpty
-                                ? null
-                                : _confirmClear,
+                            onPressed: view.isEmpty ? null : _confirmClear,
                             child: Text(l10n.diagClear),
                           ),
                         ],
@@ -233,7 +267,7 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen> {
                   ],
                 ),
               ),
-              if (!view.enabled || view.entries.isEmpty || shown.isEmpty)
+              if (!view.enabled || view.isEmpty || shownCount == 0)
                 SliverToBoxAdapter(child: SizedBox(height: 260, child: status))
               else
                 SliverPadding(
@@ -244,9 +278,9 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen> {
                     ConsolarrSpacing.lg + bottom,
                   ),
                   sliver: SliverList.builder(
-                    itemCount: shown.length,
+                    itemCount: shownCount,
                     itemBuilder: (context, i) {
-                      final e = shown[i];
+                      final e = entryFor(i);
                       final time = MaterialLocalizations.of(context)
                           .formatTimeOfDay(
                             TimeOfDay.fromDateTime(e.time.toLocal()),

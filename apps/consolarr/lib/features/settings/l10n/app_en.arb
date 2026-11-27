@@ -421,7 +421,7 @@
   "@diagOpenGithub": {
     "description": "Button that opens a pre-filled GitHub issue in the browser."
   },
-  "diagGithubNote": "Opens github.com in your browser with this text filled in. Long text is shortened; attach the shared file to the issue.",
+  "diagGithubNote": "Opens github.com in your browser with a short summary filled in. The full text is not put in the address: share the file first and attach it to the issue.",
   "@diagGithubNote": {
     "description": "Explains what the GitHub issue button does."
   },
@@ -686,5 +686,45 @@
   "a11yTransparencySubtitle": "Use solid backgrounds instead of frosted glass. Always on with high contrast.",
   "@a11yTransparencySubtitle": {
     "description": "Explanation under the reduce transparency switch."
+  },
+  "settingsRetry": "Try again",
+  "@settingsRetry": {
+    "description": "Retry button on settings screens that failed to load."
+  },
+  "diagLoadFailedTitle": "Diagnostics unavailable",
+  "@diagLoadFailedTitle": {
+    "description": "Error headline on the diagnostics preview when the bundle could not be prepared."
+  },
+  "diagLoadFailedHint": "Nothing was shared. Try again; if it keeps failing, restart the app.",
+  "@diagLoadFailedHint": {
+    "description": "Hint under the diagnostics preview error: nothing was shared and what to do."
+  },
+  "checkLoadFailedTitle": "Connection check unavailable",
+  "@checkLoadFailedTitle": {
+    "description": "Error headline on the connection check when the server list could not be read."
+  },
+  "checkLoadFailedHint": "Try again; if it keeps failing, restart the app.",
+  "@checkLoadFailedHint": {
+    "description": "Hint under the connection check error."
+  },
+  "checkRunFailed": "The check could not finish. Run it again.",
+  "@checkRunFailed": {
+    "description": "Shown when the connection check stopped because of an unexpected problem."
+  },
+  "diagAttachNote": "Please attach the diagnostics file that you shared from Consolarr to this issue.",
+  "@diagAttachNote": {
+    "description": "Line in the pre-filled GitHub issue asking the reporter to attach the shared diagnostics file."
+  },
+  "diagAnnounceOn": "Log capture is on",
+  "@diagAnnounceOn": {
+    "description": "Announced by the screen reader when the in-app log is switched on."
+  },
+  "diagAnnounceOff": "Log capture is off and the log was deleted",
+  "@diagAnnounceOff": {
+    "description": "Announced by the screen reader when the in-app log is switched off."
+  },
+  "diagAnnounceCleared": "Log cleared",
+  "@diagAnnounceCleared": {
+    "description": "Announced by the screen reader after the in-app log was cleared."
   }
 }

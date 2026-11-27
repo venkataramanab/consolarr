@@ -71,14 +71,18 @@ class LanguageScreen extends ConsumerWidget {
           children: [
             option(label: l10n.languageFollowSystem, value: null),
             for (final locale in shippedLanguages())
-              // The endonym is shown in its own language and direction.
-              Directionality(
-                textDirection: locale.languageCode == 'ar'
-                    ? TextDirection.rtl
-                    : TextDirection.ltr,
-                child: option(
-                  label: languageName(locale.languageCode),
-                  value: locale.languageCode,
+              // The endonym is shown in its own language and direction, and a
+              // screen reader pronounces it in that language.
+              Semantics(
+                localeForSubtree: Locale(locale.languageCode),
+                child: Directionality(
+                  textDirection: locale.languageCode == 'ar'
+                      ? TextDirection.rtl
+                      : TextDirection.ltr,
+                  child: option(
+                    label: languageName(locale.languageCode),
+                    value: locale.languageCode,
+                  ),
                 ),
               ),
           ],

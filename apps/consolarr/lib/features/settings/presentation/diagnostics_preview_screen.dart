@@ -55,7 +55,9 @@ class _DiagnosticsPreviewScreenState
     final uri = GithubIssueLink.build(
       repository: sourceRepositoryUri,
       title: l10n.diagIssueTitle,
-      body: bundle.text,
+      // A short summary and a request to attach the shared file: the full
+      // bundle never goes into an address.
+      body: '${bundle.summaryText}\n\n${l10n.diagAttachNote}',
       truncationNote: l10n.diagTruncationNote,
     );
     final opened = await ref.read(externalActionsProvider).openHttps(uri);
@@ -90,10 +92,10 @@ class _DiagnosticsPreviewScreenState
     } else if (bundle.hasError) {
       children = [
         ErrorState(
-          headline: l10n.diagLoadFailed,
+          headline: l10n.diagLoadFailedTitle,
           message: l10n.diagLoadFailed,
-          hint: l10n.diagLoadFailed,
-          retryLabel: l10n.diagPreviewTitle,
+          hint: l10n.diagLoadFailedHint,
+          retryLabel: l10n.settingsRetry,
           onRetry: () => ref.invalidate(diagnosticsBundleProvider),
         ),
       ];
@@ -143,7 +145,7 @@ class _DiagnosticsPreviewScreenState
               ],
             ),
           ),
-        if (b.sections.last.body == '(empty)')
+        if (b.logIsEmpty)
           Padding(
             padding: const EdgeInsets.only(bottom: ConsolarrSpacing.md),
             child: Text(

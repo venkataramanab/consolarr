@@ -9,23 +9,48 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:observability/observability.dart';
 
-/// What the diagnostics screen shows of the in-app log.
+/// What the diagnostics screen shows of the in-app log: the state plus a lazy
+/// window onto the circular buffer. Rows are read with [entryAt] while the
+/// view is current; nothing is copied when a line is added.
 @immutable
 class DiagnosticsLogView {
   const DiagnosticsLogView({
+    required this.log,
     required this.enabled,
     required this.level,
-    required this.entries,
+    required this.version,
+    required this.length,
   });
 
+  final DiagnosticsLog log;
   final bool enabled;
   final LogLevel level;
 
-  /// Oldest first.
-  final List<LogEntry> entries;
+  /// Changes with every added or removed line.
+  final int version;
+
+  /// Number of stored lines.
+  final int length;
+
+  bool get isEmpty => length == 0;
+
+  /// The line at [index], 0 being the oldest.
+  LogEntry entryAt(int index) => log.entryAt(index);
+
+  @override
+  bool operator ==(Object other) =>
+      other is DiagnosticsLogView &&
+      identical(other.log, log) &&
+      other.version == version &&
+      other.enabled == enabled &&
+      other.level == level;
+
+  @override
+  int get hashCode => Object.hash(log, version, enabled, level);
 }
 
-/// Mirrors [DiagnosticsLog] for widgets (it is a plain Dart object).
+/// Mirrors [DiagnosticsLog] for widgets (it is a plain Dart object). It
+/// auto-disposes, so nothing listens (or rebuilds) while the screen is closed.
 class DiagnosticsLogNotifier extends Notifier<DiagnosticsLogView> {
   @override
   DiagnosticsLogView build() {
@@ -37,16 +62,18 @@ class DiagnosticsLogNotifier extends Notifier<DiagnosticsLogView> {
   }
 
   DiagnosticsLogView _view(DiagnosticsLog log) => DiagnosticsLogView(
+    log: log,
     enabled: log.enabled,
     level: log.level,
-    entries: log.entries,
+    version: log.version,
+    length: log.length,
   );
 
   void clear() => ref.read(diagnosticsLogProvider).clear();
 }
 
 final diagnosticsLogViewProvider =
-    NotifierProvider<DiagnosticsLogNotifier, DiagnosticsLogView>(
+    NotifierProvider.autoDispose<DiagnosticsLogNotifier, DiagnosticsLogView>(
       DiagnosticsLogNotifier.new,
     );
 
@@ -69,7 +96,11 @@ List<String> errorCategoriesFrom(Breadcrumbs crumbs) {
 final diagnosticsBundleProvider = FutureProvider.autoDispose<DiagnosticsBundle>(
   (ref) async {
     final settings = ref.watch(settingsProvider);
-    final servers = ref.watch(serversProvider).value ?? const [];
+    // The known values (server names, hosts, user names) are scrubbed on top
+    // of the pattern rules, so the bundle is never built without them: while
+    // the list loads this waits, and if it fails the bundle fails (the screen
+    // shows the error state) instead of being built unscrubbed.
+    final servers = await ref.watch(serversProvider.future);
     final repo = ref.watch(serverRepositoryProvider);
     final known = <String>[];
     for (final s in servers) {

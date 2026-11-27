@@ -299,6 +299,33 @@ void main() {
     });
   });
 
+  group('summary', () {
+    test('summaryText has every section but the log', () {
+      final bundle = DiagnosticsBundle.build(
+        info: const DiagnosticsInfo(
+          appVersion: '1.0.0+1',
+          buildMode: 'release',
+          platform: 'Android API 34',
+          locale: 'en',
+        ),
+        errorCategories: const ['timeout'],
+        entries: [
+          LogEntry(
+            time: DateTime.utc(2026),
+            level: LogLevel.info,
+            message: 'secret log line',
+          ),
+        ],
+      );
+      expect(bundle.logIsEmpty, isFalse);
+      expect(bundle.summaryText, contains('Android API 34'));
+      expect(bundle.summaryText, contains('timeout'));
+      expect(bundle.summaryText, isNot(contains('secret log line')));
+      expect(bundle.summaryText, isNot(contains('## Log')));
+      expect(bundle.text, contains('secret log line'));
+    });
+  });
+
   group('GithubIssueLink', () {
     final repo = Uri.parse('https://github.com/example-owner/example-repo');
 
@@ -327,6 +354,34 @@ void main() {
         lessThanOrEqualTo(GithubIssueLink.maxUrlLength),
       );
       expect(uri.queryParameters['body'], contains('ATTACH THE FILE'));
+    });
+
+    test('only exactly https://github.com is accepted', () {
+      for (final bad in [
+        'https://github.com.evil.example/a/b',
+        'https://evil-github.com/a/b',
+        'https://GITHUB.com.example/a/b',
+        'https://example.com/a/b',
+        'https://user@github.example/a/b',
+        'ftp://github.com/a/b',
+      ]) {
+        expect(
+          () => GithubIssueLink.build(
+            repository: Uri.parse(bad),
+            title: 't',
+            body: 'b',
+          ),
+          throwsArgumentError,
+          reason: bad,
+        );
+      }
+      final ok = GithubIssueLink.build(
+        repository: Uri.parse('https://github.com/a/b'),
+        title: 't',
+        body: 'b',
+      );
+      expect(ok.scheme, 'https');
+      expect(ok.host, 'github.com');
     });
 
     test('refuses a non-https repository', () {

@@ -4,7 +4,6 @@ import 'dart:async';
 
 import 'package:consolarr/features/settings/application/lock_controller.dart';
 import 'package:consolarr/features/settings/application/settings_providers.dart';
-import 'package:consolarr/src/platform/secure_screen.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

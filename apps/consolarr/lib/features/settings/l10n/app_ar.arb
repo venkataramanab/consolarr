@@ -421,7 +421,7 @@
   "@diagOpenGithub": {
     "description": "Button that opens a pre-filled GitHub issue in the browser."
   },
-  "diagGithubNote": "يفتح github.com في المتصفح مع هذا النص. يُقتطع النص الطويل؛ أرفق الملف المشارك بالمشكلة.",
+  "diagGithubNote": "يفتح github.com في المتصفح مع ملخص قصير. لا يوضع النص الكامل في العنوان: شارك الملف أولًا وأرفقه بالمشكلة.",
   "@diagGithubNote": {
     "description": "Explains what the GitHub issue button does."
   },
@@ -686,5 +686,45 @@
   "a11yTransparencySubtitle": "استخدم خلفيات صلبة بدل الزجاج الشفاف. تكون مفعّلة دائمًا مع التباين العالي.",
   "@a11yTransparencySubtitle": {
     "description": "Explanation under the reduce transparency switch."
+  },
+  "settingsRetry": "حاول مجددًا",
+  "@settingsRetry": {
+    "description": "Retry button on settings screens that failed to load."
+  },
+  "diagLoadFailedTitle": "التشخيص غير متاح",
+  "@diagLoadFailedTitle": {
+    "description": "Error headline on the diagnostics preview when the bundle could not be prepared."
+  },
+  "diagLoadFailedHint": "لم تتم مشاركة أي شيء. حاول مجددًا، وإن استمر الخطأ فأعد تشغيل التطبيق.",
+  "@diagLoadFailedHint": {
+    "description": "Hint under the diagnostics preview error: nothing was shared and what to do."
+  },
+  "checkLoadFailedTitle": "فحص الاتصال غير متاح",
+  "@checkLoadFailedTitle": {
+    "description": "Error headline on the connection check when the server list could not be read."
+  },
+  "checkLoadFailedHint": "حاول مجددًا، وإن استمر الخطأ فأعد تشغيل التطبيق.",
+  "@checkLoadFailedHint": {
+    "description": "Hint under the connection check error."
+  },
+  "checkRunFailed": "تعذر إنهاء الفحص. شغّله مجددًا.",
+  "@checkRunFailed": {
+    "description": "Shown when the connection check stopped because of an unexpected problem."
+  },
+  "diagAttachNote": "يرجى إرفاق ملف التشخيص الذي شاركته من كونسولار بهذه المشكلة.",
+  "@diagAttachNote": {
+    "description": "Line in the pre-filled GitHub issue asking the reporter to attach the shared diagnostics file."
+  },
+  "diagAnnounceOn": "تم تشغيل تسجيل السجل",
+  "@diagAnnounceOn": {
+    "description": "Announced by the screen reader when the in-app log is switched on."
+  },
+  "diagAnnounceOff": "تم إيقاف تسجيل السجل وحذف السجل",
+  "@diagAnnounceOff": {
+    "description": "Announced by the screen reader when the in-app log is switched off."
+  },
+  "diagAnnounceCleared": "تم مسح السجل",
+  "@diagAnnounceCleared": {
+    "description": "Announced by the screen reader after the in-app log was cleared."
   }
 }
