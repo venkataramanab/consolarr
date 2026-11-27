@@ -187,26 +187,41 @@ class SonarrClient extends ArrClientBase implements SonarrApi {
     required bool monitored,
   }) => guard(() async {
     if (episodeIds.isEmpty) return;
-    try {
-      await _send(
-        'PUT',
-        uri('api/v3/episode/monitor'),
-        body: {'episodeIds': episodeIds, 'monitored': monitored},
-      );
-    } on DioException catch (e) {
-      final code = e.response?.statusCode;
-      if (code != 404 && code != 405) rethrow;
-      // Older servers: update each episode resource instead.
-      for (final id in episodeIds) {
-        final current = _object(await _get('api/v3/episode/$id'));
+    if (!_bulkMonitorMissing) {
+      try {
         await _send(
           'PUT',
-          uri('api/v3/episode/$id'),
-          body: {...current, 'monitored': monitored},
+          uri('api/v3/episode/monitor'),
+          body: {'episodeIds': episodeIds, 'monitored': monitored},
         );
+        return;
+      } on DioException catch (e) {
+        final code = e.response?.statusCode;
+        if (code != 404 && code != 405) rethrow;
+        // Remembered for this client (one per server session): do not probe
+        // the missing endpoint again.
+        _bulkMonitorMissing = true;
       }
     }
+    // Older servers: one GET and one PUT per episode. Bounded, so a whole
+    // series can never turn into hundreds of requests.
+    if (episodeIds.length > maxFallbackEpisodes) {
+      throw const AppError(ErrorCategory.requestTooLarge);
+    }
+    for (final id in episodeIds) {
+      final current = _object(await _get('api/v3/episode/$id'));
+      await _send(
+        'PUT',
+        uri('api/v3/episode/$id'),
+        body: {...current, 'monitored': monitored},
+      );
+    }
   });
+
+  /// Most episodes changed one by one on a server without the bulk endpoint.
+  static const maxFallbackEpisodes = 50;
+
+  bool _bulkMonitorMissing = false;
 
   // --- calendar, queue, wanted ---------------------------------------------------
 

@@ -84,6 +84,10 @@ SonarrErrorCopy sonarrErrorCopy(AppLocalizations l10n, AppError error) {
       l10n.sonarrErrorCleartextHint,
       fix: true,
     ),
+    ErrorCategory.requestTooLarge => generic(
+      l10n.sonarrErrorRequestTooLargeMessage,
+      l10n.sonarrErrorRequestTooLargeHint,
+    ),
     ErrorCategory.redirectRefused || ErrorCategory.responseTooLarge => generic(
       l10n.sonarrErrorGenericMessage,
       l10n.sonarrErrorGenericHint,

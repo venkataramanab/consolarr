@@ -216,6 +216,72 @@ void main() {
       });
     }
 
+    group('fallback is bounded and remembered', () {
+      FakeAdapter noBulk() => FakeAdapter((o) {
+        if (o.uri.path.endsWith('/episode/monitor')) {
+          return FakeAdapter.reply('', status: 404);
+        }
+        if (o.method == 'GET') {
+          return FakeAdapter.reply(jsonEncode({'id': 1, 'monitored': false}));
+        }
+        return FakeAdapter.reply('{}');
+      });
+
+      test(
+        '300 ids: one probe, no per-episode requests, typed error',
+        () async {
+          final a = noBulk();
+          final r = await _client(a).setEpisodesMonitored([
+            for (var i = 1; i <= 300; i++) i,
+          ], monitored: true);
+          expect(r.errorOrNull?.category, ErrorCategory.requestTooLarge);
+          expect(a.requests, hasLength(1));
+        },
+      );
+
+      test('exactly the cap is allowed (1 probe + 2 per episode)', () async {
+        final a = noBulk();
+        const n = SonarrClient.maxFallbackEpisodes;
+        final r = await _client(a).setEpisodesMonitored([
+          for (var i = 1; i <= n; i++) i,
+        ], monitored: true);
+        expect(r.isOk, isTrue);
+        expect(a.requests, hasLength(1 + 2 * n));
+      });
+
+      test('a missing bulk endpoint is not probed again', () async {
+        final a = noBulk();
+        final c = _client(a);
+        await c.setEpisodesMonitored([1, 2], monitored: true);
+        expect(a.requests, hasLength(1 + 4));
+        a.requests.clear();
+        await c.setEpisodesMonitored([1, 2, 3], monitored: false);
+        expect(
+          a.requests.where((o) => o.uri.path.endsWith('/episode/monitor')),
+          isEmpty,
+        );
+        expect(a.requests, hasLength(6));
+        a.requests.clear();
+        final big = await c.setEpisodesMonitored([
+          for (var i = 1; i <= 300; i++) i,
+        ], monitored: true);
+        expect(big.errorOrNull?.category, ErrorCategory.requestTooLarge);
+        expect(a.requests, isEmpty);
+      });
+
+      test(
+        'a working bulk endpoint takes any number of ids in one PUT',
+        () async {
+          final a = FakeAdapter.fixed('{}');
+          final r = await _client(a).setEpisodesMonitored([
+            for (var i = 1; i <= 300; i++) i,
+          ], monitored: true);
+          expect(r.isOk, isTrue);
+          expect(a.requests, hasLength(1));
+        },
+      );
+    });
+
     test('other errors are not swallowed', () async {
       await _expectCategory(
         (c) => c.setEpisodesMonitored([1], monitored: true),

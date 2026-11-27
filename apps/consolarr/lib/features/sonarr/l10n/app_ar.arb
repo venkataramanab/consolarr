@@ -148,6 +148,14 @@
   "@sonarrErrorGenericHint": {
     "description": "Likely fix shown under the cause in the series library error state (Generic)."
   },
+  "sonarrErrorRequestTooLargeMessage": "لا يستطيع هذا الإصدار من Sonarr تغيير هذا العدد من الحلقات دفعة واحدة.",
+  "@sonarrErrorRequestTooLargeMessage": {
+    "description": "Cause shown when a bulk monitor change covers more episodes than an older Sonarr can take."
+  },
+  "sonarrErrorRequestTooLargeHint": "غيّر موسمًا أو بضع حلقات في كل مرة، أو حدّث Sonarr.",
+  "@sonarrErrorRequestTooLargeHint": {
+    "description": "Likely fix shown under the cause when a bulk monitor change is too large for an older Sonarr."
+  },
   "sonarrOfflineMessage": "غير متصل. يتم عرض المسلسلات المحفوظة.",
   "@sonarrOfflineMessage": {
     "description": "Message of the banner above cached series when Sonarr cannot be reached."

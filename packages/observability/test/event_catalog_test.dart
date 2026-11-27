@@ -138,9 +138,10 @@ void main() {
         'tls_expired',
         'redirect_refused',
         'response_too_large',
+        'request_too_large',
       ]),
     );
-    expect(ErrorCategoryParam.values, hasLength(13));
+    expect(ErrorCategoryParam.values, hasLength(14));
   });
 
   test('MVP events produce the documented parameters', () {

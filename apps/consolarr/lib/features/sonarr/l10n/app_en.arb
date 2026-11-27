@@ -148,6 +148,14 @@
   "@sonarrErrorGenericHint": {
     "description": "Likely fix shown under the cause in the series library error state (Generic)."
   },
+  "sonarrErrorRequestTooLargeMessage": "This Sonarr version cannot change that many episodes at once.",
+  "@sonarrErrorRequestTooLargeMessage": {
+    "description": "Cause shown when a bulk monitor change covers more episodes than an older Sonarr can take."
+  },
+  "sonarrErrorRequestTooLargeHint": "Change a season or a few episodes at a time, or update Sonarr.",
+  "@sonarrErrorRequestTooLargeHint": {
+    "description": "Likely fix shown under the cause when a bulk monitor change is too large for an older Sonarr."
+  },
   "sonarrOfflineMessage": "Offline. Showing your saved series.",
   "@sonarrOfflineMessage": {
     "description": "Message of the banner above cached series when Sonarr cannot be reached."
