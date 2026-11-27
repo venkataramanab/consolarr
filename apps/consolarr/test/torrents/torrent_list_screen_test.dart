@@ -6,7 +6,6 @@ import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:test_harness/test_harness.dart';
 import 'package:torrent_clients/torrent_clients.dart';
@@ -125,7 +124,14 @@ void main() {
             await tester.pumpAndSettle();
             expectNoFrameworkExceptions(tester, context: 'offline ${v.label}');
             expect(find.byType(OfflineBanner), findsOneWidget);
-            expect(find.byType(ProgressFillRow), findsWidgets);
+            // On small, large-text screens the banner and header fill the
+            // viewport; scroll so the dimmed rows are built.
+            await tester.drag(
+              find.byType(CustomScrollView),
+              const Offset(0, -500),
+            );
+            await tester.pumpAndSettle();
+            expect(find.byType(ProgressFillRow), findsWidgets, reason: v.label);
             if (v.textScale == 2) await expectAccessible(tester);
           },
         );

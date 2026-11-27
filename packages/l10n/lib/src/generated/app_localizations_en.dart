@@ -30,7 +30,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeEmptyBody =>
-      'Add a media server or download client to get started. This screen is a placeholder.';
+      'Add a media server or download client to get started.';
 
   @override
   String homeServerCount(int count) {
@@ -165,7 +165,456 @@ class AppLocalizationsEn extends AppLocalizations {
       'Enter an address like https://host:port without a username, password or key, and a path that starts with a slash.';
 
   @override
+  String get serversTitle => 'Servers';
+
+  @override
+  String get serversAddTooltip => 'Add a server';
+
+  @override
+  String get serversEmptyHeadline => 'No servers yet';
+
+  @override
+  String get serversEmptyMessage =>
+      'Add Sonarr or qBittorrent to browse your library and downloads from here.';
+
+  @override
+  String get serversEmptyAction => 'Add your first server';
+
+  @override
+  String get serversLoadErrorHeadline => 'Couldn\'t load your servers';
+
+  @override
+  String get serversLoadErrorMessage =>
+      'The saved servers could not be read from this device.';
+
+  @override
+  String get serversRetry => 'Try again';
+
+  @override
+  String get serversCancel => 'Cancel';
+
+  @override
+  String get serverKindSonarr => 'Sonarr';
+
+  @override
+  String get serverKindRadarr => 'Radarr';
+
+  @override
+  String get serverKindQbittorrent => 'qBittorrent';
+
+  @override
+  String get serverKindTransmission => 'Transmission';
+
+  @override
+  String get serverKindDeluge => 'Deluge';
+
+  @override
+  String get serverKindSonarrDescription => 'TV series library';
+
+  @override
+  String get serverKindQbittorrentDescription => 'Torrent downloads';
+
+  @override
+  String get serverKindOtherDescription => 'Not available yet';
+
+  @override
+  String get serverHealthChecking => 'Checking…';
+
+  @override
+  String get serverHealthHealthy => 'Online';
+
+  @override
+  String get serverHealthDegraded => 'Responding with problems';
+
+  @override
+  String get serverHealthUnauthorized => 'Sign-in failed';
+
+  @override
+  String get serverHealthUnreachable => 'Unreachable';
+
+  @override
+  String get serverHealthUnknown => 'Couldn\'t check';
+
+  @override
+  String get serverBadgeCleartext => 'Plain http';
+
+  @override
+  String get serverBadgeNeedsCredentials => 'Needs credentials';
+
+  @override
+  String get serverBadgeActive => 'Active';
+
+  @override
+  String get serverBadgeStartup => 'Opens at launch';
+
+  @override
+  String serverMenuTooltip(String name) {
+    return 'More actions for $name';
+  }
+
+  @override
+  String serverDragHandleLabel(String name) {
+    return 'Reorder $name';
+  }
+
+  @override
+  String get serverActionEdit => 'Edit';
+
+  @override
+  String get serverActionSetActive => 'Make active';
+
+  @override
+  String get serverActionSetStartup => 'Open at launch';
+
+  @override
+  String get serverActionClearStartup => 'Don\'t open at launch';
+
+  @override
+  String get serverActionMoveUp => 'Move up';
+
+  @override
+  String get serverActionMoveDown => 'Move down';
+
+  @override
+  String get serverActionDelete => 'Delete';
+
+  @override
+  String serverDeleteTitle(String name) {
+    return 'Delete $name?';
+  }
+
+  @override
+  String get serverDeleteBody =>
+      'This removes the saved credentials, the trusted certificate and the cached data for this server from this device. The server itself is not changed.';
+
+  @override
+  String get serverDeleteConfirm => 'Delete';
+
+  @override
+  String get serverEditorTitleNew => 'Add server';
+
+  @override
+  String get serverEditorTitleEdit => 'Edit server';
+
+  @override
+  String get serverEditorSave => 'Save';
+
+  @override
+  String get serverSaveFailedHeadline => 'Couldn\'t save the server';
+
+  @override
+  String get serverSectionService => 'Service';
+
+  @override
+  String get serverSectionAddress => 'Address';
+
+  @override
+  String get serverSectionAuth => 'Authentication';
+
+  @override
+  String get serverSectionHeaders => 'Custom headers';
+
+  @override
+  String get serverSectionSecurity => 'Security';
+
+  @override
+  String get serverFieldName => 'Display name';
+
+  @override
+  String get serverFieldAddress => 'Address';
+
+  @override
+  String get serverFieldAddressHint => 'https://host.example:8989';
+
+  @override
+  String get serverFieldPathPrefix => 'Path prefix (optional)';
+
+  @override
+  String get serverPathPrefixHelper =>
+      'Only needed if a reverse proxy serves the app under a path, for example /sonarr.';
+
+  @override
+  String get serverAuthNone => 'None';
+
+  @override
+  String get serverAuthApiKey => 'API key';
+
+  @override
+  String get serverAuthBasic => 'Username and password';
+
+  @override
+  String get serverFieldApiKey => 'API key';
+
+  @override
+  String get serverFieldUsername => 'Username';
+
+  @override
+  String get serverFieldPassword => 'Password';
+
+  @override
+  String get serverSecretKeepHint => 'Leave empty to keep the saved value.';
+
+  @override
+  String get serverSecretShow => 'Show value';
+
+  @override
+  String get serverSecretHide => 'Hide value';
+
+  @override
+  String get serverHeadersHelper =>
+      'For reverse-proxy gateways. Values are stored securely on this device.';
+
+  @override
+  String get serverHeaderName => 'Header name';
+
+  @override
+  String get serverHeaderValue => 'Header value';
+
+  @override
+  String get serverHeaderAdd => 'Add header';
+
+  @override
+  String get serverHeaderRemove => 'Remove header';
+
+  @override
+  String get serverCleartextTitle => 'Allow plain http';
+
+  @override
+  String get serverCleartextRisk =>
+      'Plain http sends your API key, password and every response without encryption, so anyone on the network can read them. Only allow it on a network you trust, such as your home network.';
+
+  @override
+  String get serverCleartextNeeded =>
+      'This address uses http. Turn on plain http, or use an https address.';
+
+  @override
+  String get serverErrorNameRequired => 'Enter a name for this server.';
+
+  @override
+  String get serverErrorAddressRequired => 'Enter the server address.';
+
+  @override
+  String get serverErrorAddressInvalid =>
+      'Enter a full address such as https://host.example:8989.';
+
+  @override
+  String get serverErrorAddressCredentials =>
+      'Don\'t put a username or password in the address. Use the fields below.';
+
+  @override
+  String get serverErrorAddressQuery =>
+      'Remove everything after the ? in the address. Keys belong in the key field.';
+
+  @override
+  String get serverErrorPrefixInvalid =>
+      'Use a path such as /sonarr, without spaces, ? or ...';
+
+  @override
+  String get serverErrorHeaderInvalid =>
+      'Header names may use letters, digits and - _ . only, and must be unique.';
+
+  @override
+  String get serverTestButton => 'Test connection';
+
+  @override
+  String get serverTestTesting => 'Testing…';
+
+  @override
+  String serverTestSuccess(String version) {
+    return 'Connected. Server version $version.';
+  }
+
+  @override
+  String get serverTestSuccessLabel => 'Connected';
+
+  @override
+  String get serverTestFailedLabel => 'Failed';
+
+  @override
+  String get serverPinTitle => 'Trusted certificate';
+
+  @override
+  String get serverPinFingerprint => 'SHA-256 fingerprint';
+
+  @override
+  String get serverPinRemove => 'Remove trusted certificate';
+
+  @override
+  String get serverPinRemoveTitle => 'Remove trusted certificate?';
+
+  @override
+  String get serverPinRemoveBody =>
+      'The next connection will ask you to review the server\'s certificate again.';
+
+  @override
+  String get serverPinRemoveConfirm => 'Remove';
+
+  @override
+  String get serverNeedsCredentialsBanner =>
+      'The saved credentials for this server are missing. Enter them again and save.';
+
+  @override
+  String get serverDiscardTitle => 'Discard changes?';
+
+  @override
+  String get serverDiscardBody =>
+      'Your changes to this server haven\'t been saved.';
+
+  @override
+  String get serverDiscardConfirm => 'Discard';
+
+  @override
+  String get serverDiscardKeep => 'Keep editing';
+
+  @override
+  String get certSheetTitleFirstUse => 'Trust this certificate?';
+
+  @override
+  String get certSheetExplanationFirstUse =>
+      'This server uses a certificate your device doesn\'t recognise. Compare the fingerprint with the one on your server before trusting it.';
+
+  @override
+  String get certSheetTitleMismatch => 'Certificate changed';
+
+  @override
+  String get certSheetExplanationMismatch =>
+      'This server now presents a different certificate than the one you trusted. Connections stay blocked until you decide.';
+
+  @override
+  String get certSheetMismatchWarning =>
+      'If you did not replace the certificate yourself, someone may be intercepting the connection. Do not trust it.';
+
+  @override
+  String get certSheetTitleExpired => 'Certificate expired';
+
+  @override
+  String get certSheetExplanationExpired =>
+      'This server\'s certificate is expired or not valid yet, so it cannot be trusted. Renew it on the server.';
+
+  @override
+  String get certSheetFingerprint => 'SHA-256 fingerprint';
+
+  @override
+  String get certSheetPreviousFingerprint => 'Previously trusted fingerprint';
+
+  @override
+  String get certSheetSubject => 'Subject';
+
+  @override
+  String get certSheetIssuer => 'Issuer';
+
+  @override
+  String get certSheetValidity => 'Valid';
+
+  @override
+  String certSheetValidityRange(String from, String until) {
+    return '$from to $until';
+  }
+
+  @override
+  String get certSheetAccept => 'Trust certificate';
+
+  @override
+  String get certSheetAcceptMismatch => 'Trust new certificate';
+
+  @override
+  String get certSheetReject => 'Don\'t trust';
+
+  @override
+  String get certSheetHandle => 'Drag handle';
+
+  @override
+  String get onboardingWelcomeTitle => 'Welcome to Consolarr';
+
+  @override
+  String get onboardingWelcomeBody =>
+      'Control your self-hosted media services from your phone. Let\'s connect your first server.';
+
+  @override
+  String get onboardingStart => 'Get started';
+
+  @override
+  String get onboardingSkip => 'Skip for now';
+
+  @override
+  String get onboardingChooseTitle => 'Which service?';
+
+  @override
+  String get onboardingChooseBody => 'You can add more servers later.';
+
+  @override
+  String get onboardingDetailsTitle => 'Server details';
+
+  @override
+  String get onboardingTestTitle => 'Test and finish';
+
+  @override
+  String get onboardingNext => 'Next';
+
+  @override
+  String get onboardingBack => 'Back';
+
+  @override
+  String get onboardingFinish => 'Finish';
+
+  @override
+  String onboardingStepOf(int current, int total) {
+    return 'Step $current of $total';
+  }
+
+  @override
+  String get onboardingTestFirst => 'Test the connection before finishing.';
+
+  @override
   String get appTitle => 'Consolarr';
+
+  @override
+  String get navHome => 'Home';
+
+  @override
+  String get navSonarr => 'Series';
+
+  @override
+  String get navTorrents => 'Torrents';
+
+  @override
+  String get navServers => 'Servers';
+
+  @override
+  String get navSelectedHint => 'Selected';
+
+  @override
+  String get switcherTitle => 'Switch server';
+
+  @override
+  String get switcherTooltip => 'Switch server';
+
+  @override
+  String get switcherActive => 'Active';
+
+  @override
+  String get switcherEmpty => 'No servers of this type yet.';
+
+  @override
+  String get healthHealthy => 'Online';
+
+  @override
+  String get healthChecking => 'Checking';
+
+  @override
+  String get healthDegraded => 'Slow or erroring';
+
+  @override
+  String get healthUnauthorized => 'Wrong credentials';
+
+  @override
+  String get healthUnreachable => 'Offline';
+
+  @override
+  String get homeSetupCta => 'Set up a server';
+
+  @override
+  String get homeServicesHeading => 'Your services';
 
   @override
   String get sonarrTitle => 'Series';
@@ -669,7 +1118,7 @@ class AppLocalizationsEnXa extends AppLocalizationsEn {
 
   @override
   String get homeEmptyBody =>
-      '[Àðð à ɱéðîà šéŕṽéŕ öŕ ðöŵñļöàð çļîéñţ ţö ĝéţ šţàŕţéð. Ţĥîš šçŕééñ îš à þļàçéĥöļðéŕ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]';
+      '[Àðð à ɱéðîà šéŕṽéŕ öŕ ðöŵñļöàð çļîéñţ ţö ĝéţ šţàŕţéð.~~~~~~~~~~~~~~~~~~~~~~]';
 
   @override
   String homeServerCount(int count) {
@@ -807,7 +1256,464 @@ class AppLocalizationsEnXa extends AppLocalizationsEn {
       '[Éñţéŕ àñ àððŕéšš ļîķé ĥţţþš://ĥöšţ:þöŕţ ŵîţĥöüţ à üšéŕñàɱé, þàššŵöŕð öŕ ķéý, àñð à þàţĥ ţĥàţ šţàŕţš ŵîţĥ à šļàšĥ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]';
 
   @override
+  String get serversTitle => '[Šéŕṽéŕš~~~]';
+
+  @override
+  String get serversAddTooltip => '[Àðð à šéŕṽéŕ~~~~~]';
+
+  @override
+  String get serversEmptyHeadline => '[Ñö šéŕṽéŕš ýéţ~~~~~~]';
+
+  @override
+  String get serversEmptyMessage =>
+      '[Àðð Šöñàŕŕ öŕ ǫßîţţöŕŕéñţ ţö ƀŕöŵšé ýöüŕ ļîƀŕàŕý àñð ðöŵñļöàðš ƒŕöɱ ĥéŕé.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get serversEmptyAction => '[Àðð ýöüŕ ƒîŕšţ šéŕṽéŕ~~~~~~~~~]';
+
+  @override
+  String get serversLoadErrorHeadline =>
+      '[Çöüļðñ\'ţ ļöàð ýöüŕ šéŕṽéŕš~~~~~~~~~~~]';
+
+  @override
+  String get serversLoadErrorMessage =>
+      '[Ţĥé šàṽéð šéŕṽéŕš çöüļð ñöţ ƀé ŕéàð ƒŕöɱ ţĥîš ðéṽîçé.~~~~~~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get serversRetry => '[Ţŕý àĝàîñ~~~~]';
+
+  @override
+  String get serversCancel => '[Çàñçéļ~~~]';
+
+  @override
+  String get serverKindSonarr => '[Šöñàŕŕ~~~]';
+
+  @override
+  String get serverKindRadarr => '[Ŕàðàŕŕ~~~]';
+
+  @override
+  String get serverKindQbittorrent => '[ǫßîţţöŕŕéñţ~~~~~]';
+
+  @override
+  String get serverKindTransmission => '[Ţŕàñšɱîššîöñ~~~~~]';
+
+  @override
+  String get serverKindDeluge => '[Ðéļüĝé~~~]';
+
+  @override
+  String get serverKindSonarrDescription => '[ŢṼ šéŕîéš ļîƀŕàŕý~~~~~~~]';
+
+  @override
+  String get serverKindQbittorrentDescription => '[Ţöŕŕéñţ ðöŵñļöàðš~~~~~~~]';
+
+  @override
+  String get serverKindOtherDescription => '[Ñöţ àṽàîļàƀļé ýéţ~~~~~~~]';
+
+  @override
+  String get serverHealthChecking => '[Çĥéçķîñĝ…~~~~]';
+
+  @override
+  String get serverHealthHealthy => '[Öñļîñé~~~]';
+
+  @override
+  String get serverHealthDegraded => '[Ŕéšþöñðîñĝ ŵîţĥ þŕöƀļéɱš~~~~~~~~~~]';
+
+  @override
+  String get serverHealthUnauthorized => '[Šîĝñ-îñ ƒàîļéð~~~~~~]';
+
+  @override
+  String get serverHealthUnreachable => '[Üñŕéàçĥàƀļé~~~~~]';
+
+  @override
+  String get serverHealthUnknown => '[Çöüļðñ\'ţ çĥéçķ~~~~~~]';
+
+  @override
+  String get serverBadgeCleartext => '[Þļàîñ ĥţţþ~~~~]';
+
+  @override
+  String get serverBadgeNeedsCredentials => '[Ñééðš çŕéðéñţîàļš~~~~~~~]';
+
+  @override
+  String get serverBadgeActive => '[Àçţîṽé~~~]';
+
+  @override
+  String get serverBadgeStartup => '[Öþéñš àţ ļàüñçĥ~~~~~~]';
+
+  @override
+  String serverMenuTooltip(String name) {
+    return '[Ṁöŕé àçţîöñš ƒöŕ ~~~~~~~$name]';
+  }
+
+  @override
+  String serverDragHandleLabel(String name) {
+    return '[Ŕéöŕðéŕ ~~~~$name]';
+  }
+
+  @override
+  String get serverActionEdit => '[Éðîţ~~]';
+
+  @override
+  String get serverActionSetActive => '[Ṁàķé àçţîṽé~~~~~]';
+
+  @override
+  String get serverActionSetStartup => '[Öþéñ àţ ļàüñçĥ~~~~~~]';
+
+  @override
+  String get serverActionClearStartup => '[Ðöñ\'ţ öþéñ àţ ļàüñçĥ~~~~~~~~]';
+
+  @override
+  String get serverActionMoveUp => '[Ṁöṽé üþ~~~]';
+
+  @override
+  String get serverActionMoveDown => '[Ṁöṽé ðöŵñ~~~~]';
+
+  @override
+  String get serverActionDelete => '[Ðéļéţé~~~]';
+
+  @override
+  String serverDeleteTitle(String name) {
+    return '[Ðéļéţé ~~~$name?~]';
+  }
+
+  @override
+  String get serverDeleteBody =>
+      '[Ţĥîš ŕéɱöṽéš ţĥé šàṽéð çŕéðéñţîàļš, ţĥé ţŕüšţéð çéŕţîƒîçàţé àñð ţĥé çàçĥéð ðàţà ƒöŕ ţĥîš šéŕṽéŕ ƒŕöɱ ţĥîš ðéṽîçé. Ţĥé šéŕṽéŕ îţšéļƒ îš ñöţ çĥàñĝéð.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get serverDeleteConfirm => '[Ðéļéţé~~~]';
+
+  @override
+  String get serverEditorTitleNew => '[Àðð šéŕṽéŕ~~~~]';
+
+  @override
+  String get serverEditorTitleEdit => '[Éðîţ šéŕṽéŕ~~~~~]';
+
+  @override
+  String get serverEditorSave => '[Šàṽé~~]';
+
+  @override
+  String get serverSaveFailedHeadline =>
+      '[Çöüļðñ\'ţ šàṽé ţĥé šéŕṽéŕ~~~~~~~~~~]';
+
+  @override
+  String get serverSectionService => '[Šéŕṽîçé~~~]';
+
+  @override
+  String get serverSectionAddress => '[Àððŕéšš~~~]';
+
+  @override
+  String get serverSectionAuth => '[Àüţĥéñţîçàţîöñ~~~~~~]';
+
+  @override
+  String get serverSectionHeaders => '[Çüšţöɱ ĥéàðéŕš~~~~~~]';
+
+  @override
+  String get serverSectionSecurity => '[Šéçüŕîţý~~~~]';
+
+  @override
+  String get serverFieldName => '[Ðîšþļàý ñàɱé~~~~~]';
+
+  @override
+  String get serverFieldAddress => '[Àððŕéšš~~~]';
+
+  @override
+  String get serverFieldAddressHint => '[ĥţţþš://ĥöšţ.éẋàɱþļé:8989~~~~~~~~~~]';
+
+  @override
+  String get serverFieldPathPrefix => '[Þàţĥ þŕéƒîẋ (öþţîöñàļ)~~~~~~~~~]';
+
+  @override
+  String get serverPathPrefixHelper =>
+      '[Öñļý ñééðéð îƒ à ŕéṽéŕšé þŕöẋý šéŕṽéš ţĥé àþþ üñðéŕ à þàţĥ, ƒöŕ éẋàɱþļé /šöñàŕŕ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get serverAuthNone => '[Ñöñé~~]';
+
+  @override
+  String get serverAuthApiKey => '[ÀÞÎ ķéý~~~]';
+
+  @override
+  String get serverAuthBasic => '[Üšéŕñàɱé àñð þàššŵöŕð~~~~~~~~~]';
+
+  @override
+  String get serverFieldApiKey => '[ÀÞÎ ķéý~~~]';
+
+  @override
+  String get serverFieldUsername => '[Üšéŕñàɱé~~~~]';
+
+  @override
+  String get serverFieldPassword => '[Þàššŵöŕð~~~~]';
+
+  @override
+  String get serverSecretKeepHint =>
+      '[Ļéàṽé éɱþţý ţö ķééþ ţĥé šàṽéð ṽàļüé.~~~~~~~~~~~~~~~]';
+
+  @override
+  String get serverSecretShow => '[Šĥöŵ ṽàļüé~~~~]';
+
+  @override
+  String get serverSecretHide => '[Ĥîðé ṽàļüé~~~~]';
+
+  @override
+  String get serverHeadersHelper =>
+      '[Ƒöŕ ŕéṽéŕšé-þŕöẋý ĝàţéŵàýš. Ṽàļüéš àŕé šţöŕéð šéçüŕéļý öñ ţĥîš ðéṽîçé.~~~~~~~~~~~~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get serverHeaderName => '[Ĥéàðéŕ ñàɱé~~~~~]';
+
+  @override
+  String get serverHeaderValue => '[Ĥéàðéŕ ṽàļüé~~~~~]';
+
+  @override
+  String get serverHeaderAdd => '[Àðð ĥéàðéŕ~~~~]';
+
+  @override
+  String get serverHeaderRemove => '[Ŕéɱöṽé ĥéàðéŕ~~~~~~]';
+
+  @override
+  String get serverCleartextTitle => '[Àļļöŵ þļàîñ ĥţţþ~~~~~~~]';
+
+  @override
+  String get serverCleartextRisk =>
+      '[Þļàîñ ĥţţþ šéñðš ýöüŕ ÀÞÎ ķéý, þàššŵöŕð àñð éṽéŕý ŕéšþöñšé ŵîţĥöüţ éñçŕýþţîöñ, šö àñýöñé öñ ţĥé ñéţŵöŕķ çàñ ŕéàð ţĥéɱ. Öñļý àļļöŵ îţ öñ à ñéţŵöŕķ ýöü ţŕüšţ, šüçĥ àš ýöüŕ ĥöɱé ñéţŵöŕķ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get serverCleartextNeeded =>
+      '[Ţĥîš àððŕéšš üšéš ĥţţþ. Ţüŕñ öñ þļàîñ ĥţţþ, öŕ üšé àñ ĥţţþš àððŕéšš.~~~~~~~~~~~~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get serverErrorNameRequired =>
+      '[Éñţéŕ à ñàɱé ƒöŕ ţĥîš šéŕṽéŕ.~~~~~~~~~~~~]';
+
+  @override
+  String get serverErrorAddressRequired =>
+      '[Éñţéŕ ţĥé šéŕṽéŕ àððŕéšš.~~~~~~~~~~]';
+
+  @override
+  String get serverErrorAddressInvalid =>
+      '[Éñţéŕ à ƒüļļ àððŕéšš šüçĥ àš ĥţţþš://ĥöšţ.éẋàɱþļé:8989.~~~~~~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get serverErrorAddressCredentials =>
+      '[Ðöñ\'ţ þüţ à üšéŕñàɱé öŕ þàššŵöŕð îñ ţĥé àððŕéšš. Üšé ţĥé ƒîéļðš ƀéļöŵ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get serverErrorAddressQuery =>
+      '[Ŕéɱöṽé éṽéŕýţĥîñĝ àƒţéŕ ţĥé ? îñ ţĥé àððŕéšš. Ķéýš ƀéļöñĝ îñ ţĥé ķéý ƒîéļð.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get serverErrorPrefixInvalid =>
+      '[Üšé à þàţĥ šüçĥ àš /šöñàŕŕ, ŵîţĥöüţ šþàçéš, ? öŕ ...~~~~~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get serverErrorHeaderInvalid =>
+      '[Ĥéàðéŕ ñàɱéš ɱàý üšé ļéţţéŕš, ðîĝîţš àñð - _ . öñļý, àñð ɱüšţ ƀé üñîǫüé.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get serverTestButton => '[Ţéšţ çöññéçţîöñ~~~~~~]';
+
+  @override
+  String get serverTestTesting => '[Ţéšţîñĝ…~~~~]';
+
+  @override
+  String serverTestSuccess(String version) {
+    return '[Çöññéçţéð. Šéŕṽéŕ ṽéŕšîöñ ~~~~~~~~~~~$version.~]';
+  }
+
+  @override
+  String get serverTestSuccessLabel => '[Çöññéçţéð~~~~]';
+
+  @override
+  String get serverTestFailedLabel => '[Ƒàîļéð~~~]';
+
+  @override
+  String get serverPinTitle => '[Ţŕüšţéð çéŕţîƒîçàţé~~~~~~~~]';
+
+  @override
+  String get serverPinFingerprint => '[ŠĤÀ-256 ƒîñĝéŕþŕîñţ~~~~~~~~]';
+
+  @override
+  String get serverPinRemove => '[Ŕéɱöṽé ţŕüšţéð çéŕţîƒîçàţé~~~~~~~~~~~]';
+
+  @override
+  String get serverPinRemoveTitle => '[Ŕéɱöṽé ţŕüšţéð çéŕţîƒîçàţé?~~~~~~~~~~~]';
+
+  @override
+  String get serverPinRemoveBody =>
+      '[Ţĥé ñéẋţ çöññéçţîöñ ŵîļļ àšķ ýöü ţö ŕéṽîéŵ ţĥé šéŕṽéŕ\'š çéŕţîƒîçàţé àĝàîñ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get serverPinRemoveConfirm => '[Ŕéɱöṽé~~~]';
+
+  @override
+  String get serverNeedsCredentialsBanner =>
+      '[Ţĥé šàṽéð çŕéðéñţîàļš ƒöŕ ţĥîš šéŕṽéŕ àŕé ɱîššîñĝ. Éñţéŕ ţĥéɱ àĝàîñ àñð šàṽé.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get serverDiscardTitle => '[Ðîšçàŕð çĥàñĝéš?~~~~~~~]';
+
+  @override
+  String get serverDiscardBody =>
+      '[Ýöüŕ çĥàñĝéš ţö ţĥîš šéŕṽéŕ ĥàṽéñ\'ţ ƀééñ šàṽéð.~~~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get serverDiscardConfirm => '[Ðîšçàŕð~~~]';
+
+  @override
+  String get serverDiscardKeep => '[Ķééþ éðîţîñĝ~~~~~]';
+
+  @override
+  String get certSheetTitleFirstUse => '[Ţŕüšţ ţĥîš çéŕţîƒîçàţé?~~~~~~~~~~]';
+
+  @override
+  String get certSheetExplanationFirstUse =>
+      '[Ţĥîš šéŕṽéŕ üšéš à çéŕţîƒîçàţé ýöüŕ ðéṽîçé ðöéšñ\'ţ ŕéçöĝñîšé. Çöɱþàŕé ţĥé ƒîñĝéŕþŕîñţ ŵîţĥ ţĥé öñé öñ ýöüŕ šéŕṽéŕ ƀéƒöŕé ţŕüšţîñĝ îţ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get certSheetTitleMismatch => '[Çéŕţîƒîçàţé çĥàñĝéð~~~~~~~~]';
+
+  @override
+  String get certSheetExplanationMismatch =>
+      '[Ţĥîš šéŕṽéŕ ñöŵ þŕéšéñţš à ðîƒƒéŕéñţ çéŕţîƒîçàţé ţĥàñ ţĥé öñé ýöü ţŕüšţéð. Çöññéçţîöñš šţàý ƀļöçķéð üñţîļ ýöü ðéçîðé.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get certSheetMismatchWarning =>
+      '[Îƒ ýöü ðîð ñöţ ŕéþļàçé ţĥé çéŕţîƒîçàţé ýöüŕšéļƒ, šöɱéöñé ɱàý ƀé îñţéŕçéþţîñĝ ţĥé çöññéçţîöñ. Ðö ñöţ ţŕüšţ îţ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get certSheetTitleExpired => '[Çéŕţîƒîçàţé éẋþîŕéð~~~~~~~~]';
+
+  @override
+  String get certSheetExplanationExpired =>
+      '[Ţĥîš šéŕṽéŕ\'š çéŕţîƒîçàţé îš éẋþîŕéð öŕ ñöţ ṽàļîð ýéţ, šö îţ çàññöţ ƀé ţŕüšţéð. Ŕéñéŵ îţ öñ ţĥé šéŕṽéŕ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get certSheetFingerprint => '[ŠĤÀ-256 ƒîñĝéŕþŕîñţ~~~~~~~~]';
+
+  @override
+  String get certSheetPreviousFingerprint =>
+      '[Þŕéṽîöüšļý ţŕüšţéð ƒîñĝéŕþŕîñţ~~~~~~~~~~~~]';
+
+  @override
+  String get certSheetSubject => '[Šüƀĵéçţ~~~]';
+
+  @override
+  String get certSheetIssuer => '[Îššüéŕ~~~]';
+
+  @override
+  String get certSheetValidity => '[Ṽàļîð~~]';
+
+  @override
+  String certSheetValidityRange(String from, String until) {
+    return '[$from ţö ~~$until]';
+  }
+
+  @override
+  String get certSheetAccept => '[Ţŕüšţ çéŕţîƒîçàţé~~~~~~~]';
+
+  @override
+  String get certSheetAcceptMismatch => '[Ţŕüšţ ñéŵ çéŕţîƒîçàţé~~~~~~~~~]';
+
+  @override
+  String get certSheetReject => '[Ðöñ\'ţ ţŕüšţ~~~~~]';
+
+  @override
+  String get certSheetHandle => '[Ðŕàĝ ĥàñðļé~~~~~]';
+
+  @override
+  String get onboardingWelcomeTitle => '[Ŵéļçöɱé ţö Çöñšöļàŕŕ~~~~~~~~]';
+
+  @override
+  String get onboardingWelcomeBody =>
+      '[Çöñţŕöļ ýöüŕ šéļƒ-ĥöšţéð ɱéðîà šéŕṽîçéš ƒŕöɱ ýöüŕ þĥöñé. Ļéţ\'š çöññéçţ ýöüŕ ƒîŕšţ šéŕṽéŕ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]';
+
+  @override
+  String get onboardingStart => '[Ĝéţ šţàŕţéð~~~~~]';
+
+  @override
+  String get onboardingSkip => '[Šķîþ ƒöŕ ñöŵ~~~~~]';
+
+  @override
+  String get onboardingChooseTitle => '[Ŵĥîçĥ šéŕṽîçé?~~~~~~]';
+
+  @override
+  String get onboardingChooseBody =>
+      '[Ýöü çàñ àðð ɱöŕé šéŕṽéŕš ļàţéŕ.~~~~~~~~~~~~~]';
+
+  @override
+  String get onboardingDetailsTitle => '[Šéŕṽéŕ ðéţàîļš~~~~~~]';
+
+  @override
+  String get onboardingTestTitle => '[Ţéšţ àñð ƒîñîšĥ~~~~~~]';
+
+  @override
+  String get onboardingNext => '[Ñéẋţ~~]';
+
+  @override
+  String get onboardingBack => '[ßàçķ~~]';
+
+  @override
+  String get onboardingFinish => '[Ƒîñîšĥ~~~]';
+
+  @override
+  String onboardingStepOf(int current, int total) {
+    return '[Šţéþ ~~$current öƒ ~~$total]';
+  }
+
+  @override
+  String get onboardingTestFirst =>
+      '[Ţéšţ ţĥé çöññéçţîöñ ƀéƒöŕé ƒîñîšĥîñĝ.~~~~~~~~~~~~~~~]';
+
+  @override
   String get appTitle => '[Çöñšöļàŕŕ~~~~]';
+
+  @override
+  String get navHome => '[Ĥöɱé~~]';
+
+  @override
+  String get navSonarr => '[Šéŕîéš~~~]';
+
+  @override
+  String get navTorrents => '[Ţöŕŕéñţš~~~~]';
+
+  @override
+  String get navServers => '[Šéŕṽéŕš~~~]';
+
+  @override
+  String get navSelectedHint => '[Šéļéçţéð~~~~]';
+
+  @override
+  String get switcherTitle => '[Šŵîţçĥ šéŕṽéŕ~~~~~~]';
+
+  @override
+  String get switcherTooltip => '[Šŵîţçĥ šéŕṽéŕ~~~~~~]';
+
+  @override
+  String get switcherActive => '[Àçţîṽé~~~]';
+
+  @override
+  String get switcherEmpty => '[Ñö šéŕṽéŕš öƒ ţĥîš ţýþé ýéţ.~~~~~~~~~~~~]';
+
+  @override
+  String get healthHealthy => '[Öñļîñé~~~]';
+
+  @override
+  String get healthChecking => '[Çĥéçķîñĝ~~~~]';
+
+  @override
+  String get healthDegraded => '[Šļöŵ öŕ éŕŕöŕîñĝ~~~~~~~]';
+
+  @override
+  String get healthUnauthorized => '[Ŵŕöñĝ çŕéðéñţîàļš~~~~~~~]';
+
+  @override
+  String get healthUnreachable => '[Öƒƒļîñé~~~]';
+
+  @override
+  String get homeSetupCta => '[Šéţ üþ à šéŕṽéŕ~~~~~~]';
+
+  @override
+  String get homeServicesHeading => '[Ýöüŕ šéŕṽîçéš~~~~~~]';
 
   @override
   String get sonarrTitle => '[Šéŕîéš~~~]';

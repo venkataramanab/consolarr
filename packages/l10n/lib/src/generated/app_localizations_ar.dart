@@ -29,8 +29,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get homeEmptyHeading => 'لا شيء هنا بعد';
 
   @override
-  String get homeEmptyBody =>
-      'أضف خادم وسائط أو عميل تنزيل للبدء. هذه الشاشة مؤقتة.';
+  String get homeEmptyBody => 'أضف خادم وسائط أو عميل تنزيل للبدء.';
 
   @override
   String homeServerCount(int count) {
@@ -163,7 +162,455 @@ class AppLocalizationsAr extends AppLocalizations {
       'أدخل عنوانًا مثل https://host:port دون اسم مستخدم أو كلمة مرور أو مفتاح، ومسارًا يبدأ بشرطة مائلة.';
 
   @override
+  String get serversTitle => 'الخوادم';
+
+  @override
+  String get serversAddTooltip => 'إضافة خادم';
+
+  @override
+  String get serversEmptyHeadline => 'لا توجد خوادم بعد';
+
+  @override
+  String get serversEmptyMessage =>
+      'أضف Sonarr أو qBittorrent لتصفح مكتبتك وتنزيلاتك من هنا.';
+
+  @override
+  String get serversEmptyAction => 'أضف أول خادم';
+
+  @override
+  String get serversLoadErrorHeadline => 'تعذّر تحميل خوادمك';
+
+  @override
+  String get serversLoadErrorMessage =>
+      'تعذّرت قراءة الخوادم المحفوظة من هذا الجهاز.';
+
+  @override
+  String get serversRetry => 'حاول مرة أخرى';
+
+  @override
+  String get serversCancel => 'إلغاء';
+
+  @override
+  String get serverKindSonarr => 'Sonarr';
+
+  @override
+  String get serverKindRadarr => 'Radarr';
+
+  @override
+  String get serverKindQbittorrent => 'qBittorrent';
+
+  @override
+  String get serverKindTransmission => 'Transmission';
+
+  @override
+  String get serverKindDeluge => 'Deluge';
+
+  @override
+  String get serverKindSonarrDescription => 'مكتبة المسلسلات';
+
+  @override
+  String get serverKindQbittorrentDescription => 'تنزيلات التورنت';
+
+  @override
+  String get serverKindOtherDescription => 'غير متاح بعد';
+
+  @override
+  String get serverHealthChecking => 'جارٍ الفحص…';
+
+  @override
+  String get serverHealthHealthy => 'متصل';
+
+  @override
+  String get serverHealthDegraded => 'يستجيب مع مشاكل';
+
+  @override
+  String get serverHealthUnauthorized => 'فشل تسجيل الدخول';
+
+  @override
+  String get serverHealthUnreachable => 'لا يمكن الوصول إليه';
+
+  @override
+  String get serverHealthUnknown => 'تعذّر الفحص';
+
+  @override
+  String get serverBadgeCleartext => 'http عادي';
+
+  @override
+  String get serverBadgeNeedsCredentials => 'يحتاج إلى بيانات الدخول';
+
+  @override
+  String get serverBadgeActive => 'نشط';
+
+  @override
+  String get serverBadgeStartup => 'يُفتح عند التشغيل';
+
+  @override
+  String serverMenuTooltip(String name) {
+    return 'المزيد من الإجراءات لـ $name';
+  }
+
+  @override
+  String serverDragHandleLabel(String name) {
+    return 'إعادة ترتيب $name';
+  }
+
+  @override
+  String get serverActionEdit => 'تعديل';
+
+  @override
+  String get serverActionSetActive => 'اجعله نشطًا';
+
+  @override
+  String get serverActionSetStartup => 'افتح عند التشغيل';
+
+  @override
+  String get serverActionClearStartup => 'لا تفتح عند التشغيل';
+
+  @override
+  String get serverActionMoveUp => 'نقل لأعلى';
+
+  @override
+  String get serverActionMoveDown => 'نقل لأسفل';
+
+  @override
+  String get serverActionDelete => 'حذف';
+
+  @override
+  String serverDeleteTitle(String name) {
+    return 'هل تريد حذف $name؟';
+  }
+
+  @override
+  String get serverDeleteBody =>
+      'سيؤدي هذا إلى إزالة بيانات الدخول المحفوظة والشهادة الموثوقة والبيانات المخزنة مؤقتًا لهذا الخادم من هذا الجهاز. لن يتغير الخادم نفسه.';
+
+  @override
+  String get serverDeleteConfirm => 'حذف';
+
+  @override
+  String get serverEditorTitleNew => 'إضافة خادم';
+
+  @override
+  String get serverEditorTitleEdit => 'تعديل الخادم';
+
+  @override
+  String get serverEditorSave => 'حفظ';
+
+  @override
+  String get serverSaveFailedHeadline => 'تعذّر حفظ الخادم';
+
+  @override
+  String get serverSectionService => 'الخدمة';
+
+  @override
+  String get serverSectionAddress => 'العنوان';
+
+  @override
+  String get serverSectionAuth => 'المصادقة';
+
+  @override
+  String get serverSectionHeaders => 'ترويسات مخصصة';
+
+  @override
+  String get serverSectionSecurity => 'الأمان';
+
+  @override
+  String get serverFieldName => 'اسم العرض';
+
+  @override
+  String get serverFieldAddress => 'العنوان';
+
+  @override
+  String get serverFieldAddressHint => 'https://host.example:8989';
+
+  @override
+  String get serverFieldPathPrefix => 'بادئة المسار (اختياري)';
+
+  @override
+  String get serverPathPrefixHelper =>
+      'مطلوبة فقط إذا كان وكيل عكسي يخدم التطبيق تحت مسار، مثل /sonarr.';
+
+  @override
+  String get serverAuthNone => 'بدون';
+
+  @override
+  String get serverAuthApiKey => 'مفتاح API';
+
+  @override
+  String get serverAuthBasic => 'اسم المستخدم وكلمة المرور';
+
+  @override
+  String get serverFieldApiKey => 'مفتاح API';
+
+  @override
+  String get serverFieldUsername => 'اسم المستخدم';
+
+  @override
+  String get serverFieldPassword => 'كلمة المرور';
+
+  @override
+  String get serverSecretKeepHint => 'اتركه فارغًا للاحتفاظ بالقيمة المحفوظة.';
+
+  @override
+  String get serverSecretShow => 'إظهار القيمة';
+
+  @override
+  String get serverSecretHide => 'إخفاء القيمة';
+
+  @override
+  String get serverHeadersHelper =>
+      'للبوابات خلف وكيل عكسي. تُحفظ القيم بأمان على هذا الجهاز.';
+
+  @override
+  String get serverHeaderName => 'اسم الترويسة';
+
+  @override
+  String get serverHeaderValue => 'قيمة الترويسة';
+
+  @override
+  String get serverHeaderAdd => 'إضافة ترويسة';
+
+  @override
+  String get serverHeaderRemove => 'إزالة الترويسة';
+
+  @override
+  String get serverCleartextTitle => 'السماح بـ http العادي';
+
+  @override
+  String get serverCleartextRisk =>
+      'يرسل http العادي مفتاح API وكلمة المرور وكل استجابة دون تشفير، لذا يمكن لأي شخص على الشبكة قراءتها. اسمح به فقط على شبكة تثق بها، مثل شبكة منزلك.';
+
+  @override
+  String get serverCleartextNeeded =>
+      'يستخدم هذا العنوان http. فعّل http العادي أو استخدم عنوان https.';
+
+  @override
+  String get serverErrorNameRequired => 'أدخل اسمًا لهذا الخادم.';
+
+  @override
+  String get serverErrorAddressRequired => 'أدخل عنوان الخادم.';
+
+  @override
+  String get serverErrorAddressInvalid =>
+      'أدخل عنوانًا كاملًا مثل https://host.example:8989.';
+
+  @override
+  String get serverErrorAddressCredentials =>
+      'لا تضع اسم مستخدم أو كلمة مرور في العنوان. استخدم الحقول أدناه.';
+
+  @override
+  String get serverErrorAddressQuery =>
+      'احذف كل ما بعد علامة ? في العنوان. مكان المفاتيح هو حقل المفتاح.';
+
+  @override
+  String get serverErrorPrefixInvalid =>
+      'استخدم مسارًا مثل /sonarr بدون مسافات أو ? أو ...';
+
+  @override
+  String get serverErrorHeaderInvalid =>
+      'قد تستخدم أسماء الترويسات الحروف والأرقام و - _ . فقط، ويجب أن تكون فريدة.';
+
+  @override
+  String get serverTestButton => 'اختبار الاتصال';
+
+  @override
+  String get serverTestTesting => 'جارٍ الاختبار…';
+
+  @override
+  String serverTestSuccess(String version) {
+    return 'تم الاتصال. إصدار الخادم $version.';
+  }
+
+  @override
+  String get serverTestSuccessLabel => 'متصل';
+
+  @override
+  String get serverTestFailedLabel => 'فشل';
+
+  @override
+  String get serverPinTitle => 'الشهادة الموثوقة';
+
+  @override
+  String get serverPinFingerprint => 'بصمة SHA-256';
+
+  @override
+  String get serverPinRemove => 'إزالة الشهادة الموثوقة';
+
+  @override
+  String get serverPinRemoveTitle => 'هل تريد إزالة الشهادة الموثوقة؟';
+
+  @override
+  String get serverPinRemoveBody =>
+      'سيطلب الاتصال التالي منك مراجعة شهادة الخادم مرة أخرى.';
+
+  @override
+  String get serverPinRemoveConfirm => 'إزالة';
+
+  @override
+  String get serverNeedsCredentialsBanner =>
+      'بيانات الدخول المحفوظة لهذا الخادم مفقودة. أدخلها مرة أخرى ثم احفظ.';
+
+  @override
+  String get serverDiscardTitle => 'هل تريد تجاهل التغييرات؟';
+
+  @override
+  String get serverDiscardBody => 'لم تُحفظ تغييراتك على هذا الخادم.';
+
+  @override
+  String get serverDiscardConfirm => 'تجاهل';
+
+  @override
+  String get serverDiscardKeep => 'متابعة التعديل';
+
+  @override
+  String get certSheetTitleFirstUse => 'هل تثق بهذه الشهادة؟';
+
+  @override
+  String get certSheetExplanationFirstUse =>
+      'يستخدم هذا الخادم شهادة لا يتعرف عليها جهازك. قارن البصمة بتلك الموجودة على خادمك قبل الوثوق بها.';
+
+  @override
+  String get certSheetTitleMismatch => 'تغيّرت الشهادة';
+
+  @override
+  String get certSheetExplanationMismatch =>
+      'يقدّم هذا الخادم الآن شهادة مختلفة عن التي وثقت بها. تبقى الاتصالات محظورة حتى تقرر.';
+
+  @override
+  String get certSheetMismatchWarning =>
+      'إذا لم تستبدل الشهادة بنفسك فقد يعترض أحد الاتصال. لا تثق بها.';
+
+  @override
+  String get certSheetTitleExpired => 'انتهت صلاحية الشهادة';
+
+  @override
+  String get certSheetExplanationExpired =>
+      'شهادة هذا الخادم منتهية الصلاحية أو غير سارية بعد، لذا لا يمكن الوثوق بها. جدّدها على الخادم.';
+
+  @override
+  String get certSheetFingerprint => 'بصمة SHA-256';
+
+  @override
+  String get certSheetPreviousFingerprint => 'البصمة الموثوقة سابقًا';
+
+  @override
+  String get certSheetSubject => 'الموضوع';
+
+  @override
+  String get certSheetIssuer => 'الجهة المُصدِرة';
+
+  @override
+  String get certSheetValidity => 'الصلاحية';
+
+  @override
+  String certSheetValidityRange(String from, String until) {
+    return 'من $from إلى $until';
+  }
+
+  @override
+  String get certSheetAccept => 'الوثوق بالشهادة';
+
+  @override
+  String get certSheetAcceptMismatch => 'الوثوق بالشهادة الجديدة';
+
+  @override
+  String get certSheetReject => 'عدم الوثوق';
+
+  @override
+  String get certSheetHandle => 'مقبض السحب';
+
+  @override
+  String get onboardingWelcomeTitle => 'مرحبًا بك في Consolarr';
+
+  @override
+  String get onboardingWelcomeBody =>
+      'تحكّم في خدمات الوسائط المستضافة ذاتيًا من هاتفك. لنربط أول خادم لك.';
+
+  @override
+  String get onboardingStart => 'ابدأ';
+
+  @override
+  String get onboardingSkip => 'تخطَّ الآن';
+
+  @override
+  String get onboardingChooseTitle => 'أي خدمة؟';
+
+  @override
+  String get onboardingChooseBody => 'يمكنك إضافة المزيد من الخوادم لاحقًا.';
+
+  @override
+  String get onboardingDetailsTitle => 'تفاصيل الخادم';
+
+  @override
+  String get onboardingTestTitle => 'اختبر وأنهِ';
+
+  @override
+  String get onboardingNext => 'التالي';
+
+  @override
+  String get onboardingBack => 'رجوع';
+
+  @override
+  String get onboardingFinish => 'إنهاء';
+
+  @override
+  String onboardingStepOf(int current, int total) {
+    return 'الخطوة $current من $total';
+  }
+
+  @override
+  String get onboardingTestFirst => 'اختبر الاتصال قبل الإنهاء.';
+
+  @override
   String get appTitle => 'كونسولار';
+
+  @override
+  String get navHome => 'الرئيسية';
+
+  @override
+  String get navSonarr => 'المسلسلات';
+
+  @override
+  String get navTorrents => 'التورنت';
+
+  @override
+  String get navServers => 'الخوادم';
+
+  @override
+  String get navSelectedHint => 'محدد';
+
+  @override
+  String get switcherTitle => 'تبديل الخادم';
+
+  @override
+  String get switcherTooltip => 'تبديل الخادم';
+
+  @override
+  String get switcherActive => 'نشط';
+
+  @override
+  String get switcherEmpty => 'لا توجد خوادم من هذا النوع بعد.';
+
+  @override
+  String get healthHealthy => 'متصل';
+
+  @override
+  String get healthChecking => 'جارٍ الفحص';
+
+  @override
+  String get healthDegraded => 'بطيء أو به أخطاء';
+
+  @override
+  String get healthUnauthorized => 'بيانات الاعتماد غير صحيحة';
+
+  @override
+  String get healthUnreachable => 'غير متصل';
+
+  @override
+  String get homeSetupCta => 'إعداد خادم';
+
+  @override
+  String get homeServicesHeading => 'خدماتك';
 
   @override
   String get sonarrTitle => 'المسلسلات';

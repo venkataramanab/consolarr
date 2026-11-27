@@ -133,7 +133,7 @@ abstract class AppLocalizations {
   /// One-line hint under the placeholder headline on the home screen.
   ///
   /// In en, this message translates to:
-  /// **'Add a media server or download client to get started. This screen is a placeholder.'**
+  /// **'Add a media server or download client to get started.'**
   String get homeEmptyBody;
 
   /// Number of configured servers shown on the home screen.
@@ -328,11 +328,845 @@ abstract class AppLocalizations {
   /// **'Enter an address like https://host:port without a username, password or key, and a path that starts with a slash.'**
   String get connErrorInvalidInputHint;
 
+  /// Title of the servers list screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Servers'**
+  String get serversTitle;
+
+  /// Tooltip and accessible label of the add-server button in the servers list top bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a server'**
+  String get serversAddTooltip;
+
+  /// Headline of the servers list when no server is configured.
+  ///
+  /// In en, this message translates to:
+  /// **'No servers yet'**
+  String get serversEmptyHeadline;
+
+  /// Hint under the empty servers list headline.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Sonarr or qBittorrent to browse your library and downloads from here.'**
+  String get serversEmptyMessage;
+
+  /// Primary action label of the empty servers list.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first server'**
+  String get serversEmptyAction;
+
+  /// Headline when the saved servers could not be read from the device.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load your servers'**
+  String get serversLoadErrorHeadline;
+
+  /// Message when the saved servers could not be read.
+  ///
+  /// In en, this message translates to:
+  /// **'The saved servers could not be read from this device.'**
+  String get serversLoadErrorMessage;
+
+  /// Retry button label in the servers feature.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get serversRetry;
+
+  /// Cancel button label in servers dialogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get serversCancel;
+
+  /// Display name of the Sonarr service (brand name).
+  ///
+  /// In en, this message translates to:
+  /// **'Sonarr'**
+  String get serverKindSonarr;
+
+  /// Display name of the Radarr service (brand name).
+  ///
+  /// In en, this message translates to:
+  /// **'Radarr'**
+  String get serverKindRadarr;
+
+  /// Display name of the qBittorrent service (brand name).
+  ///
+  /// In en, this message translates to:
+  /// **'qBittorrent'**
+  String get serverKindQbittorrent;
+
+  /// Display name of the Transmission service (brand name).
+  ///
+  /// In en, this message translates to:
+  /// **'Transmission'**
+  String get serverKindTransmission;
+
+  /// Display name of the Deluge service (brand name).
+  ///
+  /// In en, this message translates to:
+  /// **'Deluge'**
+  String get serverKindDeluge;
+
+  /// Short description of Sonarr on the service choice tile.
+  ///
+  /// In en, this message translates to:
+  /// **'TV series library'**
+  String get serverKindSonarrDescription;
+
+  /// Short description of qBittorrent on the service choice tile.
+  ///
+  /// In en, this message translates to:
+  /// **'Torrent downloads'**
+  String get serverKindQbittorrentDescription;
+
+  /// Description for a service that is not supported yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not available yet'**
+  String get serverKindOtherDescription;
+
+  /// Health text of a server being checked.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking…'**
+  String get serverHealthChecking;
+
+  /// Health text of a healthy server.
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get serverHealthHealthy;
+
+  /// Health text of a server that answers with errors or slowly.
+  ///
+  /// In en, this message translates to:
+  /// **'Responding with problems'**
+  String get serverHealthDegraded;
+
+  /// Health text of a server that rejected the credentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in failed'**
+  String get serverHealthUnauthorized;
+
+  /// Health text of a server that cannot be reached.
+  ///
+  /// In en, this message translates to:
+  /// **'Unreachable'**
+  String get serverHealthUnreachable;
+
+  /// Health text when the health check itself failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t check'**
+  String get serverHealthUnknown;
+
+  /// Warning badge on a server that is allowed to use unencrypted http.
+  ///
+  /// In en, this message translates to:
+  /// **'Plain http'**
+  String get serverBadgeCleartext;
+
+  /// Badge on a server whose saved secrets are missing.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs credentials'**
+  String get serverBadgeNeedsCredentials;
+
+  /// Badge on the server used by default for its service.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get serverBadgeActive;
+
+  /// Badge on the server opened when the app starts.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens at launch'**
+  String get serverBadgeStartup;
+
+  /// Tooltip and accessible label of the per-server actions menu.
+  ///
+  /// In en, this message translates to:
+  /// **'More actions for {name}'**
+  String serverMenuTooltip(String name);
+
+  /// Accessible label of the drag handle that reorders a server.
+  ///
+  /// In en, this message translates to:
+  /// **'Reorder {name}'**
+  String serverDragHandleLabel(String name);
+
+  /// Menu action: edit a server.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get serverActionEdit;
+
+  /// Menu action: use this server by default for its service.
+  ///
+  /// In en, this message translates to:
+  /// **'Make active'**
+  String get serverActionSetActive;
+
+  /// Menu action: open this server when the app starts.
+  ///
+  /// In en, this message translates to:
+  /// **'Open at launch'**
+  String get serverActionSetStartup;
+
+  /// Menu action: stop opening this server at launch.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t open at launch'**
+  String get serverActionClearStartup;
+
+  /// Menu action: move a server up in the list (alternative to dragging).
+  ///
+  /// In en, this message translates to:
+  /// **'Move up'**
+  String get serverActionMoveUp;
+
+  /// Menu action: move a server down in the list (alternative to dragging).
+  ///
+  /// In en, this message translates to:
+  /// **'Move down'**
+  String get serverActionMoveDown;
+
+  /// Menu action: delete a server.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get serverActionDelete;
+
+  /// Title of the delete-server confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {name}?'**
+  String serverDeleteTitle(String name);
+
+  /// Consequences spelled out in the delete-server confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes the saved credentials, the trusted certificate and the cached data for this server from this device. The server itself is not changed.'**
+  String get serverDeleteBody;
+
+  /// Confirm button of the delete-server dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get serverDeleteConfirm;
+
+  /// Title of the server editor when creating a server.
+  ///
+  /// In en, this message translates to:
+  /// **'Add server'**
+  String get serverEditorTitleNew;
+
+  /// Title of the server editor when editing a server.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit server'**
+  String get serverEditorTitleEdit;
+
+  /// Save button of the server editor.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get serverEditorSave;
+
+  /// Headline shown when saving a server failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the server'**
+  String get serverSaveFailedHeadline;
+
+  /// Section heading: service type and name.
+  ///
+  /// In en, this message translates to:
+  /// **'Service'**
+  String get serverSectionService;
+
+  /// Section heading: server address.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get serverSectionAddress;
+
+  /// Section heading: authentication.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication'**
+  String get serverSectionAuth;
+
+  /// Section heading: custom request headers.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom headers'**
+  String get serverSectionHeaders;
+
+  /// Section heading: transport security.
+  ///
+  /// In en, this message translates to:
+  /// **'Security'**
+  String get serverSectionSecurity;
+
+  /// Label of the server display name field.
+  ///
+  /// In en, this message translates to:
+  /// **'Display name'**
+  String get serverFieldName;
+
+  /// Label of the server address field.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get serverFieldAddress;
+
+  /// Placeholder example for the server address field.
+  ///
+  /// In en, this message translates to:
+  /// **'https://host.example:8989'**
+  String get serverFieldAddressHint;
+
+  /// Label of the optional reverse-proxy path prefix field.
+  ///
+  /// In en, this message translates to:
+  /// **'Path prefix (optional)'**
+  String get serverFieldPathPrefix;
+
+  /// Helper text under the path prefix field.
+  ///
+  /// In en, this message translates to:
+  /// **'Only needed if a reverse proxy serves the app under a path, for example /sonarr.'**
+  String get serverPathPrefixHelper;
+
+  /// Authentication mode: no credentials.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get serverAuthNone;
+
+  /// Authentication mode: API key.
+  ///
+  /// In en, this message translates to:
+  /// **'API key'**
+  String get serverAuthApiKey;
+
+  /// Authentication mode: username and password.
+  ///
+  /// In en, this message translates to:
+  /// **'Username and password'**
+  String get serverAuthBasic;
+
+  /// Label of the API key field.
+  ///
+  /// In en, this message translates to:
+  /// **'API key'**
+  String get serverFieldApiKey;
+
+  /// Label of the username field.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get serverFieldUsername;
+
+  /// Label of the password field.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get serverFieldPassword;
+
+  /// Helper under a secret field when editing a server with a saved secret.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave empty to keep the saved value.'**
+  String get serverSecretKeepHint;
+
+  /// Tooltip of the button that reveals a secret field.
+  ///
+  /// In en, this message translates to:
+  /// **'Show value'**
+  String get serverSecretShow;
+
+  /// Tooltip of the button that hides a secret field.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide value'**
+  String get serverSecretHide;
+
+  /// Helper text of the custom headers section.
+  ///
+  /// In en, this message translates to:
+  /// **'For reverse-proxy gateways. Values are stored securely on this device.'**
+  String get serverHeadersHelper;
+
+  /// Label of a custom header name field.
+  ///
+  /// In en, this message translates to:
+  /// **'Header name'**
+  String get serverHeaderName;
+
+  /// Label of a custom header value field.
+  ///
+  /// In en, this message translates to:
+  /// **'Header value'**
+  String get serverHeaderValue;
+
+  /// Button that adds a custom header row.
+  ///
+  /// In en, this message translates to:
+  /// **'Add header'**
+  String get serverHeaderAdd;
+
+  /// Tooltip of the button that removes a custom header row.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove header'**
+  String get serverHeaderRemove;
+
+  /// Label of the per-server switch that allows unencrypted http.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow plain http'**
+  String get serverCleartextTitle;
+
+  /// Risk explanation shown with the plain http switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Plain http sends your API key, password and every response without encryption, so anyone on the network can read them. Only allow it on a network you trust, such as your home network.'**
+  String get serverCleartextRisk;
+
+  /// Hint shown when the address is http but plain http is not allowed.
+  ///
+  /// In en, this message translates to:
+  /// **'This address uses http. Turn on plain http, or use an https address.'**
+  String get serverCleartextNeeded;
+
+  /// Validation error: empty display name.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a name for this server.'**
+  String get serverErrorNameRequired;
+
+  /// Validation error: empty address.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the server address.'**
+  String get serverErrorAddressRequired;
+
+  /// Validation error: address is not a valid http(s) URL.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a full address such as https://host.example:8989.'**
+  String get serverErrorAddressInvalid;
+
+  /// Validation error: address contains credentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t put a username or password in the address. Use the fields below.'**
+  String get serverErrorAddressCredentials;
+
+  /// Validation error: address contains a query string.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove everything after the ? in the address. Keys belong in the key field.'**
+  String get serverErrorAddressQuery;
+
+  /// Validation error: invalid path prefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a path such as /sonarr, without spaces, ? or ...'**
+  String get serverErrorPrefixInvalid;
+
+  /// Validation error: invalid or duplicate header names.
+  ///
+  /// In en, this message translates to:
+  /// **'Header names may use letters, digits and - _ . only, and must be unique.'**
+  String get serverErrorHeaderInvalid;
+
+  /// Button that tests the connection to the server.
+  ///
+  /// In en, this message translates to:
+  /// **'Test connection'**
+  String get serverTestButton;
+
+  /// Shown while the connection test runs.
+  ///
+  /// In en, this message translates to:
+  /// **'Testing…'**
+  String get serverTestTesting;
+
+  /// Connection test success message.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected. Server version {version}.'**
+  String serverTestSuccess(String version);
+
+  /// Short success chip label for the connection test.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get serverTestSuccessLabel;
+
+  /// Short failure chip label for the connection test.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get serverTestFailedLabel;
+
+  /// Heading of the pinned certificate details.
+  ///
+  /// In en, this message translates to:
+  /// **'Trusted certificate'**
+  String get serverPinTitle;
+
+  /// Label of the pinned certificate fingerprint.
+  ///
+  /// In en, this message translates to:
+  /// **'SHA-256 fingerprint'**
+  String get serverPinFingerprint;
+
+  /// Button that forgets the pinned certificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove trusted certificate'**
+  String get serverPinRemove;
+
+  /// Title of the confirmation for forgetting a pin.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove trusted certificate?'**
+  String get serverPinRemoveTitle;
+
+  /// Consequence text of the forget-pin confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'The next connection will ask you to review the server\'s certificate again.'**
+  String get serverPinRemoveBody;
+
+  /// Confirm button of the forget-pin dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get serverPinRemoveConfirm;
+
+  /// Banner in the editor when the saved secrets are missing.
+  ///
+  /// In en, this message translates to:
+  /// **'The saved credentials for this server are missing. Enter them again and save.'**
+  String get serverNeedsCredentialsBanner;
+
+  /// Title of the unsaved-changes dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard changes?'**
+  String get serverDiscardTitle;
+
+  /// Body of the unsaved-changes dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Your changes to this server haven\'t been saved.'**
+  String get serverDiscardBody;
+
+  /// Discard button of the unsaved-changes dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get serverDiscardConfirm;
+
+  /// Keep-editing button of the unsaved-changes dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep editing'**
+  String get serverDiscardKeep;
+
+  /// Title of the certificate sheet on first contact.
+  ///
+  /// In en, this message translates to:
+  /// **'Trust this certificate?'**
+  String get certSheetTitleFirstUse;
+
+  /// Explanation on the first-use certificate sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'This server uses a certificate your device doesn\'t recognise. Compare the fingerprint with the one on your server before trusting it.'**
+  String get certSheetExplanationFirstUse;
+
+  /// Title of the certificate sheet when a pinned certificate changed.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate changed'**
+  String get certSheetTitleMismatch;
+
+  /// Explanation on the mismatch certificate sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'This server now presents a different certificate than the one you trusted. Connections stay blocked until you decide.'**
+  String get certSheetExplanationMismatch;
+
+  /// Prominent warning on the mismatch certificate sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'If you did not replace the certificate yourself, someone may be intercepting the connection. Do not trust it.'**
+  String get certSheetMismatchWarning;
+
+  /// Title of the certificate sheet for an expired certificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate expired'**
+  String get certSheetTitleExpired;
+
+  /// Explanation on the expired certificate sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'This server\'s certificate is expired or not valid yet, so it cannot be trusted. Renew it on the server.'**
+  String get certSheetExplanationExpired;
+
+  /// Label of the certificate fingerprint on the sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'SHA-256 fingerprint'**
+  String get certSheetFingerprint;
+
+  /// Label of the previously pinned fingerprint on the mismatch sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Previously trusted fingerprint'**
+  String get certSheetPreviousFingerprint;
+
+  /// Label of the certificate subject.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get certSheetSubject;
+
+  /// Label of the certificate issuer.
+  ///
+  /// In en, this message translates to:
+  /// **'Issuer'**
+  String get certSheetIssuer;
+
+  /// Label of the certificate validity period.
+  ///
+  /// In en, this message translates to:
+  /// **'Valid'**
+  String get certSheetValidity;
+
+  /// Certificate validity range text.
+  ///
+  /// In en, this message translates to:
+  /// **'{from} to {until}'**
+  String certSheetValidityRange(String from, String until);
+
+  /// Accept button of the first-use certificate sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Trust certificate'**
+  String get certSheetAccept;
+
+  /// Accept (re-trust) button of the mismatch certificate sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Trust new certificate'**
+  String get certSheetAcceptMismatch;
+
+  /// Reject button of the certificate sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t trust'**
+  String get certSheetReject;
+
+  /// Accessible label of the sheet drag handle.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag handle'**
+  String get certSheetHandle;
+
+  /// Headline of the first-run welcome step.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Consolarr'**
+  String get onboardingWelcomeTitle;
+
+  /// Body text of the first-run welcome step.
+  ///
+  /// In en, this message translates to:
+  /// **'Control your self-hosted media services from your phone. Let\'s connect your first server.'**
+  String get onboardingWelcomeBody;
+
+  /// Primary button of the welcome step.
+  ///
+  /// In en, this message translates to:
+  /// **'Get started'**
+  String get onboardingStart;
+
+  /// Button that skips first-run setup.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip for now'**
+  String get onboardingSkip;
+
+  /// Headline of the service choice step.
+  ///
+  /// In en, this message translates to:
+  /// **'Which service?'**
+  String get onboardingChooseTitle;
+
+  /// Body text of the service choice step.
+  ///
+  /// In en, this message translates to:
+  /// **'You can add more servers later.'**
+  String get onboardingChooseBody;
+
+  /// Headline of the details step.
+  ///
+  /// In en, this message translates to:
+  /// **'Server details'**
+  String get onboardingDetailsTitle;
+
+  /// Headline of the test step.
+  ///
+  /// In en, this message translates to:
+  /// **'Test and finish'**
+  String get onboardingTestTitle;
+
+  /// Next button of the onboarding stepper.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get onboardingNext;
+
+  /// Back button of the onboarding stepper.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get onboardingBack;
+
+  /// Finish button of the onboarding stepper.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish'**
+  String get onboardingFinish;
+
+  /// Progress text of the onboarding stepper.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {current} of {total}'**
+  String onboardingStepOf(int current, int total);
+
+  /// Hint on the test step until the connection test succeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Test the connection before finishing.'**
+  String get onboardingTestFirst;
+
   /// The app name, shown in the task switcher and as the accessible name of the app.
   ///
   /// In en, this message translates to:
   /// **'Consolarr'**
   String get appTitle;
+
+  /// Label of the Home destination in the bottom navigation bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get navHome;
+
+  /// Label of the Sonarr (TV series) destination in the bottom navigation bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Series'**
+  String get navSonarr;
+
+  /// Label of the torrent client destination in the bottom navigation bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Torrents'**
+  String get navTorrents;
+
+  /// Label of the Servers destination in the bottom navigation bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Servers'**
+  String get navServers;
+
+  /// Accessibility hint announced for the currently selected navigation destination.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected'**
+  String get navSelectedHint;
+
+  /// Title of the sheet that lets the user pick the active server for a service.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch server'**
+  String get switcherTitle;
+
+  /// Tooltip and accessible label of the top bar button that opens the server switcher.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch server'**
+  String get switcherTooltip;
+
+  /// Text marking the currently active server in the server switcher.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get switcherActive;
+
+  /// Message in the server switcher when no server of the service type exists.
+  ///
+  /// In en, this message translates to:
+  /// **'No servers of this type yet.'**
+  String get switcherEmpty;
+
+  /// Short health status text: the server answered correctly.
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get healthHealthy;
+
+  /// Short health status text: a health check is running.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking'**
+  String get healthChecking;
+
+  /// Short health status text: the server answers but with errors or very slowly.
+  ///
+  /// In en, this message translates to:
+  /// **'Slow or erroring'**
+  String get healthDegraded;
+
+  /// Short health status text: the server rejected the credentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong credentials'**
+  String get healthUnauthorized;
+
+  /// Short health status text: the server cannot be reached.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline'**
+  String get healthUnreachable;
+
+  /// Primary button on the Home screen that starts first-run server setup.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up a server'**
+  String get homeSetupCta;
+
+  /// Heading above the list of configured services on the Home screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Your services'**
+  String get homeServicesHeading;
 
   /// Title of the Sonarr series library screen and its floating top bar.
   ///

@@ -20,7 +20,7 @@
   "@homeEmptyHeading": {
     "description": "Headline of the placeholder state on the home screen before any server is configured."
   },
-  "homeEmptyBody": "[Àðð à ɱéðîà šéŕṽéŕ öŕ ðöŵñļöàð çļîéñţ ţö ĝéţ šţàŕţéð. Ţĥîš šçŕééñ îš à þļàçéĥöļðéŕ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "homeEmptyBody": "[Àðð à ɱéðîà šéŕṽéŕ öŕ ðöŵñļöàð çļîéñţ ţö ĝéţ šţàŕţéð.~~~~~~~~~~~~~~~~~~~~~~]",
   "@homeEmptyBody": {
     "description": "One-line hint under the placeholder headline on the home screen."
   },
@@ -158,9 +158,609 @@
   "@connErrorInvalidInputHint": {
     "description": "Fix hint shown under the message for a connection problem: form input rejected locally (credentials or query in address, bad path)."
   },
+  "serversTitle": "[Šéŕṽéŕš~~~]",
+  "@serversTitle": {
+    "description": "Title of the servers list screen."
+  },
+  "serversAddTooltip": "[Àðð à šéŕṽéŕ~~~~~]",
+  "@serversAddTooltip": {
+    "description": "Tooltip and accessible label of the add-server button in the servers list top bar."
+  },
+  "serversEmptyHeadline": "[Ñö šéŕṽéŕš ýéţ~~~~~~]",
+  "@serversEmptyHeadline": {
+    "description": "Headline of the servers list when no server is configured."
+  },
+  "serversEmptyMessage": "[Àðð Šöñàŕŕ öŕ ǫßîţţöŕŕéñţ ţö ƀŕöŵšé ýöüŕ ļîƀŕàŕý àñð ðöŵñļöàðš ƒŕöɱ ĥéŕé.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@serversEmptyMessage": {
+    "description": "Hint under the empty servers list headline."
+  },
+  "serversEmptyAction": "[Àðð ýöüŕ ƒîŕšţ šéŕṽéŕ~~~~~~~~~]",
+  "@serversEmptyAction": {
+    "description": "Primary action label of the empty servers list."
+  },
+  "serversLoadErrorHeadline": "[Çöüļðñ'ţ ļöàð ýöüŕ šéŕṽéŕš~~~~~~~~~~~]",
+  "@serversLoadErrorHeadline": {
+    "description": "Headline when the saved servers could not be read from the device."
+  },
+  "serversLoadErrorMessage": "[Ţĥé šàṽéð šéŕṽéŕš çöüļð ñöţ ƀé ŕéàð ƒŕöɱ ţĥîš ðéṽîçé.~~~~~~~~~~~~~~~~~~~~~~]",
+  "@serversLoadErrorMessage": {
+    "description": "Message when the saved servers could not be read."
+  },
+  "serversRetry": "[Ţŕý àĝàîñ~~~~]",
+  "@serversRetry": {
+    "description": "Retry button label in the servers feature."
+  },
+  "serversCancel": "[Çàñçéļ~~~]",
+  "@serversCancel": {
+    "description": "Cancel button label in servers dialogs."
+  },
+  "serverKindSonarr": "[Šöñàŕŕ~~~]",
+  "@serverKindSonarr": {
+    "description": "Display name of the Sonarr service (brand name)."
+  },
+  "serverKindRadarr": "[Ŕàðàŕŕ~~~]",
+  "@serverKindRadarr": {
+    "description": "Display name of the Radarr service (brand name)."
+  },
+  "serverKindQbittorrent": "[ǫßîţţöŕŕéñţ~~~~~]",
+  "@serverKindQbittorrent": {
+    "description": "Display name of the qBittorrent service (brand name)."
+  },
+  "serverKindTransmission": "[Ţŕàñšɱîššîöñ~~~~~]",
+  "@serverKindTransmission": {
+    "description": "Display name of the Transmission service (brand name)."
+  },
+  "serverKindDeluge": "[Ðéļüĝé~~~]",
+  "@serverKindDeluge": {
+    "description": "Display name of the Deluge service (brand name)."
+  },
+  "serverKindSonarrDescription": "[ŢṼ šéŕîéš ļîƀŕàŕý~~~~~~~]",
+  "@serverKindSonarrDescription": {
+    "description": "Short description of Sonarr on the service choice tile."
+  },
+  "serverKindQbittorrentDescription": "[Ţöŕŕéñţ ðöŵñļöàðš~~~~~~~]",
+  "@serverKindQbittorrentDescription": {
+    "description": "Short description of qBittorrent on the service choice tile."
+  },
+  "serverKindOtherDescription": "[Ñöţ àṽàîļàƀļé ýéţ~~~~~~~]",
+  "@serverKindOtherDescription": {
+    "description": "Description for a service that is not supported yet."
+  },
+  "serverHealthChecking": "[Çĥéçķîñĝ…~~~~]",
+  "@serverHealthChecking": {
+    "description": "Health text of a server being checked."
+  },
+  "serverHealthHealthy": "[Öñļîñé~~~]",
+  "@serverHealthHealthy": {
+    "description": "Health text of a healthy server."
+  },
+  "serverHealthDegraded": "[Ŕéšþöñðîñĝ ŵîţĥ þŕöƀļéɱš~~~~~~~~~~]",
+  "@serverHealthDegraded": {
+    "description": "Health text of a server that answers with errors or slowly."
+  },
+  "serverHealthUnauthorized": "[Šîĝñ-îñ ƒàîļéð~~~~~~]",
+  "@serverHealthUnauthorized": {
+    "description": "Health text of a server that rejected the credentials."
+  },
+  "serverHealthUnreachable": "[Üñŕéàçĥàƀļé~~~~~]",
+  "@serverHealthUnreachable": {
+    "description": "Health text of a server that cannot be reached."
+  },
+  "serverHealthUnknown": "[Çöüļðñ'ţ çĥéçķ~~~~~~]",
+  "@serverHealthUnknown": {
+    "description": "Health text when the health check itself failed."
+  },
+  "serverBadgeCleartext": "[Þļàîñ ĥţţþ~~~~]",
+  "@serverBadgeCleartext": {
+    "description": "Warning badge on a server that is allowed to use unencrypted http."
+  },
+  "serverBadgeNeedsCredentials": "[Ñééðš çŕéðéñţîàļš~~~~~~~]",
+  "@serverBadgeNeedsCredentials": {
+    "description": "Badge on a server whose saved secrets are missing."
+  },
+  "serverBadgeActive": "[Àçţîṽé~~~]",
+  "@serverBadgeActive": {
+    "description": "Badge on the server used by default for its service."
+  },
+  "serverBadgeStartup": "[Öþéñš àţ ļàüñçĥ~~~~~~]",
+  "@serverBadgeStartup": {
+    "description": "Badge on the server opened when the app starts."
+  },
+  "serverMenuTooltip": "[Ṁöŕé àçţîöñš ƒöŕ ~~~~~~~{name}]",
+  "@serverMenuTooltip": {
+    "description": "Tooltip and accessible label of the per-server actions menu.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Server display name."
+      }
+    }
+  },
+  "serverDragHandleLabel": "[Ŕéöŕðéŕ ~~~~{name}]",
+  "@serverDragHandleLabel": {
+    "description": "Accessible label of the drag handle that reorders a server.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Server display name."
+      }
+    }
+  },
+  "serverActionEdit": "[Éðîţ~~]",
+  "@serverActionEdit": {
+    "description": "Menu action: edit a server."
+  },
+  "serverActionSetActive": "[Ṁàķé àçţîṽé~~~~~]",
+  "@serverActionSetActive": {
+    "description": "Menu action: use this server by default for its service."
+  },
+  "serverActionSetStartup": "[Öþéñ àţ ļàüñçĥ~~~~~~]",
+  "@serverActionSetStartup": {
+    "description": "Menu action: open this server when the app starts."
+  },
+  "serverActionClearStartup": "[Ðöñ'ţ öþéñ àţ ļàüñçĥ~~~~~~~~]",
+  "@serverActionClearStartup": {
+    "description": "Menu action: stop opening this server at launch."
+  },
+  "serverActionMoveUp": "[Ṁöṽé üþ~~~]",
+  "@serverActionMoveUp": {
+    "description": "Menu action: move a server up in the list (alternative to dragging)."
+  },
+  "serverActionMoveDown": "[Ṁöṽé ðöŵñ~~~~]",
+  "@serverActionMoveDown": {
+    "description": "Menu action: move a server down in the list (alternative to dragging)."
+  },
+  "serverActionDelete": "[Ðéļéţé~~~]",
+  "@serverActionDelete": {
+    "description": "Menu action: delete a server."
+  },
+  "serverDeleteTitle": "[Ðéļéţé ~~~{name}?~]",
+  "@serverDeleteTitle": {
+    "description": "Title of the delete-server confirmation.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Server display name."
+      }
+    }
+  },
+  "serverDeleteBody": "[Ţĥîš ŕéɱöṽéš ţĥé šàṽéð çŕéðéñţîàļš, ţĥé ţŕüšţéð çéŕţîƒîçàţé àñð ţĥé çàçĥéð ðàţà ƒöŕ ţĥîš šéŕṽéŕ ƒŕöɱ ţĥîš ðéṽîçé. Ţĥé šéŕṽéŕ îţšéļƒ îš ñöţ çĥàñĝéð.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@serverDeleteBody": {
+    "description": "Consequences spelled out in the delete-server confirmation."
+  },
+  "serverDeleteConfirm": "[Ðéļéţé~~~]",
+  "@serverDeleteConfirm": {
+    "description": "Confirm button of the delete-server dialog."
+  },
+  "serverEditorTitleNew": "[Àðð šéŕṽéŕ~~~~]",
+  "@serverEditorTitleNew": {
+    "description": "Title of the server editor when creating a server."
+  },
+  "serverEditorTitleEdit": "[Éðîţ šéŕṽéŕ~~~~~]",
+  "@serverEditorTitleEdit": {
+    "description": "Title of the server editor when editing a server."
+  },
+  "serverEditorSave": "[Šàṽé~~]",
+  "@serverEditorSave": {
+    "description": "Save button of the server editor."
+  },
+  "serverSaveFailedHeadline": "[Çöüļðñ'ţ šàṽé ţĥé šéŕṽéŕ~~~~~~~~~~]",
+  "@serverSaveFailedHeadline": {
+    "description": "Headline shown when saving a server failed."
+  },
+  "serverSectionService": "[Šéŕṽîçé~~~]",
+  "@serverSectionService": {
+    "description": "Section heading: service type and name."
+  },
+  "serverSectionAddress": "[Àððŕéšš~~~]",
+  "@serverSectionAddress": {
+    "description": "Section heading: server address."
+  },
+  "serverSectionAuth": "[Àüţĥéñţîçàţîöñ~~~~~~]",
+  "@serverSectionAuth": {
+    "description": "Section heading: authentication."
+  },
+  "serverSectionHeaders": "[Çüšţöɱ ĥéàðéŕš~~~~~~]",
+  "@serverSectionHeaders": {
+    "description": "Section heading: custom request headers."
+  },
+  "serverSectionSecurity": "[Šéçüŕîţý~~~~]",
+  "@serverSectionSecurity": {
+    "description": "Section heading: transport security."
+  },
+  "serverFieldName": "[Ðîšþļàý ñàɱé~~~~~]",
+  "@serverFieldName": {
+    "description": "Label of the server display name field."
+  },
+  "serverFieldAddress": "[Àððŕéšš~~~]",
+  "@serverFieldAddress": {
+    "description": "Label of the server address field."
+  },
+  "serverFieldAddressHint": "[ĥţţþš://ĥöšţ.éẋàɱþļé:8989~~~~~~~~~~]",
+  "@serverFieldAddressHint": {
+    "description": "Placeholder example for the server address field."
+  },
+  "serverFieldPathPrefix": "[Þàţĥ þŕéƒîẋ (öþţîöñàļ)~~~~~~~~~]",
+  "@serverFieldPathPrefix": {
+    "description": "Label of the optional reverse-proxy path prefix field."
+  },
+  "serverPathPrefixHelper": "[Öñļý ñééðéð îƒ à ŕéṽéŕšé þŕöẋý šéŕṽéš ţĥé àþþ üñðéŕ à þàţĥ, ƒöŕ éẋàɱþļé /šöñàŕŕ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@serverPathPrefixHelper": {
+    "description": "Helper text under the path prefix field."
+  },
+  "serverAuthNone": "[Ñöñé~~]",
+  "@serverAuthNone": {
+    "description": "Authentication mode: no credentials."
+  },
+  "serverAuthApiKey": "[ÀÞÎ ķéý~~~]",
+  "@serverAuthApiKey": {
+    "description": "Authentication mode: API key."
+  },
+  "serverAuthBasic": "[Üšéŕñàɱé àñð þàššŵöŕð~~~~~~~~~]",
+  "@serverAuthBasic": {
+    "description": "Authentication mode: username and password."
+  },
+  "serverFieldApiKey": "[ÀÞÎ ķéý~~~]",
+  "@serverFieldApiKey": {
+    "description": "Label of the API key field."
+  },
+  "serverFieldUsername": "[Üšéŕñàɱé~~~~]",
+  "@serverFieldUsername": {
+    "description": "Label of the username field."
+  },
+  "serverFieldPassword": "[Þàššŵöŕð~~~~]",
+  "@serverFieldPassword": {
+    "description": "Label of the password field."
+  },
+  "serverSecretKeepHint": "[Ļéàṽé éɱþţý ţö ķééþ ţĥé šàṽéð ṽàļüé.~~~~~~~~~~~~~~~]",
+  "@serverSecretKeepHint": {
+    "description": "Helper under a secret field when editing a server with a saved secret."
+  },
+  "serverSecretShow": "[Šĥöŵ ṽàļüé~~~~]",
+  "@serverSecretShow": {
+    "description": "Tooltip of the button that reveals a secret field."
+  },
+  "serverSecretHide": "[Ĥîðé ṽàļüé~~~~]",
+  "@serverSecretHide": {
+    "description": "Tooltip of the button that hides a secret field."
+  },
+  "serverHeadersHelper": "[Ƒöŕ ŕéṽéŕšé-þŕöẋý ĝàţéŵàýš. Ṽàļüéš àŕé šţöŕéð šéçüŕéļý öñ ţĥîš ðéṽîçé.~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@serverHeadersHelper": {
+    "description": "Helper text of the custom headers section."
+  },
+  "serverHeaderName": "[Ĥéàðéŕ ñàɱé~~~~~]",
+  "@serverHeaderName": {
+    "description": "Label of a custom header name field."
+  },
+  "serverHeaderValue": "[Ĥéàðéŕ ṽàļüé~~~~~]",
+  "@serverHeaderValue": {
+    "description": "Label of a custom header value field."
+  },
+  "serverHeaderAdd": "[Àðð ĥéàðéŕ~~~~]",
+  "@serverHeaderAdd": {
+    "description": "Button that adds a custom header row."
+  },
+  "serverHeaderRemove": "[Ŕéɱöṽé ĥéàðéŕ~~~~~~]",
+  "@serverHeaderRemove": {
+    "description": "Tooltip of the button that removes a custom header row."
+  },
+  "serverCleartextTitle": "[Àļļöŵ þļàîñ ĥţţþ~~~~~~~]",
+  "@serverCleartextTitle": {
+    "description": "Label of the per-server switch that allows unencrypted http."
+  },
+  "serverCleartextRisk": "[Þļàîñ ĥţţþ šéñðš ýöüŕ ÀÞÎ ķéý, þàššŵöŕð àñð éṽéŕý ŕéšþöñšé ŵîţĥöüţ éñçŕýþţîöñ, šö àñýöñé öñ ţĥé ñéţŵöŕķ çàñ ŕéàð ţĥéɱ. Öñļý àļļöŵ îţ öñ à ñéţŵöŕķ ýöü ţŕüšţ, šüçĥ àš ýöüŕ ĥöɱé ñéţŵöŕķ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@serverCleartextRisk": {
+    "description": "Risk explanation shown with the plain http switch."
+  },
+  "serverCleartextNeeded": "[Ţĥîš àððŕéšš üšéš ĥţţþ. Ţüŕñ öñ þļàîñ ĥţţþ, öŕ üšé àñ ĥţţþš àððŕéšš.~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@serverCleartextNeeded": {
+    "description": "Hint shown when the address is http but plain http is not allowed."
+  },
+  "serverErrorNameRequired": "[Éñţéŕ à ñàɱé ƒöŕ ţĥîš šéŕṽéŕ.~~~~~~~~~~~~]",
+  "@serverErrorNameRequired": {
+    "description": "Validation error: empty display name."
+  },
+  "serverErrorAddressRequired": "[Éñţéŕ ţĥé šéŕṽéŕ àððŕéšš.~~~~~~~~~~]",
+  "@serverErrorAddressRequired": {
+    "description": "Validation error: empty address."
+  },
+  "serverErrorAddressInvalid": "[Éñţéŕ à ƒüļļ àððŕéšš šüçĥ àš ĥţţþš://ĥöšţ.éẋàɱþļé:8989.~~~~~~~~~~~~~~~~~~~~~~]",
+  "@serverErrorAddressInvalid": {
+    "description": "Validation error: address is not a valid http(s) URL."
+  },
+  "serverErrorAddressCredentials": "[Ðöñ'ţ þüţ à üšéŕñàɱé öŕ þàššŵöŕð îñ ţĥé àððŕéšš. Üšé ţĥé ƒîéļðš ƀéļöŵ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@serverErrorAddressCredentials": {
+    "description": "Validation error: address contains credentials."
+  },
+  "serverErrorAddressQuery": "[Ŕéɱöṽé éṽéŕýţĥîñĝ àƒţéŕ ţĥé ? îñ ţĥé àððŕéšš. Ķéýš ƀéļöñĝ îñ ţĥé ķéý ƒîéļð.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@serverErrorAddressQuery": {
+    "description": "Validation error: address contains a query string."
+  },
+  "serverErrorPrefixInvalid": "[Üšé à þàţĥ šüçĥ àš /šöñàŕŕ, ŵîţĥöüţ šþàçéš, ? öŕ ...~~~~~~~~~~~~~~~~~~~~~]",
+  "@serverErrorPrefixInvalid": {
+    "description": "Validation error: invalid path prefix."
+  },
+  "serverErrorHeaderInvalid": "[Ĥéàðéŕ ñàɱéš ɱàý üšé ļéţţéŕš, ðîĝîţš àñð - _ . öñļý, àñð ɱüšţ ƀé üñîǫüé.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@serverErrorHeaderInvalid": {
+    "description": "Validation error: invalid or duplicate header names."
+  },
+  "serverTestButton": "[Ţéšţ çöññéçţîöñ~~~~~~]",
+  "@serverTestButton": {
+    "description": "Button that tests the connection to the server."
+  },
+  "serverTestTesting": "[Ţéšţîñĝ…~~~~]",
+  "@serverTestTesting": {
+    "description": "Shown while the connection test runs."
+  },
+  "serverTestSuccess": "[Çöññéçţéð. Šéŕṽéŕ ṽéŕšîöñ ~~~~~~~~~~~{version}.~]",
+  "@serverTestSuccess": {
+    "description": "Connection test success message.",
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "description": "Version text reported by the server."
+      }
+    }
+  },
+  "serverTestSuccessLabel": "[Çöññéçţéð~~~~]",
+  "@serverTestSuccessLabel": {
+    "description": "Short success chip label for the connection test."
+  },
+  "serverTestFailedLabel": "[Ƒàîļéð~~~]",
+  "@serverTestFailedLabel": {
+    "description": "Short failure chip label for the connection test."
+  },
+  "serverPinTitle": "[Ţŕüšţéð çéŕţîƒîçàţé~~~~~~~~]",
+  "@serverPinTitle": {
+    "description": "Heading of the pinned certificate details."
+  },
+  "serverPinFingerprint": "[ŠĤÀ-256 ƒîñĝéŕþŕîñţ~~~~~~~~]",
+  "@serverPinFingerprint": {
+    "description": "Label of the pinned certificate fingerprint."
+  },
+  "serverPinRemove": "[Ŕéɱöṽé ţŕüšţéð çéŕţîƒîçàţé~~~~~~~~~~~]",
+  "@serverPinRemove": {
+    "description": "Button that forgets the pinned certificate."
+  },
+  "serverPinRemoveTitle": "[Ŕéɱöṽé ţŕüšţéð çéŕţîƒîçàţé?~~~~~~~~~~~]",
+  "@serverPinRemoveTitle": {
+    "description": "Title of the confirmation for forgetting a pin."
+  },
+  "serverPinRemoveBody": "[Ţĥé ñéẋţ çöññéçţîöñ ŵîļļ àšķ ýöü ţö ŕéṽîéŵ ţĥé šéŕṽéŕ'š çéŕţîƒîçàţé àĝàîñ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@serverPinRemoveBody": {
+    "description": "Consequence text of the forget-pin confirmation."
+  },
+  "serverPinRemoveConfirm": "[Ŕéɱöṽé~~~]",
+  "@serverPinRemoveConfirm": {
+    "description": "Confirm button of the forget-pin dialog."
+  },
+  "serverNeedsCredentialsBanner": "[Ţĥé šàṽéð çŕéðéñţîàļš ƒöŕ ţĥîš šéŕṽéŕ àŕé ɱîššîñĝ. Éñţéŕ ţĥéɱ àĝàîñ àñð šàṽé.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@serverNeedsCredentialsBanner": {
+    "description": "Banner in the editor when the saved secrets are missing."
+  },
+  "serverDiscardTitle": "[Ðîšçàŕð çĥàñĝéš?~~~~~~~]",
+  "@serverDiscardTitle": {
+    "description": "Title of the unsaved-changes dialog."
+  },
+  "serverDiscardBody": "[Ýöüŕ çĥàñĝéš ţö ţĥîš šéŕṽéŕ ĥàṽéñ'ţ ƀééñ šàṽéð.~~~~~~~~~~~~~~~~~~~]",
+  "@serverDiscardBody": {
+    "description": "Body of the unsaved-changes dialog."
+  },
+  "serverDiscardConfirm": "[Ðîšçàŕð~~~]",
+  "@serverDiscardConfirm": {
+    "description": "Discard button of the unsaved-changes dialog."
+  },
+  "serverDiscardKeep": "[Ķééþ éðîţîñĝ~~~~~]",
+  "@serverDiscardKeep": {
+    "description": "Keep-editing button of the unsaved-changes dialog."
+  },
+  "certSheetTitleFirstUse": "[Ţŕüšţ ţĥîš çéŕţîƒîçàţé?~~~~~~~~~~]",
+  "@certSheetTitleFirstUse": {
+    "description": "Title of the certificate sheet on first contact."
+  },
+  "certSheetExplanationFirstUse": "[Ţĥîš šéŕṽéŕ üšéš à çéŕţîƒîçàţé ýöüŕ ðéṽîçé ðöéšñ'ţ ŕéçöĝñîšé. Çöɱþàŕé ţĥé ƒîñĝéŕþŕîñţ ŵîţĥ ţĥé öñé öñ ýöüŕ šéŕṽéŕ ƀéƒöŕé ţŕüšţîñĝ îţ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@certSheetExplanationFirstUse": {
+    "description": "Explanation on the first-use certificate sheet."
+  },
+  "certSheetTitleMismatch": "[Çéŕţîƒîçàţé çĥàñĝéð~~~~~~~~]",
+  "@certSheetTitleMismatch": {
+    "description": "Title of the certificate sheet when a pinned certificate changed."
+  },
+  "certSheetExplanationMismatch": "[Ţĥîš šéŕṽéŕ ñöŵ þŕéšéñţš à ðîƒƒéŕéñţ çéŕţîƒîçàţé ţĥàñ ţĥé öñé ýöü ţŕüšţéð. Çöññéçţîöñš šţàý ƀļöçķéð üñţîļ ýöü ðéçîðé.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@certSheetExplanationMismatch": {
+    "description": "Explanation on the mismatch certificate sheet."
+  },
+  "certSheetMismatchWarning": "[Îƒ ýöü ðîð ñöţ ŕéþļàçé ţĥé çéŕţîƒîçàţé ýöüŕšéļƒ, šöɱéöñé ɱàý ƀé îñţéŕçéþţîñĝ ţĥé çöññéçţîöñ. Ðö ñöţ ţŕüšţ îţ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@certSheetMismatchWarning": {
+    "description": "Prominent warning on the mismatch certificate sheet."
+  },
+  "certSheetTitleExpired": "[Çéŕţîƒîçàţé éẋþîŕéð~~~~~~~~]",
+  "@certSheetTitleExpired": {
+    "description": "Title of the certificate sheet for an expired certificate."
+  },
+  "certSheetExplanationExpired": "[Ţĥîš šéŕṽéŕ'š çéŕţîƒîçàţé îš éẋþîŕéð öŕ ñöţ ṽàļîð ýéţ, šö îţ çàññöţ ƀé ţŕüšţéð. Ŕéñéŵ îţ öñ ţĥé šéŕṽéŕ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@certSheetExplanationExpired": {
+    "description": "Explanation on the expired certificate sheet."
+  },
+  "certSheetFingerprint": "[ŠĤÀ-256 ƒîñĝéŕþŕîñţ~~~~~~~~]",
+  "@certSheetFingerprint": {
+    "description": "Label of the certificate fingerprint on the sheet."
+  },
+  "certSheetPreviousFingerprint": "[Þŕéṽîöüšļý ţŕüšţéð ƒîñĝéŕþŕîñţ~~~~~~~~~~~~]",
+  "@certSheetPreviousFingerprint": {
+    "description": "Label of the previously pinned fingerprint on the mismatch sheet."
+  },
+  "certSheetSubject": "[Šüƀĵéçţ~~~]",
+  "@certSheetSubject": {
+    "description": "Label of the certificate subject."
+  },
+  "certSheetIssuer": "[Îššüéŕ~~~]",
+  "@certSheetIssuer": {
+    "description": "Label of the certificate issuer."
+  },
+  "certSheetValidity": "[Ṽàļîð~~]",
+  "@certSheetValidity": {
+    "description": "Label of the certificate validity period."
+  },
+  "certSheetValidityRange": "[{from} ţö ~~{until}]",
+  "@certSheetValidityRange": {
+    "description": "Certificate validity range text.",
+    "placeholders": {
+      "from": {
+        "type": "String",
+        "description": "Start date, already formatted."
+      },
+      "until": {
+        "type": "String",
+        "description": "End date, already formatted."
+      }
+    }
+  },
+  "certSheetAccept": "[Ţŕüšţ çéŕţîƒîçàţé~~~~~~~]",
+  "@certSheetAccept": {
+    "description": "Accept button of the first-use certificate sheet."
+  },
+  "certSheetAcceptMismatch": "[Ţŕüšţ ñéŵ çéŕţîƒîçàţé~~~~~~~~~]",
+  "@certSheetAcceptMismatch": {
+    "description": "Accept (re-trust) button of the mismatch certificate sheet."
+  },
+  "certSheetReject": "[Ðöñ'ţ ţŕüšţ~~~~~]",
+  "@certSheetReject": {
+    "description": "Reject button of the certificate sheet."
+  },
+  "certSheetHandle": "[Ðŕàĝ ĥàñðļé~~~~~]",
+  "@certSheetHandle": {
+    "description": "Accessible label of the sheet drag handle."
+  },
+  "onboardingWelcomeTitle": "[Ŵéļçöɱé ţö Çöñšöļàŕŕ~~~~~~~~]",
+  "@onboardingWelcomeTitle": {
+    "description": "Headline of the first-run welcome step."
+  },
+  "onboardingWelcomeBody": "[Çöñţŕöļ ýöüŕ šéļƒ-ĥöšţéð ɱéðîà šéŕṽîçéš ƒŕöɱ ýöüŕ þĥöñé. Ļéţ'š çöññéçţ ýöüŕ ƒîŕšţ šéŕṽéŕ.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]",
+  "@onboardingWelcomeBody": {
+    "description": "Body text of the first-run welcome step."
+  },
+  "onboardingStart": "[Ĝéţ šţàŕţéð~~~~~]",
+  "@onboardingStart": {
+    "description": "Primary button of the welcome step."
+  },
+  "onboardingSkip": "[Šķîþ ƒöŕ ñöŵ~~~~~]",
+  "@onboardingSkip": {
+    "description": "Button that skips first-run setup."
+  },
+  "onboardingChooseTitle": "[Ŵĥîçĥ šéŕṽîçé?~~~~~~]",
+  "@onboardingChooseTitle": {
+    "description": "Headline of the service choice step."
+  },
+  "onboardingChooseBody": "[Ýöü çàñ àðð ɱöŕé šéŕṽéŕš ļàţéŕ.~~~~~~~~~~~~~]",
+  "@onboardingChooseBody": {
+    "description": "Body text of the service choice step."
+  },
+  "onboardingDetailsTitle": "[Šéŕṽéŕ ðéţàîļš~~~~~~]",
+  "@onboardingDetailsTitle": {
+    "description": "Headline of the details step."
+  },
+  "onboardingTestTitle": "[Ţéšţ àñð ƒîñîšĥ~~~~~~]",
+  "@onboardingTestTitle": {
+    "description": "Headline of the test step."
+  },
+  "onboardingNext": "[Ñéẋţ~~]",
+  "@onboardingNext": {
+    "description": "Next button of the onboarding stepper."
+  },
+  "onboardingBack": "[ßàçķ~~]",
+  "@onboardingBack": {
+    "description": "Back button of the onboarding stepper."
+  },
+  "onboardingFinish": "[Ƒîñîšĥ~~~]",
+  "@onboardingFinish": {
+    "description": "Finish button of the onboarding stepper."
+  },
+  "onboardingStepOf": "[Šţéþ ~~{current} öƒ ~~{total}]",
+  "@onboardingStepOf": {
+    "description": "Progress text of the onboarding stepper.",
+    "placeholders": {
+      "current": {
+        "type": "int",
+        "description": "Current step number."
+      },
+      "total": {
+        "type": "int",
+        "description": "Number of steps."
+      }
+    }
+  },
+  "onboardingTestFirst": "[Ţéšţ ţĥé çöññéçţîöñ ƀéƒöŕé ƒîñîšĥîñĝ.~~~~~~~~~~~~~~~]",
+  "@onboardingTestFirst": {
+    "description": "Hint on the test step until the connection test succeeded."
+  },
   "appTitle": "[Çöñšöļàŕŕ~~~~]",
   "@appTitle": {
     "description": "The app name, shown in the task switcher and as the accessible name of the app."
+  },
+  "navHome": "[Ĥöɱé~~]",
+  "@navHome": {
+    "description": "Label of the Home destination in the bottom navigation bar."
+  },
+  "navSonarr": "[Šéŕîéš~~~]",
+  "@navSonarr": {
+    "description": "Label of the Sonarr (TV series) destination in the bottom navigation bar."
+  },
+  "navTorrents": "[Ţöŕŕéñţš~~~~]",
+  "@navTorrents": {
+    "description": "Label of the torrent client destination in the bottom navigation bar."
+  },
+  "navServers": "[Šéŕṽéŕš~~~]",
+  "@navServers": {
+    "description": "Label of the Servers destination in the bottom navigation bar."
+  },
+  "navSelectedHint": "[Šéļéçţéð~~~~]",
+  "@navSelectedHint": {
+    "description": "Accessibility hint announced for the currently selected navigation destination."
+  },
+  "switcherTitle": "[Šŵîţçĥ šéŕṽéŕ~~~~~~]",
+  "@switcherTitle": {
+    "description": "Title of the sheet that lets the user pick the active server for a service."
+  },
+  "switcherTooltip": "[Šŵîţçĥ šéŕṽéŕ~~~~~~]",
+  "@switcherTooltip": {
+    "description": "Tooltip and accessible label of the top bar button that opens the server switcher."
+  },
+  "switcherActive": "[Àçţîṽé~~~]",
+  "@switcherActive": {
+    "description": "Text marking the currently active server in the server switcher."
+  },
+  "switcherEmpty": "[Ñö šéŕṽéŕš öƒ ţĥîš ţýþé ýéţ.~~~~~~~~~~~~]",
+  "@switcherEmpty": {
+    "description": "Message in the server switcher when no server of the service type exists."
+  },
+  "healthHealthy": "[Öñļîñé~~~]",
+  "@healthHealthy": {
+    "description": "Short health status text: the server answered correctly."
+  },
+  "healthChecking": "[Çĥéçķîñĝ~~~~]",
+  "@healthChecking": {
+    "description": "Short health status text: a health check is running."
+  },
+  "healthDegraded": "[Šļöŵ öŕ éŕŕöŕîñĝ~~~~~~~]",
+  "@healthDegraded": {
+    "description": "Short health status text: the server answers but with errors or very slowly."
+  },
+  "healthUnauthorized": "[Ŵŕöñĝ çŕéðéñţîàļš~~~~~~~]",
+  "@healthUnauthorized": {
+    "description": "Short health status text: the server rejected the credentials."
+  },
+  "healthUnreachable": "[Öƒƒļîñé~~~]",
+  "@healthUnreachable": {
+    "description": "Short health status text: the server cannot be reached."
+  },
+  "homeSetupCta": "[Šéţ üþ à šéŕṽéŕ~~~~~~]",
+  "@homeSetupCta": {
+    "description": "Primary button on the Home screen that starts first-run server setup."
+  },
+  "homeServicesHeading": "[Ýöüŕ šéŕṽîçéš~~~~~~]",
+  "@homeServicesHeading": {
+    "description": "Heading above the list of configured services on the Home screen."
   },
   "sonarrTitle": "[Šéŕîéš~~~]",
   "@sonarrTitle": {

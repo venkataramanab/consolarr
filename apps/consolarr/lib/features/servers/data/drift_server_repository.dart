@@ -137,8 +137,11 @@ class DriftServerRepository implements ServerRepository {
 
   @override
   Future<Result<ServerEntry>> save(ServerDraft draft) async {
-    final isNew = draft.id == null;
     final id = draft.id ?? _newId();
+    // The editor may pre-assign an id for a new server (so a certificate pin
+    // made during the connection test belongs to the saved server); an id that
+    // is not stored yet is still a new server.
+    final isNew = draft.id == null || await find(id) == null;
     final headers = draft.credentials.headers;
     final parsed = ServerProfile.parse(
       id: id,

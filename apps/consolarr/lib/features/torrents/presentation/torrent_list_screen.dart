@@ -9,9 +9,7 @@ import 'package:consolarr/features/torrents/presentation/format.dart';
 import 'package:consolarr/features/torrents/presentation/speed_header.dart';
 import 'package:consolarr/features/torrents/presentation/torrent_row.dart';
 import 'package:consolarr/src/providers.dart';
-import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
-import 'package:flutter/widgets.dart' show WidgetsBindingObserver;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
@@ -45,7 +43,8 @@ class _TorrentListScreenState extends ConsumerState<TorrentListScreen>
     WidgetsBinding.instance.addObserver(this);
     _timer = Timer.periodic(ref.read(torrentPollIntervalProvider), (_) {
       // Skip while backgrounded or when this tab is not the visible one.
-      if (!mounted || !_resumed || !TickerMode.of(context)) return;
+      if (!mounted || !_resumed || !TickerMode.valuesOf(context).enabled)
+        return;
       unawaited(ref.read(torrentListProvider.notifier).refresh());
     });
   }
@@ -70,10 +69,8 @@ class _TorrentListScreenState extends ConsumerState<TorrentListScreen>
     final l10n = context.l10n;
     final async = ref.watch(torrentListProvider);
     final data = async.value;
-    final offline = data?.offline ?? false;
     return FloatingTopBarScaffold(
       title: l10n.torrentsTitle,
-      banner: offline ? _offlineBanner(l10n, data!) : null,
       bodyBuilder: (context, padding) {
         if (data == null) {
           if (async.hasError) {
@@ -176,6 +173,11 @@ class _TorrentListScreenState extends ConsumerState<TorrentListScreen>
         padding: EdgeInsets.only(top: padding.top, bottom: padding.bottom),
         child: Column(
           children: [
+            if (data.offline)
+              Padding(
+                padding: side.copyWith(bottom: ConsolarrSpacing.sm),
+                child: _offlineBanner(l10n, data),
+              ),
             Padding(padding: side, child: _header(data)),
             Expanded(
               child: RefreshIndicator(
@@ -199,7 +201,19 @@ class _TorrentListScreenState extends ConsumerState<TorrentListScreen>
         slivers: [
           SliverPadding(
             padding: EdgeInsets.only(top: padding.top).add(side),
-            sliver: SliverToBoxAdapter(child: _header(data)),
+            sliver: SliverToBoxAdapter(
+              // The banner scrolls with the content (it must not overlap the
+              // speed header the way a floating one would).
+              child: Column(
+                children: [
+                  if (data.offline) ...[
+                    _offlineBanner(l10n, data),
+                    const SizedBox(height: ConsolarrSpacing.sm),
+                  ],
+                  _header(data),
+                ],
+              ),
+            ),
           ),
           SliverPadding(
             padding: EdgeInsets.only(

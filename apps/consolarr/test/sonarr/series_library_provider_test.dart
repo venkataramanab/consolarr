@@ -2,7 +2,6 @@
 
 import 'package:consolarr/features/servers/application/server_connection.dart';
 import 'package:consolarr/features/sonarr/application/sonarr_providers.dart';
-import 'package:consolarr/features/sonarr/data/view_mode_store.dart';
 import 'package:consolarr/src/cache/payload_cache.dart';
 import 'package:consolarr/src/database/app_database.dart';
 import 'package:consolarr/src/providers.dart';

@@ -119,5 +119,541 @@
   "connErrorInvalidInputHint": "أدخل عنوانًا مثل https://host:port دون اسم مستخدم أو كلمة مرور أو مفتاح، ومسارًا يبدأ بشرطة مائلة.",
   "@connErrorInvalidInputHint": {
     "description": "Fix hint shown under the message for a connection problem: form input rejected locally (credentials or query in address, bad path)."
+  },
+  "serversTitle": "الخوادم",
+  "@serversTitle": {
+    "description": "Title of the servers list screen."
+  },
+  "serversAddTooltip": "إضافة خادم",
+  "@serversAddTooltip": {
+    "description": "Tooltip and accessible label of the add-server button in the servers list top bar."
+  },
+  "serversEmptyHeadline": "لا توجد خوادم بعد",
+  "@serversEmptyHeadline": {
+    "description": "Headline of the servers list when no server is configured."
+  },
+  "serversEmptyMessage": "أضف Sonarr أو qBittorrent لتصفح مكتبتك وتنزيلاتك من هنا.",
+  "@serversEmptyMessage": {
+    "description": "Hint under the empty servers list headline."
+  },
+  "serversEmptyAction": "أضف أول خادم",
+  "@serversEmptyAction": {
+    "description": "Primary action label of the empty servers list."
+  },
+  "serversLoadErrorHeadline": "تعذّر تحميل خوادمك",
+  "@serversLoadErrorHeadline": {
+    "description": "Headline when the saved servers could not be read from the device."
+  },
+  "serversLoadErrorMessage": "تعذّرت قراءة الخوادم المحفوظة من هذا الجهاز.",
+  "@serversLoadErrorMessage": {
+    "description": "Message when the saved servers could not be read."
+  },
+  "serversRetry": "حاول مرة أخرى",
+  "@serversRetry": {
+    "description": "Retry button label in the servers feature."
+  },
+  "serversCancel": "إلغاء",
+  "@serversCancel": {
+    "description": "Cancel button label in servers dialogs."
+  },
+  "serverKindSonarr": "Sonarr",
+  "@serverKindSonarr": {
+    "description": "Display name of the Sonarr service (brand name)."
+  },
+  "serverKindRadarr": "Radarr",
+  "@serverKindRadarr": {
+    "description": "Display name of the Radarr service (brand name)."
+  },
+  "serverKindQbittorrent": "qBittorrent",
+  "@serverKindQbittorrent": {
+    "description": "Display name of the qBittorrent service (brand name)."
+  },
+  "serverKindTransmission": "Transmission",
+  "@serverKindTransmission": {
+    "description": "Display name of the Transmission service (brand name)."
+  },
+  "serverKindDeluge": "Deluge",
+  "@serverKindDeluge": {
+    "description": "Display name of the Deluge service (brand name)."
+  },
+  "serverKindSonarrDescription": "مكتبة المسلسلات",
+  "@serverKindSonarrDescription": {
+    "description": "Short description of Sonarr on the service choice tile."
+  },
+  "serverKindQbittorrentDescription": "تنزيلات التورنت",
+  "@serverKindQbittorrentDescription": {
+    "description": "Short description of qBittorrent on the service choice tile."
+  },
+  "serverKindOtherDescription": "غير متاح بعد",
+  "@serverKindOtherDescription": {
+    "description": "Description for a service that is not supported yet."
+  },
+  "serverHealthChecking": "جارٍ الفحص…",
+  "@serverHealthChecking": {
+    "description": "Health text of a server being checked."
+  },
+  "serverHealthHealthy": "متصل",
+  "@serverHealthHealthy": {
+    "description": "Health text of a healthy server."
+  },
+  "serverHealthDegraded": "يستجيب مع مشاكل",
+  "@serverHealthDegraded": {
+    "description": "Health text of a server that answers with errors or slowly."
+  },
+  "serverHealthUnauthorized": "فشل تسجيل الدخول",
+  "@serverHealthUnauthorized": {
+    "description": "Health text of a server that rejected the credentials."
+  },
+  "serverHealthUnreachable": "لا يمكن الوصول إليه",
+  "@serverHealthUnreachable": {
+    "description": "Health text of a server that cannot be reached."
+  },
+  "serverHealthUnknown": "تعذّر الفحص",
+  "@serverHealthUnknown": {
+    "description": "Health text when the health check itself failed."
+  },
+  "serverBadgeCleartext": "http عادي",
+  "@serverBadgeCleartext": {
+    "description": "Warning badge on a server that is allowed to use unencrypted http."
+  },
+  "serverBadgeNeedsCredentials": "يحتاج إلى بيانات الدخول",
+  "@serverBadgeNeedsCredentials": {
+    "description": "Badge on a server whose saved secrets are missing."
+  },
+  "serverBadgeActive": "نشط",
+  "@serverBadgeActive": {
+    "description": "Badge on the server used by default for its service."
+  },
+  "serverBadgeStartup": "يُفتح عند التشغيل",
+  "@serverBadgeStartup": {
+    "description": "Badge on the server opened when the app starts."
+  },
+  "serverMenuTooltip": "المزيد من الإجراءات لـ {name}",
+  "@serverMenuTooltip": {
+    "description": "Tooltip and accessible label of the per-server actions menu.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Server display name."
+      }
+    }
+  },
+  "serverDragHandleLabel": "إعادة ترتيب {name}",
+  "@serverDragHandleLabel": {
+    "description": "Accessible label of the drag handle that reorders a server.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Server display name."
+      }
+    }
+  },
+  "serverActionEdit": "تعديل",
+  "@serverActionEdit": {
+    "description": "Menu action: edit a server."
+  },
+  "serverActionSetActive": "اجعله نشطًا",
+  "@serverActionSetActive": {
+    "description": "Menu action: use this server by default for its service."
+  },
+  "serverActionSetStartup": "افتح عند التشغيل",
+  "@serverActionSetStartup": {
+    "description": "Menu action: open this server when the app starts."
+  },
+  "serverActionClearStartup": "لا تفتح عند التشغيل",
+  "@serverActionClearStartup": {
+    "description": "Menu action: stop opening this server at launch."
+  },
+  "serverActionMoveUp": "نقل لأعلى",
+  "@serverActionMoveUp": {
+    "description": "Menu action: move a server up in the list (alternative to dragging)."
+  },
+  "serverActionMoveDown": "نقل لأسفل",
+  "@serverActionMoveDown": {
+    "description": "Menu action: move a server down in the list (alternative to dragging)."
+  },
+  "serverActionDelete": "حذف",
+  "@serverActionDelete": {
+    "description": "Menu action: delete a server."
+  },
+  "serverDeleteTitle": "هل تريد حذف {name}؟",
+  "@serverDeleteTitle": {
+    "description": "Title of the delete-server confirmation.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Server display name."
+      }
+    }
+  },
+  "serverDeleteBody": "سيؤدي هذا إلى إزالة بيانات الدخول المحفوظة والشهادة الموثوقة والبيانات المخزنة مؤقتًا لهذا الخادم من هذا الجهاز. لن يتغير الخادم نفسه.",
+  "@serverDeleteBody": {
+    "description": "Consequences spelled out in the delete-server confirmation."
+  },
+  "serverDeleteConfirm": "حذف",
+  "@serverDeleteConfirm": {
+    "description": "Confirm button of the delete-server dialog."
+  },
+  "serverEditorTitleNew": "إضافة خادم",
+  "@serverEditorTitleNew": {
+    "description": "Title of the server editor when creating a server."
+  },
+  "serverEditorTitleEdit": "تعديل الخادم",
+  "@serverEditorTitleEdit": {
+    "description": "Title of the server editor when editing a server."
+  },
+  "serverEditorSave": "حفظ",
+  "@serverEditorSave": {
+    "description": "Save button of the server editor."
+  },
+  "serverSaveFailedHeadline": "تعذّر حفظ الخادم",
+  "@serverSaveFailedHeadline": {
+    "description": "Headline shown when saving a server failed."
+  },
+  "serverSectionService": "الخدمة",
+  "@serverSectionService": {
+    "description": "Section heading: service type and name."
+  },
+  "serverSectionAddress": "العنوان",
+  "@serverSectionAddress": {
+    "description": "Section heading: server address."
+  },
+  "serverSectionAuth": "المصادقة",
+  "@serverSectionAuth": {
+    "description": "Section heading: authentication."
+  },
+  "serverSectionHeaders": "ترويسات مخصصة",
+  "@serverSectionHeaders": {
+    "description": "Section heading: custom request headers."
+  },
+  "serverSectionSecurity": "الأمان",
+  "@serverSectionSecurity": {
+    "description": "Section heading: transport security."
+  },
+  "serverFieldName": "اسم العرض",
+  "@serverFieldName": {
+    "description": "Label of the server display name field."
+  },
+  "serverFieldAddress": "العنوان",
+  "@serverFieldAddress": {
+    "description": "Label of the server address field."
+  },
+  "serverFieldAddressHint": "https://host.example:8989",
+  "@serverFieldAddressHint": {
+    "description": "Placeholder example for the server address field."
+  },
+  "serverFieldPathPrefix": "بادئة المسار (اختياري)",
+  "@serverFieldPathPrefix": {
+    "description": "Label of the optional reverse-proxy path prefix field."
+  },
+  "serverPathPrefixHelper": "مطلوبة فقط إذا كان وكيل عكسي يخدم التطبيق تحت مسار، مثل /sonarr.",
+  "@serverPathPrefixHelper": {
+    "description": "Helper text under the path prefix field."
+  },
+  "serverAuthNone": "بدون",
+  "@serverAuthNone": {
+    "description": "Authentication mode: no credentials."
+  },
+  "serverAuthApiKey": "مفتاح API",
+  "@serverAuthApiKey": {
+    "description": "Authentication mode: API key."
+  },
+  "serverAuthBasic": "اسم المستخدم وكلمة المرور",
+  "@serverAuthBasic": {
+    "description": "Authentication mode: username and password."
+  },
+  "serverFieldApiKey": "مفتاح API",
+  "@serverFieldApiKey": {
+    "description": "Label of the API key field."
+  },
+  "serverFieldUsername": "اسم المستخدم",
+  "@serverFieldUsername": {
+    "description": "Label of the username field."
+  },
+  "serverFieldPassword": "كلمة المرور",
+  "@serverFieldPassword": {
+    "description": "Label of the password field."
+  },
+  "serverSecretKeepHint": "اتركه فارغًا للاحتفاظ بالقيمة المحفوظة.",
+  "@serverSecretKeepHint": {
+    "description": "Helper under a secret field when editing a server with a saved secret."
+  },
+  "serverSecretShow": "إظهار القيمة",
+  "@serverSecretShow": {
+    "description": "Tooltip of the button that reveals a secret field."
+  },
+  "serverSecretHide": "إخفاء القيمة",
+  "@serverSecretHide": {
+    "description": "Tooltip of the button that hides a secret field."
+  },
+  "serverHeadersHelper": "للبوابات خلف وكيل عكسي. تُحفظ القيم بأمان على هذا الجهاز.",
+  "@serverHeadersHelper": {
+    "description": "Helper text of the custom headers section."
+  },
+  "serverHeaderName": "اسم الترويسة",
+  "@serverHeaderName": {
+    "description": "Label of a custom header name field."
+  },
+  "serverHeaderValue": "قيمة الترويسة",
+  "@serverHeaderValue": {
+    "description": "Label of a custom header value field."
+  },
+  "serverHeaderAdd": "إضافة ترويسة",
+  "@serverHeaderAdd": {
+    "description": "Button that adds a custom header row."
+  },
+  "serverHeaderRemove": "إزالة الترويسة",
+  "@serverHeaderRemove": {
+    "description": "Tooltip of the button that removes a custom header row."
+  },
+  "serverCleartextTitle": "السماح بـ http العادي",
+  "@serverCleartextTitle": {
+    "description": "Label of the per-server switch that allows unencrypted http."
+  },
+  "serverCleartextRisk": "يرسل http العادي مفتاح API وكلمة المرور وكل استجابة دون تشفير، لذا يمكن لأي شخص على الشبكة قراءتها. اسمح به فقط على شبكة تثق بها، مثل شبكة منزلك.",
+  "@serverCleartextRisk": {
+    "description": "Risk explanation shown with the plain http switch."
+  },
+  "serverCleartextNeeded": "يستخدم هذا العنوان http. فعّل http العادي أو استخدم عنوان https.",
+  "@serverCleartextNeeded": {
+    "description": "Hint shown when the address is http but plain http is not allowed."
+  },
+  "serverErrorNameRequired": "أدخل اسمًا لهذا الخادم.",
+  "@serverErrorNameRequired": {
+    "description": "Validation error: empty display name."
+  },
+  "serverErrorAddressRequired": "أدخل عنوان الخادم.",
+  "@serverErrorAddressRequired": {
+    "description": "Validation error: empty address."
+  },
+  "serverErrorAddressInvalid": "أدخل عنوانًا كاملًا مثل https://host.example:8989.",
+  "@serverErrorAddressInvalid": {
+    "description": "Validation error: address is not a valid http(s) URL."
+  },
+  "serverErrorAddressCredentials": "لا تضع اسم مستخدم أو كلمة مرور في العنوان. استخدم الحقول أدناه.",
+  "@serverErrorAddressCredentials": {
+    "description": "Validation error: address contains credentials."
+  },
+  "serverErrorAddressQuery": "احذف كل ما بعد علامة ? في العنوان. مكان المفاتيح هو حقل المفتاح.",
+  "@serverErrorAddressQuery": {
+    "description": "Validation error: address contains a query string."
+  },
+  "serverErrorPrefixInvalid": "استخدم مسارًا مثل /sonarr بدون مسافات أو ? أو ...",
+  "@serverErrorPrefixInvalid": {
+    "description": "Validation error: invalid path prefix."
+  },
+  "serverErrorHeaderInvalid": "قد تستخدم أسماء الترويسات الحروف والأرقام و - _ . فقط، ويجب أن تكون فريدة.",
+  "@serverErrorHeaderInvalid": {
+    "description": "Validation error: invalid or duplicate header names."
+  },
+  "serverTestButton": "اختبار الاتصال",
+  "@serverTestButton": {
+    "description": "Button that tests the connection to the server."
+  },
+  "serverTestTesting": "جارٍ الاختبار…",
+  "@serverTestTesting": {
+    "description": "Shown while the connection test runs."
+  },
+  "serverTestSuccess": "تم الاتصال. إصدار الخادم {version}.",
+  "@serverTestSuccess": {
+    "description": "Connection test success message.",
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "description": "Version text reported by the server."
+      }
+    }
+  },
+  "serverTestSuccessLabel": "متصل",
+  "@serverTestSuccessLabel": {
+    "description": "Short success chip label for the connection test."
+  },
+  "serverTestFailedLabel": "فشل",
+  "@serverTestFailedLabel": {
+    "description": "Short failure chip label for the connection test."
+  },
+  "serverPinTitle": "الشهادة الموثوقة",
+  "@serverPinTitle": {
+    "description": "Heading of the pinned certificate details."
+  },
+  "serverPinFingerprint": "بصمة SHA-256",
+  "@serverPinFingerprint": {
+    "description": "Label of the pinned certificate fingerprint."
+  },
+  "serverPinRemove": "إزالة الشهادة الموثوقة",
+  "@serverPinRemove": {
+    "description": "Button that forgets the pinned certificate."
+  },
+  "serverPinRemoveTitle": "هل تريد إزالة الشهادة الموثوقة؟",
+  "@serverPinRemoveTitle": {
+    "description": "Title of the confirmation for forgetting a pin."
+  },
+  "serverPinRemoveBody": "سيطلب الاتصال التالي منك مراجعة شهادة الخادم مرة أخرى.",
+  "@serverPinRemoveBody": {
+    "description": "Consequence text of the forget-pin confirmation."
+  },
+  "serverPinRemoveConfirm": "إزالة",
+  "@serverPinRemoveConfirm": {
+    "description": "Confirm button of the forget-pin dialog."
+  },
+  "serverNeedsCredentialsBanner": "بيانات الدخول المحفوظة لهذا الخادم مفقودة. أدخلها مرة أخرى ثم احفظ.",
+  "@serverNeedsCredentialsBanner": {
+    "description": "Banner in the editor when the saved secrets are missing."
+  },
+  "serverDiscardTitle": "هل تريد تجاهل التغييرات؟",
+  "@serverDiscardTitle": {
+    "description": "Title of the unsaved-changes dialog."
+  },
+  "serverDiscardBody": "لم تُحفظ تغييراتك على هذا الخادم.",
+  "@serverDiscardBody": {
+    "description": "Body of the unsaved-changes dialog."
+  },
+  "serverDiscardConfirm": "تجاهل",
+  "@serverDiscardConfirm": {
+    "description": "Discard button of the unsaved-changes dialog."
+  },
+  "serverDiscardKeep": "متابعة التعديل",
+  "@serverDiscardKeep": {
+    "description": "Keep-editing button of the unsaved-changes dialog."
+  },
+  "certSheetTitleFirstUse": "هل تثق بهذه الشهادة؟",
+  "@certSheetTitleFirstUse": {
+    "description": "Title of the certificate sheet on first contact."
+  },
+  "certSheetExplanationFirstUse": "يستخدم هذا الخادم شهادة لا يتعرف عليها جهازك. قارن البصمة بتلك الموجودة على خادمك قبل الوثوق بها.",
+  "@certSheetExplanationFirstUse": {
+    "description": "Explanation on the first-use certificate sheet."
+  },
+  "certSheetTitleMismatch": "تغيّرت الشهادة",
+  "@certSheetTitleMismatch": {
+    "description": "Title of the certificate sheet when a pinned certificate changed."
+  },
+  "certSheetExplanationMismatch": "يقدّم هذا الخادم الآن شهادة مختلفة عن التي وثقت بها. تبقى الاتصالات محظورة حتى تقرر.",
+  "@certSheetExplanationMismatch": {
+    "description": "Explanation on the mismatch certificate sheet."
+  },
+  "certSheetMismatchWarning": "إذا لم تستبدل الشهادة بنفسك فقد يعترض أحد الاتصال. لا تثق بها.",
+  "@certSheetMismatchWarning": {
+    "description": "Prominent warning on the mismatch certificate sheet."
+  },
+  "certSheetTitleExpired": "انتهت صلاحية الشهادة",
+  "@certSheetTitleExpired": {
+    "description": "Title of the certificate sheet for an expired certificate."
+  },
+  "certSheetExplanationExpired": "شهادة هذا الخادم منتهية الصلاحية أو غير سارية بعد، لذا لا يمكن الوثوق بها. جدّدها على الخادم.",
+  "@certSheetExplanationExpired": {
+    "description": "Explanation on the expired certificate sheet."
+  },
+  "certSheetFingerprint": "بصمة SHA-256",
+  "@certSheetFingerprint": {
+    "description": "Label of the certificate fingerprint on the sheet."
+  },
+  "certSheetPreviousFingerprint": "البصمة الموثوقة سابقًا",
+  "@certSheetPreviousFingerprint": {
+    "description": "Label of the previously pinned fingerprint on the mismatch sheet."
+  },
+  "certSheetSubject": "الموضوع",
+  "@certSheetSubject": {
+    "description": "Label of the certificate subject."
+  },
+  "certSheetIssuer": "الجهة المُصدِرة",
+  "@certSheetIssuer": {
+    "description": "Label of the certificate issuer."
+  },
+  "certSheetValidity": "الصلاحية",
+  "@certSheetValidity": {
+    "description": "Label of the certificate validity period."
+  },
+  "certSheetValidityRange": "من {from} إلى {until}",
+  "@certSheetValidityRange": {
+    "description": "Certificate validity range text.",
+    "placeholders": {
+      "from": {
+        "type": "String",
+        "description": "Start date, already formatted."
+      },
+      "until": {
+        "type": "String",
+        "description": "End date, already formatted."
+      }
+    }
+  },
+  "certSheetAccept": "الوثوق بالشهادة",
+  "@certSheetAccept": {
+    "description": "Accept button of the first-use certificate sheet."
+  },
+  "certSheetAcceptMismatch": "الوثوق بالشهادة الجديدة",
+  "@certSheetAcceptMismatch": {
+    "description": "Accept (re-trust) button of the mismatch certificate sheet."
+  },
+  "certSheetReject": "عدم الوثوق",
+  "@certSheetReject": {
+    "description": "Reject button of the certificate sheet."
+  },
+  "certSheetHandle": "مقبض السحب",
+  "@certSheetHandle": {
+    "description": "Accessible label of the sheet drag handle."
+  },
+  "onboardingWelcomeTitle": "مرحبًا بك في Consolarr",
+  "@onboardingWelcomeTitle": {
+    "description": "Headline of the first-run welcome step."
+  },
+  "onboardingWelcomeBody": "تحكّم في خدمات الوسائط المستضافة ذاتيًا من هاتفك. لنربط أول خادم لك.",
+  "@onboardingWelcomeBody": {
+    "description": "Body text of the first-run welcome step."
+  },
+  "onboardingStart": "ابدأ",
+  "@onboardingStart": {
+    "description": "Primary button of the welcome step."
+  },
+  "onboardingSkip": "تخطَّ الآن",
+  "@onboardingSkip": {
+    "description": "Button that skips first-run setup."
+  },
+  "onboardingChooseTitle": "أي خدمة؟",
+  "@onboardingChooseTitle": {
+    "description": "Headline of the service choice step."
+  },
+  "onboardingChooseBody": "يمكنك إضافة المزيد من الخوادم لاحقًا.",
+  "@onboardingChooseBody": {
+    "description": "Body text of the service choice step."
+  },
+  "onboardingDetailsTitle": "تفاصيل الخادم",
+  "@onboardingDetailsTitle": {
+    "description": "Headline of the details step."
+  },
+  "onboardingTestTitle": "اختبر وأنهِ",
+  "@onboardingTestTitle": {
+    "description": "Headline of the test step."
+  },
+  "onboardingNext": "التالي",
+  "@onboardingNext": {
+    "description": "Next button of the onboarding stepper."
+  },
+  "onboardingBack": "رجوع",
+  "@onboardingBack": {
+    "description": "Back button of the onboarding stepper."
+  },
+  "onboardingFinish": "إنهاء",
+  "@onboardingFinish": {
+    "description": "Finish button of the onboarding stepper."
+  },
+  "onboardingStepOf": "الخطوة {current} من {total}",
+  "@onboardingStepOf": {
+    "description": "Progress text of the onboarding stepper.",
+    "placeholders": {
+      "current": {
+        "type": "int",
+        "description": "Current step number."
+      },
+      "total": {
+        "type": "int",
+        "description": "Number of steps."
+      }
+    }
+  },
+  "onboardingTestFirst": "اختبر الاتصال قبل الإنهاء.",
+  "@onboardingTestFirst": {
+    "description": "Hint on the test step until the connection test succeeded."
   }
 }
