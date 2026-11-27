@@ -10,5 +10,8 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: ConsolarrApp()));
     await tester.pumpAndSettle();
     expect(find.byType(Scaffold), findsWidgets);
+    // Unmount so the database stream's cleanup timer fires before the test ends.
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(Duration.zero);
   });
 }
