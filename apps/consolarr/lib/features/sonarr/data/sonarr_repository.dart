@@ -15,14 +15,26 @@ class SeriesSnapshot {
     required this.series,
     required this.fetchedAt,
     this.offlineError,
+    this.skipped = 0,
   });
 
   final List<SonarrSeries> series;
   final DateTime fetchedAt;
   final AppError? offlineError;
 
+  /// Rows the server sent that could not be read (count only): the list is
+  /// partial when this is above zero.
+  final int skipped;
+
   SeriesSnapshot withOfflineError(AppError error) =>
       SeriesSnapshot(series: series, fetchedAt: fetchedAt, offlineError: error);
+
+  SeriesSnapshot withSkipped(int count) => SeriesSnapshot(
+    series: series,
+    fetchedAt: fetchedAt,
+    offlineError: offlineError,
+    skipped: count,
+  );
 }
 
 /// Loads the Sonarr series list and keeps the last good copy for the offline

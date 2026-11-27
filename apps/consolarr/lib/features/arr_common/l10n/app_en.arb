@@ -1,3 +1,281 @@
 {
-  "@@locale": "en"
+  "@@locale": "en",
+  "arrCommonQueueStateDownloading": "Downloading",
+  "@arrCommonQueueStateDownloading": {
+    "description": "Queue item state: actively downloading."
+  },
+  "arrCommonQueueStatePaused": "Paused",
+  "@arrCommonQueueStatePaused": {
+    "description": "Queue item state: paused in the download client."
+  },
+  "arrCommonQueueStateQueued": "Queued",
+  "@arrCommonQueueStateQueued": {
+    "description": "Queue item state: waiting in the download client."
+  },
+  "arrCommonQueueStateDelayed": "Delayed",
+  "@arrCommonQueueStateDelayed": {
+    "description": "Queue item state: waiting out a release delay."
+  },
+  "arrCommonQueueStateImportPending": "Waiting to import",
+  "@arrCommonQueueStateImportPending": {
+    "description": "Queue item state: finished downloading, waiting to be imported."
+  },
+  "arrCommonQueueStateImporting": "Importing",
+  "@arrCommonQueueStateImporting": {
+    "description": "Queue item state: being imported into the library."
+  },
+  "arrCommonQueueStateImportFailed": "Import failed",
+  "@arrCommonQueueStateImportFailed": {
+    "description": "Queue item state: the import failed."
+  },
+  "arrCommonQueueStateDownloadFailed": "Download failed",
+  "@arrCommonQueueStateDownloadFailed": {
+    "description": "Queue item state: the download failed."
+  },
+  "arrCommonQueueStateClientUnavailable": "Download client unavailable",
+  "@arrCommonQueueStateClientUnavailable": {
+    "description": "Queue item state: the download client cannot be reached by the server."
+  },
+  "arrCommonQueueStateWarning": "Warning",
+  "@arrCommonQueueStateWarning": {
+    "description": "Queue item state: the server reports a warning."
+  },
+  "arrCommonQueueStateCompleted": "Completed",
+  "@arrCommonQueueStateCompleted": {
+    "description": "Queue item state: download completed."
+  },
+  "arrCommonQueueStateUnknown": "Unknown status",
+  "@arrCommonQueueStateUnknown": {
+    "description": "Queue item state: the server reported a status the app does not know."
+  },
+  "arrCommonQueuePercent": "{progress}",
+  "@arrCommonQueuePercent": {
+    "description": "Download progress as a locale-formatted percentage.",
+    "placeholders": {
+      "progress": {
+        "type": "double",
+        "description": "Fraction from 0 to 1.",
+        "format": "decimalPercentPattern",
+        "optionalParameters": {
+          "decimalDigits": 0
+        }
+      }
+    }
+  },
+  "arrCommonQueueSizeMb": "{size} MB",
+  "@arrCommonQueueSizeMb": {
+    "description": "Size in megabytes.",
+    "placeholders": {
+      "size": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPatternDigits",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "arrCommonQueueSizeGb": "{size} GB",
+  "@arrCommonQueueSizeGb": {
+    "description": "Size in gigabytes.",
+    "placeholders": {
+      "size": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPatternDigits",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "arrCommonQueueSizeTb": "{size} TB",
+  "@arrCommonQueueSizeTb": {
+    "description": "Size in terabytes.",
+    "placeholders": {
+      "size": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPatternDigits",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "arrCommonQueueSizeProgress": "{done} of {total}",
+  "@arrCommonQueueSizeProgress": {
+    "description": "Downloaded amount out of the total size of a queue item.",
+    "placeholders": {
+      "done": {
+        "type": "String",
+        "description": "Formatted size downloaded."
+      },
+      "total": {
+        "type": "String",
+        "description": "Formatted total size."
+      }
+    }
+  },
+  "arrCommonQueueTimeLeftLessThanMinute": "Less than 1 min left",
+  "@arrCommonQueueTimeLeftLessThanMinute": {
+    "description": "Estimated time left, under one minute."
+  },
+  "arrCommonQueueTimeLeftMinutes": "{minutes} min left",
+  "@arrCommonQueueTimeLeftMinutes": {
+    "description": "Estimated time left in minutes.",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "description": "Whole minutes.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "arrCommonQueueTimeLeftHours": "{hours} h {minutes} min left",
+  "@arrCommonQueueTimeLeftHours": {
+    "description": "Estimated time left in hours and minutes.",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "description": "Whole hours.",
+        "format": "decimalPattern"
+      },
+      "minutes": {
+        "type": "int",
+        "description": "Whole minutes.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "arrCommonQueueTimeLeftDays": "{days} d {hours} h left",
+  "@arrCommonQueueTimeLeftDays": {
+    "description": "Estimated time left in days and hours.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Whole days.",
+        "format": "decimalPattern"
+      },
+      "hours": {
+        "type": "int",
+        "description": "Whole hours.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "arrCommonQueueRowSemantics": "{title}, {state}, {percent}, {details}",
+  "@arrCommonQueueRowSemantics": {
+    "description": "Screen reader description of a queue row: title, state, percentage and details.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Media title."
+      },
+      "state": {
+        "type": "String",
+        "description": "State text."
+      },
+      "percent": {
+        "type": "String",
+        "description": "Percentage text."
+      },
+      "details": {
+        "type": "String",
+        "description": "Size and time left."
+      }
+    }
+  },
+  "arrCommonQueueWarningCount": "{count, plural, =1{1 message} other{{count} messages}}",
+  "@arrCommonQueueWarningCount": {
+    "description": "Label of the chip that expands the server's messages about a queue item.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of message groups.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "arrCommonQueueRemoveAction": "Remove from queue",
+  "@arrCommonQueueRemoveAction": {
+    "description": "Tooltip and accessible name of the button that starts removing a queue item."
+  },
+  "arrCommonQueueRemoveTitle": "Remove from queue?",
+  "@arrCommonQueueRemoveTitle": {
+    "description": "Title of the confirmation dialog for removing a queue item."
+  },
+  "arrCommonQueueRemoveFromClientTitle": "Delete from the download client",
+  "@arrCommonQueueRemoveFromClientTitle": {
+    "description": "Title of the switch that also deletes the download in the download client."
+  },
+  "arrCommonQueueRemoveFromClientOn": "The download and any files it already fetched are deleted from the download client.",
+  "@arrCommonQueueRemoveFromClientOn": {
+    "description": "Consequence shown when the delete-from-client switch is on."
+  },
+  "arrCommonQueueRemoveFromClientOff": "The download stays in the download client; only {service} stops tracking it.",
+  "@arrCommonQueueRemoveFromClientOff": {
+    "description": "Consequence shown when the delete-from-client switch is off.",
+    "placeholders": {
+      "service": {
+        "type": "String",
+        "description": "Name of the service, for example Sonarr."
+      }
+    }
+  },
+  "arrCommonQueueBlocklistHeading": "Blocklist",
+  "@arrCommonQueueBlocklistHeading": {
+    "description": "Heading above the blocklist choices of the queue removal dialog."
+  },
+  "arrCommonQueueBlocklistNone": "Don't blocklist",
+  "@arrCommonQueueBlocklistNone": {
+    "description": "Blocklist choice: remove only."
+  },
+  "arrCommonQueueBlocklistNoneDetail": "The same release can be grabbed again later.",
+  "@arrCommonQueueBlocklistNoneDetail": {
+    "description": "Consequence of choosing not to blocklist."
+  },
+  "arrCommonQueueBlocklistSearch": "Blocklist and search again",
+  "@arrCommonQueueBlocklistSearch": {
+    "description": "Blocklist choice: blocklist the release and search for another one."
+  },
+  "arrCommonQueueBlocklistSearchDetail": "This release is never grabbed again, and {service} immediately searches the indexers for another one. That adds load on your indexers.",
+  "@arrCommonQueueBlocklistSearchDetail": {
+    "description": "Consequence of blocklisting and searching again.",
+    "placeholders": {
+      "service": {
+        "type": "String",
+        "description": "Name of the service, for example Sonarr."
+      }
+    }
+  },
+  "arrCommonQueueBlocklistOnly": "Blocklist only",
+  "@arrCommonQueueBlocklistOnly": {
+    "description": "Blocklist choice: blocklist without searching."
+  },
+  "arrCommonQueueBlocklistOnlyDetail": "This release is never grabbed again. No new search is started.",
+  "@arrCommonQueueBlocklistOnlyDetail": {
+    "description": "Consequence of blocklisting only."
+  },
+  "arrCommonQueueRemoveConfirm": "Remove",
+  "@arrCommonQueueRemoveConfirm": {
+    "description": "Destructive confirm button of the queue removal dialog."
+  },
+  "arrCommonQueueRemoveCancel": "Cancel",
+  "@arrCommonQueueRemoveCancel": {
+    "description": "Cancel button of the queue removal dialog."
+  },
+  "arrCommonQueueRemoveRetry": "Try again",
+  "@arrCommonQueueRemoveRetry": {
+    "description": "Confirm button label after a failed removal."
+  },
+  "arrCommonQueueRemoving": "Removing…",
+  "@arrCommonQueueRemoving": {
+    "description": "Progress text while a queue item is being removed."
+  },
+  "arrCommonQueueRemoveFailed": "Couldn't remove the item",
+  "@arrCommonQueueRemoveFailed": {
+    "description": "Headline of the failure shown in the removal dialog."
+  }
 }

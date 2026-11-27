@@ -31,11 +31,9 @@ class WantedPage {
 /// Reads the wanted lists. Nothing is cached: the lists are action lists and
 /// only meaningful live.
 class WantedRepository {
-  WantedRepository({
-    required SonarrApi api,
-    required DateTime Function() clock,
-  }) : _api = api,
-       _clock = clock;
+  WantedRepository({required SonarrApi api, required DateTime Function() clock})
+    : _api = api,
+      _clock = clock;
 
   static const pageSize = 50;
   static const upcomingDays = 14;
@@ -80,9 +78,8 @@ class WantedRepository {
           end: start.add(const Duration(days: upcomingDays)),
         );
         return result.when(
-          ok: (items) => Result.ok(
-            WantedPage(episodes: items, page: 1, hasMore: false),
-          ),
+          ok: (items) =>
+              Result.ok(WantedPage(episodes: items, page: 1, hasMore: false)),
           err: Result.err,
         );
     }
