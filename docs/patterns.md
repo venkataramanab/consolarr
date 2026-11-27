@@ -91,3 +91,63 @@ Widgets never call Dio, drift or storage directly.
 * Widgets: every state through `pumpMatrix` (sizes x text scale x locales),
   plus `expectAccessible`. Goldens only where listed in the PR.
 * Network scenarios use the harness `FaultInjectingAdapter`.
+
+## 9. Concrete recipes (copy these)
+
+**A new service feature** (`features/<name>/`):
+1. `data/<name>_repository.dart`: takes the client (built from
+   `activeConnectionProvider(kind)`), returns `Result`, writes the last good
+   payload to `PayloadCache` (`<name>.<resource>` key) and falls back to it for
+   network/timeout/5xx/not-found/parse failures only. Never fall back for
+   `auth_failed`, `unsupported_version` or TLS errors.
+2. `application/<name>_providers.dart`: one `AsyncNotifier` exposing a sealed
+   state (`NoServer`, `Failure(AppError)`, `Data(snapshot)` with `isOffline`).
+   Refresh keeps existing content. Disable Riverpod's automatic retry
+   (`retry: (_, _) => null`) for providers that surface `AppError`s.
+3. `presentation/<name>_screen.dart`: `FloatingTopBarScaffold` + a
+   `bodyBuilder` that uses the padding it is given; the shell raises
+   `MediaQuery.padding.bottom` by the floating nav bar's measured height.
+4. Strings in `l10n/app_{en,ar}.arb`, then `melos run l10n`.
+5. Tests: repository (fake adapter), notifier, every state under `pumpMatrix`
+   with `harnessApp` + `ProviderScope(overrides: ...)`, a11y at scale 2.0 in
+   `ar` and `en_XA`, 0/10,000-item extremes, 1-2 goldens.
+
+**Provider conventions:** `<thing>Provider`; infrastructure seams in
+`lib/src/providers.dart`; anything that touches the database or network is
+reached only after `firstFrameDoneProvider` is true (use `uiServersProvider`
+rather than `serversProvider` in widgets visible on the first frame).
+
+**Error mapping:** package clients return `Result<T>`; the Dio mapper is
+`appErrorFromDio`; the UI maps `AppError` to copy with
+`connectionErrorMessage(l10n, error)` (message + fix hint per category).
+
+**Event naming:** `snake_case`, declared in
+`packages/observability/events/<area>.yaml`; regenerate with
+`melos run events` (output `lib/src/events/catalog.dart`, committed; a test
+fails when it drifts). Parameters are enums/ints/bools only.
+
+**Drift:** tables and the database live in `lib/src/database/app_database.dart`.
+The generated `app_database.g.dart` is **not** committed (the repo guard
+rejects tracked `*.g.dart`); run `melos run codegen` after `pub get` (CI does
+it in the `setup-flutter` action). Bump `schemaVersion` and add a migration
+for every schema change.
+
+**Images:** use `SecureNetworkImage` (loads through the server's secure Dio,
+auth in headers, validates magic bytes, decodes at the `cacheWidth` that
+`PosterCard` supplies). Never `Image.network`.
+
+**TLS/TOFU flow:** see `packages/security` doc comments. A pinned server uses
+an empty trust set so only the exact pinned certificate completes the
+handshake (before any request bytes); an unpinned untrusted server fails with
+`CertificateDecisionRequired`; the feature UI shows `CertificateTrustSheet`,
+builds `UserPinConfirmation.userAccepted` in its accept handler and retries on
+the same Dio.
+
+## 10. Nightly integration
+
+`tools/integration/` starts digest-pinned Sonarr, qBittorrent and toxiproxy
+containers, seeds them (one series needs outbound internet for Sonarr's
+metadata lookup; the torrent is generated locally) and
+`apps/consolarr/integration_test/servers_to_lists_test.dart` adds both servers
+and opens both lists on the emulator, then runs a latency + connection-drop
+scenario.

@@ -18,6 +18,15 @@ String? _issueText(AppLocalizations l10n, FieldIssue? issue) => switch (issue) {
   FieldIssue.headerInvalid => l10n.serverErrorHeaderInvalid,
 };
 
+// 12px helper/error text fails the contrast guideline on the card tones, so
+// the form uses the 15px body styles.
+TextStyle? _helperStyle(BuildContext context) =>
+    Theme.of(context).textTheme.bodyMedium;
+
+TextStyle? _errorStyle(BuildContext context) =>
+    Theme.of(context).textTheme.bodyMedium
+        ?.copyWith(color: Theme.of(context).colorScheme.error);
+
 class _SectionHeading extends StatelessWidget {
   const _SectionHeading(this.text);
   final String text;
@@ -87,6 +96,8 @@ class ServerFormFields extends StatelessWidget {
               onTap: () => c.touch('name'),
               onChanged: (_) => c.touch('name'),
               decoration: InputDecoration(
+                helperStyle: _helperStyle(context),
+                errorStyle: _errorStyle(context),
                 labelText: l10n.serverFieldName,
                 errorText: c.shows('name')
                     ? _issueText(l10n, issues.name)
@@ -103,6 +114,8 @@ class ServerFormFields extends StatelessWidget {
               enableSuggestions: false,
               onChanged: (_) => c.touch('address'),
               decoration: InputDecoration(
+                helperStyle: _helperStyle(context),
+                errorStyle: _errorStyle(context),
                 labelText: l10n.serverFieldAddress,
                 hintText: l10n.serverFieldAddressHint,
                 errorText: c.shows('address')
@@ -119,6 +132,8 @@ class ServerFormFields extends StatelessWidget {
               textInputAction: TextInputAction.next,
               onChanged: (_) => c.touch('prefix'),
               decoration: InputDecoration(
+                helperStyle: _helperStyle(context),
+                errorStyle: _errorStyle(context),
                 labelText: l10n.serverFieldPathPrefix,
                 helperText: l10n.serverPathPrefixHelper,
                 helperMaxLines: 4,
@@ -159,6 +174,8 @@ class ServerFormFields extends StatelessWidget {
                 enableSuggestions: false,
                 textInputAction: TextInputAction.next,
                 decoration: InputDecoration(
+                  helperStyle: _helperStyle(context),
+                  errorStyle: _errorStyle(context),
                   labelText: l10n.serverFieldUsername,
                   helperText: keepHint,
                   border: const OutlineInputBorder(),
@@ -271,6 +288,8 @@ class _HeaderRow extends StatelessWidget {
                   enableSuggestions: false,
                   onChanged: (_) => onNameChanged(),
                   decoration: InputDecoration(
+                    helperStyle: _helperStyle(context),
+                    errorStyle: _errorStyle(context),
                     labelText: l10n.serverHeaderName,
                     border: const OutlineInputBorder(),
                   ),

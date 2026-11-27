@@ -6,7 +6,6 @@ import 'package:consolarr/features/shell/presentation/shell_chrome.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
 import 'package:consolarr/src/providers.dart';
-import 'package:flutter/foundation.dart';
 import 'package:observability/observability.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -55,14 +54,11 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   static IconData _icon(ShellDestination d, {required bool selected}) =>
       switch (d) {
-        ShellDestination.home =>
-          selected ? Icons.home : Icons.home_outlined,
-        ShellDestination.sonarr =>
-          selected ? Icons.tv : Icons.tv_outlined,
+        ShellDestination.home => selected ? Icons.home : Icons.home_outlined,
+        ShellDestination.sonarr => selected ? Icons.tv : Icons.tv_outlined,
         ShellDestination.torrents =>
           selected ? Icons.download : Icons.download_outlined,
-        ShellDestination.servers =>
-          selected ? Icons.dns : Icons.dns_outlined,
+        ShellDestination.servers => selected ? Icons.dns : Icons.dns_outlined,
       };
 
   static String _label(AppLocalizations l10n, ShellDestination d) =>

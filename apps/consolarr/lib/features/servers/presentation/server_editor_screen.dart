@@ -158,24 +158,27 @@ class _ServerEditorScreenState extends ConsumerState<ServerEditorScreen> {
               ],
             ),
             body: SafeArea(
-              child: ListView(
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.all(ConsolarrSpacing.gutter),
-                children: [
-                  if (c.existing?.needsCredentials ?? false)
-                    _Banner(
-                      icon: Icons.key_off_outlined,
-                      text: l10n.serverNeedsCredentialsBanner,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (c.existing?.needsCredentials ?? false)
+                      _Banner(
+                        icon: Icons.key_off_outlined,
+                        text: l10n.serverNeedsCredentialsBanner,
+                      ),
+                    ServerFormFields(
+                      controller: c,
+                      onRevealChanged: _reveal!.update,
                     ),
-                  ServerFormFields(
-                    controller: c,
-                    onRevealChanged: _reveal!.update,
-                  ),
-                  const SizedBox(height: ConsolarrSpacing.section),
-                  ConnectionTestPanel(controller: c),
-                  if (c.existing != null) PinSection(entry: c.existing!),
-                  if (_saveError != null) _SaveError(error: _saveError!),
-                  const SizedBox(height: ConsolarrSpacing.xxl),
-                ],
+                    const SizedBox(height: ConsolarrSpacing.section),
+                    ConnectionTestPanel(controller: c),
+                    if (c.existing != null) PinSection(entry: c.existing!),
+                    if (_saveError != null) _SaveError(error: _saveError!),
+                    const SizedBox(height: ConsolarrSpacing.xxl),
+                  ],
+                ),
               ),
             ),
           ),
@@ -288,7 +291,11 @@ class _PinSectionState extends ConsumerState<PinSection> {
           _key,
           UserPinConfirmation.userAccepted(key: _key, fingerprint: pinned),
         );
-    if (mounted) setState(() => _pin = _read());
+    if (mounted) {
+      setState(() {
+        _pin = _read();
+      });
+    }
   }
 
   @override

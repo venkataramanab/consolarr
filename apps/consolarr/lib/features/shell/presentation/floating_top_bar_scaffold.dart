@@ -2,7 +2,6 @@
 
 import 'package:consolarr/features/shell/presentation/shell_chrome.dart';
 import 'package:design_system/design_system.dart';
-import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Frame for a screen with a slim floating top bar over scrolling content.

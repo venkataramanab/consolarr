@@ -22,14 +22,18 @@ apps/consolarr_play ──────► consolarr   (Play entry point, only pl
 | --- | --- | --- | --- |
 | `core` | pure Dart | - | `ServerProfile`, `Result`/`AppError` + `ErrorCategory`, `CleartextPolicy`. |
 | `security` | pure Dart | `core`, `dio` | `SecretStore`, `PinStore` (+ `PinKey`, `UserPinConfirmation`, `decidePin`), `SecureHttpClientFactory` contracts. The only package allowed to touch TLS trust. |
-| `arr_api` | pure Dart | `core` | `SonarrApi` / `RadarrApi` interfaces. |
-| `torrent_clients` | pure Dart | `core` | `TorrentClient` interface. |
+| `arr_api` | pure Dart | `core`, `security` | Sonarr client and models (`RadarrApi` interface only). |
+| `torrent_clients` | pure Dart | `core`, `security` | `TorrentClient` interface and the qBittorrent client. |
 | `observability` | pure Dart | - | `CrashReporter`, `Analytics`, `ConsentStore` + no-ops, `Redactor`, `AppLogger`. No SDKs. |
 | `design_system` | Flutter | - | Tokens, theme, bundled Inter font. |
 | `l10n` | Flutter | `material_ui` | Generated `AppLocalizations`, merged from feature ARBs. |
 | `test_harness` | Flutter, dev-only | `design_system`, `l10n`, `dio` | Matrix pumping, accessibility, goldens, fault injection, first-frame guard. |
 | `apps/consolarr` | Flutter app | UI packages + `observability` | App shell, router, features. Library + `main.dart`. |
 | `apps/consolarr_play` | Flutter app | `consolarr`, `observability` | Play entry point. |
+
+See `docs/patterns.md` for the feature layout, provider and error
+conventions. App data (server profiles, cached payloads, app state) lives in a
+drift database whose generated code is built, not committed.
 
 ## Dependency rules
 

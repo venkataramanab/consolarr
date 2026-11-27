@@ -2,7 +2,10 @@
 
 import 'package:consolarr/features/home/home_screen.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:consolarr/features/servers/domain/server_models.dart';
+import 'package:consolarr/features/shell/application/shell_providers.dart';
 import 'package:test_harness/test_harness.dart';
 
 const _cases = {
@@ -26,11 +29,18 @@ const _cases = {
   ),
 };
 
+Widget _home(HarnessVariant v, Widget home) => ProviderScope(
+  overrides: [
+    uiServersProvider.overrideWithValue(const AsyncData(<ServerEntry>[])),
+  ],
+  child: harnessApp(v, Scaffold(body: home)),
+);
+
 void main() {
   _cases.forEach((name, variant) {
     testWidgets('golden: $name', (tester) async {
       applyVariantView(tester, variant);
-      await tester.pumpWidget(harnessApp(variant, const HomeScreen()));
+      await tester.pumpWidget(_home(variant, const HomeScreen()));
       await tester.pumpAndSettle();
       await expectLater(
         find.byType(MaterialApp),

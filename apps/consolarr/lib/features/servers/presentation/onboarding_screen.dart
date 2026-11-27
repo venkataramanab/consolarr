@@ -39,13 +39,17 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final ServerFormController _form = ServerFormController();
-  late final RevealTracker _reveal = RevealTracker(
-    ref.read(secureScreenProvider),
-  );
+  late final RevealTracker _reveal;
   _Step _step = _Step.welcome;
   bool _tested = false;
   bool _saving = false;
   AppError? _saveError;
+
+  @override
+  void initState() {
+    super.initState();
+    _reveal = RevealTracker(ref.read(secureScreenProvider));
+  }
 
   @override
   void dispose() {
@@ -122,17 +126,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         },
         child: Scaffold(
           appBar: AppBar(
-            title: Text(
-              l10n.onboardingStepOf(_step.index + 1, _Step.values.length),
-            ),
             actions: [
               TextButton(onPressed: _skip, child: Text(l10n.onboardingSkip)),
             ],
           ),
           body: SafeArea(
-            child: ListView(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(ConsolarrSpacing.gutter),
-              children: body,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    l10n.onboardingStepOf(_step.index + 1, _Step.values.length),
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: ConsolarrSpacing.sm),
+                  ...body,
+                ],
+              ),
             ),
           ),
         ),

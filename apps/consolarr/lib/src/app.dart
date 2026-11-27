@@ -4,7 +4,6 @@ import 'package:consolarr/src/first_frame.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:consolarr/src/router.dart';
 import 'package:design_system/design_system.dart';
-import 'package:flutter/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:l10n/l10n.dart';

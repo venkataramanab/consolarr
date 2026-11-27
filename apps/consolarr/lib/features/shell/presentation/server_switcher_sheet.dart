@@ -48,7 +48,6 @@ IconData healthIcon(ServerHealth health) => switch (health) {
   ServerHealth.unreachable => Icons.cloud_off_outlined,
 };
 
-
 /// Lists the servers of one kind with a health dot and name; selecting one
 /// makes it the active server (offline servers are marked).
 class ServerSwitcherSheet extends ConsumerWidget {

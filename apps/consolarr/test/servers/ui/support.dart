@@ -8,7 +8,9 @@ import 'package:consolarr/features/servers/domain/server_repository.dart';
 import 'package:consolarr/src/platform/secure_screen.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
+import 'package:design_system/design_system.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:material_ui/material_ui.dart';
 import 'package:observability/observability.dart';
 import 'package:security/security.dart';
@@ -221,9 +223,7 @@ class UiHarness {
     analyticsProvider.overrideWithValue(analytics),
     if (neverLoads)
       serversProvider.overrideWith(
-        (ref) => const Stream<List<ServerEntry>>.empty()
-            .asyncExpand((_) => const Stream.empty())
-            .where((_) => false),
+        (ref) => StreamController<List<ServerEntry>>().stream,
       ),
     if (listError)
       serversProvider.overrideWith(
@@ -236,6 +236,16 @@ class UiHarness {
     }),
   ];
 
-  Widget app(HarnessVariant variant, Widget home) =>
-      ProviderScope(overrides: overrides, child: harnessApp(variant, home));
+  ///
+  /// Skeletons shimmer forever unless motion is reduced, which would keep
+  /// `pumpAndSettle` from finishing; tests run with reduced motion. Failed
+  /// providers are not retried (retry timers would also keep frames coming).
+  Widget app(HarnessVariant variant, Widget home) => ProviderScope(
+    retry: (_, _) => null,
+    overrides: overrides,
+    child: harnessApp(
+      variant,
+      ConsolarrEffectsScope(reduceMotion: true, child: home),
+    ),
+  );
 }

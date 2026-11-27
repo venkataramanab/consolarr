@@ -32,7 +32,7 @@ class HomeScreen extends ConsumerWidget {
         slivers: [
           if (servers.isEmpty)
             SliverFillRemaining(
-              hasScrollBody: false,
+              hasScrollBody: true,
               child: Padding(
                 padding: padding,
                 child: Center(
