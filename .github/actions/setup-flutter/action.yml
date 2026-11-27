@@ -16,6 +16,12 @@ runs:
         flutter-version: ${{ steps.version.outputs.flutter }}
         cache: true
 
+    # `flutter pub get` generates the l10n package's synthetic output and needs
+    # its (git-ignored) merged ARB files to exist.
+    - name: Merge ARB files (needed by pub get)
+      shell: bash
+      run: dart packages/l10n/tool/build_l10n.dart --arb-only
+
     - name: Resolve dependencies
       shell: bash
       run: |
