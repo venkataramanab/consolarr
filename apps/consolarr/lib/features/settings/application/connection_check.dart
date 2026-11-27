@@ -29,7 +29,8 @@ CheckStep stepForCategory(ErrorCategory category) => switch (category) {
   ErrorCategory.serverError ||
   ErrorCategory.parseError ||
   ErrorCategory.redirectRefused ||
-  ErrorCategory.responseTooLarge => CheckStep.version,
+  ErrorCategory.responseTooLarge ||
+  ErrorCategory.requestTooLarge => CheckStep.version,
 };
 
 /// The result of one step. A failed step carries either an [error] (from the

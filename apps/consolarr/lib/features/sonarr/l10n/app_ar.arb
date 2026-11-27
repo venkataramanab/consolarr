@@ -28,9 +28,9 @@
   "@sonarrEmptyMessage": {
     "description": "Hint under the empty series library headline."
   },
-  "sonarrEmptyAction": "تحديث",
+  "sonarrEmptyAction": "إضافة مسلسل",
   "@sonarrEmptyAction": {
-    "description": "Primary action of the empty series library state; reloads the list."
+    "description": "Primary action of the empty series library state; opens the add-series flow."
   },
   "sonarrNoServerHeadline": "لا يوجد خادم Sonarr",
   "@sonarrNoServerHeadline": {
@@ -148,6 +148,14 @@
   "@sonarrErrorGenericHint": {
     "description": "Likely fix shown under the cause in the series library error state (Generic)."
   },
+  "sonarrErrorRequestTooLargeMessage": "لا يستطيع هذا الإصدار من Sonarr تغيير هذا العدد من الحلقات دفعة واحدة.",
+  "@sonarrErrorRequestTooLargeMessage": {
+    "description": "Cause shown when a bulk monitor change covers more episodes than an older Sonarr can take."
+  },
+  "sonarrErrorRequestTooLargeHint": "غيّر موسمًا أو بضع حلقات في كل مرة، أو حدّث Sonarr.",
+  "@sonarrErrorRequestTooLargeHint": {
+    "description": "Likely fix shown under the cause when a bulk monitor change is too large for an older Sonarr."
+  },
   "sonarrOfflineMessage": "غير متصل. يتم عرض المسلسلات المحفوظة.",
   "@sonarrOfflineMessage": {
     "description": "Message of the banner above cached series when Sonarr cannot be reached."
@@ -166,7 +174,7 @@
   "@sonarrAgeJustNow": {
     "description": "Relative age used when cached data is less than a minute old."
   },
-  "sonarrAgeMinutes": "{count, plural, =1{قبل دقيقة} =2{قبل دقيقتين} few{قبل {count} دقائق} other{قبل {count} دقيقة}}",
+  "sonarrAgeMinutes": "{count, plural, =0{الآن} =1{قبل دقيقة} =2{قبل دقيقتين} few{قبل {count} دقائق} many{قبل {count} دقيقة} other{قبل {count} دقيقة}}",
   "@sonarrAgeMinutes": {
     "description": "Relative age in minutes for the offline banner.",
     "placeholders": {
@@ -176,7 +184,7 @@
       }
     }
   },
-  "sonarrAgeHours": "{count, plural, =1{قبل ساعة} =2{قبل ساعتين} few{قبل {count} ساعات} other{قبل {count} ساعة}}",
+  "sonarrAgeHours": "{count, plural, =0{قبل أقل من ساعة} =1{قبل ساعة} =2{قبل ساعتين} few{قبل {count} ساعات} many{قبل {count} ساعة} other{قبل {count} ساعة}}",
   "@sonarrAgeHours": {
     "description": "Relative age in hours for the offline banner.",
     "placeholders": {
@@ -186,7 +194,7 @@
       }
     }
   },
-  "sonarrAgeDays": "{count, plural, =1{قبل يوم} =2{قبل يومين} few{قبل {count} أيام} other{قبل {count} يومًا}}",
+  "sonarrAgeDays": "{count, plural, =0{اليوم} =1{قبل يوم} =2{قبل يومين} few{قبل {count} أيام} many{قبل {count} يومًا} other{قبل {count} يوم}}",
   "@sonarrAgeDays": {
     "description": "Relative age in days for the offline banner.",
     "placeholders": {
@@ -234,7 +242,7 @@
       }
     }
   },
-  "sonarrEpisodesProgress": "{total, plural, =1{{have}/1 حلقة} =2{{have}/2 حلقتان} few{{have}/{total} حلقات} other{{have}/{total} حلقة}}",
+  "sonarrEpisodesProgress": "{total, plural, =0{{have}/0 حلقة} =1{{have}/1 حلقة} =2{{have}/2 حلقتان} few{{have}/{total} حلقات} many{{have}/{total} حلقة} other{{have}/{total} حلقة}}",
   "@sonarrEpisodesProgress": {
     "description": "Episode progress in the series list: downloaded over total episodes.",
     "placeholders": {
@@ -248,7 +256,7 @@
       }
     }
   },
-  "sonarrSeasonCount": "{count, plural, =1{موسم واحد} =2{موسمان} few{{count} مواسم} other{{count} موسمًا}}",
+  "sonarrSeasonCount": "{count, plural, zero{لا مواسم} =1{موسم واحد} =2{موسمان} few{{count} مواسم} many{{count} موسمًا} other{{count} موسم}}",
   "@sonarrSeasonCount": {
     "description": "Number of seasons of a series.",
     "placeholders": {
@@ -308,7 +316,7 @@
   "@sonarrNextAiringTomorrow": {
     "description": "Relative label for a series whose next episode airs tomorrow."
   },
-  "sonarrNextAiringInDays": "{days, plural, =1{يُعرض بعد يوم} =2{يُعرض بعد يومين} few{يُعرض بعد {days} أيام} other{يُعرض بعد {days} يومًا}}",
+  "sonarrNextAiringInDays": "{days, plural, =1{يُعرض بعد يوم} =2{يُعرض بعد يومين} few{يُعرض بعد {days} أيام} many{يُعرض بعد {days} يومًا} other{يُعرض بعد {days} يوم}}",
   "@sonarrNextAiringInDays": {
     "description": "Relative label for the next episode airing in a number of days.",
     "placeholders": {
@@ -329,6 +337,1554 @@
       "details": {
         "type": "String",
         "description": "Status, monitoring and episode summary."
+      }
+    }
+  },
+  "sonarrSearchEpisode": "البحث عن هذه الحلقة",
+  "@sonarrSearchEpisode": {
+    "description": "Tooltip and accessible name of the button that asks Sonarr to search for one episode automatically."
+  },
+  "sonarrSearchSearching": "جارٍ البحث…",
+  "@sonarrSearchSearching": {
+    "description": "Inline status while Sonarr searches for an episode."
+  },
+  "sonarrSearchGrabbed": "تم العثور عليها، قيد التنزيل",
+  "@sonarrSearchGrabbed": {
+    "description": "Inline status after an automatic search found a release and sent it to the download client."
+  },
+  "sonarrSearchNothingFound": "لم يتم العثور على شيء",
+  "@sonarrSearchNothingFound": {
+    "description": "Inline status after an automatic search finished without finding a release."
+  },
+  "sonarrSearchFailed": "فشل البحث",
+  "@sonarrSearchFailed": {
+    "description": "Inline status when the search command could not be started or its progress could not be read."
+  },
+  "sonarrSearchRetry": "ابحث مرة أخرى",
+  "@sonarrSearchRetry": {
+    "description": "Tooltip and accessible name of the button that repeats an automatic search."
+  },
+  "sonarrTabQueue": "قائمة الانتظار",
+  "@sonarrTabQueue": {
+    "description": "Label of the Queue tab inside the Sonarr area."
+  },
+  "sonarrQueueLoadingLabel": "جارٍ تحميل قائمة الانتظار",
+  "@sonarrQueueLoadingLabel": {
+    "description": "Accessible label of the skeleton shown while the queue loads."
+  },
+  "sonarrQueueEmptyHeadline": "قائمة الانتظار فارغة",
+  "@sonarrQueueEmptyHeadline": {
+    "description": "Headline of the empty queue state."
+  },
+  "sonarrQueueEmptyMessage": "لا شيء قيد التنزيل أو بانتظار الاستيراد حاليًا.",
+  "@sonarrQueueEmptyMessage": {
+    "description": "Hint under the empty queue headline."
+  },
+  "sonarrQueueErrorTitle": "تعذّر تحميل قائمة الانتظار",
+  "@sonarrQueueErrorTitle": {
+    "description": "Headline of the queue error state."
+  },
+  "sonarrQueueOfflineMessage": "لا يمكن الوصول إلى Sonarr. تُعرض آخر قائمة انتظار معروفة.",
+  "@sonarrQueueOfflineMessage": {
+    "description": "Message of the banner above a stale queue."
+  },
+  "sonarrQueueRemoveOffline": "تتطلب الإزالة اتصالًا بـ Sonarr",
+  "@sonarrQueueRemoveOffline": {
+    "description": "Explanation (tooltip) of the disabled remove button while the queue is offline."
+  },
+  "sonarrQueueEpisodeCode": "م{season} ح{episode}",
+  "@sonarrQueueEpisodeCode": {
+    "description": "Season and episode code of a queue row.",
+    "placeholders": {
+      "season": {
+        "type": "int",
+        "description": "Season number.",
+        "format": "decimalPattern"
+      },
+      "episode": {
+        "type": "int",
+        "description": "Episode number.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "sonarrQueueEpisodeLabel": "{code} · {title}",
+  "@sonarrQueueEpisodeLabel": {
+    "description": "Episode code followed by the episode title in a queue row.",
+    "placeholders": {
+      "code": {
+        "type": "String",
+        "description": "Season and episode code."
+      },
+      "title": {
+        "type": "String",
+        "description": "Episode title (server text)."
+      }
+    }
+  },
+  "sonarrQueueRemoved": "أُزيل من قائمة الانتظار",
+  "@sonarrQueueRemoved": {
+    "description": "Confirmation shown after a queue item was removed."
+  },
+  "sonarrDetailEdit": "تعديل المسلسل",
+  "@sonarrDetailEdit": {
+    "description": "Tooltip and accessible name of the button on the series detail screen that opens the edit sheet."
+  },
+  "sonarrDetailMenu": "المزيد من الإجراءات",
+  "@sonarrDetailMenu": {
+    "description": "Tooltip of the overflow menu button on the series detail screen."
+  },
+  "sonarrDetailOfflineMessage": "غير متصل. تُعرض التفاصيل المحفوظة. التغييرات غير متاحة حتى يمكن الوصول إلى Sonarr.",
+  "@sonarrDetailOfflineMessage": {
+    "description": "Message of the banner above cached series details; also explains why every change action is disabled."
+  },
+  "sonarrDetailWritesDisabled": "غير متاح أثناء عدم الاتصال",
+  "@sonarrDetailWritesDisabled": {
+    "description": "Tooltip of a change or search action that is disabled because Sonarr cannot be reached."
+  },
+  "sonarrDetailLoading": "جارٍ تحميل تفاصيل المسلسل",
+  "@sonarrDetailLoading": {
+    "description": "Accessible label of the skeleton shown while the series detail loads."
+  },
+  "sonarrDetailGoneHeadline": "هذا المسلسل لم يعد موجودًا",
+  "@sonarrDetailGoneHeadline": {
+    "description": "Headline shown when a linked series was removed from Sonarr."
+  },
+  "sonarrDetailGoneMessage": "ربما تم حذفه من Sonarr منذ إنشاء الرابط.",
+  "@sonarrDetailGoneMessage": {
+    "description": "Hint under the headline shown when a linked series no longer exists."
+  },
+  "sonarrDetailGoneAction": "العودة إلى المسلسلات",
+  "@sonarrDetailGoneAction": {
+    "description": "Action on the series-no-longer-exists state; returns to the series library."
+  },
+  "sonarrDetailNoServerHeadline": "لا يوجد خادم Sonarr",
+  "@sonarrDetailNoServerHeadline": {
+    "description": "Headline of the series detail screen when no Sonarr server is configured."
+  },
+  "sonarrDetailOverview": "نظرة عامة",
+  "@sonarrDetailOverview": {
+    "description": "Section heading above the series overview text."
+  },
+  "sonarrDetailInfo": "التفاصيل",
+  "@sonarrDetailInfo": {
+    "description": "Section heading above the series facts such as status, network and path."
+  },
+  "sonarrDetailSeasons": "المواسم",
+  "@sonarrDetailSeasons": {
+    "description": "Section heading above the list of seasons."
+  },
+  "sonarrDetailLinks": "مزيد من المعلومات",
+  "@sonarrDetailLinks": {
+    "description": "Section heading above the external information links."
+  },
+  "sonarrDetailFieldStatus": "الحالة",
+  "@sonarrDetailFieldStatus": {
+    "description": "Label of the status fact on the series detail screen."
+  },
+  "sonarrDetailFieldNetwork": "الشبكة",
+  "@sonarrDetailFieldNetwork": {
+    "description": "Label of the network fact on the series detail screen."
+  },
+  "sonarrDetailFieldPath": "المسار",
+  "@sonarrDetailFieldPath": {
+    "description": "Label of the storage path fact on the series detail screen."
+  },
+  "sonarrDetailFieldProfile": "ملف الجودة",
+  "@sonarrDetailFieldProfile": {
+    "description": "Label of the quality profile fact on the series detail screen."
+  },
+  "sonarrDetailFieldTags": "الوسوم",
+  "@sonarrDetailFieldTags": {
+    "description": "Label of the tags fact on the series detail screen."
+  },
+  "sonarrDetailFieldNextAiring": "العرض القادم",
+  "@sonarrDetailFieldNextAiring": {
+    "description": "Label of the next airing fact on the series detail screen."
+  },
+  "sonarrDetailFieldRating": "التقييم",
+  "@sonarrDetailFieldRating": {
+    "description": "Label of the rating fact on the series detail screen."
+  },
+  "sonarrDetailFieldRuntime": "المدة",
+  "@sonarrDetailFieldRuntime": {
+    "description": "Label of the episode runtime fact on the series detail screen."
+  },
+  "sonarrDetailFieldCertification": "التصنيف العمري",
+  "@sonarrDetailFieldCertification": {
+    "description": "Label of the age certification fact on the series detail screen."
+  },
+  "sonarrDetailFieldGenres": "الأنواع",
+  "@sonarrDetailFieldGenres": {
+    "description": "Label of the genres fact on the series detail screen."
+  },
+  "sonarrDetailFieldCast": "طاقم التمثيل",
+  "@sonarrDetailFieldCast": {
+    "description": "Label of the cast fact on the series detail screen, shown only when the server reports cast."
+  },
+  "sonarrDetailFieldAirTime": "وقت العرض",
+  "@sonarrDetailFieldAirTime": {
+    "description": "Label of the broadcast time fact on the series detail screen."
+  },
+  "sonarrDetailRuntimeMinutes": "{minutes} دقيقة",
+  "@sonarrDetailRuntimeMinutes": {
+    "description": "Episode runtime in minutes.",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "description": "Minutes."
+      }
+    }
+  },
+  "sonarrDetailRatingValue": "{value} من 10 ({votes, plural, =1{صوت واحد} =2{صوتان} few{{votes} أصوات} many{{votes} صوتًا} other{{votes} صوت}})",
+  "@sonarrDetailRatingValue": {
+    "description": "Series rating on a ten point scale with the vote count.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Rating.",
+        "format": "decimalPatternDigits",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      },
+      "votes": {
+        "type": "int",
+        "description": "Number of votes."
+      }
+    }
+  },
+  "sonarrDetailSeasonTitle": "الموسم {number}",
+  "@sonarrDetailSeasonTitle": {
+    "description": "Title of a season row.",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "description": "Season number."
+      }
+    }
+  },
+  "sonarrDetailSpecials": "حلقات خاصة",
+  "@sonarrDetailSpecials": {
+    "description": "Title of the season row that holds special episodes (season zero)."
+  },
+  "sonarrDetailMonitorSeason": "مراقبة {season}",
+  "@sonarrDetailMonitorSeason": {
+    "description": "Accessible name of the monitor switch of a season.",
+    "placeholders": {
+      "season": {
+        "type": "String",
+        "description": "The season title."
+      }
+    }
+  },
+  "sonarrDetailMonitorEpisode": "مراقبة {episode}",
+  "@sonarrDetailMonitorEpisode": {
+    "description": "Accessible name of the monitor switch of an episode.",
+    "placeholders": {
+      "episode": {
+        "type": "String",
+        "description": "The episode title."
+      }
+    }
+  },
+  "sonarrDetailShowEpisodes": "عرض حلقات {season}",
+  "@sonarrDetailShowEpisodes": {
+    "description": "Tooltip and accessible name of the control that expands a season.",
+    "placeholders": {
+      "season": {
+        "type": "String",
+        "description": "The season title."
+      }
+    }
+  },
+  "sonarrDetailHideEpisodes": "إخفاء حلقات {season}",
+  "@sonarrDetailHideEpisodes": {
+    "description": "Tooltip and accessible name of the control that collapses a season.",
+    "placeholders": {
+      "season": {
+        "type": "String",
+        "description": "The season title."
+      }
+    }
+  },
+  "sonarrDetailEpisodeTitle": "{number}. {title}",
+  "@sonarrDetailEpisodeTitle": {
+    "description": "Episode row title: episode number and its name.",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "description": "Episode number."
+      },
+      "title": {
+        "type": "String",
+        "description": "Episode name (server text)."
+      }
+    }
+  },
+  "sonarrDetailEpisodeUntitled": "الحلقة {number}",
+  "@sonarrDetailEpisodeUntitled": {
+    "description": "Episode row title when the server gives no name.",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "description": "Episode number."
+      }
+    }
+  },
+  "sonarrDetailEpisodeDownloaded": "تم التنزيل",
+  "@sonarrDetailEpisodeDownloaded": {
+    "description": "Status text of an episode that has a file."
+  },
+  "sonarrDetailEpisodeDownloading": "قيد التنزيل",
+  "@sonarrDetailEpisodeDownloading": {
+    "description": "Status text of an episode that is in the download queue."
+  },
+  "sonarrDetailEpisodeMissing": "مفقودة",
+  "@sonarrDetailEpisodeMissing": {
+    "description": "Status text of an aired episode without a file."
+  },
+  "sonarrDetailEpisodeUnaired": "لم تُعرض بعد",
+  "@sonarrDetailEpisodeUnaired": {
+    "description": "Status text of an episode that has not aired yet."
+  },
+  "sonarrDetailAirDate": "تاريخ العرض {date}",
+  "@sonarrDetailAirDate": {
+    "description": "Air date line of an episode.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd",
+        "description": "Air date."
+      }
+    }
+  },
+  "sonarrDetailNoEpisodes": "لا توجد حلقات في هذا الموسم بعد.",
+  "@sonarrDetailNoEpisodes": {
+    "description": "Shown inside an expanded season that has no episodes."
+  },
+  "sonarrDetailNoEpisodesAtAll": "لا توجد حلقات بعد",
+  "@sonarrDetailNoEpisodesAtAll": {
+    "description": "Headline of the seasons section when the series has no episodes."
+  },
+  "sonarrDetailEpisodesErrorTitle": "تعذر تحميل الحلقات",
+  "@sonarrDetailEpisodesErrorTitle": {
+    "description": "Headline of the inline error when the episode list fails to load."
+  },
+  "sonarrDetailRowFailed": "تعذر حفظ التغيير",
+  "@sonarrDetailRowFailed": {
+    "description": "Per-row error when a monitor toggle could not be saved."
+  },
+  "sonarrDetailSearchSeason": "البحث عن هذا الموسم",
+  "@sonarrDetailSearchSeason": {
+    "description": "Menu action that asks Sonarr to search for the whole season."
+  },
+  "sonarrDetailSearchMissing": "البحث عن كل الحلقات المفقودة",
+  "@sonarrDetailSearchMissing": {
+    "description": "Menu action that asks Sonarr to search for every missing episode of the series."
+  },
+  "sonarrDetailSearchManually": "بحث يدوي",
+  "@sonarrDetailSearchManually": {
+    "description": "Menu action that opens the interactive release search."
+  },
+  "sonarrDetailCancel": "إلغاء",
+  "@sonarrDetailCancel": {
+    "description": "Cancel button of the confirm and edit dialogs on the series detail screen."
+  },
+  "sonarrDetailSearchConfirmAction": "بحث",
+  "@sonarrDetailSearchConfirmAction": {
+    "description": "Confirm button of the season and series search dialogs."
+  },
+  "sonarrDetailSearchSeasonTitle": "البحث عن هذا الموسم؟",
+  "@sonarrDetailSearchSeasonTitle": {
+    "description": "Title of the confirm dialog for a season search."
+  },
+  "sonarrDetailSearchSeasonMessage": "سيبحث Sonarr في المفهرسات عن الحلقات المراقبة المفقودة في هذا الموسم. قد يسبب هذا حملًا كبيرًا على المفهرسات.",
+  "@sonarrDetailSearchSeasonMessage": {
+    "description": "Consequences stated in the confirm dialog for a season search."
+  },
+  "sonarrDetailSearchSeriesTitle": "البحث عن كل الحلقات المفقودة؟",
+  "@sonarrDetailSearchSeriesTitle": {
+    "description": "Title of the confirm dialog for a series-wide search."
+  },
+  "sonarrDetailSearchSeriesMessage": "سيبحث Sonarr في المفهرسات عن كل حلقة مراقبة مفقودة في هذا المسلسل. قد يسبب هذا حملًا كبيرًا على المفهرسات وقد يبدأ تنزيلات كثيرة.",
+  "@sonarrDetailSearchSeriesMessage": {
+    "description": "Consequences stated in the confirm dialog for a series-wide search."
+  },
+  "sonarrDetailEditTitle": "تعديل المسلسل",
+  "@sonarrDetailEditTitle": {
+    "description": "Title of the edit sheet."
+  },
+  "sonarrDetailEditMonitored": "مراقب",
+  "@sonarrDetailEditMonitored": {
+    "description": "Label of the monitored switch in the edit sheet."
+  },
+  "sonarrDetailEditProfile": "ملف الجودة",
+  "@sonarrDetailEditProfile": {
+    "description": "Heading of the quality profile choices in the edit sheet."
+  },
+  "sonarrDetailEditTags": "الوسوم",
+  "@sonarrDetailEditTags": {
+    "description": "Heading of the tag choices in the edit sheet."
+  },
+  "sonarrDetailEditNoTags": "لا توجد وسوم بعد. أنشئ واحدًا أدناه.",
+  "@sonarrDetailEditNoTags": {
+    "description": "Shown in the edit sheet when the server has no tags."
+  },
+  "sonarrDetailEditNewTag": "وسم جديد",
+  "@sonarrDetailEditNewTag": {
+    "description": "Label of the text field that creates a tag in the edit sheet."
+  },
+  "sonarrDetailEditAddTag": "إضافة وسم",
+  "@sonarrDetailEditAddTag": {
+    "description": "Button that creates the typed tag in the edit sheet."
+  },
+  "sonarrDetailEditTagFailed": "تعذر إنشاء الوسم",
+  "@sonarrDetailEditTagFailed": {
+    "description": "Error under the new tag field when creating a tag failed."
+  },
+  "sonarrDetailEditSave": "حفظ",
+  "@sonarrDetailEditSave": {
+    "description": "Save button of the edit sheet."
+  },
+  "sonarrDetailEditSaving": "جارٍ الحفظ…",
+  "@sonarrDetailEditSaving": {
+    "description": "Save button label while the changes are being saved."
+  },
+  "sonarrDetailEditFailed": "تعذر حفظ تغييراتك",
+  "@sonarrDetailEditFailed": {
+    "description": "Error shown in the edit sheet when saving failed; the save button then retries."
+  },
+  "sonarrDetailEditSaved": "تم حفظ التغييرات",
+  "@sonarrDetailEditSaved": {
+    "description": "Confirmation shown after the edit sheet saved successfully."
+  },
+  "sonarrDetailEditClose": "إغلاق",
+  "@sonarrDetailEditClose": {
+    "description": "Close button of the edit sheet."
+  },
+  "sonarrDetailEditOptionsFailed": "تعذر تحميل الملفات والوسوم",
+  "@sonarrDetailEditOptionsFailed": {
+    "description": "Headline of the edit sheet error when profiles and tags could not be loaded."
+  },
+  "sonarrDetailLinkImdb": "IMDb",
+  "@sonarrDetailLinkImdb": {
+    "description": "Name of the IMDb link."
+  },
+  "sonarrDetailLinkTvdb": "TheTVDB",
+  "@sonarrDetailLinkTvdb": {
+    "description": "Name of the TheTVDB link."
+  },
+  "sonarrDetailLinkTmdb": "TMDB",
+  "@sonarrDetailLinkTmdb": {
+    "description": "Name of the TMDB link."
+  },
+  "sonarrDetailLinkTvMaze": "TVmaze",
+  "@sonarrDetailLinkTvMaze": {
+    "description": "Name of the TVmaze link."
+  },
+  "sonarrDetailLinkSemantics": "{name}، يفتح في المتصفح",
+  "@sonarrDetailLinkSemantics": {
+    "description": "Accessible name of an external link button.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Site name."
+      }
+    }
+  },
+  "sonarrDetailLinkFailed": "تعذر فتح الرابط",
+  "@sonarrDetailLinkFailed": {
+    "description": "Message when no app could open an external link."
+  },
+  "sonarrTabCalendar": "التقويم",
+  "@sonarrTabCalendar": {
+    "description": "Label of the Sonarr tab that shows upcoming episodes."
+  },
+  "sonarrTabMissing": "المفقودة",
+  "@sonarrTabMissing": {
+    "description": "Label of the Sonarr tab that lists wanted and missing episodes."
+  },
+  "sonarrCalendarLoading": "جارٍ تحميل التقويم",
+  "@sonarrCalendarLoading": {
+    "description": "Accessible label of the skeleton shown while the calendar loads."
+  },
+  "sonarrCalendarErrorTitle": "تعذّر تحميل التقويم",
+  "@sonarrCalendarErrorTitle": {
+    "description": "Headline of the calendar error state."
+  },
+  "sonarrCalendarShowUnmonitored": "إظهار الحلقات غير المراقبة",
+  "@sonarrCalendarShowUnmonitored": {
+    "description": "Tooltip of the calendar top bar button that adds unmonitored episodes to the calendar."
+  },
+  "sonarrCalendarHideUnmonitored": "إخفاء الحلقات غير المراقبة",
+  "@sonarrCalendarHideUnmonitored": {
+    "description": "Tooltip of the calendar top bar button that removes unmonitored episodes from the calendar."
+  },
+  "sonarrCalendarToday": "الانتقال إلى اليوم",
+  "@sonarrCalendarToday": {
+    "description": "Tooltip of the calendar top bar button that returns to today."
+  },
+  "sonarrCalendarShowMonth": "عرض الشهر",
+  "@sonarrCalendarShowMonth": {
+    "description": "Tooltip of the calendar top bar button that switches to the month grid."
+  },
+  "sonarrCalendarShowList": "عرض القائمة",
+  "@sonarrCalendarShowList": {
+    "description": "Tooltip of the calendar top bar button that switches to the day list."
+  },
+  "sonarrCalendarEarlier": "أبكر",
+  "@sonarrCalendarEarlier": {
+    "description": "Button that moves the calendar list to the previous two weeks."
+  },
+  "sonarrCalendarLater": "أحدث",
+  "@sonarrCalendarLater": {
+    "description": "Button that moves the calendar list to the next two weeks."
+  },
+  "sonarrCalendarPreviousMonth": "الشهر السابق",
+  "@sonarrCalendarPreviousMonth": {
+    "description": "Button that shows the previous month in the calendar month view."
+  },
+  "sonarrCalendarNextMonth": "الشهر التالي",
+  "@sonarrCalendarNextMonth": {
+    "description": "Button that shows the next month in the calendar month view."
+  },
+  "sonarrCalendarRange": "{start} – {end}",
+  "@sonarrCalendarRange": {
+    "description": "Date range shown by the calendar list, for example Mar 3 – Mar 16.",
+    "placeholders": {
+      "start": {
+        "type": "DateTime",
+        "format": "MMMd",
+        "description": "First day."
+      },
+      "end": {
+        "type": "DateTime",
+        "format": "MMMd",
+        "description": "Last day."
+      }
+    }
+  },
+  "sonarrCalendarMonthTitle": "{month}",
+  "@sonarrCalendarMonthTitle": {
+    "description": "Month and year heading of the calendar month view.",
+    "placeholders": {
+      "month": {
+        "type": "DateTime",
+        "format": "yMMMM",
+        "description": "A date."
+      }
+    }
+  },
+  "sonarrCalendarDayHeader": "{date}",
+  "@sonarrCalendarDayHeader": {
+    "description": "Heading of one day group in the calendar list.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "MMMEd",
+        "description": "A date."
+      }
+    }
+  },
+  "sonarrCalendarTodayHeader": "اليوم · {date}",
+  "@sonarrCalendarTodayHeader": {
+    "description": "Heading of today's group in the calendar list.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "MMMEd",
+        "description": "A date."
+      }
+    }
+  },
+  "sonarrCalendarEmptyRangeHeadline": "لا شيء يُعرض في هذه الفترة",
+  "@sonarrCalendarEmptyRangeHeadline": {
+    "description": "Headline of the calendar when no episodes air in the shown range."
+  },
+  "sonarrCalendarEmptyRangeMessage": "جرّب فترة أخرى، أو أظهر الحلقات غير المراقبة.",
+  "@sonarrCalendarEmptyRangeMessage": {
+    "description": "Hint under the empty calendar range headline."
+  },
+  "sonarrCalendarEmptyDay": "لا شيء يُعرض في هذا اليوم.",
+  "@sonarrCalendarEmptyDay": {
+    "description": "Text under the month grid when the selected day has no episodes."
+  },
+  "sonarrCalendarPickDay": "اختر يومًا لعرض حلقاته.",
+  "@sonarrCalendarPickDay": {
+    "description": "Text under the month grid when no day is selected."
+  },
+  "sonarrCalendarEpisodeCount": "{count, plural, =0{لا حلقات} =1{حلقة واحدة} =2{حلقتان} few{{count} حلقات} many{{count} حلقة} other{{count} حلقة}}",
+  "@sonarrCalendarEpisodeCount": {
+    "description": "Number of episodes airing on a day or in a series list.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "A whole number."
+      }
+    }
+  },
+  "sonarrCalendarDaySemantics": "{date}، {count, plural, =0{لا حلقات} =1{حلقة واحدة} =2{حلقتان} few{{count} حلقات} many{{count} حلقة} other{{count} حلقة}}",
+  "@sonarrCalendarDaySemantics": {
+    "description": "Accessible label of a day cell in the calendar month grid.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "MMMEd",
+        "description": "The day."
+      },
+      "count": {
+        "type": "int",
+        "description": "Episodes on that day."
+      }
+    }
+  },
+  "sonarrCalendarEpisodeCode": "م{season} ح{episode}",
+  "@sonarrCalendarEpisodeCode": {
+    "description": "Season and episode number of an episode, for example S1E4.",
+    "placeholders": {
+      "season": {
+        "type": "int",
+        "format": "decimalPattern",
+        "description": "Season number."
+      },
+      "episode": {
+        "type": "int",
+        "format": "decimalPattern",
+        "description": "Episode number."
+      }
+    }
+  },
+  "sonarrCalendarTagPremiere": "العرض الأول",
+  "@sonarrCalendarTagPremiere": {
+    "description": "Tag on an episode that is the first of its season."
+  },
+  "sonarrCalendarTagFinale": "الحلقة الأخيرة",
+  "@sonarrCalendarTagFinale": {
+    "description": "Tag on an episode that ends a season or the series."
+  },
+  "sonarrCalendarStatusDownloaded": "تم التنزيل",
+  "@sonarrCalendarStatusDownloaded": {
+    "description": "Episode status: the file is on disk."
+  },
+  "sonarrCalendarStatusMissing": "مفقودة",
+  "@sonarrCalendarStatusMissing": {
+    "description": "Episode status: it has aired but no file exists."
+  },
+  "sonarrCalendarStatusUnaired": "لم تُعرض بعد",
+  "@sonarrCalendarStatusUnaired": {
+    "description": "Episode status: it has not aired yet."
+  },
+  "sonarrCalendarUnmonitoredTag": "غير مراقبة",
+  "@sonarrCalendarUnmonitoredTag": {
+    "description": "Tag on an episode that Sonarr does not monitor."
+  },
+  "sonarrWantedLoading": "جارٍ تحميل الحلقات",
+  "@sonarrWantedLoading": {
+    "description": "Accessible label of the skeleton shown while the missing list loads."
+  },
+  "sonarrWantedErrorTitle": "تعذّر تحميل الحلقات",
+  "@sonarrWantedErrorTitle": {
+    "description": "Headline of the missing list error state."
+  },
+  "sonarrWantedScopeWanted": "المطلوبة",
+  "@sonarrWantedScopeWanted": {
+    "description": "Scope of the missing tab: missing episodes plus episodes below the quality cutoff."
+  },
+  "sonarrWantedScopeMissing": "المفقودة",
+  "@sonarrWantedScopeMissing": {
+    "description": "Scope of the missing tab: episodes that aired and have no file."
+  },
+  "sonarrWantedScopeUpcoming": "القادمة",
+  "@sonarrWantedScopeUpcoming": {
+    "description": "Scope of the missing tab: episodes airing in the next two weeks."
+  },
+  "sonarrWantedScopeLabel": "عرض",
+  "@sonarrWantedScopeLabel": {
+    "description": "Accessible label of the scope selector in the missing tab."
+  },
+  "sonarrWantedFilterHint": "التصفية حسب المسلسل",
+  "@sonarrWantedFilterHint": {
+    "description": "Hint of the field that filters the missing list by series title."
+  },
+  "sonarrWantedFilterClear": "مسح التصفية",
+  "@sonarrWantedFilterClear": {
+    "description": "Tooltip and action that clears the series filter in the missing list."
+  },
+  "sonarrWantedEmptyGoodHeadline": "لا شيء مفقود",
+  "@sonarrWantedEmptyGoodHeadline": {
+    "description": "Headline of the missing list when every monitored episode is present."
+  },
+  "sonarrWantedEmptyGoodMessage": "كل حلقة مراقبة تم عرضها موجودة في مكتبتك.",
+  "@sonarrWantedEmptyGoodMessage": {
+    "description": "Hint under the nothing-missing headline."
+  },
+  "sonarrWantedEmptyUpcomingHeadline": "لا شيء يُعرض قريبًا",
+  "@sonarrWantedEmptyUpcomingHeadline": {
+    "description": "Headline of the upcoming scope when no episode airs in the next two weeks."
+  },
+  "sonarrWantedEmptyUpcomingMessage": "تظهر هنا الحلقات المراقبة التي تُعرض خلال الأسبوعين القادمين.",
+  "@sonarrWantedEmptyUpcomingMessage": {
+    "description": "Hint under the nothing-airs-soon headline."
+  },
+  "sonarrWantedFilterEmptyHeadline": "لا توجد مسلسلات مطابقة",
+  "@sonarrWantedFilterEmptyHeadline": {
+    "description": "Headline when the series filter hides every episode of the missing list."
+  },
+  "sonarrWantedFilterEmptyMessage": "لا تنتمي أي حلقة مفقودة إلى مسلسل بهذا الاسم.",
+  "@sonarrWantedFilterEmptyMessage": {
+    "description": "Hint under the no-series-match headline."
+  },
+  "sonarrWantedSearchAll": "البحث عن كل المفقودة",
+  "@sonarrWantedSearchAll": {
+    "description": "Button that asks Sonarr to search for every missing episode."
+  },
+  "sonarrWantedSearchAllTitle": "البحث عن كل الحلقات المفقودة؟",
+  "@sonarrWantedSearchAllTitle": {
+    "description": "Title of the confirmation dialog for searching all missing episodes."
+  },
+  "sonarrWantedSearchAllBody": "سيبحث Sonarr في المفهرسات عن كل حلقة مفقودة مراقبة في مكتبتك. قد يضع هذا حملًا كبيرًا على المفهرسات وقد يبدأ تنزيلات كثيرة.",
+  "@sonarrWantedSearchAllBody": {
+    "description": "Body of the confirmation dialog for searching all missing episodes; states the consequences."
+  },
+  "sonarrWantedSearchAllConfirm": "ابحث عن الكل",
+  "@sonarrWantedSearchAllConfirm": {
+    "description": "Confirm button of the search-all-missing dialog."
+  },
+  "sonarrWantedCancel": "إلغاء",
+  "@sonarrWantedCancel": {
+    "description": "Cancel button of the search-all-missing dialog."
+  },
+  "sonarrWantedSearchAllRunning": "جارٍ البحث عن الحلقات المفقودة…",
+  "@sonarrWantedSearchAllRunning": {
+    "description": "Status line while the search-all-missing command runs."
+  },
+  "sonarrWantedSearchAllDone": "انتهى البحث. تظهر التنزيلات الجديدة في قائمة الانتظار.",
+  "@sonarrWantedSearchAllDone": {
+    "description": "Status line after the search-all-missing command finished."
+  },
+  "sonarrWantedSearchAllNothing": "انتهى البحث. لم تتم إضافة أي تنزيل جديد إلى قائمة الانتظار.",
+  "@sonarrWantedSearchAllNothing": {
+    "description": "Status line after the search-all-missing command finished and no new download appeared."
+  },
+  "sonarrWantedSearchAllTimedOut": "لا يزال Sonarr يبحث. تظهر التنزيلات الجديدة في قائمة الانتظار.",
+  "@sonarrWantedSearchAllTimedOut": {
+    "description": "Status line when the search-all-missing command did not finish while the app was watching."
+  },
+  "sonarrWantedSearchAllFailed": "تعذّر إكمال البحث.",
+  "@sonarrWantedSearchAllFailed": {
+    "description": "Status line when the search-all-missing command failed."
+  },
+  "sonarrWantedSearchAllRetry": "حاول مرة أخرى",
+  "@sonarrWantedSearchAllRetry": {
+    "description": "Retry button after a failed search-all-missing command."
+  },
+  "sonarrWantedOfflineWrites": "البحث غير متاح بينما يتعذّر الوصول إلى الخادم.",
+  "@sonarrWantedOfflineWrites": {
+    "description": "Explanation shown when search actions are disabled because the server is unreachable."
+  },
+  "sonarrWantedOfflineMessage": "يتم عرض آخر قائمة تم تحميلها.",
+  "@sonarrWantedOfflineMessage": {
+    "description": "Message of the banner shown when the missing list could not be refreshed."
+  },
+  "sonarrWantedManualSearch": "اختيار إصدار يدويًا",
+  "@sonarrWantedManualSearch": {
+    "description": "Tooltip and accessible name of the button that opens the manual release search for an episode."
+  },
+  "sonarrWantedLoadMore": "تحميل المزيد",
+  "@sonarrWantedLoadMore": {
+    "description": "Button that loads the next page of the missing list."
+  },
+  "sonarrWantedLoadMoreFailed": "تعذّر تحميل المزيد من الحلقات.",
+  "@sonarrWantedLoadMoreFailed": {
+    "description": "Message shown when the next page of the missing list failed to load."
+  },
+  "sonarrWantedExpandGroup": "عرض حلقات {series}",
+  "@sonarrWantedExpandGroup": {
+    "description": "Accessible label of a series group header in the missing list.",
+    "placeholders": {
+      "series": {
+        "type": "String",
+        "description": "Series title (plain text)."
+      }
+    }
+  },
+  "sonarrWantedAired": "عُرضت في {date}",
+  "@sonarrWantedAired": {
+    "description": "Air date of a missing episode.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd",
+        "description": "A date."
+      }
+    }
+  },
+  "sonarrWantedAirs": "تُعرض في {date}",
+  "@sonarrWantedAirs": {
+    "description": "Air date of an upcoming episode.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd",
+        "description": "A date."
+      }
+    }
+  },
+  "sonarrWantedNoAirDate": "تاريخ العرض غير معروف",
+  "@sonarrWantedNoAirDate": {
+    "description": "Shown for an episode without an air date."
+  },
+  "sonarrTabLibrary": "المكتبة",
+  "@sonarrTabLibrary": {
+    "description": "Label of the library tab in the Sonarr area's tab strip."
+  },
+  "sonarrTabsLabel": "أقسام سونار",
+  "@sonarrTabsLabel": {
+    "description": "Accessible name of the tab strip that switches between library, calendar, queue and missing."
+  },
+  "sonarrLibrarySearchHint": "ابحث في مسلسلاتك",
+  "@sonarrLibrarySearchHint": {
+    "description": "Hint of the search field above the series library."
+  },
+  "sonarrLibrarySearchClear": "مسح البحث",
+  "@sonarrLibrarySearchClear": {
+    "description": "Tooltip of the button that clears the library search field."
+  },
+  "sonarrLibraryAddTooltip": "إضافة مسلسل",
+  "@sonarrLibraryAddTooltip": {
+    "description": "Tooltip of the top bar button that opens the add-series flow."
+  },
+  "sonarrLibrarySortChip": "الترتيب: {key}",
+  "@sonarrLibrarySortChip": {
+    "description": "Label of the sort button above the library; shows the current sort key.",
+    "placeholders": {
+      "key": {
+        "type": "String",
+        "description": "Localized sort key name."
+      }
+    }
+  },
+  "sonarrLibrarySortChipSemantics": "الترتيب حسب {key}، {direction}. يفتح خيارات الترتيب.",
+  "@sonarrLibrarySortChipSemantics": {
+    "description": "Accessible name of the sort button: current key and direction.",
+    "placeholders": {
+      "key": {
+        "type": "String",
+        "description": "Sort key."
+      },
+      "direction": {
+        "type": "String",
+        "description": "Ascending or descending."
+      }
+    }
+  },
+  "sonarrLibraryFilterChip": "{count, plural, =0{تصفية} many{تصفية ({count})} other{تصفية ({count})}}",
+  "@sonarrLibraryFilterChip": {
+    "description": "Label of the filter button above the library; shows how many criteria are active.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of items."
+      }
+    }
+  },
+  "sonarrLibraryFilterChipSemantics": "{count, plural, =0{تصفية. يفتح خيارات التصفية.} =1{تصفية، مرشح واحد نشط. يفتح خيارات التصفية.} =2{تصفية، مرشحان نشطان. يفتح خيارات التصفية.} few{تصفية، {count} مرشحات نشطة. يفتح خيارات التصفية.} many{تصفية، {count} مرشحًا نشطًا. يفتح خيارات التصفية.} other{تصفية، {count} مرشح نشط. يفتح خيارات التصفية.}}",
+  "@sonarrLibraryFilterChipSemantics": {
+    "description": "Accessible name of the filter button including the number of active filters.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of items."
+      }
+    }
+  },
+  "sonarrLibrarySortSheetTitle": "الترتيب",
+  "@sonarrLibrarySortSheetTitle": {
+    "description": "Title of the sort sheet."
+  },
+  "sonarrLibrarySortAscending": "تصاعدي",
+  "@sonarrLibrarySortAscending": {
+    "description": "Sort direction option: smallest or oldest first."
+  },
+  "sonarrLibrarySortDescending": "تنازلي",
+  "@sonarrLibrarySortDescending": {
+    "description": "Sort direction option: largest or newest first."
+  },
+  "sonarrLibrarySaveDefault": "حفظ كافتراضي",
+  "@sonarrLibrarySaveDefault": {
+    "description": "Switch in the sort and filter sheets that stores the choice as the default for this server."
+  },
+  "sonarrLibraryApply": "تطبيق",
+  "@sonarrLibraryApply": {
+    "description": "Button that applies the sort or filter choice."
+  },
+  "sonarrLibrarySortTitle": "العنوان",
+  "@sonarrLibrarySortTitle": {
+    "description": "Sort key: series title."
+  },
+  "sonarrLibrarySortYear": "السنة",
+  "@sonarrLibrarySortYear": {
+    "description": "Sort key: release year."
+  },
+  "sonarrLibrarySortAdded": "تاريخ الإضافة",
+  "@sonarrLibrarySortAdded": {
+    "description": "Sort key: when the series was added."
+  },
+  "sonarrLibrarySortNextAiring": "الحلقة القادمة",
+  "@sonarrLibrarySortNextAiring": {
+    "description": "Sort key: date of the next episode."
+  },
+  "sonarrLibrarySortNetwork": "الشبكة",
+  "@sonarrLibrarySortNetwork": {
+    "description": "Sort key: broadcast network."
+  },
+  "sonarrLibrarySortSize": "الحجم على القرص",
+  "@sonarrLibrarySortSize": {
+    "description": "Sort key: disk space used."
+  },
+  "sonarrLibrarySortRating": "التقييم",
+  "@sonarrLibrarySortRating": {
+    "description": "Sort key: rating."
+  },
+  "sonarrLibrarySortProfile": "ملف الجودة",
+  "@sonarrLibrarySortProfile": {
+    "description": "Sort key: quality profile name."
+  },
+  "sonarrLibrarySortGenre": "النوع",
+  "@sonarrLibrarySortGenre": {
+    "description": "Sort key: first genre."
+  },
+  "sonarrLibraryFilterSheetTitle": "تصفية",
+  "@sonarrLibraryFilterSheetTitle": {
+    "description": "Title of the filter sheet."
+  },
+  "sonarrLibraryFilterClearAll": "مسح الكل",
+  "@sonarrLibraryFilterClearAll": {
+    "description": "Button that removes every active filter."
+  },
+  "sonarrLibraryFilterMonitoring": "المراقبة",
+  "@sonarrLibraryFilterMonitoring": {
+    "description": "Filter section: monitored or not."
+  },
+  "sonarrLibraryFilterStatus": "الحالة",
+  "@sonarrLibraryFilterStatus": {
+    "description": "Filter section: continuing or ended."
+  },
+  "sonarrLibraryFilterType": "نوع المسلسل",
+  "@sonarrLibraryFilterType": {
+    "description": "Filter section: standard, daily or anime."
+  },
+  "sonarrLibraryFilterProfile": "ملف الجودة",
+  "@sonarrLibraryFilterProfile": {
+    "description": "Filter section: quality profiles."
+  },
+  "sonarrLibraryFilterTags": "الوسوم",
+  "@sonarrLibraryFilterTags": {
+    "description": "Filter section: tags."
+  },
+  "sonarrLibraryTypeStandard": "عادي",
+  "@sonarrLibraryTypeStandard": {
+    "description": "Series type option."
+  },
+  "sonarrLibraryTypeDaily": "يومي",
+  "@sonarrLibraryTypeDaily": {
+    "description": "Series type option."
+  },
+  "sonarrLibraryTypeAnime": "أنمي",
+  "@sonarrLibraryTypeAnime": {
+    "description": "Series type option."
+  },
+  "sonarrLibraryRemoveFilter": "إزالة المرشح: {name}",
+  "@sonarrLibraryRemoveFilter": {
+    "description": "Accessible name of the remove button on an active filter chip.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Filter name."
+      }
+    }
+  },
+  "sonarrLibraryFilterEmptyHeadline": "لا توجد مسلسلات تطابق المرشحات",
+  "@sonarrLibraryFilterEmptyHeadline": {
+    "description": "Headline when filters hide every series."
+  },
+  "sonarrLibraryFilterEmptyMessage": "أزل مرشحًا لعرض المزيد من مكتبتك.",
+  "@sonarrLibraryFilterEmptyMessage": {
+    "description": "Hint under the filter-empty headline."
+  },
+  "sonarrLibraryFilterEmptyAction": "مسح المرشحات",
+  "@sonarrLibraryFilterEmptyAction": {
+    "description": "Action of the filter-empty state."
+  },
+  "sonarrLibraryNoMatchHeadline": "لا توجد مسلسلات تطابق «{term}»",
+  "@sonarrLibraryNoMatchHeadline": {
+    "description": "Headline when the search text matches nothing in the library.",
+    "placeholders": {
+      "term": {
+        "type": "String",
+        "description": "Text typed by the user."
+      }
+    }
+  },
+  "sonarrLibraryNoMatchMessage": "قد لا يكون في مكتبتك بعد.",
+  "@sonarrLibraryNoMatchMessage": {
+    "description": "Hint under the no-match headline."
+  },
+  "sonarrLibraryNoMatchAction": "ابحث لإضافة «{term}»",
+  "@sonarrLibraryNoMatchAction": {
+    "description": "Action of the no-match state: opens the add flow with the typed text.",
+    "placeholders": {
+      "term": {
+        "type": "String",
+        "description": "Text typed by the user."
+      }
+    }
+  },
+  "sonarrLibraryPartialBanner": "{count, plural, =1{تعذرت قراءة مسلسل واحد ولم يُعرض.} =2{تعذرت قراءة مسلسلين ولم يُعرضا.} few{تعذرت قراءة {count} مسلسلات ولم تُعرض.} many{تعذرت قراءة {count} مسلسلًا ولم تُعرض.} other{تعذرت قراءة {count} مسلسل ولم تُعرض.}}",
+  "@sonarrLibraryPartialBanner": {
+    "description": "Notice shown when some series rows from the server were unreadable and skipped.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of items."
+      }
+    }
+  },
+  "sonarrLibraryGroupUnknown": "غير معروف",
+  "@sonarrLibraryGroupUnknown": {
+    "description": "Group header for series without the value being sorted by."
+  },
+  "sonarrLibraryGroupScheduled": "موعد البث محدد",
+  "@sonarrLibraryGroupScheduled": {
+    "description": "Group header: series with a next airing date."
+  },
+  "sonarrLibraryGroupNotScheduled": "بلا موعد بث",
+  "@sonarrLibraryGroupNotScheduled": {
+    "description": "Group header: series without a next airing date."
+  },
+  "sonarrLibraryGroupSizeSmall": "أقل من 10 غيغابايت",
+  "@sonarrLibraryGroupSizeSmall": {
+    "description": "Group header for the size sort: small."
+  },
+  "sonarrLibraryGroupSizeMedium": "من 10 إلى 50 غيغابايت",
+  "@sonarrLibraryGroupSizeMedium": {
+    "description": "Group header for the size sort: medium."
+  },
+  "sonarrLibraryGroupSizeLarge": "50 غيغابايت أو أكثر",
+  "@sonarrLibraryGroupSizeLarge": {
+    "description": "Group header for the size sort: large."
+  },
+  "sonarrLibraryGroupRating": "التقييم {rating} فأكثر",
+  "@sonarrLibraryGroupRating": {
+    "description": "Group header for the rating sort.",
+    "placeholders": {
+      "rating": {
+        "type": "int",
+        "description": "Whole rating."
+      }
+    }
+  },
+  "sonarrLibraryJumpTooltip": "الانتقال إلى قسم",
+  "@sonarrLibraryJumpTooltip": {
+    "description": "Tooltip of the button that opens the section list."
+  },
+  "sonarrLibraryJumpTitle": "الانتقال إلى",
+  "@sonarrLibraryJumpTitle": {
+    "description": "Title of the jump-to-section sheet."
+  },
+  "sonarrLibraryClose": "إغلاق",
+  "@sonarrLibraryClose": {
+    "description": "Accessible name of the close button of the library sheets."
+  },
+  "sonarrLibraryComputing": "جارٍ تحديث القائمة",
+  "@sonarrLibraryComputing": {
+    "description": "Accessible label shown while a big list is filtered in the background."
+  },
+  "sonarrLibraryGroupHeaderSemantics": "القسم {name}",
+  "@sonarrLibraryGroupHeaderSemantics": {
+    "description": "Accessible name of a sticky group header.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Group name."
+      }
+    }
+  },
+  "sonarrReleaseClose": "إغلاق",
+  "@sonarrReleaseClose": {
+    "description": "Tooltip and accessible name of the close button of the release search sheet."
+  },
+  "sonarrReleaseLoading": "جارٍ البحث عن الإصدارات",
+  "@sonarrReleaseLoading": {
+    "description": "Accessible label of the skeleton shown while the interactive release search runs."
+  },
+  "sonarrReleaseErrorHeadline": "تعذّر البحث عن الإصدارات",
+  "@sonarrReleaseErrorHeadline": {
+    "description": "Headline of the release search error state."
+  },
+  "sonarrReleaseSearchAgain": "ابحث مرة أخرى",
+  "@sonarrReleaseSearchAgain": {
+    "description": "Button that repeats the interactive release search."
+  },
+  "sonarrReleaseNoneHeadline": "لم يتم العثور على إصدارات",
+  "@sonarrReleaseNoneHeadline": {
+    "description": "Headline when the interactive search returned no releases."
+  },
+  "sonarrReleaseNoneMessage": "لم يُرجع أي من المفهرسات إصدارًا لهذا البحث.",
+  "@sonarrReleaseNoneMessage": {
+    "description": "Hint under the no releases headline."
+  },
+  "sonarrReleaseNoMatchHeadline": "لا توجد إصدارات تطابق عوامل التصفية",
+  "@sonarrReleaseNoMatchHeadline": {
+    "description": "Headline when filters hide every release of the search."
+  },
+  "sonarrReleaseNoMatchMessage": "امسح عوامل التصفية لعرض كل الإصدارات.",
+  "@sonarrReleaseNoMatchMessage": {
+    "description": "Hint under the filter-empty headline of the release sheet."
+  },
+  "sonarrReleaseClearFilters": "مسح عوامل التصفية",
+  "@sonarrReleaseClearFilters": {
+    "description": "Button that clears all release filters."
+  },
+  "sonarrReleaseDownload": "تنزيل",
+  "@sonarrReleaseDownload": {
+    "description": "Button that sends a release to the download client."
+  },
+  "sonarrReleaseDownloadAgain": "نزّل مرة أخرى",
+  "@sonarrReleaseDownloadAgain": {
+    "description": "Button that repeats a failed or uncertain release download."
+  },
+  "sonarrReleaseGrabbing": "جارٍ الإرسال إلى عميل التنزيل…",
+  "@sonarrReleaseGrabbing": {
+    "description": "Status of a release row while the grab request is in progress."
+  },
+  "sonarrReleaseGrabbed": "تم الإرسال إلى عميل التنزيل",
+  "@sonarrReleaseGrabbed": {
+    "description": "Status of a release row after Sonarr accepted the grab."
+  },
+  "sonarrReleaseFailed": "فشل التنزيل",
+  "@sonarrReleaseFailed": {
+    "description": "Status of a release row when the grab was refused or failed."
+  },
+  "sonarrReleaseMaybeSent": "ربما تم الإرسال. تحقق من قائمة الانتظار قبل المحاولة مجددًا.",
+  "@sonarrReleaseMaybeSent": {
+    "description": "Status of a release row when the connection dropped and it is unclear whether the grab arrived."
+  },
+  "sonarrReleaseRejected": "مرفوض",
+  "@sonarrReleaseRejected": {
+    "description": "Badge and filter name for releases that Sonarr rejected."
+  },
+  "sonarrReleaseAccepted": "مقبول",
+  "@sonarrReleaseAccepted": {
+    "description": "Filter name for releases that Sonarr accepted."
+  },
+  "sonarrReleaseExpand": "عرض التفاصيل",
+  "@sonarrReleaseExpand": {
+    "description": "Tooltip of the button that expands a release row."
+  },
+  "sonarrReleaseCollapse": "إخفاء التفاصيل",
+  "@sonarrReleaseCollapse": {
+    "description": "Tooltip of the button that collapses a release row."
+  },
+  "sonarrReleaseRejectionsHeading": "سبب الرفض",
+  "@sonarrReleaseRejectionsHeading": {
+    "description": "Heading of the rejection reasons list of a release."
+  },
+  "sonarrReleaseCustomFormatsHeading": "التنسيقات المخصصة",
+  "@sonarrReleaseCustomFormatsHeading": {
+    "description": "Heading of the custom formats list of a release."
+  },
+  "sonarrReleaseLanguagesHeading": "اللغات",
+  "@sonarrReleaseLanguagesHeading": {
+    "description": "Heading of the languages list of a release."
+  },
+  "sonarrReleaseSortButton": "الترتيب: {key}",
+  "@sonarrReleaseSortButton": {
+    "description": "Name of the sort menu button; says which key is active.",
+    "placeholders": {
+      "key": {
+        "type": "String",
+        "description": "Name of the active sort key."
+      }
+    }
+  },
+  "sonarrReleaseSortBestMatch": "أفضل تطابق",
+  "@sonarrReleaseSortBestMatch": {
+    "description": "Release sort key: server ranking."
+  },
+  "sonarrReleaseSortAge": "العمر",
+  "@sonarrReleaseSortAge": {
+    "description": "Release sort key: age, newest first."
+  },
+  "sonarrReleaseSortSize": "الحجم",
+  "@sonarrReleaseSortSize": {
+    "description": "Release sort key: size, biggest first."
+  },
+  "sonarrReleaseSortSeeders": "المصادر",
+  "@sonarrReleaseSortSeeders": {
+    "description": "Release sort key: seeders, most first."
+  },
+  "sonarrReleaseSortIndexer": "المفهرس",
+  "@sonarrReleaseSortIndexer": {
+    "description": "Release sort key: indexer name."
+  },
+  "sonarrReleaseSortQuality": "الجودة",
+  "@sonarrReleaseSortQuality": {
+    "description": "Release sort key: resolution, highest first."
+  },
+  "sonarrReleaseReverseSort": "عكس ترتيب الفرز",
+  "@sonarrReleaseReverseSort": {
+    "description": "Tooltip of the button that reverses the sort direction."
+  },
+  "sonarrReleaseFilters": "{count, plural, =0{عوامل التصفية} many{عوامل التصفية ({count})} other{عوامل التصفية ({count})}}",
+  "@sonarrReleaseFilters": {
+    "description": "Filter panel toggle; shows how many filters are active.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole number."
+      }
+    }
+  },
+  "sonarrReleaseGroupStatus": "الحالة",
+  "@sonarrReleaseGroupStatus": {
+    "description": "Filter group name: accepted or rejected."
+  },
+  "sonarrReleaseGroupProtocol": "البروتوكول",
+  "@sonarrReleaseGroupProtocol": {
+    "description": "Filter group name: torrent or usenet."
+  },
+  "sonarrReleaseGroupResolution": "الدقة",
+  "@sonarrReleaseGroupResolution": {
+    "description": "Filter group name for video resolution."
+  },
+  "sonarrReleaseGroupSource": "المصدر",
+  "@sonarrReleaseGroupSource": {
+    "description": "Filter group name for the quality source."
+  },
+  "sonarrReleaseResolution": "{resolution}p",
+  "@sonarrReleaseResolution": {
+    "description": "Resolution filter chip, for example 1080p.",
+    "placeholders": {
+      "resolution": {
+        "type": "String",
+        "description": "Vertical resolution digits."
+      }
+    }
+  },
+  "sonarrReleaseProtocolTorrent": "تورنت",
+  "@sonarrReleaseProtocolTorrent": {
+    "description": "Name of the torrent protocol."
+  },
+  "sonarrReleaseProtocolUsenet": "يوزنت",
+  "@sonarrReleaseProtocolUsenet": {
+    "description": "Name of the usenet protocol."
+  },
+  "sonarrReleaseAgeMinutes": "{count, plural, =0{عمره أقل من دقيقة} =1{عمره دقيقة} =2{عمره دقيقتان} few{عمره {count} دقائق} many{عمره {count} دقيقة} other{عمره {count} دقيقة}}",
+  "@sonarrReleaseAgeMinutes": {
+    "description": "Age of a release in minutes.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole number."
+      }
+    }
+  },
+  "sonarrReleaseAgeHours": "{count, plural, =0{عمره أقل من ساعة} =1{عمره ساعة} =2{عمره ساعتان} few{عمره {count} ساعات} many{عمره {count} ساعة} other{عمره {count} ساعة}}",
+  "@sonarrReleaseAgeHours": {
+    "description": "Age of a release in hours.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole number."
+      }
+    }
+  },
+  "sonarrReleaseAgeDays": "{count, plural, =0{عمره أقل من يوم} =1{عمره يوم} =2{عمره يومان} few{عمره {count} أيام} many{عمره {count} يومًا} other{عمره {count} يوم}}",
+  "@sonarrReleaseAgeDays": {
+    "description": "Age of a release in days.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole number."
+      }
+    }
+  },
+  "sonarrReleaseSeeders": "{count, plural, zero{لا مصادر} =1{مصدر واحد} =2{مصدران} few{{count} مصادر} many{{count} مصدرًا} other{{count} مصدر}}",
+  "@sonarrReleaseSeeders": {
+    "description": "Number of seeders of a torrent release.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Whole number."
+      }
+    }
+  },
+  "sonarrReleaseSemantics": "{title}. {details}",
+  "@sonarrReleaseSemantics": {
+    "description": "Screen reader label of a release row: its name, then facts and state.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Release name."
+      },
+      "details": {
+        "type": "String",
+        "description": "Comma separated facts and state."
+      }
+    }
+  },
+  "sonarrReleaseRejectedTitle": "هل تريد تنزيل إصدار مرفوض؟",
+  "@sonarrReleaseRejectedTitle": {
+    "description": "Title of the confirm dialog for a rejected release."
+  },
+  "sonarrReleaseRejectedMessage": "رفض Sonarr هذا الإصدار للأسباب أدناه. تنزيله على أي حال يرسله إلى عميل التنزيل وقد يستبدل ملفات لديك أو يتعارض معها.",
+  "@sonarrReleaseRejectedMessage": {
+    "description": "Consequences text of the confirm dialog for a rejected release."
+  },
+  "sonarrReleaseRejectedConfirm": "نزّل على أي حال",
+  "@sonarrReleaseRejectedConfirm": {
+    "description": "Confirm button for downloading a rejected release."
+  },
+  "sonarrReleaseCancel": "إلغاء",
+  "@sonarrReleaseCancel": {
+    "description": "Cancel button of the rejected release dialog."
+  },
+  "sonarrReleaseResendTitle": "إرسال مرة أخرى؟",
+  "@sonarrReleaseResendTitle": {
+    "description": "Title of the confirm dialog shown before a release that may already have been sent is sent again."
+  },
+  "sonarrReleaseResendMessage": "ربما أُرسل هذا الإصدار بالفعل. هل تريد إرساله مرة أخرى؟",
+  "@sonarrReleaseResendMessage": {
+    "description": "Body of the confirm dialog shown before a release that may already have been sent is sent again."
+  },
+  "sonarrReleaseResendConfirm": "أرسل مرة أخرى",
+  "@sonarrReleaseResendConfirm": {
+    "description": "Confirm button that sends a release that may already have been sent once more."
+  },
+  "sonarrAddTitle": "إضافة مسلسل",
+  "@sonarrAddTitle": {
+    "description": "Title of the add series screen."
+  },
+  "sonarrAddSearchLabel": "ابحث بالعنوان أو المعرّف",
+  "@sonarrAddSearchLabel": {
+    "description": "Label of the add series search field."
+  },
+  "sonarrAddSearchHint": "العنوان أو tvdb:12345 أو imdb:tt1234567",
+  "@sonarrAddSearchHint": {
+    "description": "Hint text of the add series search field; the ID forms are literal."
+  },
+  "sonarrAddClearSearch": "مسح البحث",
+  "@sonarrAddClearSearch": {
+    "description": "Tooltip of the button that clears the add series search field."
+  },
+  "sonarrAddIdleHeadline": "ابحث عن مسلسل لإضافته",
+  "@sonarrAddIdleHeadline": {
+    "description": "Headline of the add series screen before searching."
+  },
+  "sonarrAddIdleMessage": "ابحث بالعنوان أو بمعرّف مثل tvdb:12345 أو imdb:tt1234567.",
+  "@sonarrAddIdleMessage": {
+    "description": "Hint of the add series screen before searching."
+  },
+  "sonarrAddSearching": "جارٍ البحث عن المسلسلات",
+  "@sonarrAddSearching": {
+    "description": "Accessible label of the skeleton shown while the series lookup runs."
+  },
+  "sonarrAddNoResultsHeadline": "لم يتم العثور على مسلسلات",
+  "@sonarrAddNoResultsHeadline": {
+    "description": "Headline when the series lookup returned nothing."
+  },
+  "sonarrAddNoResultsMessage": "تحقق من الإملاء أو ابحث بمعرّف مثل tvdb:12345.",
+  "@sonarrAddNoResultsMessage": {
+    "description": "Hint under the no series found headline."
+  },
+  "sonarrAddErrorHeadline": "تعذّر البحث عن المسلسلات",
+  "@sonarrAddErrorHeadline": {
+    "description": "Headline of the add series search error state."
+  },
+  "sonarrAddRetry": "حاول مرة أخرى",
+  "@sonarrAddRetry": {
+    "description": "Retry button of the add series screen and options sheet."
+  },
+  "sonarrAddInLibrary": "في المكتبة",
+  "@sonarrAddInLibrary": {
+    "description": "Badge on a lookup result that is already in the library."
+  },
+  "sonarrAddResultSemantics": "{title}، {details}",
+  "@sonarrAddResultSemantics": {
+    "description": "Screen reader label of a lookup result.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Series title."
+      },
+      "details": {
+        "type": "String",
+        "description": "Comma separated facts."
+      }
+    }
+  },
+  "sonarrAddClose": "إغلاق",
+  "@sonarrAddClose": {
+    "description": "Tooltip of the close button of the add options sheet."
+  },
+  "sonarrAddOptionsLoading": "جارٍ تحميل الخيارات",
+  "@sonarrAddOptionsLoading": {
+    "description": "Accessible label of the skeleton shown while the add options load."
+  },
+  "sonarrAddOptionsErrorHeadline": "تعذّر تحميل الخيارات",
+  "@sonarrAddOptionsErrorHeadline": {
+    "description": "Headline when quality profiles or root folders could not be loaded."
+  },
+  "sonarrAddUnusableHeadline": "Sonarr غير جاهز لإضافة المسلسلات",
+  "@sonarrAddUnusableHeadline": {
+    "description": "Headline when Sonarr has no quality profile or no root folder."
+  },
+  "sonarrAddUnusableMessage": "أنشئ ملف جودة ومجلدًا جذريًا في Sonarr أولًا.",
+  "@sonarrAddUnusableMessage": {
+    "description": "Hint under the not-ready headline."
+  },
+  "sonarrAddOptionProfile": "ملف الجودة",
+  "@sonarrAddOptionProfile": {
+    "description": "Label of the quality profile field."
+  },
+  "sonarrAddOptionRootFolder": "المجلد الجذري",
+  "@sonarrAddOptionRootFolder": {
+    "description": "Label of the root folder field."
+  },
+  "sonarrAddOptionSeriesType": "نوع المسلسل",
+  "@sonarrAddOptionSeriesType": {
+    "description": "Label of the series type field."
+  },
+  "sonarrAddOptionMonitor": "المراقبة",
+  "@sonarrAddOptionMonitor": {
+    "description": "Label of the field that chooses which episodes to monitor."
+  },
+  "sonarrAddOptionSeasonFolders": "استخدام مجلدات المواسم",
+  "@sonarrAddOptionSeasonFolders": {
+    "description": "Label of the season folders switch."
+  },
+  "sonarrAddOptionMonitored": "مراقَب",
+  "@sonarrAddOptionMonitored": {
+    "description": "Label of the monitored switch."
+  },
+  "sonarrAddOptionMonitoredHint": "تُضاف المسلسلات غير المراقَبة لكن لا يُبحث عنها أبدًا.",
+  "@sonarrAddOptionMonitoredHint": {
+    "description": "Explanation under the monitored switch."
+  },
+  "sonarrAddOptionTags": "الوسوم",
+  "@sonarrAddOptionTags": {
+    "description": "Heading of the tags section of the add options."
+  },
+  "sonarrAddOptionNoTags": "لا توجد وسوم بعد.",
+  "@sonarrAddOptionNoTags": {
+    "description": "Shown when Sonarr has no tags."
+  },
+  "sonarrAddOptionNewTag": "وسم جديد",
+  "@sonarrAddOptionNewTag": {
+    "description": "Label of the field to create a tag."
+  },
+  "sonarrAddOptionCreateTag": "إنشاء وسم",
+  "@sonarrAddOptionCreateTag": {
+    "description": "Tooltip of the button that creates the typed tag."
+  },
+  "sonarrAddTagFailed": "تعذّر إنشاء الوسم. جرّب اسمًا آخر.",
+  "@sonarrAddTagFailed": {
+    "description": "Error under the new tag field."
+  },
+  "sonarrAddTypeStandard": "عادي",
+  "@sonarrAddTypeStandard": {
+    "description": "Series type: standard."
+  },
+  "sonarrAddTypeDaily": "يومي",
+  "@sonarrAddTypeDaily": {
+    "description": "Series type: daily."
+  },
+  "sonarrAddTypeAnime": "أنمي",
+  "@sonarrAddTypeAnime": {
+    "description": "Series type: anime."
+  },
+  "sonarrAddMonitorAll": "كل الحلقات",
+  "@sonarrAddMonitorAll": {
+    "description": "Monitor preset: all episodes."
+  },
+  "sonarrAddMonitorFuture": "الحلقات المستقبلية",
+  "@sonarrAddMonitorFuture": {
+    "description": "Monitor preset: future episodes."
+  },
+  "sonarrAddMonitorMissing": "الحلقات المفقودة",
+  "@sonarrAddMonitorMissing": {
+    "description": "Monitor preset: missing episodes."
+  },
+  "sonarrAddMonitorExisting": "الحلقات الموجودة",
+  "@sonarrAddMonitorExisting": {
+    "description": "Monitor preset: existing episodes."
+  },
+  "sonarrAddMonitorFirstSeason": "الموسم الأول",
+  "@sonarrAddMonitorFirstSeason": {
+    "description": "Monitor preset: first season."
+  },
+  "sonarrAddMonitorLastSeason": "الموسم الأخير",
+  "@sonarrAddMonitorLastSeason": {
+    "description": "Monitor preset: last season."
+  },
+  "sonarrAddMonitorLatestSeason": "أحدث موسم",
+  "@sonarrAddMonitorLatestSeason": {
+    "description": "Monitor preset: latest season."
+  },
+  "sonarrAddMonitorPilot": "الحلقة التجريبية",
+  "@sonarrAddMonitorPilot": {
+    "description": "Monitor preset: pilot only."
+  },
+  "sonarrAddMonitorNone": "لا شيء",
+  "@sonarrAddMonitorNone": {
+    "description": "Monitor preset: nothing."
+  },
+  "sonarrAddButton": "إضافة المسلسل",
+  "@sonarrAddButton": {
+    "description": "Button that adds the series."
+  },
+  "sonarrAddAndSearchButton": "أضف وابحث",
+  "@sonarrAddAndSearchButton": {
+    "description": "Button that adds the series and searches for missing episodes."
+  },
+  "sonarrAddAdding": "جارٍ إضافة المسلسل…",
+  "@sonarrAddAdding": {
+    "description": "Status while the series is being added."
+  },
+  "sonarrAddFailedHeadline": "تعذّرت إضافة المسلسل",
+  "@sonarrAddFailedHeadline": {
+    "description": "Headline of the add failure shown in the options sheet."
+  },
+  "sonarrAddSuccessHeadline": "تمت إضافة المسلسل",
+  "@sonarrAddSuccessHeadline": {
+    "description": "Headline of the add confirmation."
+  },
+  "sonarrAddSuccessMessage": "أصبح الآن في مكتبتك.",
+  "@sonarrAddSuccessMessage": {
+    "description": "Message of the add confirmation."
+  },
+  "sonarrAddSuccessSearching": "أصبح في مكتبتك ويبحث Sonarr عن الحلقات المفقودة.",
+  "@sonarrAddSuccessSearching": {
+    "description": "Message of the add confirmation after add and search."
+  },
+  "sonarrAddOpenSeries": "فتح المسلسل",
+  "@sonarrAddOpenSeries": {
+    "description": "Button that opens the added series."
+  },
+  "sonarrAddAnother": "إضافة مسلسل آخر",
+  "@sonarrAddAnother": {
+    "description": "Button that closes the confirmation to add another series."
+  },
+  "sonarrCalendarDayNumber": "{day}",
+  "@sonarrCalendarDayNumber": {
+    "description": "A day of the month shown in a calendar month cell, formatted with the locale's digits.",
+    "placeholders": {
+      "day": {
+        "type": "int",
+        "format": "decimalPattern",
+        "description": "Day of month."
       }
     }
   }

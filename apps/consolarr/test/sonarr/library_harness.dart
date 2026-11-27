@@ -3,16 +3,19 @@
 import 'dart:async';
 
 import 'package:arr_api/arr_api.dart';
+import 'package:consolarr/features/sonarr/application/library_providers.dart';
 import 'package:consolarr/features/sonarr/application/sonarr_providers.dart';
-import 'package:consolarr/features/sonarr/presentation/sonarr_library_screen.dart';
-import 'package:consolarr/src/providers.dart';
+import 'package:consolarr/features/sonarr/data/sonarr_prefs_store.dart';
+import 'package:consolarr/features/sonarr/presentation/home/sonarr_home_screen.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:test_harness/test_harness.dart';
 
+import 'fakes.dart';
 import 'support.dart';
 
 /// A library notifier that serves a fixed state; `null` stays loading.
@@ -85,31 +88,74 @@ Widget libraryApp(
   LibraryViewMode mode = LibraryViewMode.grid,
   bool reduceMotion = true,
   VoidCallback? onOpenServers,
+  ScriptedSonarrApi? api,
+  SonarrPrefsStore? prefs,
+  RouteRecorder? recorder,
 }) {
   return ProviderScope(
     overrides: [
+      ...sonarrTestOverrides(
+        api ?? ScriptedSonarrApi(),
+        prefs: prefs,
+        now: fixedNow,
+      ),
+      libraryRunnerProvider.overrideWithValue(inlineRunner),
       seriesLibraryProvider.overrideWith(() => notifier),
       artworkSourceProvider.overrideWithValue(artwork),
       viewModeStoreProvider.overrideWithValue(MemoryViewModeStore(mode)),
-      clockProvider.overrideWithValue(() => fixedNow),
     ],
     child: harnessApp(
       variant,
-      ConsolarrEffectsScope(
-        reduceMotion: reduceMotion,
-        child: Builder(
-          builder: (context) {
-            // The shell raises the bottom padding by the floating nav bar.
-            final media = MediaQuery.of(context);
-            return MediaQuery(
-              data: media.copyWith(padding: media.padding.copyWith(bottom: 88)),
-              child: Scaffold(
-                body: SonarrLibraryScreen(onOpenServers: onOpenServers),
-              ),
-            );
-          },
+      _routed(
+        recorder,
+        ConsolarrEffectsScope(
+          reduceMotion: reduceMotion,
+          child: Builder(
+            builder: (context) {
+              // The shell raises the bottom padding by the floating nav bar.
+              final media = MediaQuery.of(context);
+              return MediaQuery(
+                data: media.copyWith(
+                  padding: media.padding.copyWith(bottom: 88),
+                ),
+                child: Scaffold(
+                  body: SonarrHomeScreen(onOpenServers: onOpenServers),
+                ),
+              );
+            },
+          ),
         ),
       ),
+    ),
+  );
+}
+
+/// Runs library queries inline (no isolate) so tests stay deterministic.
+Future<T> inlineRunner<T>(T Function() computation) async => computation();
+
+/// Remembers where the screen navigated.
+class RouteRecorder {
+  /// Location of the most recently built non-home route, or empty.
+  String location = '';
+}
+
+Widget _routed(RouteRecorder? recorder, Widget home) {
+  if (recorder == null) return home;
+  Widget visit(GoRouterState state) {
+    recorder.location = state.uri.toString();
+    return const Scaffold();
+  }
+
+  return Router.withConfig(
+    config: GoRouter(
+      routes: [
+        GoRoute(path: '/', builder: (context, state) => home),
+        GoRoute(path: '/sonarr/add', builder: (context, state) => visit(state)),
+        GoRoute(
+          path: '/sonarr/series/:id',
+          builder: (context, state) => visit(state),
+        ),
+      ],
     ),
   );
 }

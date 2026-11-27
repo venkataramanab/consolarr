@@ -5,7 +5,7 @@ import 'dart:typed_data';
 
 import 'package:consolarr/features/servers/application/server_connection.dart';
 import 'package:consolarr/features/sonarr/application/sonarr_providers.dart';
-import 'package:consolarr/features/sonarr/presentation/sonarr_library_screen.dart';
+import 'package:consolarr/features/sonarr/presentation/home/sonarr_home_screen.dart';
 import 'package:consolarr/src/cache/payload_cache.dart';
 import 'package:consolarr/src/database/app_database.dart';
 import 'package:consolarr/src/providers.dart';
@@ -212,6 +212,6 @@ Widget _screen() => harnessApp(
   ),
   const ConsolarrEffectsScope(
     reduceMotion: true,
-    child: Scaffold(body: SonarrLibraryScreen()),
+    child: Scaffold(body: SonarrHomeScreen()),
   ),
 );

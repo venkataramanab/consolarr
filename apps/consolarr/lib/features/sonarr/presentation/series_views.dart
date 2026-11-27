@@ -3,7 +3,9 @@
 import 'package:arr_api/arr_api.dart';
 import 'package:consolarr/features/sonarr/application/sonarr_providers.dart';
 import 'package:consolarr/features/sonarr/presentation/formatters.dart';
+import 'package:consolarr/features/sonarr/sonarr_routes.dart';
 import 'package:design_system/design_system.dart';
+import 'package:go_router/go_router.dart';
 import 'package:l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -11,6 +13,10 @@ import 'package:material_ui/material_ui.dart';
 const double posterMaxExtent = 160;
 
 const _dot = ' · ';
+
+/// Opens the detail screen of series [id] (NAV-05 path).
+void openSeries(BuildContext context, int id) =>
+    GoRouter.maybeOf(context)?.push(sonarrSeriesLocation(id));
 
 /// Poster artwork at display size, or a placeholder when there is none or it
 /// fails to load.
@@ -69,16 +75,23 @@ class SeriesPosterTile extends StatelessWidget {
   const SeriesPosterTile({
     required this.series,
     required this.source,
+    this.now,
+    this.onTap,
     super.key,
   });
 
   final SonarrSeries series;
   final ArtworkSource? source;
+  final DateTime? now;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final stats = series.statistics;
+    final next = now == null
+        ? null
+        : nextAiringText(l10n, series.nextAiring, now!);
     final subtitle = [
       if (series.year != null) '${series.year}',
       if (stats.totalEpisodeCount > 0)
@@ -86,9 +99,11 @@ class SeriesPosterTile extends StatelessWidget {
           stats.episodeFileCount,
           stats.totalEpisodeCount,
         ),
+      ?next,
     ].join(_dot);
     return PosterCard(
       title: series.title,
+      onTap: onTap ?? () => openSeries(context, series.id),
       subtitle: subtitle.isEmpty ? null : subtitle,
       semanticsLabel: semanticsLabel(l10n, series),
       imageBuilder: (context, cacheWidth) =>
@@ -111,12 +126,14 @@ class SeriesListTile extends StatelessWidget {
     required this.series,
     required this.source,
     required this.now,
+    this.onTap,
     super.key,
   });
 
   final SonarrSeries series;
   final ArtworkSource? source;
   final DateTime now;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -139,6 +156,7 @@ class SeriesListTile extends StatelessWidget {
     ];
     return MediaListTile(
       title: series.title,
+      onTap: onTap ?? () => openSeries(context, series.id),
       metadata: metadata,
       semanticsLabel: semanticsLabel(l10n, series),
       leading: seriesArtwork(
@@ -156,11 +174,13 @@ class SeriesGridSliver extends StatelessWidget {
   const SeriesGridSliver({
     required this.series,
     required this.source,
+    this.now,
     super.key,
   });
 
   final List<SonarrSeries> series;
   final ArtworkSource? source;
+  final DateTime? now;
 
   @override
   Widget build(BuildContext context) {
@@ -176,6 +196,7 @@ class SeriesGridSliver extends StatelessWidget {
           key: ValueKey(series[index].id),
           series: series[index],
           source: source,
+          now: now,
         ),
         childCount: series.length,
         addAutomaticKeepAlives: false,

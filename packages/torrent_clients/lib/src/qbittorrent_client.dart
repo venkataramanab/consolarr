@@ -18,6 +18,13 @@ Future<T> _isolateRunner<T>(T Function() computation) =>
 
 ParsedRows<Torrent> _parseTorrents(String body) => parseTorrentList(body);
 
+/// Top level on purpose: the closure given to [runner] captures only [body],
+/// never the client (its Dio/HttpClient cannot be sent to another isolate).
+Future<ParsedRows<Torrent>> _parseOffIsolate(ParseRunner runner, String body) =>
+    body.length > QBittorrentClient.isolateThresholdBytes
+    ? runner(() => _parseTorrents(body))
+    : Future.value(_parseTorrents(body));
+
 /// qBittorrent WebUI API v2 client (cookie login).
 ///
 /// The [Dio] comes from `SecureHttpClientFactory` with `baseUrl` set to the
@@ -168,9 +175,7 @@ class QBittorrentClient
   @override
   Future<Result<List<Torrent>>> listTorrents() => _guard(() async {
     final body = await _get('api/v2/torrents/info');
-    final parsed = body.length > isolateThresholdBytes
-        ? await _runner(() => _parseTorrents(body))
-        : parseTorrentList(body);
+    final parsed = await _parseOffIsolate(_runner, body);
     if (parsed.skipped > 0) onRowsSkipped?.call(parsed.skipped);
     return parsed.items;
   });

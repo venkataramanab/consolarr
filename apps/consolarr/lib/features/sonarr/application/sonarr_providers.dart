@@ -34,11 +34,8 @@ final class LibraryFailure extends LibraryState {
   final AppError error;
 }
 
-/// A list (possibly empty), live or cached.
-///
-/// A "partial" state (some rows unreadable) is not reachable: `arr_api`
-/// parses a list all-or-nothing and reports `parse_error` for the whole
-/// payload, and cached copies silently drop only damaged entries.
+/// A list (possibly empty), live or cached. [isPartial] when some rows the
+/// server sent could not be read.
 final class LibraryData extends LibraryState {
   const LibraryData(this.snapshot);
   final SeriesSnapshot snapshot;
@@ -47,6 +44,8 @@ final class LibraryData extends LibraryState {
 
   /// The live refresh failed; [snapshot] is older data.
   bool get isOffline => snapshot.offlineError != null;
+
+  bool get isPartial => snapshot.skipped > 0;
 }
 
 /// The series library. Refreshing keeps the existing content visible. While
@@ -61,6 +60,9 @@ final seriesLibraryProvider =
 class SeriesLibraryNotifier extends AsyncNotifier<LibraryState> {
   SonarrRepository? _repository;
 
+  /// Rows skipped by the latest live parse (count only).
+  int _skipped = 0;
+
   /// Bumped by every build (server switch, credential edit). Work started for
   /// an earlier build compares it after each await and drops its result.
   int _generation = 0;
@@ -69,6 +71,7 @@ class SeriesLibraryNotifier extends AsyncNotifier<LibraryState> {
   Future<LibraryState> build() async {
     _generation++;
     _repository = null;
+    _skipped = 0;
     final ServerConnection? connection;
     try {
       connection = await ref.watch(
@@ -81,9 +84,10 @@ class SeriesLibraryNotifier extends AsyncNotifier<LibraryState> {
     final repository = SonarrRepository(
       api: SonarrClient(
         dio: connection.dio,
-        onRowsSkipped: (count) => ref
-            .read(loggerProvider)
-            .info('skipped $count malformed series rows'),
+        onRowsSkipped: (count) {
+          _skipped = count;
+          ref.read(loggerProvider).info('skipped $count malformed series rows');
+        },
       ),
       cache: ref.watch(payloadCacheProvider),
       serverId: connection.profile.id,
@@ -107,6 +111,7 @@ class SeriesLibraryNotifier extends AsyncNotifier<LibraryState> {
       await future;
       return;
     }
+    _skipped = 0;
     final result = await repository.load();
     if (!ref.mounted || generation != _generation) return;
     final error = result.errorOrNull;
@@ -119,8 +124,12 @@ class SeriesLibraryNotifier extends AsyncNotifier<LibraryState> {
     state = AsyncData(_toState(result));
   }
 
-  LibraryState _toState(Result<SeriesSnapshot> result) =>
-      result.when(ok: LibraryData.new, err: LibraryFailure.new);
+  LibraryState _toState(Result<SeriesSnapshot> result) => result.when(
+    ok: (snapshot) => LibraryData(
+      snapshot.offlineError == null ? snapshot.withSkipped(_skipped) : snapshot,
+    ),
+    err: LibraryFailure.new,
+  );
 }
 
 /// Where the grid/list choice is stored.

@@ -1,6 +1,46 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Sonarr area (SON-*). Add Sonarr events here; screens merge into screen_name.
+# Closed enums, ints and bools only: no titles, paths, hosts or counts that
+# identify content.
 enums:
   screen_name:
-    values: [sonarr_library, sonarr_series_detail, sonarr_calendar, sonarr_queue, sonarr_history, sonarr_add_series, sonarr_interactive_search]
-events: {}
+    values: [sonarr_library, sonarr_series_detail, sonarr_calendar, sonarr_queue, sonarr_history, sonarr_add_series, sonarr_interactive_search, sonarr_wanted]
+  sonarr_search_scope_param:
+    dart: SonarrSearchScopeParam
+    values: [episode, season, series, missing]
+  sonarr_search_outcome_param:
+    dart: SonarrSearchOutcomeParam
+    values: [started, grabbed, nothing_found, failed, timed_out]
+  sonarr_grab_outcome_param:
+    dart: SonarrGrabOutcomeParam
+    values: [grabbed, failed, rejected_confirmed]
+  sonarr_blocklist_choice_param:
+    dart: SonarrBlocklistChoiceParam
+    values: [none, blocklist_and_search, blocklist_only]
+events:
+  series_added:
+    description: A series was added to Sonarr; says whether a search was started.
+    params:
+      searched: {type: bool}
+  release_grabbed:
+    description: An interactive-search release was sent to the download client.
+    params:
+      outcome: {type: sonarr_grab_outcome_param}
+  search_started:
+    description: A Sonarr search command was started.
+    params:
+      scope: {type: sonarr_search_scope_param}
+  search_finished:
+    description: A tracked Sonarr search command ended.
+    params:
+      scope: {type: sonarr_search_scope_param}
+      outcome: {type: sonarr_search_outcome_param}
+  queue_item_removed:
+    description: A queue item was removed, with the blocklist choice made.
+    params:
+      blocklist: {type: sonarr_blocklist_choice_param}
+      from_client: {type: bool}
+  series_monitor_changed:
+    description: Monitoring of a series, season or episode was changed.
+    params:
+      monitored: {type: bool}

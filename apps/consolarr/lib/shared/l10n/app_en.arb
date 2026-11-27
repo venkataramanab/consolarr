@@ -111,6 +111,14 @@
   "@connErrorResponseTooLargeHint": {
     "description": "Fix hint shown under the message for a connection problem: response over the size limit."
   },
+  "connErrorRequestTooLargeMessage": "This change affects too many items for the server to take at once.",
+  "@connErrorRequestTooLargeMessage": {
+    "description": "Plain-language message for a problem: the request was refused locally because it would touch too many items for this server."
+  },
+  "connErrorRequestTooLargeHint": "Change fewer items at a time, or update the server.",
+  "@connErrorRequestTooLargeHint": {
+    "description": "Fix hint shown under the message for a problem: the request would touch too many items."
+  },
   "connErrorInvalidInputMessage": "The address or path is not valid.",
   "@connErrorInvalidInputMessage": {
     "description": "Plain-language message for a connection problem: form input rejected locally (credentials or query in address, bad path)."

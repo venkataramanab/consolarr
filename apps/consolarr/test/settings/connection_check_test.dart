@@ -73,6 +73,10 @@ void main() {
     }
     expect(stepForCategory(ErrorCategory.authFailed), CheckStep.auth);
     expect(stepForCategory(ErrorCategory.tlsExpired), CheckStep.tls);
+    // A server that refuses a request body as too large answered at the API
+    // level, like an oversized reply: it belongs to the API-version step.
+    expect(stepForCategory(ErrorCategory.requestTooLarge), CheckStep.version);
+    expect(stepForCategory(ErrorCategory.responseTooLarge), CheckStep.version);
     expect(
       stepForCategory(ErrorCategory.unsupportedVersion),
       CheckStep.version,
