@@ -44,10 +44,10 @@ class ReleaseFilter {
       resolution != null ||
       text.trim().isNotEmpty;
 
-  bool matches(RadarrRelease r) {
-    if (acceptance == ReleaseAcceptance.accepted && r.rejected) return false;
-    if (acceptance == ReleaseAcceptance.rejected && !r.rejected) return false;
-    if (protocol != null && r.protocol != protocol) return false;
+  bool matches(ArrRelease r) {
+    if (acceptance == ReleaseAcceptance.accepted && r.isRejected) return false;
+    if (acceptance == ReleaseAcceptance.rejected && !r.isRejected) return false;
+    if (protocol != null && r.protocol.name != protocol) return false;
     if (resolution != null && r.resolution != resolution) return false;
     final t = text.trim().toLowerCase();
     if (t.isNotEmpty && !r.title.toLowerCase().contains(t)) return false;
@@ -59,8 +59,8 @@ const Object _keep = Object();
 
 /// Filters then sorts. "Best match" keeps accepted releases first, then the
 /// server's own ranking, then seeders. Ties break on the release name.
-List<RadarrRelease> applyReleaseQuery(
-  List<RadarrRelease> releases,
+List<ArrRelease> applyReleaseQuery(
+  List<ArrRelease> releases,
   ReleaseSortKey sort,
   ReleaseFilter filter, {
   bool ascending = false,
@@ -69,20 +69,21 @@ List<RadarrRelease> applyReleaseQuery(
     for (final r in releases)
       if (filter.matches(r)) r,
   ];
-  int byName(RadarrRelease a, RadarrRelease b) => a.title.compareTo(b.title);
+  int byName(ArrRelease a, ArrRelease b) => a.title.compareTo(b.title);
   int dir(int c) => ascending ? c : -c;
   rows.sort((a, b) {
     final c = switch (sort) {
       ReleaseSortKey.bestMatch => () {
-        if (a.rejected != b.rejected) return a.rejected ? 1 : -1;
-        final s = b.score.compareTo(a.score);
+        if (a.isRejected != b.isRejected) return a.isRejected ? 1 : -1;
+        // Server order: lower is better.
+        final s = a.releaseWeight.compareTo(b.releaseWeight);
         if (s != 0) return s;
         return (b.seeders ?? -1).compareTo(a.seeders ?? -1);
       }(),
       ReleaseSortKey.age =>
         ascending
-            ? b.ageHours.compareTo(a.ageHours)
-            : a.ageHours.compareTo(b.ageHours),
+            ? b.ageMinutes.compareTo(a.ageMinutes)
+            : a.ageMinutes.compareTo(b.ageMinutes),
       ReleaseSortKey.size => dir(a.size.compareTo(b.size)),
       ReleaseSortKey.seeders => dir(
         (a.seeders ?? -1).compareTo(b.seeders ?? -1),

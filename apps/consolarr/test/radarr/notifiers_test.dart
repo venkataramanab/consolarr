@@ -152,7 +152,7 @@ void main() {
     });
 
     test('a command that never finishes stops after the poll bound', () async {
-      final api = FakeRadarrApi()..commandScript = [CommandStatus.started];
+      final api = FakeRadarrApi()..commandScript = [ArrCommandStatus.started];
       final c = _container(api);
       c.listen(searchStatusProvider, (_, _) {});
       await c.read(searchStatusProvider.notifier).searchMovie(7);
@@ -217,7 +217,7 @@ void main() {
           .remove(
             const RadarrQueueItem(id: 1, title: 'Secret.Release.Name'),
             removeFromClient: true,
-            blocklist: QueueBlocklist.blocklistOnly,
+            blocklist: ArrBlocklistChoice.blocklistOnly,
           );
       await c
           .read(grabStatusProvider.notifier)
@@ -281,7 +281,7 @@ void main() {
           .remove(
             const RadarrQueueItem(id: 1),
             removeFromClient: false,
-            blocklist: QueueBlocklist.none,
+            blocklist: ArrBlocklistChoice.none,
           );
       expect(err?.category, ErrorCategory.timeout);
       expect(
@@ -295,7 +295,7 @@ void main() {
           .remove(
             const RadarrQueueItem(id: 1),
             removeFromClient: false,
-            blocklist: QueueBlocklist.none,
+            blocklist: ArrBlocklistChoice.none,
           );
       expect(
         (c.read(queueProvider).value as RadarrData<List<RadarrQueueItem>>)

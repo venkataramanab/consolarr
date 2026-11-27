@@ -34,13 +34,18 @@ Availability availabilityOf(RadarrMovie movie, DateTime now) {
 
 /// Whether a search can find the movie yet, given its minimum availability.
 /// Used to split "missing" (searchable) from "upcoming".
+///
+/// `announced`, `tba` and an unknown value mean "as soon as it is in the
+/// library": Radarr searches such a movie at once, with or without dates.
 bool isReleasedForSearch(RadarrMovie movie, DateTime now) {
   final a = availabilityOf(movie, now);
   return switch (movie.minimumAvailability) {
-    MinimumAvailability.announced => a != Availability.unannounced,
+    MinimumAvailability.announced ||
+    MinimumAvailability.tba ||
+    MinimumAvailability.unknown => true,
     MinimumAvailability.inCinemas =>
       a != Availability.unannounced && a != Availability.comingSoon,
-    MinimumAvailability.released || MinimumAvailability.unknown =>
+    MinimumAvailability.released =>
       a == Availability.releasedDigital || a == Availability.releasedPhysical,
   };
 }

@@ -63,6 +63,11 @@ import 'package:material_ui/material_ui.dart';
         ProgressRowState.idle,
         StatusTone.success,
       ),
+      ArrQueueState.ignored => (
+        Icons.visibility_off_outlined,
+        ProgressRowState.idle,
+        StatusTone.neutral,
+      ),
       ArrQueueState.unknown => (
         Icons.help_outline,
         ProgressRowState.idle,

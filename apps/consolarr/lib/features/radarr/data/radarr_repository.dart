@@ -128,6 +128,11 @@ class RadarrRepository {
           j is Map ? RadarrMovie.fromJson(j.cast<String, Object?>()) : null,
     );
     final error = result.errorOrNull;
+    // Deleted on the server: nothing may bring it back from the cache.
+    if (error != null && error.category == ErrorCategory.notFound) {
+      await _forget(id);
+      return result;
+    }
     if (error != null && kOfflineFallbackCategories.contains(error.category)) {
       final lib = await _cached(libraryKey, _decodeMovies);
       if (lib != null) {
@@ -141,6 +146,31 @@ class RadarrRepository {
       }
     }
     return result;
+  }
+
+  /// Drops the cached copy of movie [id] and its row in the cached library, so
+  /// an offline fallback cannot resurrect a movie the server no longer has.
+  Future<void> _forget(int id) async {
+    try {
+      // The cache interface has no per-key delete; an empty value decodes to
+      // "nothing cached" and is replaced by the next successful load.
+      await _cache.write(_serverId, movieKey(id), 'null', _clock());
+      final lib = await _cached(libraryKey, _decodeMovies);
+      if (lib == null || !lib.value.any((m) => m.id == id)) return;
+      await _cache.write(
+        _serverId,
+        libraryKey,
+        jsonEncode(
+          _encodeMovies([
+            for (final m in lib.value)
+              if (m.id != id) m,
+          ]),
+        ),
+        lib.fetchedAt,
+      );
+    } on Object {
+      // Best effort.
+    }
   }
 
   /// Movies with a release date in the range.

@@ -50,7 +50,7 @@ void main() {
     'queue removal': (c) => c.removeQueueItem(
       1,
       removeFromClient: true,
-      blocklist: QueueBlocklist.none,
+      blocklist: ArrBlocklistChoice.none,
     ),
   };
 
@@ -145,7 +145,7 @@ void main() {
     await c.removeQueueItem(
       1,
       removeFromClient: false,
-      blocklist: QueueBlocklist.none,
+      blocklist: ArrBlocklistChoice.none,
     );
     for (final o in requests) {
       expect(o.uri.toString(), isNot(contains('KEY-123')));

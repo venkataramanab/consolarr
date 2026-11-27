@@ -8,6 +8,7 @@ import 'package:consolarr/features/radarr/data/radarr_prefs.dart';
 import 'package:consolarr/features/radarr/data/radarr_repository.dart';
 import 'package:consolarr/features/radarr/domain/library_query.dart';
 import 'package:consolarr/features/servers/application/server_connection.dart';
+import 'package:consolarr/features/settings/application/lock_controller.dart';
 import 'package:consolarr/src/images/secure_image_provider.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
@@ -112,7 +113,7 @@ abstract class SnapshotNotifier<T> extends AsyncNotifier<RadarrState<T>> {
 
   @override
   Future<RadarrState<T>> build() async {
-    _generation++;
+    final gen = ++_generation;
     _context = null;
     final RadarrContext? context;
     try {
@@ -120,9 +121,13 @@ abstract class SnapshotNotifier<T> extends AsyncNotifier<RadarrState<T>> {
     } on AppError catch (error) {
       return RadarrFailure(error);
     }
+    // A newer build owns the notifier now: its context must not be replaced.
+    if (gen != _generation) return const RadarrNoServer();
     if (context == null) return const RadarrNoServer();
     _context = context;
-    return _toState(await load(context));
+    final result = await load(context);
+    if (gen != _generation) return const RadarrNoServer();
+    return _toState(result);
   }
 
   RadarrState<T> _toState(Result<Snapshot<T>> result) {
@@ -340,25 +345,37 @@ final visibleMoviesProvider = Provider<List<RadarrMovie>>((ref) {
 
 // --- Shared lists -----------------------------------------------------------
 
-final qualityProfilesProvider = FutureProvider<List<ArrQualityProfile>>((
-  ref,
+/// A shared list: a failure is the provider's `AsyncError` (an [AppError]),
+/// shown with a retry by the screens, never an empty list.
+Future<List<T>> _sharedList<T>(
+  Ref ref,
+  Future<Result<List<T>>> Function(RadarrApi api) read,
 ) async {
   final context = await ref.watch(radarrContextProvider.future);
   if (context == null) return const [];
-  return (await context.api.qualityProfiles()).valueOrNull ?? const [];
-});
+  final result = await read(context.api);
+  final error = result.errorOrNull;
+  if (error != null) {
+    recordApiError(ref.read(breadcrumbsProvider), error);
+    throw error;
+  }
+  return result.valueOrNull ?? const [];
+}
 
-final tagsProvider = FutureProvider<List<ArrTag>>((ref) async {
-  final context = await ref.watch(radarrContextProvider.future);
-  if (context == null) return const [];
-  return (await context.api.tags()).valueOrNull ?? const [];
-});
+final qualityProfilesProvider = FutureProvider<List<ArrQualityProfile>>(
+  retry: _noRetry,
+  (ref) => _sharedList(ref, (api) => api.qualityProfiles()),
+);
 
-final rootFoldersProvider = FutureProvider<List<ArrRootFolder>>((ref) async {
-  final context = await ref.watch(radarrContextProvider.future);
-  if (context == null) return const [];
-  return (await context.api.rootFolders()).valueOrNull ?? const [];
-});
+final tagsProvider = FutureProvider<List<ArrTag>>(
+  retry: _noRetry,
+  (ref) => _sharedList(ref, (api) => api.tags()),
+);
+
+final rootFoldersProvider = FutureProvider<List<ArrRootFolder>>(
+  retry: _noRetry,
+  (ref) => _sharedList(ref, (api) => api.rootFolders()),
+);
 
 // --- Artwork ---------------------------------------------------------------
 
@@ -400,6 +417,12 @@ class MovieDetailNotifier extends SnapshotNotifier<RadarrMovie> {
   @override
   bool get goneOnNotFound => true;
 
+  /// An id that cannot exist (not a positive number) is "gone" at once; no
+  /// request is made.
+  @override
+  Future<RadarrState<RadarrMovie>> build() =>
+      movieId <= 0 ? Future.value(const RadarrGone()) : super.build();
+
   @override
   Future<Result<Snapshot<RadarrMovie>>> load(RadarrContext context) =>
       context.repository.movie(movieId);
@@ -413,6 +436,7 @@ class MovieDetailNotifier extends SnapshotNotifier<RadarrMovie> {
   }) async {
     final context = _context;
     if (context == null) return const AppError(ErrorCategory.notFound);
+    final generation = _generation;
     final result = await context.api.updateMovie(
       movieId,
       monitored: monitored,
@@ -420,6 +444,9 @@ class MovieDetailNotifier extends SnapshotNotifier<RadarrMovie> {
       minimumAvailability: minimumAvailability,
       tags: tags,
     );
+    // The server was switched (or the screen left) while writing: the answer
+    // belongs to the old server and must not touch this state or its library.
+    if (!ref.mounted || generation != _generation) return null;
     final error = result.errorOrNull;
     if (error != null) {
       recordApiError(ref.read(breadcrumbsProvider), error);
@@ -517,15 +544,15 @@ class CalendarTypesNotifier extends Notifier<Set<ReleaseType>> {
 
 // --- Queue (RAD-11) --------------------------------------------------------
 
-typedef QueueState = RadarrState<List<RadarrQueueItem>>;
+typedef QueueState = RadarrState<List<ArrQueueItem>>;
 
 final queueProvider = AsyncNotifierProvider<QueueNotifier, QueueState>(
   QueueNotifier.new,
 );
 
-class QueueNotifier extends SnapshotNotifier<List<RadarrQueueItem>> {
+class QueueNotifier extends SnapshotNotifier<List<ArrQueueItem>> {
   @override
-  Future<Result<Snapshot<List<RadarrQueueItem>>>> load(
+  Future<Result<Snapshot<List<ArrQueueItem>>>> load(
     RadarrContext context,
   ) async {
     final result = await context.api.queue();
@@ -535,24 +562,27 @@ class QueueNotifier extends SnapshotNotifier<List<RadarrQueueItem>> {
 
   /// Removes [item] with the chosen consequences. Returns the failure.
   Future<AppError?> remove(
-    RadarrQueueItem item, {
+    ArrQueueItem item, {
     required bool removeFromClient,
-    required QueueBlocklist blocklist,
+    required ArrBlocklistChoice blocklist,
   }) async {
     final context = _context;
     if (context == null) return const AppError(ErrorCategory.notFound);
+    final generation = _generation;
     final result = await context.api.removeQueueItem(
       item.id,
       removeFromClient: removeFromClient,
       blocklist: blocklist,
     );
+    // Server switched or screen left while removing: drop the answer.
+    if (!ref.mounted || generation != _generation) return null;
     final error = result.errorOrNull;
     if (error != null) {
       recordApiError(ref.read(breadcrumbsProvider), error);
       return error;
     }
     final current = state.value;
-    if (current is RadarrData<List<RadarrQueueItem>>) {
+    if (current is RadarrData<List<ArrQueueItem>>) {
       replace([
         for (final q in current.value)
           if (q.id != item.id) q,
@@ -571,12 +601,12 @@ class QueueNotifier extends SnapshotNotifier<List<RadarrQueueItem>> {
   }
 }
 
-RadarrRemovalParam removalParam(bool fromClient, QueueBlocklist b) =>
+RadarrRemovalParam removalParam(bool fromClient, ArrBlocklistChoice b) =>
     switch (b) {
-      QueueBlocklist.blocklistAndSearch =>
+      ArrBlocklistChoice.blocklistAndSearch =>
         RadarrRemovalParam.blocklistAndSearch,
-      QueueBlocklist.blocklistOnly => RadarrRemovalParam.blocklistOnly,
-      QueueBlocklist.none =>
+      ArrBlocklistChoice.blocklistOnly => RadarrRemovalParam.blocklistOnly,
+      ArrBlocklistChoice.none =>
         fromClient
             ? RadarrRemovalParam.removeNoBlocklist
             : RadarrRemovalParam.keepInClientNoBlocklist,
@@ -584,7 +614,17 @@ RadarrRemovalParam removalParam(bool fromClient, QueueBlocklist b) =>
 
 // --- Automatic search (RAD-12, RAD-15) -------------------------------------
 
-enum SearchPhase { starting, queued, searching, done, failed }
+enum SearchPhase {
+  starting,
+  queued,
+  searching,
+  done,
+  failed,
+
+  /// Still running on the server after the polling cap: "check the queue".
+  /// Neutral: it is not a failure.
+  stillRunning,
+}
 
 /// Poll cadence of a running command; tests override it.
 final commandPollIntervalProvider = Provider<Duration>(
@@ -594,19 +634,49 @@ final commandPollIntervalProvider = Provider<Duration>(
 /// Upper bound on polls per command (about two minutes at the default).
 const maxCommandPolls = 60;
 
-/// Per-movie search progress. `0` is the key of "search all missing".
-final searchStatusProvider =
-    NotifierProvider<SearchStatusNotifier, Map<int, SearchPhase>>(
-      SearchStatusNotifier.new,
-    );
+/// Longest a search poll waits while the app is locked, in steps of
+/// [commandPollIntervalProvider]; after that the search is "still running".
+const _maxLockedWaits = 120;
 
-class SearchStatusNotifier extends Notifier<Map<int, SearchPhase>> {
+/// `(serverId, movieId)`: a search of one server never shows on another
+/// server's movie with the same number. Movie id `0` is "search all missing".
+typedef SearchKey = (String, int);
+
+/// Per-movie search progress. Auto-disposed: leaving every screen that shows
+/// it, or switching the server, ends the polling.
+final searchStatusProvider =
+    NotifierProvider.autoDispose<
+      SearchStatusNotifier,
+      Map<SearchKey, SearchPhase>
+    >(SearchStatusNotifier.new);
+
+/// The phase of one movie on the active server (null: nothing running). A
+/// row watches only its own entry.
+final searchPhaseProvider = Provider.autoDispose.family<SearchPhase?, int>((
+  ref,
+  movieId,
+) {
+  final serverId = ref.watch(
+    radarrContextProvider.select((c) => c.value?.serverId),
+  );
+  if (serverId == null) return null;
+  return ref.watch(searchStatusProvider.select((m) => m[(serverId, movieId)]));
+});
+
+class SearchStatusNotifier extends Notifier<Map<SearchKey, SearchPhase>> {
   static const allMissingKey = 0;
 
-  @override
-  Map<int, SearchPhase> build() => const {};
+  /// Bumped by every build (server switch): polls of an earlier build stop.
+  int _generation = 0;
 
-  void _set(int key, SearchPhase? phase) {
+  @override
+  Map<SearchKey, SearchPhase> build() {
+    _generation++;
+    ref.watch(radarrContextProvider.select((c) => c.value?.serverId));
+    return const {};
+  }
+
+  void _set(SearchKey key, SearchPhase? phase) {
     final next = {...state};
     if (phase == null) {
       next.remove(key);
@@ -629,26 +699,30 @@ class SearchStatusNotifier extends Notifier<Map<int, SearchPhase>> {
   );
 
   Future<void> _run(
-    int key,
-    Future<Result<RadarrCommand>> Function(RadarrApi api) start,
+    int movieId,
+    Future<Result<ArrCommand>> Function(RadarrApi api) start,
     RadarrSearchKindParam kind,
   ) async {
+    final generation = _generation;
+    final context = ref.read(radarrContextProvider).value;
+    if (context == null) return;
+    final key = (context.serverId, movieId);
+    bool stale() =>
+        !ref.mounted ||
+        generation != _generation ||
+        ref.read(radarrContextProvider).value?.serverId != context.serverId;
+
     final running = state[key];
     if (running != null &&
         running != SearchPhase.done &&
-        running != SearchPhase.failed) {
+        running != SearchPhase.failed &&
+        running != SearchPhase.stillRunning) {
       return;
     }
     // Mark busy before the first await so a second tap cannot start twice.
     _set(key, SearchPhase.starting);
-    final context = await ref.read(radarrContextProvider.future);
-    if (!ref.mounted) return;
-    if (context == null) {
-      _set(key, null);
-      return;
-    }
     final started = await start(context.api);
-    if (!ref.mounted) return;
+    if (stale()) return;
     final error = started.errorOrNull;
     if (error != null) {
       recordApiError(ref.read(breadcrumbsProvider), error);
@@ -656,16 +730,27 @@ class SearchStatusNotifier extends Notifier<Map<int, SearchPhase>> {
       return;
     }
     unawaited(
-      ref.read(eventTrackerProvider).track(RadarrSearchStartedEvent(kind: kind)),
+      ref
+          .read(eventTrackerProvider)
+          .track(RadarrSearchStartedEvent(kind: kind)),
     );
     var command = started.valueOrNull!;
     _set(key, _phase(command.status));
     final interval = ref.read(commandPollIntervalProvider);
-    for (var i = 0; i < maxCommandPolls && !command.isFinished; i++) {
+    for (var i = 0; i < maxCommandPolls && !command.isTerminal; i++) {
       await Future<void>.delayed(interval);
-      if (!ref.mounted) return;
+      // Paused while locked, but not forever.
+      var waited = 0;
+      while (!stale() && ref.read(appLockedProvider)) {
+        if (++waited > _maxLockedWaits) {
+          _set(key, SearchPhase.stillRunning);
+          return;
+        }
+        await Future<void>.delayed(interval);
+      }
+      if (stale()) return;
       final next = await context.api.command(command.id);
-      if (!ref.mounted) return;
+      if (stale()) return;
       if (next.errorOrNull != null) {
         recordApiError(ref.read(breadcrumbsProvider), next.errorOrNull!);
         _set(key, SearchPhase.failed);
@@ -674,67 +759,186 @@ class SearchStatusNotifier extends Notifier<Map<int, SearchPhase>> {
       command = next.valueOrNull!;
       _set(key, _phase(command.status));
     }
-    if (!command.isFinished) _set(key, SearchPhase.failed);
+    if (!command.isTerminal) {
+      _set(key, SearchPhase.stillRunning);
+      _refreshAfterSearch();
+      return;
+    }
+    if (command.isSuccess) _refreshAfterSearch();
   }
 
-  SearchPhase _phase(CommandStatus s) => switch (s) {
-    CommandStatus.queued => SearchPhase.queued,
-    CommandStatus.started || CommandStatus.unknown => SearchPhase.searching,
-    CommandStatus.completed => SearchPhase.done,
-    CommandStatus.failed || CommandStatus.aborted => SearchPhase.failed,
+  /// A finished search may have queued a release or changed a movie.
+  void _refreshAfterSearch() {
+    if (ref.exists(queueProvider)) {
+      unawaited(ref.read(queueProvider.notifier).refresh());
+    }
+    if (ref.exists(movieLibraryProvider)) {
+      unawaited(ref.read(movieLibraryProvider.notifier).refresh());
+    }
+  }
+
+  SearchPhase _phase(ArrCommandStatus s) => switch (s) {
+    ArrCommandStatus.queued => SearchPhase.queued,
+    ArrCommandStatus.started ||
+    ArrCommandStatus.unknown => SearchPhase.searching,
+    ArrCommandStatus.completed => SearchPhase.done,
+    ArrCommandStatus.failed ||
+    ArrCommandStatus.aborted ||
+    ArrCommandStatus.cancelled ||
+    ArrCommandStatus.orphaned => SearchPhase.failed,
   };
 
-  void clear(int key) => _set(key, null);
+  void clear(int movieId) {
+    final id = ref.read(radarrContextProvider).value?.serverId;
+    if (id != null) _set((id, movieId), null);
+  }
 }
 
 // --- Releases (RAD-13) -----------------------------------------------------
 
 final releasesProvider = FutureProvider.autoDispose
-    .family<Result<List<RadarrRelease>>, int>((ref, movieId) async {
+    .family<Result<List<ArrRelease>>, int>((ref, movieId) async {
       final context = await ref.watch(radarrContextProvider.future);
-      if (context == null)
+      if (context == null) {
         return const Result.err(AppError(ErrorCategory.notFound));
+      }
       final result = await context.api.releases(movieId);
       final error = result.errorOrNull;
       if (error != null) recordApiError(ref.read(breadcrumbsProvider), error);
       return result;
     });
 
-enum GrabPhase { grabbing, grabbed, failed }
+/// Per-release download state.
+enum GrabPhase {
+  grabbing,
+  grabbed,
 
+  /// The server answered with a failure; nothing was sent.
+  failed,
+
+  /// The request may have reached the server (timeout, dropped connection).
+  /// Retrying needs the queue check and an explicit confirmation.
+  maybeSent,
+}
+
+/// Key of a release in [grabStatusProvider].
+String grabKey(ArrRelease r) => '${r.indexerId}/${r.guid}';
+
+/// Download states by [grabKey]. Lives as long as the app does (it is per
+/// server): reopening the sheet shows what was already sent instead of
+/// offering "Download" again.
 final grabStatusProvider =
-    NotifierProvider.autoDispose<GrabNotifier, Map<String, GrabPhase>>(
-      GrabNotifier.new,
-    );
+    NotifierProvider<GrabNotifier, Map<String, GrabPhase>>(GrabNotifier.new);
 
 class GrabNotifier extends Notifier<Map<String, GrabPhase>> {
-  @override
-  Map<String, GrabPhase> build() => const {};
+  /// Bumped by every build (server switch): a grab started on server A never
+  /// shows up against a release of server B.
+  int _generation = 0;
 
-  Future<void> grab(RadarrRelease release) async {
-    if (state[release.guid] == GrabPhase.grabbing) return;
-    state = {...state, release.guid: GrabPhase.grabbing};
-    final context = await ref.read(radarrContextProvider.future);
-    if (!ref.mounted) return;
-    if (context == null) {
-      state = {...state}..remove(release.guid);
-      return;
-    }
+  @override
+  Map<String, GrabPhase> build() {
+    _generation++;
+    ref.watch(radarrContextProvider.select((c) => c.value?.serverId));
+    return const {};
+  }
+
+  /// Sends [release] to the download client once. Ignored while it is being
+  /// grabbed or after it was grabbed: nothing retries by itself, so a dropped
+  /// connection can never submit twice without a new explicit tap. A release
+  /// in [GrabPhase.maybeSent] is only sent again with [confirmedResend], which
+  /// the caller sets after [confirmQueued] found nothing and the user said
+  /// "send again".
+  Future<void> grab(ArrRelease release, {bool confirmedResend = false}) async {
+    final key = grabKey(release);
+    final current = state[key];
+    if (current == GrabPhase.grabbing || current == GrabPhase.grabbed) return;
+    if (current == GrabPhase.maybeSent && !confirmedResend) return;
+    final context = ref.read(radarrContextProvider).value;
+    if (context == null) return;
+    final generation = _generation;
+    state = {...state, key: GrabPhase.grabbing};
     final result = await context.api.grab(release);
-    if (!ref.mounted) return;
+    if (!ref.mounted || generation != _generation) return;
     final error = result.errorOrNull;
     if (error != null) recordApiError(ref.read(breadcrumbsProvider), error);
     state = {
       ...state,
-      release.guid: error == null ? GrabPhase.grabbed : GrabPhase.failed,
+      key: error == null
+          ? GrabPhase.grabbed
+          : switch (error.category) {
+              ErrorCategory.timeout ||
+              ErrorCategory.networkUnreachable ||
+              ErrorCategory.parseError ||
+              ErrorCategory.serverError => GrabPhase.maybeSent,
+              _ => GrabPhase.failed,
+            },
     };
     if (error == null) {
       unawaited(
         ref
             .read(eventTrackerProvider)
-            .track(RadarrReleaseGrabbedEvent(wasRejected: release.rejected)),
+            .track(RadarrReleaseGrabbedEvent(wasRejected: release.isRejected)),
       );
     }
+  }
+
+  /// Whether queue item [item] is [release] for [movieId]: the same movie (when
+  /// the queue item names one) and the download client's id inside the release
+  /// guid, or the same title without case and surrounding space.
+  static bool _isRelease(ArrQueueItem item, ArrRelease release, int movieId) {
+    if (item.movieId != null && item.movieId != movieId) return false;
+    final id = item.downloadId?.trim().toLowerCase();
+    if (id != null &&
+        id.length >= 16 &&
+        release.guid.toLowerCase().contains(id)) {
+      return true;
+    }
+    return item.title.trim().toLowerCase() ==
+        release.title.trim().toLowerCase();
+  }
+
+  /// Marks the releases that are in the queue as grabbed (a reopened sheet
+  /// must not offer "Download" for what is already on its way).
+  Future<void> syncWithQueue(List<ArrRelease> releases, int movieId) async {
+    final context = ref.read(radarrContextProvider).value;
+    if (context == null) return;
+    final generation = _generation;
+    final result = await context.api.queue();
+    if (!ref.mounted || generation != _generation) return;
+    final items = result.valueOrNull;
+    if (items == null) return;
+    final next = {...state};
+    for (final r in releases) {
+      final key = grabKey(r);
+      if (next[key] == GrabPhase.grabbing) continue;
+      if (items.any((i) => _isRelease(i, r, movieId))) {
+        next[key] = GrabPhase.grabbed;
+      }
+    }
+    state = next;
+  }
+
+  /// For a [GrabPhase.maybeSent] release: looks for it in the download queue.
+  /// Found means the first request did arrive; it is then shown as grabbed and
+  /// `true` is returned. Not found, or the queue could not be read, is
+  /// `false`: the caller must ask before sending again.
+  ///
+  /// The queue snapshot is bounded (5 pages of 200); a release beyond that is
+  /// treated as "not queued" and the caller asks first.
+  Future<bool> confirmQueued(ArrRelease release, int movieId) async {
+    final key = grabKey(release);
+    if (state[key] != GrabPhase.maybeSent) return false;
+    final context = ref.read(radarrContextProvider).value;
+    if (context == null) return false;
+    final generation = _generation;
+    final result = await context.api.queue();
+    if (!ref.mounted || generation != _generation) return false;
+    final items = result.valueOrNull;
+    if (items == null || !items.any((i) => _isRelease(i, release, movieId))) {
+      return false;
+    }
+    state = {...state, key: GrabPhase.grabbed};
+    return true;
   }
 }
 
@@ -803,17 +1007,49 @@ final defaultRootFolderProvider = FutureProvider<String?>((ref) async {
       .read(RadarrPrefKeys.defaultRootFolder(context.serverId));
 });
 
+/// Adds movies. A function value so a screen can keep calling it after its
+/// sheet was popped: it uses the provider's own `ref`, never a widget's.
+final addMovieActionProvider =
+    Provider<Future<AppError?> Function(AddMovieRequest)>(
+      (ref) =>
+          (request) => _addMovie(ref, request),
+    );
+
+/// Whether [error] leaves it open that the movie was added anyway.
+bool _maybeAdded(AppError error) => switch (error.category) {
+  ErrorCategory.timeout ||
+  ErrorCategory.networkUnreachable ||
+  ErrorCategory.parseError ||
+  ErrorCategory.serverError => true,
+  _ => false,
+};
+
 /// Adds [request]; returns the failure, if any. A success adds the movie to
 /// the shown library and remembers the root folder.
-Future<AppError?> addMovie(WidgetRef ref, AddMovieRequest request) async {
+///
+/// Adding is not idempotent: after a timeout or a dropped connection the
+/// library is read again, and when the movie is there the add counts as done
+/// (no duplicate request, no error).
+Future<AppError?> _addMovie(Ref ref, AddMovieRequest request) async {
   final context = await ref.read(radarrContextProvider.future);
   if (context == null) return const AppError(ErrorCategory.notFound);
   final result = await context.api.addMovie(request);
-  final error = result.errorOrNull;
+  var error = result.errorOrNull;
+  if (error != null && _maybeAdded(error) && ref.mounted) {
+    final tmdbId = request.lookup.tmdbId;
+    final library = await context.api.movies();
+    final movies = library.valueOrNull;
+    if (movies != null &&
+        tmdbId != null &&
+        movies.any((m) => m.tmdbId == tmdbId)) {
+      error = null;
+    }
+  }
   if (error != null) {
-    recordApiError(ref.read(breadcrumbsProvider), error);
+    if (ref.mounted) recordApiError(ref.read(breadcrumbsProvider), error);
     return error;
   }
+  if (!ref.mounted) return null;
   try {
     await ref
         .read(radarrPrefsProvider)
@@ -824,6 +1060,7 @@ Future<AppError?> addMovie(WidgetRef ref, AddMovieRequest request) async {
   } on Object {
     // Optional convenience.
   }
+  if (!ref.mounted) return null;
   ref.invalidate(defaultRootFolderProvider);
   unawaited(
     ref
@@ -836,6 +1073,8 @@ Future<AppError?> addMovie(WidgetRef ref, AddMovieRequest request) async {
           ),
         ),
   );
-  unawaited(ref.read(movieLibraryProvider.notifier).refresh());
+  if (ref.exists(movieLibraryProvider)) {
+    unawaited(ref.read(movieLibraryProvider.notifier).refresh());
+  }
   return null;
 }

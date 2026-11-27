@@ -12,6 +12,14 @@ import 'package:observability/observability.dart';
 /// Route of the Radarr area.
 const radarrRoute = '/radarr';
 
+/// The movie id of a deep link: a plain positive decimal number that fits 32
+/// bits, otherwise `null`. No sign, spaces, hex or leading zeros.
+int? parseMovieId(String? raw) {
+  if (raw == null || !RegExp(r'^[1-9][0-9]{0,9}$').hasMatch(raw)) return null;
+  final id = int.parse(raw);
+  return id <= 0x7fffffff ? id : null;
+}
+
 /// Radarr tab: offered once a Radarr server exists.
 ///
 /// Detail and add are full-screen child routes (paths relative to
@@ -32,8 +40,9 @@ final radarrDestination = AppDestination(
       path: 'movie/:id',
       parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => MovieDetailScreen(
-        // An unparsable id can never exist: -1 resolves to "not found".
-        movieId: int.tryParse(state.pathParameters['id'] ?? '') ?? -1,
+        // An id that can never exist (not a positive 32-bit number) is
+        // "no longer exists" at once: -1 never reaches the server.
+        movieId: parseMovieId(state.pathParameters['id']) ?? -1,
       ),
     ),
     GoRoute(

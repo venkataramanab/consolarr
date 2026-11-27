@@ -22,19 +22,19 @@ class FakeRadarrApi with EmptyArrLists implements RadarrApi {
   Result<List<RadarrMovie>> moviesResult;
   Result<RadarrMovie>? movieResult;
   Result<List<RadarrMovie>> calendarResult = const Result.ok([]);
-  Result<List<RadarrQueueItem>> queueResult = const Result.ok([]);
-  Result<List<RadarrRelease>> releasesResult = const Result.ok([]);
+  Result<List<ArrQueueItem>> queueResult = const Result.ok([]);
+  Result<List<ArrRelease>> releasesResult = const Result.ok([]);
   Result<List<RadarrMovie>> lookupResult = const Result.ok([]);
   Result<void> removeResult = const Result.ok(null);
   Result<void> grabResult = const Result.ok(null);
   Result<RadarrMovie>? updateResult;
   Result<RadarrMovie>? addResult;
-  Result<RadarrCommand> commandStart = const Result.ok(
-    RadarrCommand(id: 1, status: CommandStatus.queued),
+  Result<ArrCommand> commandStart = const Result.ok(
+    ArrCommand(id: 1, status: ArrCommandStatus.queued),
   );
-  List<CommandStatus> commandScript = [
-    CommandStatus.started,
-    CommandStatus.completed,
+  List<ArrCommandStatus> commandScript = [
+    ArrCommandStatus.started,
+    ArrCommandStatus.completed,
   ];
   List<ArrRootFolder> rootFoldersResult = const [];
   final List<ArrQualityProfile> profiles;
@@ -108,44 +108,44 @@ class FakeRadarrApi with EmptyArrLists implements RadarrApi {
   }
 
   @override
-  Future<Result<List<RadarrQueueItem>>> queue() async => queueResult;
+  Future<Result<List<ArrQueueItem>>> queue() async => queueResult;
 
   @override
   Future<Result<void>> removeQueueItem(
     int id, {
     required bool removeFromClient,
-    required QueueBlocklist blocklist,
+    required ArrBlocklistChoice blocklist,
   }) async {
     calls.add('remove $id client=$removeFromClient ${blocklist.name}');
     return removeResult;
   }
 
   @override
-  Future<Result<RadarrCommand>> searchMovies(List<int> ids) async {
+  Future<Result<ArrCommand>> searchMovies(List<int> ids) async {
     calls.add('search $ids');
     return commandStart;
   }
 
   @override
-  Future<Result<RadarrCommand>> searchAllMissing() async {
+  Future<Result<ArrCommand>> searchAllMissing() async {
     calls.add('searchAll');
     return commandStart;
   }
 
   @override
-  Future<Result<RadarrCommand>> command(int id) async {
+  Future<Result<ArrCommand>> command(int id) async {
     final status =
         commandScript[commandCalls.clamp(0, commandScript.length - 1)];
     commandCalls++;
-    return Result.ok(RadarrCommand(id: id, status: status));
+    return Result.ok(ArrCommand(id: id, status: status));
   }
 
   @override
-  Future<Result<List<RadarrRelease>>> releases(int movieId) async =>
+  Future<Result<List<ArrRelease>>> releases(int movieId) async =>
       releasesResult;
 
   @override
-  Future<Result<void>> grab(RadarrRelease release) async {
+  Future<Result<void>> grab(ArrRelease release) async {
     calls.add('grab ${release.guid}');
     return grabResult;
   }
@@ -263,3 +263,52 @@ List<Override> radarrOverrides(
     commandPollIntervalProvider.overrideWithValue(Duration.zero),
   ];
 }
+
+/// A queue item of the fake server.
+ArrQueueItem fakeQueueItem(
+  int id, {
+  String title = 'Example.Movie.2024.1080p',
+  int? movieId,
+  ArrQueueState state = ArrQueueState.downloading,
+  int size = 1000,
+  int sizeLeft = 500,
+  String? downloadId,
+  List<ArrStatusMessage> messages = const [],
+}) => ArrQueueItem(
+  id: id,
+  title: title,
+  movieId: movieId,
+  state: state,
+  size: size,
+  sizeLeft: sizeLeft,
+  downloadId: downloadId,
+  messages: messages,
+);
+
+/// A release of the fake server.
+ArrRelease fakeRelease(
+  String guid, {
+  int indexerId = 1,
+  String title = 'Example.Movie.2024.1080p.WEB-DL',
+  int size = 4 * 1024 * 1024 * 1024,
+  int ageMinutes = 60 * 5,
+  int? seeders = 10,
+  bool approved = true,
+  List<String> rejections = const [],
+  ArrProtocol protocol = ArrProtocol.torrent,
+  int? resolution = 1080,
+  String? indexer = 'Example Indexer',
+}) => ArrRelease(
+  guid: guid,
+  title: title,
+  indexerId: indexerId,
+  indexer: indexer,
+  size: size,
+  ageMinutes: ageMinutes,
+  seeders: seeders,
+  protocol: protocol,
+  resolution: resolution,
+  qualityName: resolution == null ? null : 'WEBDL-${resolution}p',
+  approved: approved,
+  rejections: rejections,
+);

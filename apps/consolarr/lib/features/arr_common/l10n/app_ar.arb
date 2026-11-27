@@ -44,6 +44,10 @@
   "@arrCommonQueueStateCompleted": {
     "description": "Queue item state: download completed."
   },
+  "arrCommonQueueStateIgnored": "تم التجاهل",
+  "@arrCommonQueueStateIgnored": {
+    "description": "Queue item state: the item is set to be ignored by the server."
+  },
   "arrCommonQueueStateUnknown": "حالة غير معروفة",
   "@arrCommonQueueStateUnknown": {
     "description": "Queue item state: the server reported a status the app does not know."

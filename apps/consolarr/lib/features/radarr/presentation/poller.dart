@@ -2,12 +2,20 @@
 
 import 'dart:async';
 
+import 'package:consolarr/features/settings/application/lock_controller.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Calls [onTick] every [interval] while [active] and the app is in the
-/// foreground. Stops when hidden or paused, and resumes on return. The loop is
-/// a single timer, so it can never pile up requests.
-class VisiblePoller extends StatefulWidget {
+/// Calls [onTick] every [interval] while [active], the app is in the
+/// foreground, the widget is on screen and the app is not locked.
+///
+/// "On screen" means tickers are enabled (`TickerMode`: a tab that is not
+/// selected, or a branch under a lock, turns them off) and the enclosing route
+/// is the current one (nothing pushed on top). In every other state the timer
+/// is cancelled, not left to tick and skip, and it is started again when the
+/// state changes back. The loop is a single timer with a busy flag, so it can
+/// never pile up requests.
+class VisiblePoller extends ConsumerStatefulWidget {
   const VisiblePoller({
     required this.active,
     required this.onTick,
@@ -22,19 +30,33 @@ class VisiblePoller extends StatefulWidget {
   final Widget child;
 
   @override
-  State<VisiblePoller> createState() => _VisiblePollerState();
+  ConsumerState<VisiblePoller> createState() => _VisiblePollerState();
 }
 
-class _VisiblePollerState extends State<VisiblePoller>
+class _VisiblePollerState extends ConsumerState<VisiblePoller>
     with WidgetsBindingObserver {
   Timer? _timer;
   bool _foreground = true;
+  bool _visible = true;
+  bool _locked = false;
   bool _busy = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _locked = ref.read(appLockedProvider);
+    ref.listenManual(appLockedProvider, (_, locked) {
+      _locked = locked;
+      _sync();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _visible =
+        TickerMode.of(context) && (ModalRoute.isCurrentOf(context) ?? true);
     _sync();
   }
 
@@ -53,7 +75,7 @@ class _VisiblePollerState extends State<VisiblePoller>
   void _sync() {
     _timer?.cancel();
     _timer = null;
-    if (!widget.active || !_foreground) return;
+    if (!widget.active || !_foreground || !_visible || _locked) return;
     _timer = Timer.periodic(widget.interval, (_) async {
       if (_busy) return;
       _busy = true;
