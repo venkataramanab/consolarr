@@ -218,29 +218,29 @@ abstract interface class RadarrApi implements ArrApi {
   Future<Result<RadarrMovie>> addMovie(AddMovieRequest request);
 
   /// The download queue (`GET api/v3/queue`).
-  Future<Result<List<RadarrQueueItem>>> queue();
+  Future<Result<List<ArrQueueItem>>> queue();
 
   /// Removes a queue item (`DELETE api/v3/queue/{id}`).
   Future<Result<void>> removeQueueItem(
     int id, {
     required bool removeFromClient,
-    required QueueBlocklist blocklist,
+    required ArrBlocklistChoice blocklist,
   });
 
   /// Starts an automatic search for [movieIds] (`MoviesSearch`).
-  Future<Result<RadarrCommand>> searchMovies(List<int> movieIds);
+  Future<Result<ArrCommand>> searchMovies(List<int> movieIds);
 
   /// Starts a search for every missing movie (`MissingMoviesSearch`).
-  Future<Result<RadarrCommand>> searchAllMissing();
+  Future<Result<ArrCommand>> searchAllMissing();
 
   /// A command's progress (`GET api/v3/command/{id}`).
-  Future<Result<RadarrCommand>> command(int id);
+  Future<Result<ArrCommand>> command(int id);
 
   /// Releases found by the indexers for [movieId] (`GET api/v3/release`).
-  Future<Result<List<RadarrRelease>>> releases(int movieId);
+  Future<Result<List<ArrRelease>>> releases(int movieId);
 
   /// Sends a release to the download client (`POST api/v3/release`).
-  Future<Result<void>> grab(RadarrRelease release);
+  Future<Result<void>> grab(ArrRelease release);
 
   /// The artwork URL of [movie], or null. Never contains credentials.
   Uri? artworkUri(RadarrMovie movie, ArrImageType type);

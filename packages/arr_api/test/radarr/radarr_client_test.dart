@@ -237,6 +237,24 @@ void main() {
     });
   });
 
+  test('v3 servers name the collection `name`', () {
+    final m = RadarrMovie.fromJson({
+      'id': 1,
+      'title': 'Example Movie',
+      'collection': {'name': 'Example Collection'},
+    });
+    expect(m.collectionTitle, 'Example Collection');
+  });
+
+  test('the tba availability parses and is kept', () {
+    final m = RadarrMovie.fromJson({
+      'id': 1,
+      'title': 'Example Movie',
+      'minimumAvailability': 'tba',
+    });
+    expect(m.minimumAvailability, MinimumAvailability.tba);
+  });
+
   group('lookup and add', () {
     test('lookup passes the term as query; empty is an empty list', () async {
       final adapter = FakeAdapter.fixed('[]');
@@ -335,7 +353,59 @@ void main() {
       final i = r.valueOrNull!.single;
       expect(i.progress, 0.75);
       expect(i.timeLeft, const Duration(hours: 1, minutes: 2, seconds: 3));
-      expect(i.messages, ['No files found']);
+      expect(i.messages.single.messages, ['No files found']);
+      expect(i.movieId, 7);
+    });
+
+    test('asks for unknown-movie items and reads every page', () async {
+      var page = 0;
+      final adapter = FakeAdapter((o) {
+        page++;
+        return FakeAdapter.reply(
+          jsonEncode({
+            'page': page,
+            'pageSize': 1,
+            'totalRecords': 3,
+            'records': [
+              {...record, 'id': page},
+            ],
+          }),
+        );
+      });
+      final r = await client(adapter).queue();
+      expect(r.valueOrNull!.map((e) => e.id), [1, 2, 3]);
+      final q = adapter.requests.first.uri.queryParameters;
+      expect(q['includeUnknownMovieItems'], 'true');
+      expect(adapter.requests.map((o) => o.uri.queryParameters['page']), [
+        '1',
+        '2',
+        '3',
+      ]);
+    });
+
+    test('failed, imported and ignored items map to a state', () async {
+      Future<ArrQueueState> stateOf(Map<String, Object?> extra) async {
+        final r = await client(
+          FakeAdapter.fixed(
+            jsonEncode({
+              'records': [
+                {'id': 1, 'title': 'x', ...extra},
+              ],
+            }),
+          ),
+        ).queue();
+        return r.valueOrNull!.single.state;
+      }
+
+      expect(await stateOf({'status': 'failed'}), ArrQueueState.downloadFailed);
+      expect(
+        await stateOf({'trackedDownloadState': 'imported'}),
+        ArrQueueState.completed,
+      );
+      expect(
+        await stateOf({'trackedDownloadState': 'ignored'}),
+        ArrQueueState.ignored,
+      );
     });
 
     test('empty queue is ok', () async {
@@ -349,17 +419,18 @@ void main() {
       await c.removeQueueItem(
         11,
         removeFromClient: true,
-        blocklist: QueueBlocklist.blocklistAndSearch,
+        blocklist: ArrBlocklistChoice.blocklistAndSearch,
       );
       var q = adapter.requests.last.uri.queryParameters;
       expect(adapter.requests.last.method, 'DELETE');
       expect(q['removeFromClient'], 'true');
       expect(q['blocklist'], 'true');
+      expect(q['blacklist'], 'true');
       expect(q['skipRedownload'], 'false');
       await c.removeQueueItem(
         11,
         removeFromClient: false,
-        blocklist: QueueBlocklist.none,
+        blocklist: ArrBlocklistChoice.none,
       );
       q = adapter.requests.last.uri.queryParameters;
       expect(q['blocklist'], 'false');
@@ -372,22 +443,23 @@ void main() {
       final adapter = FakeAdapter.fixed('{"id":5,"status":"queued"}');
       final c = client(adapter);
       final r = await c.searchMovies([7]);
-      expect(r.valueOrNull!.status, CommandStatus.queued);
+      expect(r.valueOrNull!.status, ArrCommandStatus.queued);
       final sent = jsonDecode(adapter.requests.single.data as String) as Map;
       expect(sent['name'], 'MoviesSearch');
       expect(sent['movieIds'], [7]);
       final all = await c.searchAllMissing();
       expect(all.isOk, isTrue);
-      expect(
-        (jsonDecode(adapter.requests.last.data as String) as Map)['name'],
-        'MissingMoviesSearch',
-      );
+      final missing =
+          jsonDecode(adapter.requests.last.data as String) as Map;
+      expect(missing['name'], 'MissingMoviesSearch');
+      expect(missing['filterKey'], 'monitored');
+      expect(missing['filterValue'], 'true');
     });
 
     test('status values', () async {
       final r = await client(FakeAdapter.fixed('{"id":5,"status":"completed"}'))
           .command(5);
-      expect(r.valueOrNull!.isFinished, isTrue);
+      expect(r.valueOrNull!.isTerminal, isTrue);
     });
   });
 
@@ -397,7 +469,7 @@ void main() {
       'indexerId': 2,
       'title': 'Example.Movie.2024',
       'size': 123,
-      'ageHours': 5.2,
+      'ageMinutes': 312,
       'seeders': 12,
       'protocol': 'torrent',
       'quality': {
@@ -413,15 +485,24 @@ void main() {
     test('parses releases and rejection reasons', () async {
       final r = await client(FakeAdapter.fixed(jsonEncode([rel]))).releases(7);
       final x = r.valueOrNull!.single;
-      expect(x.rejected, isTrue);
+      expect(x.isRejected, isTrue);
       expect(x.rejections, ['Not wanted']);
       expect(x.customFormats, ['x265']);
-      expect(x.ageHours, 5);
+      expect(x.ageMinutes, 312);
+    });
+
+    test('grab waits longer than the default and sends nothing else', () async {
+      final adapter = FakeAdapter.fixed('{}');
+      await client(adapter).grab(ArrRelease.fromJson(rel));
+      expect(
+        adapter.requests.single.receiveTimeout,
+        greaterThanOrEqualTo(const Duration(seconds: 60)),
+      );
     });
 
     test('grab posts guid and indexer id only', () async {
       final adapter = FakeAdapter.fixed('{}');
-      final x = RadarrRelease.fromJson(rel);
+      final x = ArrRelease.fromJson(rel);
       expect((await client(adapter).grab(x)).isOk, isTrue);
       expect(jsonDecode(adapter.requests.single.data as String), {
         'guid': 'g1',

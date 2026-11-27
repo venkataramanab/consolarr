@@ -8,11 +8,44 @@ import 'package:arr_api/src/arr_common.dart';
 import 'package:arr_api/src/json_read.dart';
 import 'package:arr_api/src/models.dart';
 import 'package:arr_api/src/radarr/radarr_models.dart';
+import 'package:arr_api/src/shared/arr_command.dart';
+import 'package:arr_api/src/shared/arr_page.dart';
+import 'package:arr_api/src/shared/arr_queue.dart';
+import 'package:arr_api/src/shared/arr_release.dart';
 import 'package:core/core.dart';
 import 'package:dio/dio.dart';
 import 'package:security/security.dart';
 
+// Parse entry points for [decodeOffIsolate]. Top level, so nothing but the body
+// and (static) parser functions is ever sent to another isolate.
 ParsedRows<RadarrMovie> _parseMovies(String body) => parseMovieList(body);
+
+ParsedRows<ArrRelease> _parseReleases(String body) =>
+    parseArrList(jsonDecode(body), ArrRelease.fromJson);
+
+/// A paged `records` envelope, or (older servers) a bare array.
+ArrPage<ArrQueueItem> _parseQueuePage(String body) {
+  final decoded = jsonDecode(body);
+  if (decoded is List) {
+    final rows = parseArrList(decoded, ArrQueueItem.fromJson);
+    return ArrPage(
+      records: rows.items,
+      totalRecords: rows.items.length,
+      skipped: rows.skipped,
+    );
+  }
+  return ArrPage.fromJson(decoded, ArrQueueItem.fromJson);
+}
+
+/// A grab can take a while on the server (indexer, download client).
+const _grabTimeout = Duration(seconds: 90);
+
+/// Indexer searches are slow.
+const _releaseTimeout = Duration(seconds: 90);
+
+/// Most queue pages read in one refresh, and the page size.
+const _queuePageSize = 200;
+const _queueMaxPages = 5;
 
 /// Hand-written, tolerant Radarr v3 client.
 class RadarrClient extends ArrClientBase implements RadarrApi {
@@ -70,9 +103,7 @@ class RadarrClient extends ArrClientBase implements RadarrApi {
   }
 
   Future<List<RadarrMovie>> _movieRows(String body) async {
-    final parsed = body.length > ArrClientBase.isolateThresholdBytes
-        ? await runner(() => _parseMovies(body))
-        : parseMovieList(body);
+    final parsed = await decodeOffIsolate(runner, body, _parseMovies);
     if (parsed.skipped > 0) onRowsSkipped?.call(parsed.skipped);
     return parsed.items;
   }
@@ -141,11 +172,7 @@ class RadarrClient extends ArrClientBase implements RadarrApi {
       uri('api/v3/movie/lookup').replace(queryParameters: {'term': term}),
       options: Options(responseType: ResponseType.plain),
     );
-    final body = response.data ?? '';
-    // An empty lookup is an empty array, not an error.
-    final decoded = jsonDecode(body);
-    if (decoded is List && decoded.isEmpty) return <RadarrMovie>[];
-    return _movieRows(body);
+    return _movieRows(response.data ?? '');
   });
 
   @override
@@ -183,47 +210,57 @@ class RadarrClient extends ArrClientBase implements RadarrApi {
       });
 
   @override
-  Future<Result<List<RadarrQueueItem>>> queue() => guard(() async {
-    final response = await dio.getUri<String>(
-      uri('api/v3/queue').replace(
-        queryParameters: {
-          'page': '1',
-          'pageSize': '200',
-          'includeMovie': 'false',
-        },
-      ),
-      options: Options(responseType: ResponseType.plain),
-    );
-    final body = response.data ?? '';
-    final decoded = jsonDecode(body);
-    final records = decoded is Map ? decoded['records'] : decoded;
-    if (records is List && records.isEmpty) return <RadarrQueueItem>[];
-    final parsed = parseQueue(body);
-    if (parsed.skipped > 0) onRowsSkipped?.call(parsed.skipped);
-    return parsed.items;
+  Future<Result<List<ArrQueueItem>>> queue() => guard(() async {
+    final items = <ArrQueueItem>[];
+    for (var page = 1; page <= _queueMaxPages; page++) {
+      final response = await dio.getUri<String>(
+        uri('api/v3/queue').replace(
+          queryParameters: {
+            'page': '$page',
+            'pageSize': '$_queuePageSize',
+            'includeMovie': 'false',
+            // Items whose movie is not in the library (yet) still show up.
+            'includeUnknownMovieItems': 'true',
+          },
+        ),
+        options: Options(responseType: ResponseType.plain),
+      );
+      final parsed = await decodeOffIsolate(
+        runner,
+        response.data ?? '',
+        _parseQueuePage,
+      );
+      if (parsed.skipped > 0) onRowsSkipped?.call(parsed.skipped);
+      items.addAll(parsed.records);
+      if (!parsed.hasMore || items.length >= parsed.totalRecords) break;
+    }
+    return items;
   });
 
   @override
   Future<Result<void>> removeQueueItem(
     int id, {
     required bool removeFromClient,
-    required QueueBlocklist blocklist,
+    required ArrBlocklistChoice blocklist,
   }) => guard(() async {
+    final block = blocklist != ArrBlocklistChoice.none;
     await dio.deleteUri<void>(
       uri('api/v3/queue/$id').replace(
         queryParameters: {
           'removeFromClient': '$removeFromClient',
-          'blocklist': '${blocklist != QueueBlocklist.none}',
-          'skipRedownload': '${blocklist != QueueBlocklist.blocklistAndSearch}',
+          // `blacklist` is the v3 spelling, `blocklist` the later one.
+          'blocklist': '$block',
+          'blacklist': '$block',
+          'skipRedownload': '${blocklist == ArrBlocklistChoice.blocklistOnly}',
         },
       ),
     );
   });
 
-  Future<RadarrCommand> _postCommand(Map<String, Object?> body) async {
+  Future<ArrCommand> _postCommand(ArrCommandRequest request) async {
     final response = await dio.postUri<String>(
       uri('api/v3/command'),
-      data: jsonEncode(body),
+      data: jsonEncode(request.toJson()),
       options: Options(
         responseType: ResponseType.plain,
         contentType: Headers.jsonContentType,
@@ -231,50 +268,61 @@ class RadarrClient extends ArrClientBase implements RadarrApi {
     );
     final m = JsonRead.map(jsonDecode(response.data ?? ''));
     if (m == null) throw const FormatException('expected an object');
-    return RadarrCommand.fromJson(m);
+    return ArrCommand.fromJson(m);
   }
 
   @override
-  Future<Result<RadarrCommand>> searchMovies(List<int> movieIds) =>
-      guard(() => _postCommand({'name': 'MoviesSearch', 'movieIds': movieIds}));
+  Future<Result<ArrCommand>> searchMovies(List<int> movieIds) => guard(
+    () => _postCommand(
+      ArrCommandRequest('MoviesSearch', {'movieIds': movieIds}),
+    ),
+  );
 
   @override
-  Future<Result<RadarrCommand>> searchAllMissing() =>
-      guard(() => _postCommand({'name': 'MissingMoviesSearch'}));
+  Future<Result<ArrCommand>> searchAllMissing() => guard(
+    () => _postCommand(
+      // Explicit: some versions search every movie without a filter.
+      const ArrCommandRequest('MissingMoviesSearch', {
+        'filterKey': 'monitored',
+        'filterValue': 'true',
+      }),
+    ),
+  );
 
   @override
-  Future<Result<RadarrCommand>> command(int id) => guard(() async {
+  Future<Result<ArrCommand>> command(int id) => guard(() async {
     final m = JsonRead.map(jsonDecode(await getText('api/v3/command/$id')));
     if (m == null) throw const FormatException('expected an object');
-    return RadarrCommand.fromJson(m);
+    return ArrCommand.fromJson(m);
   });
 
   @override
-  Future<Result<List<RadarrRelease>>> releases(int movieId) => guard(() async {
+  Future<Result<List<ArrRelease>>> releases(int movieId) => guard(() async {
     final response = await dio.getUri<String>(
       uri('api/v3/release').replace(queryParameters: {'movieId': '$movieId'}),
       options: Options(
         responseType: ResponseType.plain,
-        // Indexer searches are slow.
-        receiveTimeout: const Duration(seconds: 90),
+        receiveTimeout: _releaseTimeout,
       ),
     );
-    final body = response.data ?? '';
-    final decoded = jsonDecode(body);
-    if (decoded is List && decoded.isEmpty) return <RadarrRelease>[];
-    final parsed = body.length > ArrClientBase.isolateThresholdBytes
-        ? await runner(() => parseReleases(body))
-        : parseReleases(body);
+    final parsed = await decodeOffIsolate(
+      runner,
+      response.data ?? '',
+      _parseReleases,
+    );
     if (parsed.skipped > 0) onRowsSkipped?.call(parsed.skipped);
     return parsed.items;
   });
 
   @override
-  Future<Result<void>> grab(RadarrRelease release) => guard(() async {
+  Future<Result<void>> grab(ArrRelease release) => guard(() async {
     await dio.postUri<void>(
       uri('api/v3/release'),
       data: jsonEncode({'guid': release.guid, 'indexerId': release.indexerId}),
-      options: Options(contentType: Headers.jsonContentType),
+      options: Options(
+        contentType: Headers.jsonContentType,
+        receiveTimeout: _grabTimeout,
+      ),
     );
   });
 

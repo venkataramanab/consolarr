@@ -16,6 +16,9 @@ enum ArrQueueState {
   clientUnavailable,
   warning,
   completed,
+
+  /// The user told the server to ignore the item (it stays in the queue).
+  ignored,
   unknown,
 }
 
@@ -217,6 +220,10 @@ ArrQueueState _state(Map<String, Object?> json) {
       return ArrQueueState.importPending;
     case 'importing':
       return ArrQueueState.importing;
+    case 'imported':
+      return ArrQueueState.completed;
+    case 'ignored':
+      return ArrQueueState.ignored;
   }
   if (status == 'failed') return ArrQueueState.downloadFailed;
   if (status == 'paused') return ArrQueueState.paused;
