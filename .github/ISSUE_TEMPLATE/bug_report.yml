@@ -1,0 +1,82 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+name: Bug report
+description: Something does not work as expected.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Privacy first.** Do not post hostnames, IP addresses, API keys,
+        passwords, usernames or media titles. Use placeholders such as
+        `sonarr.example`. For security issues, do **not** use this form; report
+        privately via the Security tab instead.
+  - type: checkboxes
+    id: redacted
+    attributes:
+      label: Privacy confirmation
+      options:
+        - label: I removed hostnames, IP addresses, API keys, passwords, usernames and media titles from this report.
+          required: true
+  - type: input
+    id: app_version
+    attributes:
+      label: App version
+      description: Settings → About.
+      placeholder: "0.1.0 (1)"
+    validations:
+      required: true
+  - type: input
+    id: android
+    attributes:
+      label: Android version and device
+      placeholder: "Android 14, Pixel 7"
+    validations:
+      required: true
+  - type: dropdown
+    id: service_kind
+    attributes:
+      label: Service kind
+      options:
+        - Sonarr
+        - Radarr
+        - qBittorrent
+        - Transmission
+        - Deluge
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: service_version
+    attributes:
+      label: Service version
+      placeholder: "4.0.x"
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Tap ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics bundle (optional)
+      description: |
+        In the app, open Settings → Diagnostics to create a redacted bundle and
+        review it before sharing. Paste it here only after checking it contains
+        no hostnames, IP addresses, keys, usernames or titles.
+      render: text

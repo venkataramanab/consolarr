@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+name: Feature request
+description: Suggest an improvement or new capability.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include hostnames, IP addresses, keys, usernames or media
+        titles. Use placeholders such as `radarr.example`.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do, and what gets in the way?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What would you like Consolarr to do?
+    validations:
+      required: true
+  - type: dropdown
+    id: services
+    attributes:
+      label: Service(s) affected
+      multiple: true
+      options:
+        - Sonarr
+        - Radarr
+        - qBittorrent
+        - Transmission
+        - Deluge
+        - App-wide / other
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

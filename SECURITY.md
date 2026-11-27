@@ -14,7 +14,8 @@ released.
 
 ## Supported versions
 
-Only the latest release is supported while the project is pre-1.0.
+Consolarr is pre-release and has had no store release yet, so only the
+current `main` branch is supported. Fixes land on `main`.
 
 ## Security posture (foundation)
 
