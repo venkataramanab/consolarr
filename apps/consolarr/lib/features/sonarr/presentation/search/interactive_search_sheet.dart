@@ -6,7 +6,6 @@ import 'package:consolarr/features/arr_common/presentation/release_row.dart';
 import 'package:consolarr/features/sonarr/application/release_search.dart';
 import 'package:consolarr/features/sonarr/presentation/screen_tracking.dart';
 import 'package:consolarr/features/sonarr/presentation/search/release_row_mapper.dart';
-import 'package:consolarr/features/sonarr/presentation/stand_ins/glass_sheet.dart';
 import 'package:consolarr/shared/errors/connection_error_message.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
@@ -29,8 +28,11 @@ Future<void> showInteractiveSearch({
   title: title,
   closeLabel: context.l10n.sonarrReleaseClose,
   detents: GlassSheetDetents.full,
-  builder: (context, controller) =>
-      InteractiveSearchContent(target: target, controller: controller),
+  // The sheet paints its own surface: tiles need a Material of their own.
+  scrollBuilder: (context, controller) => Material(
+    type: MaterialType.transparency,
+    child: InteractiveSearchContent(target: target, controller: controller),
+  ),
 );
 
 /// The body of the release sheet: search, sort, filter and the release list

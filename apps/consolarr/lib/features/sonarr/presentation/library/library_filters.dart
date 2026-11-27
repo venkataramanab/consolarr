@@ -5,8 +5,7 @@ import 'package:consolarr/features/arr_common/presentation/sort_filter_chip_bar.
 import 'package:consolarr/features/sonarr/application/library_providers.dart';
 import 'package:consolarr/features/sonarr/application/library_query.dart';
 import 'package:consolarr/features/sonarr/presentation/formatters.dart';
-import 'package:consolarr/features/sonarr/presentation/stand_ins/filter_sheet.dart';
-import 'package:consolarr/features/sonarr/presentation/stand_ins/sort_sheet.dart';
+import 'package:design_system/design_system.dart';
 import 'package:l10n/l10n.dart';
 
 /// Localized name of a sort key.
@@ -45,10 +44,9 @@ const _selectableTypes = [
   SeriesType.anime,
 ];
 
-/// Sections of the filter sheet, with the current filter pre-selected.
+/// Sections of the filter sheet.
 List<FilterSection> filterSections(
   AppLocalizations l10n,
-  LibraryFilter filter,
   LibraryLookups lookups,
 ) => [
   FilterSection(
@@ -56,32 +54,25 @@ List<FilterSection> filterSections(
     label: l10n.sonarrLibraryFilterMonitoring,
     multiSelect: false,
     chips: [
-      FilterChipOption(id: 'monitored', label: l10n.sonarrMonitored),
-      FilterChipOption(id: 'unmonitored', label: l10n.sonarrUnmonitored),
+      FilterChoice(id: 'monitored', label: l10n.sonarrMonitored),
+      FilterChoice(id: 'unmonitored', label: l10n.sonarrUnmonitored),
     ],
-    initial: switch (filter.monitored) {
-      MonitoredFilter.any => const {},
-      MonitoredFilter.monitored => const {'monitored'},
-      MonitoredFilter.unmonitored => const {'unmonitored'},
-    },
   ),
   FilterSection(
     id: 'status',
     label: l10n.sonarrLibraryFilterStatus,
     chips: [
       for (final s in _selectableStatuses)
-        FilterChipOption(id: s.name, label: statusText(l10n, s)!),
+        FilterChoice(id: s.name, label: statusText(l10n, s)!),
     ],
-    initial: {for (final s in filter.statuses) s.name},
   ),
   FilterSection(
     id: 'type',
     label: l10n.sonarrLibraryFilterType,
     chips: [
       for (final t in _selectableTypes)
-        FilterChipOption(id: t.name, label: typeLabel(l10n, t)),
+        FilterChoice(id: t.name, label: typeLabel(l10n, t)),
     ],
-    initial: {for (final t in filter.types) t.name},
   ),
   if (lookups.profiles.isNotEmpty)
     FilterSection(
@@ -89,9 +80,8 @@ List<FilterSection> filterSections(
       label: l10n.sonarrLibraryFilterProfile,
       chips: [
         for (final p in lookups.profiles)
-          FilterChipOption(id: '${p.id}', label: p.name),
+          FilterChoice(id: '${p.id}', label: p.name),
       ],
-      initial: {for (final id in filter.profileIds) '$id'},
     ),
   if (lookups.tags.isNotEmpty)
     FilterSection(
@@ -99,11 +89,26 @@ List<FilterSection> filterSections(
       label: l10n.sonarrLibraryFilterTags,
       chips: [
         for (final t in lookups.tags)
-          FilterChipOption(id: '${t.id}', label: t.label),
+          FilterChoice(id: '${t.id}', label: t.label),
       ],
-      initial: {for (final id in filter.tagIds) '$id'},
     ),
 ];
+
+/// The sheet's initial chip state for the current [filter].
+FilterSelection filterSelection(LibraryFilter filter) => FilterSelection({
+  if (filter.monitored != MonitoredFilter.any)
+    'monitored': {
+      filter.monitored == MonitoredFilter.monitored
+          ? 'monitored'
+          : 'unmonitored',
+    },
+  if (filter.statuses.isNotEmpty)
+    'status': {for (final s in filter.statuses) s.name},
+  if (filter.types.isNotEmpty) 'type': {for (final t in filter.types) t.name},
+  if (filter.profileIds.isNotEmpty)
+    'profile': {for (final id in filter.profileIds) '$id'},
+  if (filter.tagIds.isNotEmpty) 'tags': {for (final id in filter.tagIds) '$id'},
+});
 
 /// Reads the sheet's selection back into a filter.
 LibraryFilter filterFromSelection(FilterSelection selection) {

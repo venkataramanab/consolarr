@@ -2,7 +2,6 @@
 
 import 'package:arr_api/arr_api.dart';
 import 'package:consolarr/features/sonarr/application/detail_providers.dart';
-import 'package:consolarr/features/sonarr/presentation/stand_ins/glass_sheet.dart';
 import 'package:consolarr/shared/errors/connection_error_message.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
@@ -19,8 +18,13 @@ Future<bool?> showEditSeriesSheet({
   context: context,
   title: context.l10n.sonarrDetailEditTitle,
   closeLabel: context.l10n.sonarrDetailEditClose,
-  builder: (context, controller) =>
-      EditSeriesForm(seriesId: seriesId, scrollController: controller),
+  // A long form with Save at the bottom: open it fully.
+  detents: GlassSheetDetents.full,
+  // The sheet paints its own surface: tiles need a Material of their own.
+  scrollBuilder: (context, controller) => Material(
+    type: MaterialType.transparency,
+    child: EditSeriesForm(seriesId: seriesId, scrollController: controller),
+  ),
 );
 
 /// The form inside the edit sheet.

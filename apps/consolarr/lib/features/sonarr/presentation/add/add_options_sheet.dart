@@ -7,7 +7,6 @@ import 'package:consolarr/features/arr_common/presentation/add_options_form.dart
 import 'package:consolarr/features/arr_common/presentation/release_row.dart'
     show ArrBusyIndicator;
 import 'package:consolarr/features/sonarr/application/add_series.dart';
-import 'package:consolarr/features/sonarr/presentation/stand_ins/glass_sheet.dart';
 import 'package:consolarr/features/sonarr/sonarr_routes.dart';
 import 'package:consolarr/shared/errors/connection_error_message.dart';
 import 'package:core/core.dart';
@@ -26,8 +25,11 @@ Future<void> showAddOptionsSheet({
   title: lookup.series.title,
   closeLabel: context.l10n.sonarrAddClose,
   detents: GlassSheetDetents.full,
-  builder: (context, controller) =>
-      AddOptionsBody(lookup: lookup, controller: controller),
+  // The sheet paints its own surface: tiles need a Material of their own.
+  scrollBuilder: (context, controller) => Material(
+    type: MaterialType.transparency,
+    child: AddOptionsBody(lookup: lookup, controller: controller),
+  ),
 );
 
 String _typeLabel(AppLocalizations l10n, SeriesType t) => switch (t) {

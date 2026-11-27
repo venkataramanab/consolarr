@@ -8,9 +8,6 @@ import 'package:consolarr/features/sonarr/presentation/error_messages.dart';
 import 'package:consolarr/features/sonarr/presentation/formatters.dart';
 import 'package:consolarr/features/sonarr/presentation/library/library_filters.dart';
 import 'package:consolarr/features/sonarr/presentation/series_views.dart';
-import 'package:consolarr/features/sonarr/presentation/stand_ins/filter_sheet.dart';
-import 'package:consolarr/features/sonarr/presentation/stand_ins/glass_sheet.dart';
-import 'package:consolarr/features/sonarr/presentation/stand_ins/sort_sheet.dart';
 import 'package:consolarr/features/sonarr/sonarr_routes.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
@@ -363,7 +360,7 @@ class _LibraryBodyState extends ConsumerState<LibraryBody> {
       context: context,
       title: l10n.sonarrLibrarySortSheetTitle,
       closeLabel: l10n.sonarrLibraryClose,
-      builder: (sheetContext, controller) => SortSheet<SeriesSortKey>(
+      builder: (sheetContext) => SortSheet<SeriesSortKey>(
         title: l10n.sonarrLibrarySortSheetTitle,
         options: sortOptions(l10n),
         selected: query.sortKey,
@@ -392,9 +389,10 @@ class _LibraryBodyState extends ConsumerState<LibraryBody> {
       context: context,
       title: l10n.sonarrLibraryFilterSheetTitle,
       closeLabel: l10n.sonarrLibraryClose,
-      builder: (sheetContext, controller) => FilterSheet(
+      builder: (sheetContext) => FilterSheet(
         title: l10n.sonarrLibraryFilterSheetTitle,
-        sections: filterSections(l10n, query.filter, lookups),
+        sections: filterSections(l10n, lookups),
+        selection: filterSelection(query.filter),
         activeCount: query.filter.activeCount,
         clearAllLabel: l10n.sonarrLibraryFilterClearAll,
         saveAsDefaultLabel: l10n.sonarrLibrarySaveDefault,
@@ -432,12 +430,15 @@ class _LibraryBodyState extends ConsumerState<LibraryBody> {
       context: context,
       title: l10n.sonarrLibraryJumpTitle,
       closeLabel: l10n.sonarrLibraryClose,
-      builder: (sheetContext, controller) => ListView.builder(
-        controller: controller,
-        itemCount: groups.length,
-        itemBuilder: (context, i) => ListTile(
-          title: Text(groupLabel(l10n, groups[i].key)),
-          onTap: () => Navigator.of(sheetContext).pop(i),
+      scrollBuilder: (sheetContext, controller) => Material(
+        type: MaterialType.transparency,
+        child: ListView.builder(
+          controller: controller,
+          itemCount: groups.length,
+          itemBuilder: (context, i) => ListTile(
+            title: Text(groupLabel(l10n, groups[i].key)),
+            onTap: () => Navigator.of(sheetContext).pop(i),
+          ),
         ),
       ),
     );

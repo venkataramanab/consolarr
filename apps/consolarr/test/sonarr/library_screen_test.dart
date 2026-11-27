@@ -4,6 +4,7 @@ import 'package:arr_api/arr_api.dart';
 import 'package:consolarr/features/sonarr/application/sonarr_providers.dart';
 import 'package:consolarr/features/sonarr/data/sonarr_prefs_store.dart';
 import 'package:core/core.dart';
+import 'package:design_system/design_system.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:test_harness/test_harness.dart';
@@ -149,7 +150,10 @@ void main() {
     expect(find.text('kids'), findsOneWidget);
     await _tap(
       tester,
-      find.byKey(const ValueKey('filter-monitored-unmonitored')),
+      find.descendant(
+        of: find.byType(FilterSheet),
+        matching: find.text('Unmonitored'),
+      ),
     );
     await _tap(tester, find.text('Apply'));
     expect(
