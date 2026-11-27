@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'dart:async';
+
 import 'package:consolarr/features/settings/application/lock_controller.dart';
 import 'package:consolarr/features/settings/application/settings_providers.dart';
 import 'package:consolarr/features/settings/data/device_authenticator.dart';
@@ -335,6 +337,175 @@ void main() {
       await ctl(c).enable(reason: 'x');
       // Analytics consent is off, so nothing reaches the sink.
       expect(h.analytics.events, isEmpty);
+    });
+  });
+
+  group('fail closed (M1)', () {
+    test(
+      'an indeterminate support answer is retryable, not "removed"',
+      () async {
+        h = SettingsHarness(
+          stored: lockOn(),
+          auth: FakeDeviceAuthenticator(
+            supportResult: DeviceAuthSupport.indeterminate,
+          ),
+        );
+        final c = await start(h);
+        await ctl(c).authenticate(reason: 'x');
+        expect(st(c).problem, isNull);
+        expect(st(c).phase, LockPhase.locked);
+        expect(st(c).authenticating, isFalse);
+        expect(h.auth.reasons, isEmpty, reason: 'no prompt without an answer');
+        // A later prompt works once the platform answers.
+        h.auth.supportResult = DeviceAuthSupport.available;
+        await ctl(c).authenticate(reason: 'x');
+        expect(st(c).phase, LockPhase.unlocked);
+      },
+    );
+
+    test('a platform "no credential" result is the removed state', () async {
+      h = SettingsHarness(
+        stored: lockOn(),
+        auth: FakeDeviceAuthenticator(results: [DeviceAuthResult.noCredential]),
+      );
+      final c = await start(h);
+      await ctl(c).authenticate(reason: 'x');
+      expect(st(c).problem, LockProblem.secureLockRemoved);
+    });
+
+    test(
+      'turning off re-checks support and refuses if a credential exists',
+      () async {
+        h = SettingsHarness(
+          stored: lockOn(),
+          auth: FakeDeviceAuthenticator(
+            results: [DeviceAuthResult.noCredential],
+          ),
+        );
+        final c = await start(h);
+        await ctl(c).authenticate(reason: 'x');
+        expect(st(c).problem, LockProblem.secureLockRemoved);
+        // The credential is back (the earlier answer was wrong or transient).
+        h.auth.supportResult = DeviceAuthSupport.available;
+        final calls = h.auth.supportCalls;
+        await ctl(c).turnOffAfterCredentialRemoved();
+        expect(h.auth.supportCalls, calls + 1);
+        expect(st(c).phase, LockPhase.locked);
+        expect(st(c).problem, isNull, reason: 'back to a normal unlock');
+        expect(c.read(settingsProvider).lockEnabled, isTrue);
+        expect(h.store.values[SettingsKeys.lockEnabled], '1');
+      },
+    );
+
+    test('an indeterminate re-check never turns the lock off', () async {
+      h = SettingsHarness(
+        stored: lockOn(),
+        auth: FakeDeviceAuthenticator(results: [DeviceAuthResult.noCredential]),
+      );
+      final c = await start(h);
+      await ctl(c).authenticate(reason: 'x');
+      h.auth.supportResult = DeviceAuthSupport.indeterminate;
+      await ctl(c).turnOffAfterCredentialRemoved();
+      expect(c.read(settingsProvider).lockEnabled, isTrue);
+      expect(st(c).phase, LockPhase.locked);
+    });
+
+    test('enable with an indeterminate answer is not confirmed', () async {
+      h = SettingsHarness(
+        auth: FakeDeviceAuthenticator(
+          supportResult: DeviceAuthSupport.indeterminate,
+        ),
+      );
+      final c = await start(h);
+      expect(await ctl(c).enable(reason: 'x'), EnableLockResult.notConfirmed);
+      expect(c.read(settingsProvider).lockEnabled, isFalse);
+    });
+  });
+
+  group('monotonic delay (L1)', () {
+    test('moving the wall clock back does not extend the delay', () async {
+      h = SettingsHarness(stored: lockOn(LockDelay.oneMinute));
+      final c = await start(h);
+      await ctl(c).authenticate(reason: 'x');
+      ctl(c).onBackgrounded();
+      h.clock.advance(const Duration(minutes: 2));
+      h.clock.setWallClock(DateTime.utc(2000));
+      ctl(c).onResumed();
+      expect(st(c).phase, LockPhase.locked);
+    });
+
+    test('moving the wall clock forward locks (fails closed)', () async {
+      h = SettingsHarness(stored: lockOn(LockDelay.fiveMinutes));
+      final c = await start(h);
+      await ctl(c).authenticate(reason: 'x');
+      ctl(c).onBackgrounded();
+      h.clock.setWallClock(h.clock.now.add(const Duration(hours: 1)));
+      ctl(c).onResumed();
+      expect(st(c).phase, LockPhase.locked);
+    });
+  });
+
+  group('confirmation is not a background (correctness 3)', () {
+    test('backgrounding during disable() does not re-lock', () async {
+      h = SettingsHarness(stored: lockOn());
+      final c = await start(h);
+      await ctl(c).authenticate(reason: 'x');
+      h.auth.hold = Completer<DeviceAuthResult>();
+      final pending = ctl(c).disable(reason: 'x');
+      await h.settle(c);
+      expect(st(c).authenticating, isTrue);
+      // The device-credential activity pauses the app.
+      ctl(c).onBackgrounded();
+      h.clock.advance(const Duration(seconds: 5));
+      ctl(c).onResumed();
+      expect(st(c).phase, LockPhase.unlocked);
+      h.auth.hold!.complete(DeviceAuthResult.success);
+      expect(await pending, isTrue);
+      expect(st(c).phase, LockPhase.disabled);
+      expect(st(c).authenticating, isFalse);
+    });
+
+    test('a cancelled disable() clears the flag', () async {
+      h = SettingsHarness(
+        stored: lockOn(),
+        auth: FakeDeviceAuthenticator(
+          results: [DeviceAuthResult.success, DeviceAuthResult.canceled],
+        ),
+      );
+      final c = await start(h);
+      await ctl(c).authenticate(reason: 'x');
+      expect(await ctl(c).disable(reason: 'x'), isFalse);
+      expect(st(c).authenticating, isFalse);
+    });
+  });
+
+  group('unreadable settings (M2)', () {
+    test('retries once, then fails closed without content', () async {
+      final store = ThrowingSettingsStore(stored: lockOn());
+      h = SettingsHarness(store: store);
+      final c = await start(h);
+      expect(store.readCalls, 2, reason: 'one retry');
+      expect(st(c).phase, LockPhase.loadFailed);
+      expect(st(c).contentVisible, isFalse);
+      expect(c.read(appLockedProvider), isTrue);
+      expect(c.read(settingsProvider).wantsSecureWindow, isTrue);
+    });
+
+    test('one transient error is recovered by the retry', () async {
+      final store = ThrowingSettingsStore(stored: lockOn(), failures: 1);
+      h = SettingsHarness(store: store);
+      final c = await start(h);
+      expect(st(c).phase, LockPhase.locked);
+    });
+
+    test('retry re-reads and resolves', () async {
+      final store = ThrowingSettingsStore(stored: lockOn(), failures: 2);
+      h = SettingsHarness(store: store);
+      final c = await start(h);
+      expect(st(c).phase, LockPhase.loadFailed);
+      await ctl(c).retryLoad();
+      await h.settle(c);
+      expect(st(c).phase, LockPhase.locked);
     });
   });
 

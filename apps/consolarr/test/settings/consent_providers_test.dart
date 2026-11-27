@@ -3,6 +3,7 @@
 import 'package:consolarr/features/settings/application/settings_providers.dart';
 import 'package:consolarr/features/settings/data/settings_store.dart';
 import 'package:consolarr/features/settings/domain/app_settings.dart';
+import 'package:consolarr/src/first_frame.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -97,6 +98,55 @@ void main() {
     expect(c2.read(consentProvider).analytics, isFalse);
     await c2.read(crashReporterProvider).recordError('after restart', null);
     expect(h.crash.errors, contains('after restart'));
+  });
+
+  test('stored consent applies after the first frame without the Settings '
+      'tab ever reading consentProvider', () async {
+    final h = SettingsHarness(
+      stored: {
+        SettingsKeys.consentCrashReports: '1',
+        SettingsKeys.consentAnalytics: '0',
+      },
+    );
+    final c = ProviderContainer(overrides: h.overrides);
+    addTearDown(c.dispose);
+    // Before the first frame nothing is read and nothing is forwarded.
+    await c.read(crashReporterProvider).recordError('early', null);
+    expect(h.crash.errors, isEmpty);
+    c.read(firstFrameDoneProvider.notifier).markDone();
+    await h.settle(c);
+    // Only the gated sink is read: consentProvider is never touched.
+    await c.read(crashReporterProvider).recordError('after start', null);
+    expect(h.crash.errors, ['after start']);
+    expect(h.crash.enabledCalls, contains(true));
+    expect(h.analytics.enabledCalls, isNot(contains(true)));
+  });
+
+  test('settings and consent share one read of the settings table', () async {
+    final store = FailingWriteSettingsStore({
+      SettingsKeys.consentCrashReports: '1',
+    });
+    final h = SettingsHarness(store: store);
+    final c = ProviderContainer(overrides: h.overrides);
+    addTearDown(c.dispose);
+    c.read(firstFrameDoneProvider.notifier).markDone();
+    c.read(settingsProvider);
+    c.read(crashReporterProvider);
+    await h.settle(c);
+    expect(c.read(settingsProvider).loaded, isTrue);
+    expect(c.read(consentProvider).crashReports, isTrue);
+    expect(store.readCalls, 1);
+  });
+
+  test('both consent keys are written in one call', () async {
+    final h = SettingsHarness();
+    final c = await h.startedContainer();
+    await c
+        .read(consentProvider.notifier)
+        .set(ConsentPurpose.analytics, enabled: true);
+    expect(h.store.values[SettingsKeys.consentAnalytics], '1');
+    expect(h.store.values[SettingsKeys.consentCrashReports], '0');
+    expect(h.store.writeAllCalls, 1);
   });
 
   test(

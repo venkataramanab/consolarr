@@ -130,4 +130,46 @@ void main() {
     await c.read(settingsProvider.notifier).setDiagnosticsEnabled(false);
     expect(log.entries, isEmpty);
   });
+
+  test(
+    'a failed write reverts the setting and logs only the error type',
+    () async {
+      final store = FailingWriteSettingsStore();
+      final lines = <String>[];
+      final h = SettingsHarness(store: store);
+      final c = ProviderContainer(
+        overrides: [
+          ...h.overrides,
+          settingsLoggerProvider.overrideWithValue(
+            AppLogger(sink: (_, m) => lines.add(m)),
+          ),
+        ],
+      );
+      addTearDown(c.dispose);
+      c.read(firstFrameDoneProvider.notifier).markDone();
+      c.read(settingsProvider);
+      await h.settle(c);
+      final n = c.read(settingsProvider.notifier);
+      store.failWrites = true;
+      expect(await n.setHighContrast(true), isFalse);
+      expect(c.read(settingsProvider).highContrast, isFalse);
+      expect(store.values.containsKey(SettingsKeys.highContrast), isFalse);
+      expect(lines.single, contains('settings_write_failed'));
+      expect(lines.single, isNot(contains('write failed')));
+      store.failWrites = false;
+      expect(await n.setHighContrast(true), isTrue);
+      expect(c.read(settingsProvider).highContrast, isTrue);
+    },
+  );
+
+  test('a failed write only reverts its own field', () async {
+    final store = FailingWriteSettingsStore();
+    final c = await SettingsHarness(store: store).startedContainer();
+    final n = c.read(settingsProvider.notifier);
+    await n.setLargerTargets(true);
+    store.failWrites = true;
+    await n.setHighContrast(true);
+    expect(c.read(settingsProvider).largerTargets, isTrue);
+    expect(c.read(settingsProvider).highContrast, isFalse);
+  });
 }

@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'dart:async';
+
 import 'package:consolarr/features/settings/application/settings_providers.dart';
 import 'package:consolarr/features/settings/data/settings_store.dart';
 import 'package:consolarr/src/cache/payload_cache.dart';
 import 'package:consolarr/src/database/app_database.dart';
+import 'package:consolarr/src/first_frame.dart';
 import 'package:consolarr/src/platform/secure_screen.dart';
 import 'package:consolarr/src/storage/flutter_secure_secret_store.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,20 +32,36 @@ final rawAnalyticsProvider = Provider<Analytics>(
 final breadcrumbsProvider = Provider<Breadcrumbs>((ref) => Breadcrumbs());
 
 /// Consent seam (SET-03): everything off by default, kept in the settings
-/// table. Read lazily, never before the first frame.
+/// table. Read lazily, never before the first frame. It shares the one read of
+/// the settings rows with the settings themselves.
 final consentStoreProvider = Provider<ConsentStore>(
-  (ref) => StoredConsentStore(() => ref.read(settingsStoreProvider)),
+  (ref) => StoredConsentStore(
+    rows: () => ref.read(storedRowsProvider.future),
+    store: () => ref.read(settingsStoreProvider),
+  ),
 );
 
-/// Owns the consent state and the gated sinks below.
-final consentManagerProvider = Provider<ConsentManager>(
-  (ref) => ConsentManager(
+/// Owns the consent state and the gated sinks below. Right after the first
+/// frame it loads the stored choice, so consent applies from startup and not
+/// only once the Settings tab has been opened.
+final consentManagerProvider = Provider<ConsentManager>((ref) {
+  final manager = ConsentManager(
     store: ref.watch(consentStoreProvider),
     analytics: ref.watch(rawAnalyticsProvider),
     crashReporter: ref.watch(rawCrashReporterProvider),
     breadcrumbs: ref.watch(breadcrumbsProvider),
-  ),
-);
+  );
+  // An unreadable store leaves every consent off, which is the safe state.
+  void load() => unawaited(manager.load().catchError((Object _) {}));
+  if (ref.read(firstFrameDoneProvider)) {
+    Future.microtask(load);
+  } else {
+    ref.listen<bool>(firstFrameDoneProvider, (_, done) {
+      if (done) load();
+    });
+  }
+  return manager;
+});
 
 /// Crash reporting seam: forwards only while the user has opted in.
 final crashReporterProvider = Provider<CrashReporter>(
@@ -80,6 +99,14 @@ final themeModeProvider = Provider<ThemeMode>(
 
 /// Current time. Override in tests for stable ages and expiry.
 final clockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
+
+/// Monotonic time since an arbitrary start: unaffected by the user changing
+/// the wall clock. The app lock measures the time away with it (together
+/// with the wall clock, so a longer absence on either clock locks).
+final monotonicClockProvider = Provider<Duration Function()>((ref) {
+  final watch = Stopwatch()..start();
+  return () => watch.elapsed;
+});
 
 /// The app database. Opens its file on the first query, not on creation.
 final databaseProvider = Provider<AppDatabase>((ref) {

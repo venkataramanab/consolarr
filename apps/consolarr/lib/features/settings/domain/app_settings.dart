@@ -22,6 +22,7 @@ enum LockDelay {
 class AppSettings {
   const AppSettings({
     this.loaded = false,
+    this.loadFailed = false,
     this.themeMode = ThemeMode.dark,
     this.localeTag,
     this.motion = MotionPreference.system,
@@ -37,8 +38,12 @@ class AppSettings {
   /// Defaults until the stored values have been read (after the first frame).
   static const defaults = AppSettings();
 
-  /// Whether the stored values have been applied.
+  /// Whether the stored values have been applied (or reading them failed).
   final bool loaded;
+
+  /// The stored values could not be read (after one retry). The defaults are
+  /// in effect, but the app must **fail closed**: no content, secure window.
+  final bool loadFailed;
 
   /// Dark by default (the identity), light, or follow the system.
   final ThemeMode themeMode;
@@ -57,7 +62,7 @@ class AppSettings {
 
   /// The window must be marked secure (blank recents thumbnail, no
   /// screenshots): the lock needs it, and so does the explicit switch.
-  bool get wantsSecureWindow => lockEnabled || blockScreenshots;
+  bool get wantsSecureWindow => lockEnabled || blockScreenshots || loadFailed;
 
   Locale? get locale => localeTag == null ? null : Locale(localeTag!);
 
@@ -66,6 +71,7 @@ class AppSettings {
 
   AppSettings copyWith({
     bool? loaded,
+    bool? loadFailed,
     ThemeMode? themeMode,
     Object? localeTag = _keep,
     MotionPreference? motion,
@@ -78,6 +84,7 @@ class AppSettings {
     LogLevel? diagnosticsLevel,
   }) => AppSettings(
     loaded: loaded ?? this.loaded,
+    loadFailed: loadFailed ?? this.loadFailed,
     themeMode: themeMode ?? this.themeMode,
     localeTag: identical(localeTag, _keep)
         ? this.localeTag

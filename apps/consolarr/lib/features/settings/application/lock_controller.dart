@@ -21,6 +21,11 @@ enum LockPhase {
 
   /// Unlocked; the app may lock again after the configured delay.
   unlocked,
+
+  /// The stored settings could not be read (after a retry): fail closed. The
+  /// content stays hidden and the window secure; the screen offers "try
+  /// again". Never shows content.
+  loadFailed,
 }
 
 /// Why a locked app cannot be unlocked right now.
@@ -101,48 +106,72 @@ class AppLockState {
 /// "backgrounded at" time is kept in memory only.
 class AppLockController extends Notifier<AppLockState> {
   DateTime? _backgroundedAt;
+  Duration? _backgroundedElapsed;
 
   DateTime Function() get _now => ref.read(clockProvider);
 
   @override
   AppLockState build() {
-    // Resolve once the stored settings have been applied; later changes of
-    // the switch come through the controller's own methods.
-    ref.listen<bool>(settingsProvider.select((s) => s.loaded), (_, loaded) {
-      if (loaded && state.phase == LockPhase.resolving) _resolve();
-    });
+    // Resolve once the stored settings have been applied (or failed to be
+    // read); later changes of the switch come through the controller's own
+    // methods.
+    ref.listen<(bool, bool)>(
+      settingsProvider.select((s) => (s.loaded, s.loadFailed)),
+      (_, now) {
+        final phase = state.phase;
+        if (now.$1 && (phase == LockPhase.resolving)) _resolve();
+      },
+    );
     // Settings already applied (this provider is first read later): resolve
     // straight away.
     final settings = ref.read(settingsProvider);
-    if (settings.loaded) {
-      return AppLockState(
-        phase: settings.lockEnabled ? LockPhase.locked : LockPhase.disabled,
-      );
-    }
+    if (settings.loaded) return AppLockState(phase: _phaseFor(settings));
     return const AppLockState();
   }
 
+  static LockPhase _phaseFor(AppSettings s) => s.loadFailed
+      ? LockPhase.loadFailed
+      : s.lockEnabled
+      ? LockPhase.locked
+      : LockPhase.disabled;
+
   void _resolve() {
-    final enabled = ref.read(settingsProvider).lockEnabled;
-    state = state.copyWith(
-      phase: enabled ? LockPhase.locked : LockPhase.disabled,
-    );
+    state = state.copyWith(phase: _phaseFor(ref.read(settingsProvider)));
   }
 
-  /// The app left the foreground for good (`paused`/`hidden`).
+  /// "Try again" on the fail-closed screen: reads the settings again. The
+  /// content stays hidden until they resolve.
+  Future<void> retryLoad() async {
+    if (state.phase != LockPhase.loadFailed) return;
+    state = state.copyWith(phase: LockPhase.resolving);
+    await ref.read(settingsProvider.notifier).reload();
+  }
+
+  /// The app left the foreground for good (`paused`/`hidden`). Both clocks
+  /// are noted: the delay is measured on the monotonic one, so changing the
+  /// wall clock cannot extend it.
   void onBackgrounded() {
     if (state.phase != LockPhase.unlocked || state.authenticating) return;
     _backgroundedAt ??= _now();
+    _backgroundedElapsed ??= ref.read(monotonicClockProvider)();
   }
 
   /// The app is in the foreground again; locks when the delay has elapsed.
   void onResumed() {
     final since = _backgroundedAt;
+    final sinceElapsed = _backgroundedElapsed;
     _backgroundedAt = null;
+    _backgroundedElapsed = null;
     if (since == null || state.phase != LockPhase.unlocked) return;
     final settings = ref.read(settingsProvider);
     if (!settings.lockEnabled) return;
-    final away = _now().difference(since);
+    // The longer absence on either clock counts: the monotonic clock cannot
+    // be moved by the user, the wall clock also runs while the device sleeps.
+    var away = _now().difference(since);
+    if (sinceElapsed != null) {
+      final mono = ref.read(monotonicClockProvider)() - sinceElapsed;
+      if (mono > away) away = mono;
+    }
     if (settings.lockDelay == LockDelay.immediately ||
         away >= settings.lockDelay.duration) {
       state = state.copyWith(
@@ -163,12 +192,19 @@ class AppLockController extends Notifier<AppLockState> {
     state = state.copyWith(authenticating: true, lastAttemptFailed: false);
     final support = await auth.support();
     if (!ref.mounted) return;
-    if (support == DeviceAuthSupport.noSecureLock) {
-      state = state.copyWith(
-        authenticating: false,
-        problem: LockProblem.secureLockRemoved,
-      );
-      return;
+    switch (support) {
+      case DeviceAuthSupport.noSecureLock:
+        state = state.copyWith(
+          authenticating: false,
+          problem: LockProblem.secureLockRemoved,
+        );
+        return;
+      case DeviceAuthSupport.indeterminate:
+        // The platform could not be asked: retryable, never "removed".
+        state = state.copyWith(authenticating: false);
+        return;
+      case DeviceAuthSupport.available:
+        break;
     }
     final biometrics = await auth.hasBiometrics();
     if (!ref.mounted) return;
@@ -206,11 +242,25 @@ class AppLockController extends Notifier<AppLockState> {
           biometricsAvailable: biometrics,
           lastAttemptFailed: true,
         );
-      case DeviceAuthResult.unavailable:
+      case DeviceAuthResult.noCredential:
         state = state.copyWith(
           authenticating: false,
           problem: LockProblem.secureLockRemoved,
         );
+    }
+  }
+
+  /// Runs a system prompt for a settings action with the `authenticating`
+  /// flag set, so the device-credential activity pausing the app is not taken
+  /// for the user leaving (which would re-lock mid-confirmation).
+  Future<DeviceAuthResult> _confirm(String reason) async {
+    state = state.copyWith(authenticating: true);
+    try {
+      return await ref
+          .read(deviceAuthenticatorProvider)
+          .authenticate(reason: reason);
+    } finally {
+      if (ref.mounted) state = state.copyWith(authenticating: false);
     }
   }
 
@@ -219,13 +269,22 @@ class AppLockController extends Notifier<AppLockState> {
   /// confirmation failed.
   Future<EnableLockResult> enable({required String reason}) async {
     final auth = ref.read(deviceAuthenticatorProvider);
-    if (await auth.support() == DeviceAuthSupport.noSecureLock) {
-      return EnableLockResult.noSecureLock;
+    switch (await auth.support()) {
+      case DeviceAuthSupport.noSecureLock:
+        return EnableLockResult.noSecureLock;
+      case DeviceAuthSupport.indeterminate:
+        return EnableLockResult.notConfirmed;
+      case DeviceAuthSupport.available:
+        break;
     }
-    final result = await auth.authenticate(reason: reason);
-    if (result != DeviceAuthResult.success)
+    final result = await _confirm(reason);
+    if (!ref.mounted || result != DeviceAuthResult.success) {
       return EnableLockResult.notConfirmed;
-    await ref.read(settingsProvider.notifier).setLockEnabled(true);
+    }
+    final stored = await ref
+        .read(settingsProvider.notifier)
+        .setLockEnabled(true);
+    if (!stored) return EnableLockResult.notConfirmed;
     state = const AppLockState(phase: LockPhase.unlocked);
     await _track(enabled: true);
     return EnableLockResult.enabled;
@@ -233,24 +292,43 @@ class AppLockController extends Notifier<AppLockState> {
 
   /// Switches the lock off after the device authenticator confirmed.
   Future<bool> disable({required String reason}) async {
-    final auth = ref.read(deviceAuthenticatorProvider);
-    final result = await auth.authenticate(reason: reason);
-    if (result != DeviceAuthResult.success) return false;
-    await _turnOff();
-    return true;
+    if (state.authenticating) return false;
+    final result = await _confirm(reason);
+    if (!ref.mounted || result != DeviceAuthResult.success) return false;
+    return _turnOff();
   }
 
   /// For a lock whose device credential was removed: the user explicitly turns
-  /// the lock off from the lock screen (never done silently).
+  /// the lock off from the lock screen (never done silently). The platform is
+  /// asked again first and the lock goes off only if it **really answers**
+  /// that no secure lock method exists; an error or a credential that is back
+  /// never turns it off.
   Future<void> turnOffAfterCredentialRemoved() async {
-    if (state.problem != LockProblem.secureLockRemoved) return;
-    await _turnOff();
+    if (state.problem != LockProblem.secureLockRemoved ||
+        state.authenticating) {
+      return;
+    }
+    final support = await ref.read(deviceAuthenticatorProvider).support();
+    if (!ref.mounted) return;
+    switch (support) {
+      case DeviceAuthSupport.noSecureLock:
+        await _turnOff();
+      case DeviceAuthSupport.available:
+        // The credential is back: a normal unlock again.
+        state = state.copyWith(problem: null);
+      case DeviceAuthSupport.indeterminate:
+        break;
+    }
   }
 
-  Future<void> _turnOff() async {
-    await ref.read(settingsProvider.notifier).setLockEnabled(false);
+  Future<bool> _turnOff() async {
+    final stored = await ref
+        .read(settingsProvider.notifier)
+        .setLockEnabled(false);
+    if (!stored || !ref.mounted) return false;
     state = const AppLockState(phase: LockPhase.disabled);
     await _track(enabled: false);
+    return true;
   }
 
   Future<void> _track({required bool enabled}) => ref

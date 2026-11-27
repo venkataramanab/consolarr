@@ -27,9 +27,26 @@ final externalActionsProvider = Provider<ExternalActions>(
   (ref) => const PlatformExternalActions(),
 );
 
+/// The stored settings and consent rows, read **once** (after the first
+/// frame) and shared by [SettingsNotifier] and the consent store. Invalidated
+/// to read again after a failure.
+final storedRowsProvider = FutureProvider<Map<String, String>>(
+  (ref) => ref.read(settingsStoreProvider).readAll(),
+  retry: (_, _) => null,
+);
+
+/// The logger for settings write failures (error type only). A seam of its
+/// own: the app logger depends on the settings, so the notifier cannot read
+/// it without a cycle. Redacting, like every logger.
+final settingsLoggerProvider = Provider<AppLogger>((ref) => AppLogger());
+
 /// User settings. Starts with defaults (dark theme, system language, lock
 /// off) and applies the stored values after the first frame; nothing reads the
 /// database before that.
+///
+/// If the stored values cannot be read (after one retry) the state is
+/// `loadFailed`: the app fails closed (see `AppLockController`) instead of
+/// opening unlocked on defaults.
 class SettingsNotifier extends Notifier<AppSettings> {
   bool _loading = false;
 
@@ -48,71 +65,139 @@ class SettingsNotifier extends Notifier<AppSettings> {
     if (_loading || state.loaded) return;
     _loading = true;
     try {
-      final rows = await ref.read(settingsStoreProvider).readAll();
-      if (!ref.mounted) return;
-      state = AppSettings.fromRows(rows);
-    } on Object {
-      // Unreadable settings: keep the defaults, but do resolve the app (the
-      // lock gate waits for this).
-      if (ref.mounted) state = AppSettings.defaults.copyWith(loaded: true);
+      // One retry, then fail closed.
+      for (var attempt = 0; attempt < 2; attempt++) {
+        try {
+          final rows = await ref.read(storedRowsProvider.future);
+          if (!ref.mounted) return;
+          state = AppSettings.fromRows(rows);
+          return;
+        } on Object {
+          if (!ref.mounted) return;
+          ref.invalidate(storedRowsProvider);
+        }
+      }
+      state = AppSettings.defaults.copyWith(loaded: true, loadFailed: true);
     } finally {
       _loading = false;
     }
   }
 
-  Future<void> _write(String key, String value) =>
-      ref.read(settingsStoreProvider).write(key, value);
-
-  Future<void> setThemeMode(ThemeMode mode) async {
-    state = state.copyWith(themeMode: mode);
-    await _write(SettingsKeys.theme, mode.name);
+  /// Reads the stored values again (the "try again" of the fail-closed
+  /// screen).
+  Future<void> reload() async {
+    if (_loading) return;
+    ref.invalidate(storedRowsProvider);
+    state = AppSettings.defaults;
+    await _load();
   }
+
+  /// Applies [value] at once and persists it. If the write fails the field is
+  /// reverted (only that field) so what is shown matches what is stored, and
+  /// only the error type is logged. Returns whether the value was stored.
+  Future<bool> _commit<T>(
+    T value, {
+    required T Function(AppSettings) read,
+    required AppSettings Function(AppSettings, T) write,
+    required String key,
+    required String stored,
+  }) async {
+    final before = read(state);
+    state = write(state, value);
+    try {
+      await ref.read(settingsStoreProvider).write(key, stored);
+      return true;
+    } on Object catch (e) {
+      if (ref.mounted) {
+        state = write(state, before);
+        ref
+            .read(settingsLoggerProvider)
+            .warning('settings_write_failed ${e.runtimeType}');
+      }
+      return false;
+    }
+  }
+
+  Future<bool> setThemeMode(ThemeMode mode) => _commit(
+    mode,
+    read: (s) => s.themeMode,
+    write: (s, v) => s.copyWith(themeMode: v),
+    key: SettingsKeys.theme,
+    stored: mode.name,
+  );
 
   /// `null` follows the system language.
-  Future<void> setLocaleTag(String? tag) async {
-    state = state.copyWith(localeTag: tag);
-    await _write(SettingsKeys.locale, tag ?? '');
-  }
+  Future<bool> setLocaleTag(String? tag) => _commit(
+    tag,
+    read: (s) => s.localeTag,
+    write: (s, v) => s.copyWith(localeTag: v),
+    key: SettingsKeys.locale,
+    stored: tag ?? '',
+  );
 
-  Future<void> setMotion(MotionPreference motion) async {
-    state = state.copyWith(motion: motion);
-    await _write(SettingsKeys.motion, motion.name);
-  }
+  Future<bool> setMotion(MotionPreference motion) => _commit(
+    motion,
+    read: (s) => s.motion,
+    write: (s, v) => s.copyWith(motion: v),
+    key: SettingsKeys.motion,
+    stored: motion.name,
+  );
 
-  Future<void> setHighContrast(bool value) async {
-    state = state.copyWith(highContrast: value);
-    await _write(SettingsKeys.highContrast, value ? '1' : '0');
-  }
+  Future<bool> setHighContrast(bool value) => _commit(
+    value,
+    read: (s) => s.highContrast,
+    write: (s, v) => s.copyWith(highContrast: v),
+    key: SettingsKeys.highContrast,
+    stored: value ? '1' : '0',
+  );
 
-  Future<void> setLargerTargets(bool value) async {
-    state = state.copyWith(largerTargets: value);
-    await _write(SettingsKeys.largerTargets, value ? '1' : '0');
-  }
+  Future<bool> setLargerTargets(bool value) => _commit(
+    value,
+    read: (s) => s.largerTargets,
+    write: (s, v) => s.copyWith(largerTargets: v),
+    key: SettingsKeys.largerTargets,
+    stored: value ? '1' : '0',
+  );
 
-  Future<void> setLockEnabled(bool value) async {
-    state = state.copyWith(lockEnabled: value);
-    await _write(SettingsKeys.lockEnabled, value ? '1' : '0');
-  }
+  Future<bool> setLockEnabled(bool value) => _commit(
+    value,
+    read: (s) => s.lockEnabled,
+    write: (s, v) => s.copyWith(lockEnabled: v),
+    key: SettingsKeys.lockEnabled,
+    stored: value ? '1' : '0',
+  );
 
-  Future<void> setLockDelay(LockDelay delay) async {
-    state = state.copyWith(lockDelay: delay);
-    await _write(SettingsKeys.lockDelay, delay.name);
-  }
+  Future<bool> setLockDelay(LockDelay delay) => _commit(
+    delay,
+    read: (s) => s.lockDelay,
+    write: (s, v) => s.copyWith(lockDelay: v),
+    key: SettingsKeys.lockDelay,
+    stored: delay.name,
+  );
 
-  Future<void> setBlockScreenshots(bool value) async {
-    state = state.copyWith(blockScreenshots: value);
-    await _write(SettingsKeys.blockScreenshots, value ? '1' : '0');
-  }
+  Future<bool> setBlockScreenshots(bool value) => _commit(
+    value,
+    read: (s) => s.blockScreenshots,
+    write: (s, v) => s.copyWith(blockScreenshots: v),
+    key: SettingsKeys.blockScreenshots,
+    stored: value ? '1' : '0',
+  );
 
-  Future<void> setDiagnosticsEnabled(bool value) async {
-    state = state.copyWith(diagnosticsEnabled: value);
-    await _write(SettingsKeys.diagnosticsEnabled, value ? '1' : '0');
-  }
+  Future<bool> setDiagnosticsEnabled(bool value) => _commit(
+    value,
+    read: (s) => s.diagnosticsEnabled,
+    write: (s, v) => s.copyWith(diagnosticsEnabled: v),
+    key: SettingsKeys.diagnosticsEnabled,
+    stored: value ? '1' : '0',
+  );
 
-  Future<void> setDiagnosticsLevel(LogLevel level) async {
-    state = state.copyWith(diagnosticsLevel: level);
-    await _write(SettingsKeys.diagnosticsLevel, level.name);
-  }
+  Future<bool> setDiagnosticsLevel(LogLevel level) => _commit(
+    level,
+    read: (s) => s.diagnosticsLevel,
+    write: (s, v) => s.copyWith(diagnosticsLevel: v),
+    key: SettingsKeys.diagnosticsLevel,
+    stored: level.name,
+  );
 }
 
 final settingsProvider = NotifierProvider<SettingsNotifier, AppSettings>(
@@ -129,16 +214,19 @@ final motionPreferenceProvider = Provider<MotionPreference>(
   (ref) => ref.watch(settingsProvider.select((s) => s.motion)),
 );
 
-/// The telemetry consent, off until the user switches it on (SET-03).
+/// The telemetry consent, off until the user switches it on (SET-03). The
+/// stored choice is loaded by `consentManagerProvider` right after the first
+/// frame; this notifier only mirrors it for the UI.
 class ConsentNotifier extends Notifier<ConsentState> {
   @override
   ConsentState build() {
     final manager = ref.watch(consentManagerProvider);
-    ref.listen<bool>(firstFrameDoneProvider, (_, done) async {
-      if (!done) return;
-      await manager.load();
+    void listener() {
       if (ref.mounted) state = manager.state;
-    }, fireImmediately: true);
+    }
+
+    manager.addListener(listener);
+    ref.onDispose(() => manager.removeListener(listener));
     return manager.state;
   }
 

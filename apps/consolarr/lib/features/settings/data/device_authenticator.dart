@@ -7,8 +7,13 @@ enum DeviceAuthSupport {
   /// A secure lock method (PIN, pattern, password or biometric) exists.
   available,
 
-  /// The device has no secure lock method set up (or none that apps may use).
+  /// The platform *answered* that no secure lock method is set up. Only a
+  /// normally returned answer counts: an error is [indeterminate].
   noSecureLock,
+
+  /// The platform could not be asked (an error, no UI). Retryable; never
+  /// treated as "the credential was removed".
+  indeterminate,
 }
 
 /// The outcome of one unlock prompt. Deliberately coarse: the app learns
@@ -25,8 +30,9 @@ enum DeviceAuthResult {
   /// The platform is rate limiting attempts.
   lockedOut,
 
-  /// The secure lock method is gone or unusable.
-  unavailable,
+  /// The platform reported that no device credential is set at all. The only
+  /// result that can mean "the secure lock method was removed".
+  noCredential,
 }
 
 /// The platform authenticator: biometric with fallback to the device
@@ -56,7 +62,8 @@ class PlatformDeviceAuthenticator implements DeviceAuthenticator {
           ? DeviceAuthSupport.available
           : DeviceAuthSupport.noSecureLock;
     } on Object {
-      return DeviceAuthSupport.noSecureLock;
+      // A transient failure must never look like a removed credential.
+      return DeviceAuthSupport.indeterminate;
     }
   }
 
@@ -81,13 +88,15 @@ class PlatformDeviceAuthenticator implements DeviceAuthenticator {
       return switch (e.code) {
         LocalAuthExceptionCode.userCanceled ||
         LocalAuthExceptionCode.systemCanceled ||
-        LocalAuthExceptionCode.timeout => DeviceAuthResult.canceled,
+        LocalAuthExceptionCode.timeout ||
+        LocalAuthExceptionCode.uiUnavailable ||
+        LocalAuthExceptionCode.authInProgress => DeviceAuthResult.canceled,
         LocalAuthExceptionCode.temporaryLockout ||
         LocalAuthExceptionCode.biometricLockout => DeviceAuthResult.lockedOut,
-        LocalAuthExceptionCode.noCredentialsSet ||
-        LocalAuthExceptionCode.noBiometricsEnrolled ||
-        LocalAuthExceptionCode.noBiometricHardware ||
-        LocalAuthExceptionCode.uiUnavailable => DeviceAuthResult.unavailable,
+        LocalAuthExceptionCode.noCredentialsSet =>
+          DeviceAuthResult.noCredential,
+        // Includes `noBiometricsEnrolled` and `noBiometricHardware`: the
+        // device credential still works, so the lock is not "removed".
         _ => DeviceAuthResult.failed,
       };
     } on Object {

@@ -23,6 +23,7 @@ class FakeDeviceAuthenticator implements DeviceAuthenticator {
   }) : results = results ?? [DeviceAuthResult.success];
 
   DeviceAuthSupport supportResult;
+  int supportCalls = 0;
   bool biometrics;
   final List<DeviceAuthResult> results;
   final List<String> reasons = [];
@@ -31,7 +32,10 @@ class FakeDeviceAuthenticator implements DeviceAuthenticator {
   Completer<DeviceAuthResult>? hold;
 
   @override
-  Future<DeviceAuthSupport> support() async => supportResult;
+  Future<DeviceAuthSupport> support() async {
+    supportCalls++;
+    return supportResult;
+  }
 
   @override
   Future<bool> hasBiometrics() async => biometrics;
@@ -50,9 +54,21 @@ class TestClock {
 
   DateTime now;
 
+  /// The monotonic time (never moved by wall-clock changes).
+  Duration elapsed = Duration.zero;
+
   DateTime call() => now;
 
-  void advance(Duration d) => now = now.add(d);
+  Duration monotonic() => elapsed;
+
+  /// Real time passing: both clocks move.
+  void advance(Duration d) {
+    now = now.add(d);
+    elapsed += d;
+  }
+
+  /// The user changes the wall clock; the monotonic time is unaffected.
+  void setWallClock(DateTime value) => now = value;
 }
 
 /// Records what reached the raw sinks.
@@ -87,6 +103,44 @@ class RecordingCrashReporter implements CrashReporter {
   }) async => errors.add(error);
 }
 
+/// A store whose reads fail the first [failures] times (`-1`: always).
+class ThrowingSettingsStore extends InMemorySettingsStore {
+  ThrowingSettingsStore({Map<String, String>? stored, this.failures = -1})
+    : super(stored);
+
+  int failures;
+  int readCalls = 0;
+
+  @override
+  Future<Map<String, String>> readAll() async {
+    readCalls++;
+    if (failures < 0 || readCalls <= failures) {
+      throw StateError('store unreadable');
+    }
+    return super.readAll();
+  }
+}
+
+/// A store whose writes fail (`failWrites`), to test consistency.
+class FailingWriteSettingsStore extends InMemorySettingsStore {
+  FailingWriteSettingsStore([super.initial]);
+
+  bool failWrites = false;
+  int readCalls = 0;
+
+  @override
+  Future<Map<String, String>> readAll() {
+    readCalls++;
+    return super.readAll();
+  }
+
+  @override
+  Future<void> write(String key, String value) async {
+    if (failWrites) throw StateError('write failed');
+    return super.write(key, value);
+  }
+}
+
 /// The doubles every settings test shares.
 class SettingsHarness {
   SettingsHarness({
@@ -94,7 +148,8 @@ class SettingsHarness {
     FakeDeviceAuthenticator? auth,
     TestClock? clock,
     this.recordingSinks = true,
-  }) : store = InMemorySettingsStore(stored),
+    InMemorySettingsStore? store,
+  }) : store = store ?? InMemorySettingsStore(stored),
        auth = auth ?? FakeDeviceAuthenticator(),
        clock = clock ?? TestClock();
 
@@ -114,6 +169,7 @@ class SettingsHarness {
     settingsStoreProvider.overrideWithValue(store),
     deviceAuthenticatorProvider.overrideWithValue(auth),
     clockProvider.overrideWithValue(clock.call),
+    monotonicClockProvider.overrideWithValue(clock.monotonic),
     secureScreenProvider.overrideWithValue(secure),
     externalActionsProvider.overrideWithValue(actions),
     if (recordingSinks) rawAnalyticsProvider.overrideWithValue(analytics),
