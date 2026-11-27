@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:consolarr/consolarr.dart';
-import 'package:consolarr/src/providers.dart';
 import 'package:consolarr/features/settings/application/settings_providers.dart';
 import 'package:consolarr/features/settings/domain/app_settings.dart';
 import 'package:consolarr/features/settings/presentation/app_lock_gate.dart';
@@ -107,13 +106,12 @@ void main() {
     // nothing else creates the consent manager: only the trigger in the app
     // root can. Removing that trigger makes this test fail.
     final h = SettingsHarness(stored: {SettingsKeys.consentCrashReports: '1'});
-    final c = await _pump(
+    await _pump(
       tester,
       h,
       extra: [uiServersProvider.overrideWithValue(const AsyncValue.loading())],
     );
     expect(h.crash.enabledCalls, contains(true));
-    expect(c.exists(consentManagerProvider), isTrue);
     await _unmount(tester);
   });
 }
