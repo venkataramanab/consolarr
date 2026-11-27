@@ -331,5 +331,29 @@
         "description": "Status, monitoring and episode summary."
       }
     }
+  },
+  "sonarrSearchEpisode": "Search for this episode",
+  "@sonarrSearchEpisode": {
+    "description": "Tooltip and accessible name of the button that asks Sonarr to search for one episode automatically."
+  },
+  "sonarrSearchSearching": "Searching…",
+  "@sonarrSearchSearching": {
+    "description": "Inline status while Sonarr searches for an episode."
+  },
+  "sonarrSearchGrabbed": "Found, downloading",
+  "@sonarrSearchGrabbed": {
+    "description": "Inline status after an automatic search found a release and sent it to the download client."
+  },
+  "sonarrSearchNothingFound": "Nothing found",
+  "@sonarrSearchNothingFound": {
+    "description": "Inline status after an automatic search finished without finding a release."
+  },
+  "sonarrSearchFailed": "Search failed",
+  "@sonarrSearchFailed": {
+    "description": "Inline status when the search command could not be started or its progress could not be read."
+  },
+  "sonarrSearchRetry": "Search again",
+  "@sonarrSearchRetry": {
+    "description": "Tooltip and accessible name of the button that repeats an automatic search."
   }
 }
