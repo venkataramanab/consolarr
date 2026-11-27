@@ -280,10 +280,28 @@ class ReleaseGrabNotifier extends Notifier<Map<String, GrabStatus>> {
     };
   }
 
+  /// Whether queue item [item] is [release]: the download client's id (when
+  /// both sides give one, it is usually the torrent hash inside the release
+  /// guid) or the same title, compared without case and surrounding space.
+  static bool _isRelease(ArrQueueItem item, ArrRelease release) {
+    final id = item.downloadId?.trim().toLowerCase();
+    if (id != null &&
+        id.length >= 16 &&
+        release.guid.toLowerCase().contains(id)) {
+      return true;
+    }
+    return item.title.trim().toLowerCase() ==
+        release.title.trim().toLowerCase();
+  }
+
   /// For a [GrabStatus.maybeSent] release: looks for it in the download queue.
   /// Found means the first request did arrive; it is then shown as grabbed
   /// and `true` is returned. Not found, or the queue could not be read, is
   /// `false`: the caller must ask before sending again.
+  ///
+  /// The queue snapshot is bounded: the client reads at most 5 pages of 200,
+  /// so 1,000 items. A release beyond that is not found and is treated as
+  /// "not queued" (the caller asks before sending again).
   Future<bool> confirmQueued(ArrRelease release) async {
     final key = grabKey(release);
     if (state[key] != GrabStatus.maybeSent) return false;
@@ -293,7 +311,7 @@ class ReleaseGrabNotifier extends Notifier<Map<String, GrabStatus>> {
     final result = await session.api.queue();
     if (!ref.mounted || generation != _generation) return false;
     final items = result.valueOrNull;
-    if (items == null || !items.any((i) => i.title == release.title)) {
+    if (items == null || !items.any((i) => _isRelease(i, release))) {
       return false;
     }
     state = {...state, key: GrabStatus.grabbed};

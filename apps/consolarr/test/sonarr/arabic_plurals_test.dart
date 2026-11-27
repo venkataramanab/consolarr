@@ -21,6 +21,20 @@ void main() {
     expect(ar.sonarrReleaseAgeDays(100), isNot(contains('يومًا')));
   });
 
+  test('zero and many forms exist for ages, progress and filters', () {
+    expect(ar.sonarrAgeMinutes(0), 'الآن');
+    expect(ar.sonarrAgeHours(0), contains('أقل من ساعة'));
+    expect(ar.sonarrAgeDays(0), 'اليوم');
+    expect(ar.sonarrReleaseAgeMinutes(0), contains('أقل من دقيقة'));
+    expect(ar.sonarrReleaseAgeHours(0), contains('أقل من ساعة'));
+    expect(ar.sonarrReleaseAgeDays(0), contains('أقل من يوم'));
+    expect(ar.sonarrEpisodesProgress(0, 0), '0/0 حلقة');
+    expect(ar.sonarrLibraryFilterChipSemantics(11), contains('مرشحًا'));
+    expect(ar.sonarrLibraryFilterChipSemantics(100), isNot(contains('مرشحًا')));
+    expect(ar.sonarrLibraryFilterChip(11), contains('11'));
+    expect(ar.sonarrReleaseFilters(11), contains('11'));
+  });
+
   test('the episode codes are Arabic, not Latin letters', () {
     expect(ar.sonarrQueueEpisodeCode(1, 2), isNot(matches('[A-Za-z]')));
     expect(ar.sonarrCalendarEpisodeCode(1, 2), isNot(matches('[A-Za-z]')));

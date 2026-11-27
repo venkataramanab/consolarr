@@ -174,7 +174,7 @@
   "@sonarrAgeJustNow": {
     "description": "Relative age used when cached data is less than a minute old."
   },
-  "sonarrAgeMinutes": "{count, plural, =1{قبل دقيقة} =2{قبل دقيقتين} few{قبل {count} دقائق} many{قبل {count} دقيقة} other{قبل {count} دقيقة}}",
+  "sonarrAgeMinutes": "{count, plural, =0{الآن} =1{قبل دقيقة} =2{قبل دقيقتين} few{قبل {count} دقائق} many{قبل {count} دقيقة} other{قبل {count} دقيقة}}",
   "@sonarrAgeMinutes": {
     "description": "Relative age in minutes for the offline banner.",
     "placeholders": {
@@ -184,7 +184,7 @@
       }
     }
   },
-  "sonarrAgeHours": "{count, plural, =1{قبل ساعة} =2{قبل ساعتين} few{قبل {count} ساعات} many{قبل {count} ساعة} other{قبل {count} ساعة}}",
+  "sonarrAgeHours": "{count, plural, =0{قبل أقل من ساعة} =1{قبل ساعة} =2{قبل ساعتين} few{قبل {count} ساعات} many{قبل {count} ساعة} other{قبل {count} ساعة}}",
   "@sonarrAgeHours": {
     "description": "Relative age in hours for the offline banner.",
     "placeholders": {
@@ -194,7 +194,7 @@
       }
     }
   },
-  "sonarrAgeDays": "{count, plural, =1{قبل يوم} =2{قبل يومين} few{قبل {count} أيام} many{قبل {count} يومًا} other{قبل {count} يوم}}",
+  "sonarrAgeDays": "{count, plural, =0{اليوم} =1{قبل يوم} =2{قبل يومين} few{قبل {count} أيام} many{قبل {count} يومًا} other{قبل {count} يوم}}",
   "@sonarrAgeDays": {
     "description": "Relative age in days for the offline banner.",
     "placeholders": {
@@ -242,7 +242,7 @@
       }
     }
   },
-  "sonarrEpisodesProgress": "{total, plural, =1{{have}/1 حلقة} =2{{have}/2 حلقتان} few{{have}/{total} حلقات} many{{have}/{total} حلقة} other{{have}/{total} حلقة}}",
+  "sonarrEpisodesProgress": "{total, plural, =0{{have}/0 حلقة} =1{{have}/1 حلقة} =2{{have}/2 حلقتان} few{{have}/{total} حلقات} many{{have}/{total} حلقة} other{{have}/{total} حلقة}}",
   "@sonarrEpisodesProgress": {
     "description": "Episode progress in the series list: downloaded over total episodes.",
     "placeholders": {
@@ -1179,7 +1179,7 @@
       }
     }
   },
-  "sonarrLibraryFilterChip": "{count, plural, =0{تصفية} other{تصفية ({count})}}",
+  "sonarrLibraryFilterChip": "{count, plural, =0{تصفية} many{تصفية ({count})} other{تصفية ({count})}}",
   "@sonarrLibraryFilterChip": {
     "description": "Label of the filter button above the library; shows how many criteria are active.",
     "placeholders": {
@@ -1189,7 +1189,7 @@
       }
     }
   },
-  "sonarrLibraryFilterChipSemantics": "{count, plural, =0{تصفية. يفتح خيارات التصفية.} =1{تصفية، مرشح واحد نشط. يفتح خيارات التصفية.} =2{تصفية، مرشحان نشطان. يفتح خيارات التصفية.} few{تصفية، {count} مرشحات نشطة. يفتح خيارات التصفية.} other{تصفية، {count} مرشحًا نشطًا. يفتح خيارات التصفية.}}",
+  "sonarrLibraryFilterChipSemantics": "{count, plural, =0{تصفية. يفتح خيارات التصفية.} =1{تصفية، مرشح واحد نشط. يفتح خيارات التصفية.} =2{تصفية، مرشحان نشطان. يفتح خيارات التصفية.} few{تصفية، {count} مرشحات نشطة. يفتح خيارات التصفية.} many{تصفية، {count} مرشحًا نشطًا. يفتح خيارات التصفية.} other{تصفية، {count} مرشح نشط. يفتح خيارات التصفية.}}",
   "@sonarrLibraryFilterChipSemantics": {
     "description": "Accessible name of the filter button including the number of active filters.",
     "placeholders": {
@@ -1537,7 +1537,7 @@
   "@sonarrReleaseReverseSort": {
     "description": "Tooltip of the button that reverses the sort direction."
   },
-  "sonarrReleaseFilters": "{count, plural, =0{عوامل التصفية} other{عوامل التصفية ({count})}}",
+  "sonarrReleaseFilters": "{count, plural, =0{عوامل التصفية} many{عوامل التصفية ({count})} other{عوامل التصفية ({count})}}",
   "@sonarrReleaseFilters": {
     "description": "Filter panel toggle; shows how many filters are active.",
     "placeholders": {
@@ -1581,7 +1581,7 @@
   "@sonarrReleaseProtocolUsenet": {
     "description": "Name of the usenet protocol."
   },
-  "sonarrReleaseAgeMinutes": "{count, plural, =1{عمره دقيقة} =2{عمره دقيقتان} few{عمره {count} دقائق} many{عمره {count} دقيقة} other{عمره {count} دقيقة}}",
+  "sonarrReleaseAgeMinutes": "{count, plural, =0{عمره أقل من دقيقة} =1{عمره دقيقة} =2{عمره دقيقتان} few{عمره {count} دقائق} many{عمره {count} دقيقة} other{عمره {count} دقيقة}}",
   "@sonarrReleaseAgeMinutes": {
     "description": "Age of a release in minutes.",
     "placeholders": {
@@ -1591,7 +1591,7 @@
       }
     }
   },
-  "sonarrReleaseAgeHours": "{count, plural, =1{عمره ساعة} =2{عمره ساعتان} few{عمره {count} ساعات} many{عمره {count} ساعة} other{عمره {count} ساعة}}",
+  "sonarrReleaseAgeHours": "{count, plural, =0{عمره أقل من ساعة} =1{عمره ساعة} =2{عمره ساعتان} few{عمره {count} ساعات} many{عمره {count} ساعة} other{عمره {count} ساعة}}",
   "@sonarrReleaseAgeHours": {
     "description": "Age of a release in hours.",
     "placeholders": {
@@ -1601,7 +1601,7 @@
       }
     }
   },
-  "sonarrReleaseAgeDays": "{count, plural, =1{عمره يوم} =2{عمره يومان} few{عمره {count} أيام} many{عمره {count} يومًا} other{عمره {count} يوم}}",
+  "sonarrReleaseAgeDays": "{count, plural, =0{عمره أقل من يوم} =1{عمره يوم} =2{عمره يومان} few{عمره {count} أيام} many{عمره {count} يومًا} other{عمره {count} يوم}}",
   "@sonarrReleaseAgeDays": {
     "description": "Age of a release in days.",
     "placeholders": {

@@ -88,6 +88,7 @@ class ArrQueueItem {
     this.movieId,
     this.mediaTitle,
     this.episodeTitle,
+    this.downloadId,
   });
 
   factory ArrQueueItem.fromJson(Map<String, Object?> json) {
@@ -108,6 +109,7 @@ class ArrQueueItem {
       protocol: parseArrProtocol(JsonRead.string(json, 'protocol')),
       downloadClient: JsonRead.string(json, 'downloadClient'),
       indexer: JsonRead.string(json, 'indexer'),
+      downloadId: JsonRead.string(json, 'downloadId'),
       qualityName: quality == null ? null : JsonRead.string(quality, 'name'),
       added: JsonRead.date(json, 'added'),
       messages: [
@@ -137,6 +139,10 @@ class ArrQueueItem {
 
   /// The release name as grabbed.
   final String title;
+
+  /// The download client's id for the item (a torrent info hash, for
+  /// example), when the server reports one. Compared, never shown or logged.
+  final String? downloadId;
   final ArrQueueState state;
 
   /// Bytes.

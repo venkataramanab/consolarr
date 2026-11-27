@@ -60,6 +60,7 @@ void main() {
         'timeleft': '00:10:05',
         'protocol': 'torrent',
         'downloadClient': 'Example Client',
+        'downloadId': 'ABCDEF0123456789',
         'indexer': 'Example Indexer',
         'seriesId': 7,
         'episodeId': 3,
@@ -86,6 +87,7 @@ void main() {
       expect(item.qualityName, 'WEBDL-1080p');
       expect(item.mediaTitle, 'Example Show');
       expect(item.episodeNumber, 4);
+      expect(item.downloadId, 'ABCDEF0123456789');
       expect(item.seasonNumber, 2);
     });
 
