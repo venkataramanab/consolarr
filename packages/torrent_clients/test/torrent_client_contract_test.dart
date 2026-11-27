@@ -127,8 +127,8 @@ void main() {
           isTrue,
         );
         var l = (await client.globalLimits()).valueOrNull!;
-        expect(l.download, closeTo(2048000, 2048));
-        expect(l.upload, closeTo(512000, 1024));
+        expect(l.download, 2048000);
+        expect(l.upload, 512000);
         expect(
           (await client.setGlobalLimits(
             const GlobalLimits(download: 0, upload: 0),
@@ -138,6 +138,31 @@ void main() {
         l = (await client.globalLimits()).valueOrNull!;
         expect(l.download, 0);
         expect(l.upload, 0);
+      });
+
+      test('limits that are not a multiple of the unit round up', () async {
+        // 1 MiB: exact for byte and KiB based servers, rounded up to whole
+        // kB (1000 bytes) on Transmission.
+        await client.setGlobalLimits(
+          const GlobalLimits(download: 1048576, upload: 1),
+        );
+        final l = (await client.globalLimits()).valueOrNull!;
+        final unit = client.capabilities.speedLimitUnit;
+        switch (client.kind) {
+          case ServiceKind.transmission:
+            expect(unit, 1000);
+            expect(l.download, 1049000);
+            expect(l.upload, 1000);
+          case ServiceKind.deluge:
+            expect(unit, 1024);
+            expect(l.download, 1048576);
+          case ServiceKind.qbittorrent:
+            expect(unit, 1);
+            expect(l.download, 1048576);
+            expect(l.upload, 1);
+          default:
+            fail('unexpected kind');
+        }
       });
 
       test('detail has counts, path and transferred', () async {

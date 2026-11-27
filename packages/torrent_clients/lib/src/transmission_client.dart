@@ -19,6 +19,10 @@ const transmissionMinRpcVersion = 14;
 /// RPC version that introduced torrent `labels` (Transmission 3.0).
 const transmissionLabelsRpcVersion = 16;
 
+/// The `debugDetail` of the error for HTTP 403: the server refused the host
+/// (its `rpc-host-whitelist` / `rpc-whitelist`), not the credentials.
+const transmissionHostNotAllowedDetail = 'host not allowed by the server';
+
 const _listFields = [
   'hashString',
   'name',
@@ -34,6 +38,10 @@ const _listFields = [
   'labels',
   'peersSendingToUs',
 ];
+
+/// Keeps the `-1` (unavailable) and `-2` (infinite) sentinels, clamps the rest.
+double _ratio(double v) =>
+    v == -1 || v == -2 ? v : v.clamp(0.0, double.infinity);
 
 /// Transmission's `status` field and friends -> [Torrent]. Throws
 /// [FormatException] when `hashString` or `name` is missing or mistyped.
@@ -57,7 +65,8 @@ Torrent parseTransmissionTorrent(Map<String, Object?> json) {
     state: TorrentState.fromTransmission(
       status is int ? status : null,
       progress: progress,
-      hasError: jsonNum(json['error']).toInt() != 0,
+      // 1 and 2 are tracker warnings and errors; only 3 is a local error.
+      hasError: jsonNum(json['error']).toInt() == 3,
       receiving:
           json['peersSendingToUs'] is! num ||
           jsonNum(json['peersSendingToUs']) > 0 ||
@@ -67,8 +76,7 @@ Torrent parseTransmissionTorrent(Map<String, Object?> json) {
     size: jsonNum(json['totalSize']).toInt(),
     dlSpeed: jsonNum(json['rateDownload']).toInt(),
     upSpeed: jsonNum(json['rateUpload']).toInt(),
-    // -1 means "not available".
-    ratio: jsonNum(json['uploadRatio']).toDouble().clamp(0.0, double.infinity),
+    ratio: _ratio(jsonNum(json['uploadRatio']).toDouble()),
     eta: etaFromSeconds(eta),
     addedOn: epochSecondsToDate(added),
     label: firstLabel,
@@ -128,9 +136,15 @@ class TransmissionClient implements TorrentClient {
   TorrentCapabilities get capabilities => TorrentCapabilities(
     alternativeSpeed: true,
     // Transmission's "labels" are free-form tags.
-    tags: _rpcVersion == 0 || _rpcVersion >= transmissionLabelsRpcVersion,
+    // Labels are silently dropped below RPC 16, so offer tags only once the
+    // version is known (it is after the first successful list).
+    tags: _rpcVersion >= transmissionLabelsRpcVersion,
     availability: false,
+    speedLimitUnit: _kb,
   );
+
+  /// The RPC version of the server; `0` until known.
+  int get rpcVersion => _rpcVersion;
 
   @override
   void forgetSession() {
@@ -181,9 +195,13 @@ class TransmissionClient implements TorrentClient {
       }
     }
     final status = response.statusCode ?? 0;
-    if (status == 401 || status == 403) {
-      throw const AppError(ErrorCategory.authFailed);
+    if (status == 403) {
+      throw const AppError(
+        ErrorCategory.authFailed,
+        debugDetail: transmissionHostNotAllowedDetail,
+      );
     }
+    if (status == 401) throw const AppError(ErrorCategory.authFailed);
     if (status < 200 || status >= 300) throw appErrorFromStatus(status);
     final text = response.data ?? '';
     final decoded = jsonDecode(text);
@@ -222,6 +240,7 @@ class TransmissionClient implements TorrentClient {
 
   @override
   Future<Result<List<Torrent>>> listTorrents() => guardResult(() async {
+    await _ensureVersion();
     final body = await _rpcRaw('torrent-get', {'fields': _listFields});
     final parsed = await _parseOffIsolate(_runner, body);
     if (parsed.skipped > 0) onRowsSkipped?.call(parsed.skipped);

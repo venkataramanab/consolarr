@@ -59,7 +59,8 @@ void main() {
       c.forgetSession();
       final before = s.seen.length;
       await c.listTorrents();
-      expect(s.seen.length - before, 2);
+      // Handshake, the version probe (forgotten with the session) and the list.
+      expect(s.seen.length - before, 3);
       expect(s.seen[before].headers['X-Transmission-Session-Id'], isNull);
     });
   });

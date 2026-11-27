@@ -177,7 +177,17 @@ class Torrent {
   /// Bytes per second.
   final int dlSpeed;
   final int upSpeed;
+
+  /// Share ratio. Transmission and Deluge report `-1` ("not available", see
+  /// [ratioUnknown]) and Transmission `-2` ("infinite", see [ratioInfinite]);
+  /// every other negative value is stored as `0`.
   final double ratio;
+
+  /// The server reports no ratio (show "–").
+  bool get ratioUnknown => ratio == -1;
+
+  /// The ratio is infinite (show "∞").
+  bool get ratioInfinite => ratio == -2;
   final Duration? eta;
   final DateTime? addedOn;
   final String? category;

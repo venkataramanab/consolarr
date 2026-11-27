@@ -59,6 +59,9 @@ const _statusKeys = [
   'label',
 ];
 
+/// Deluge reports `-1` for "no ratio yet"; keep it, clamp other negatives.
+double _delugeRatio(double v) => v == -1 ? v : v.clamp(0.0, double.infinity);
+
 /// Parses one Deluge torrent status. Throws [FormatException] when the name
 /// is missing or mistyped.
 Torrent parseDelugeTorrent(String hash, Map<String, Object?> json) {
@@ -85,7 +88,7 @@ Torrent parseDelugeTorrent(String hash, Map<String, Object?> json) {
     size: jsonNum(json['total_size']).toInt(),
     dlSpeed: rate,
     upSpeed: jsonNum(json['upload_payload_rate']).toInt(),
-    ratio: jsonNum(json['ratio']).toDouble().clamp(0.0, double.infinity),
+    ratio: _delugeRatio(jsonNum(json['ratio']).toDouble()),
     eta: etaFromSeconds(eta),
     addedOn: epochSecondsToDate(added),
     category: label is String && label.isNotEmpty ? label : null,
@@ -179,6 +182,7 @@ class DelugeClient implements TorrentClient, DaemonHostSelection {
   @override
   TorrentCapabilities get capabilities => TorrentCapabilities(
     labelModel: _hasLabels == true ? LabelModel.label : LabelModel.none,
+    speedLimitUnit: _kib,
   );
 
   @override

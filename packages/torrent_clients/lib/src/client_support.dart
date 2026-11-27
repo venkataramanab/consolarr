@@ -26,9 +26,7 @@ Future<Result<T>> guardResult<T>(Future<T> Function() body) async {
         e is IOException ||
         e is TimeoutException;
     return Result.err(
-      transport
-          ? appErrorFromDio(e)
-          : const AppError(ErrorCategory.parseError),
+      transport ? appErrorFromDio(e) : const AppError(ErrorCategory.parseError),
     );
   }
 }

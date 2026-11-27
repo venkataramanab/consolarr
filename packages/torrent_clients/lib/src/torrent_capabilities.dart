@@ -23,6 +23,7 @@ class TorrentCapabilities {
     this.startPaused = true,
     this.distinctStop = false,
     this.availability = true,
+    this.speedLimitUnit = 1,
   });
 
   /// The alternative speed limits toggle exists.
@@ -43,6 +44,12 @@ class TorrentCapabilities {
   /// The detail overview can show distributed copies.
   final bool availability;
 
+  /// Bytes in one unit of the client's speed limits: 1 (exact bytes, qBittorrent),
+  /// 1000 (Transmission's kB/s, limits round up to a whole kB/s) or 1024
+  /// (Deluge's KiB/s). A UI that shows limits in another unit tells the user
+  /// the stored value may differ and should re-read the limits after applying.
+  final int speedLimitUnit;
+
   /// Whether the add form offers a category/label field.
   bool get hasLabel => labelModel != LabelModel.none;
 
@@ -57,6 +64,7 @@ class TorrentCapabilities {
     startPaused: startPaused,
     distinctStop: distinctStop,
     availability: availability,
+    speedLimitUnit: speedLimitUnit,
   );
 
   @override
@@ -67,7 +75,8 @@ class TorrentCapabilities {
       other.tags == tags &&
       other.startPaused == startPaused &&
       other.distinctStop == distinctStop &&
-      other.availability == availability;
+      other.availability == availability &&
+      other.speedLimitUnit == speedLimitUnit;
 
   @override
   int get hashCode => Object.hash(
@@ -77,5 +86,6 @@ class TorrentCapabilities {
     startPaused,
     distinctStop,
     availability,
+    speedLimitUnit,
   );
 }
