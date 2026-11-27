@@ -195,26 +195,26 @@ void main() {
     });
 
     test('release sort and filter', () {
-      const a = RadarrRelease(
+      const a = ArrRelease(
         guid: 'a',
         indexerId: 1,
         title: 'A',
         size: 3,
-        ageHours: 10,
+        ageMinutes: 600,
         seeders: 5,
         resolution: 1080,
-        protocol: 'torrent',
+        protocol: ArrProtocol.torrent,
         indexer: 'x',
       );
-      const b = RadarrRelease(
+      const b = ArrRelease(
         guid: 'b',
         indexerId: 1,
         title: 'B',
         size: 9,
-        ageHours: 2,
+        ageMinutes: 120,
         seeders: 50,
         resolution: 720,
-        protocol: 'usenet',
+        protocol: ArrProtocol.usenet,
         indexer: 'y',
         approved: false,
         rejections: ['r'],

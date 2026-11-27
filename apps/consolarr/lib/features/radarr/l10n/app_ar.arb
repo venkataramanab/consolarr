@@ -724,6 +724,94 @@
   "@radarrGrabAnyway": {
     "description": "Confirm button of the rejected-release dialog."
   },
+  "radarrReleaseMaybeSent": "ربما أُرسل",
+  "@radarrReleaseMaybeSent": {
+    "description": "Status chip of a release whose request got no answer; it may or may not have reached Radarr."
+  },
+  "radarrReleaseDownloadAgain": "تحقق ثم أرسل مرة أخرى",
+  "@radarrReleaseDownloadAgain": {
+    "description": "Button on a release in the may-have-been-sent state: checks the queue first."
+  },
+  "radarrReleaseResendTitle": "إرسال هذا الإصدار مرة أخرى؟",
+  "@radarrReleaseResendTitle": {
+    "description": "Title of the confirmation before a release is sent a second time."
+  },
+  "radarrReleaseResendMessage": "لم يصل ردّ على الطلب الأول والإصدار ليس في قائمة الانتظار. ربما وصل إلى Radarr وربما لا. قد يؤدي إرساله مجددًا إلى تنزيله مرتين.",
+  "@radarrReleaseResendMessage": {
+    "description": "Body of the resend confirmation."
+  },
+  "radarrReleaseResendConfirm": "أرسل مرة أخرى",
+  "@radarrReleaseResendConfirm": {
+    "description": "Confirm button of the resend confirmation."
+  },
+  "radarrReleaseAlreadyQueued": "هذا الإصدار موجود بالفعل في قائمة الانتظار.",
+  "@radarrReleaseAlreadyQueued": {
+    "description": "Snackbar when the queue check found a release that looked unsent."
+  },
+  "radarrReasonLine": "• {reason}",
+  "@radarrReasonLine": {
+    "description": "One rejection reason as a bullet line. The reason is plain text from the server.",
+    "placeholders": {
+      "reason": {
+        "type": "String",
+        "description": "Reason text."
+      }
+    }
+  },
+  "radarrReleaseSemantics": "{title}، {details}",
+  "@radarrReleaseSemantics": {
+    "description": "Spoken label of a release row: the release name then its facts and state.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Release name."
+      },
+      "details": {
+        "type": "String",
+        "description": "Facts and download state."
+      }
+    }
+  },
+  "radarrReleaseLanguages": "اللغات",
+  "@radarrReleaseLanguages": {
+    "description": "Heading of the languages in the expanded release details."
+  },
+  "radarrReleaseAgeMinutes": "{minutes, plural, =0{عمره أقل من دقيقة} =1{عمره دقيقة واحدة} =2{عمره دقيقتان} few{عمره {minutes} دقائق} many{عمره {minutes} دقيقة} other{عمره {minutes} دقيقة}}",
+  "@radarrReleaseAgeMinutes": {
+    "description": "Age of a release in minutes.",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "description": "Minutes."
+      }
+    }
+  },
+  "radarrReleaseReverseSort": "عكس ترتيب الفرز",
+  "@radarrReleaseReverseSort": {
+    "description": "Tooltip of the release sort direction toggle."
+  },
+  "radarrReleaseFilters": "{count, plural, =0{المرشحات} =1{المرشحات، واحد نشط} =2{المرشحات، اثنان نشطان} few{المرشحات، {count} نشطة} many{المرشحات، {count} نشطًا} other{المرشحات، {count} نشط}}",
+  "@radarrReleaseFilters": {
+    "description": "Label of the release filter button with the number of active filters.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Count."
+      }
+    }
+  },
+  "radarrReleaseGroupStatus": "الحالة",
+  "@radarrReleaseGroupStatus": {
+    "description": "Heading of the accepted/rejected filter group of releases."
+  },
+  "radarrReleaseGroupProtocol": "البروتوكول",
+  "@radarrReleaseGroupProtocol": {
+    "description": "Heading of the protocol filter group of releases."
+  },
+  "radarrReleaseGroupResolution": "الدقة",
+  "@radarrReleaseGroupResolution": {
+    "description": "Heading of the resolution filter group of releases."
+  },
   "radarrSeeders": "{count, plural, =0{بلا مصدّرين} =1{مصدّر واحد} =2{مصدّران} few{{count} مصدّرين} many{{count} مصدّرًا} other{{count} مصدّر}}",
   "@radarrSeeders": {
     "description": "Seeder count of a release.",
@@ -939,6 +1027,14 @@
   "radarrAddOptionsTitle": "خيارات الإضافة",
   "@radarrAddOptionsTitle": {
     "description": "Title of the add options sheet."
+  },
+  "radarrOptionsErrorHeadline": "تعذّر تحميل الخيارات",
+  "@radarrOptionsErrorHeadline": {
+    "description": "Headline when quality profiles, tags or root folders could not be loaded for the add or edit sheet."
+  },
+  "radarrOptionsLoading": "جارٍ تحميل الخيارات",
+  "@radarrOptionsLoading": {
+    "description": "Spoken label of the loading placeholder of the add and edit sheets."
   },
   "radarrAddNeedsSetup": "يحتاج Radarr إلى ملف جودة ومجلد جذر قبل إضافة الأفلام.",
   "@radarrAddNeedsSetup": {

@@ -9,7 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:test_harness/test_harness.dart';
 
 const _movies = '[{"id":1,"title":"Example Movie"}]';
-const _release = RadarrRelease(guid: 'g', indexerId: 1, title: 'Example.Rel');
+const _release = ArrRelease(guid: 'g', indexerId: 1, title: 'Example.Rel');
 
 Future<void> _noDelay(Duration _) async {}
 

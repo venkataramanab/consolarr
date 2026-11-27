@@ -1,17 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// TODO(arr_common): the add-options pieces are local copies; swap them for the
-// shared ones from `features/arr_common` once W4a merges.
-
 import 'dart:async';
 
 import 'package:arr_api/arr_api.dart';
+import 'package:consolarr/features/arr_common/presentation/add_options_form.dart';
 import 'package:consolarr/features/radarr/application/radarr_providers.dart';
 import 'package:consolarr/features/radarr/presentation/common.dart';
 import 'package:consolarr/features/radarr/presentation/movie_views.dart';
 import 'package:consolarr/features/radarr/presentation/navigation.dart';
+import 'package:consolarr/features/radarr/presentation/options_state.dart';
 import 'package:consolarr/features/radarr/presentation/screen_view.dart';
-import 'package:consolarr/features/radarr/presentation/stand_ins/glass_sheet.dart';
 import 'package:consolarr/shared/errors/connection_error_message.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
@@ -180,20 +178,29 @@ class _AddMovieScreenState extends ConsumerState<AddMovieScreen> {
 
   Future<void> _options(BuildContext context, RadarrMovie movie) {
     final l10n = context.l10n;
+    // Everything the callback needs is taken now: it runs after the sheet is
+    // gone, and this screen may be gone by then too.
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final success = l10n.radarrAddSuccess;
+    final lookup = ref.read(movieLookupProvider.notifier);
+    final term = _controller.text;
     return showGlassSheet<void>(
       context: context,
       title: l10n.radarrAddOptionsTitle,
       closeLabel: l10n.radarrClose,
-      builder: (_) => AddOptionsForm(
-        movie: movie,
-        onAdded: () {
-          final messenger = ScaffoldMessenger.maybeOf(context);
-          messenger?.showSnackBar(
-            SnackBar(content: Text(l10n.radarrAddSuccess)),
-          );
-          // Re-run the lookup so the row shows the "in library" marker.
-          ref.read(movieLookupProvider.notifier).search(_controller.text);
-        },
+      detents: GlassSheetDetents.full,
+      // The sheet paints its own surface: tiles need a Material of their own.
+      scrollBuilder: (context, controller) => Material(
+        type: MaterialType.transparency,
+        child: AddOptionsForm(
+          movie: movie,
+          controller: controller,
+          onAdded: () {
+            messenger?.showSnackBar(SnackBar(content: Text(success)));
+            // Re-run the lookup so the row shows the "in library" marker.
+            if (mounted) lookup.search(term);
+          },
+        ),
       ),
     );
   }
@@ -202,10 +209,16 @@ class _AddMovieScreenState extends ConsumerState<AddMovieScreen> {
 /// Options for one movie (profile, availability, folder, monitored, tags,
 /// search after add and, when the lookup has one, the collection switch).
 class AddOptionsForm extends ConsumerStatefulWidget {
-  const AddOptionsForm({required this.movie, required this.onAdded, super.key});
+  const AddOptionsForm({
+    required this.movie,
+    required this.onAdded,
+    this.controller,
+    super.key,
+  });
 
   final RadarrMovie movie;
   final VoidCallback onAdded;
+  final ScrollController? controller;
 
   @override
   ConsumerState<AddOptionsForm> createState() => _AddOptionsFormState();
@@ -225,13 +238,17 @@ class _AddOptionsFormState extends ConsumerState<AddOptionsForm> {
   Future<void> _add() async {
     final profile = _profile;
     final root = _root;
-    if (profile == null || root == null) return;
+    // A second tap while the request is in flight sends nothing.
+    if (_adding || profile == null || root == null) return;
     setState(() {
       _adding = true;
       _error = null;
     });
-    final error = await addMovie(
-      ref,
+    // Provider-owned function: it stays valid after this sheet is popped.
+    final add = ref.read(addMovieActionProvider);
+    final navigator = Navigator.of(context);
+    final onAdded = widget.onAdded;
+    final error = await add(
       AddMovieRequest(
         lookup: widget.movie,
         qualityProfileId: profile,
@@ -243,12 +260,14 @@ class _AddOptionsFormState extends ConsumerState<AddOptionsForm> {
         addCollection: _collection,
       ),
     );
-    if (!mounted) return;
     if (error == null) {
-      Navigator.of(context).pop();
-      widget.onAdded();
+      // Added: close the sheet (if the user did not already) and tell the
+      // screen, which guards its own use of `ref` and `context`.
+      if (mounted) navigator.pop();
+      onAdded();
       return;
     }
+    if (!mounted) return;
     setState(() {
       _adding = false;
       _error = error;
@@ -260,8 +279,27 @@ class _AddOptionsFormState extends ConsumerState<AddOptionsForm> {
     final l10n = context.l10n;
     final profiles = ref.watch(qualityProfilesProvider);
     final roots = ref.watch(rootFoldersProvider);
-    final tags = ref.watch(tagsProvider).value ?? const [];
-    final remembered = ref.watch(defaultRootFolderProvider).value;
+    final tagsAsync = ref.watch(tagsProvider);
+    final rememberedAsync = ref.watch(defaultRootFolderProvider);
+    // The remembered folder is part of the load: the default is picked once.
+    final (load, loadError) = optionsLoad([
+      profiles,
+      roots,
+      tagsAsync,
+      rememberedAsync,
+    ]);
+    final padding = const EdgeInsets.fromLTRB(
+      ConsolarrSpacing.gutter,
+      0,
+      ConsolarrSpacing.gutter,
+      ConsolarrSpacing.lg,
+    );
+    if (load == OptionsLoad.loading) return const OptionsLoading();
+    if (load == OptionsLoad.failed) {
+      return OptionsError(error: loadError!, onRetry: () => retryOptions(ref));
+    }
+    final tags = tagsAsync.value ?? const <ArrTag>[];
+    final remembered = rememberedAsync.value;
     final profileList = profiles.value ?? const <ArrQualityProfile>[];
     final rootList = roots.value ?? const <ArrRootFolder>[];
     _profile ??= profileList.isEmpty ? null : profileList.first.id;
@@ -270,17 +308,11 @@ class _AddOptionsFormState extends ConsumerState<AddOptionsForm> {
         : (rootList.any((r) => r.path == remembered)
               ? remembered
               : rootList.first.path);
-    final loading = profiles.isLoading || roots.isLoading;
     final ready = _profile != null && _root != null;
     final hasCollection = widget.movie.collectionTitle != null;
     return ListView(
-      shrinkWrap: true,
-      padding: const EdgeInsets.fromLTRB(
-        ConsolarrSpacing.gutter,
-        0,
-        ConsolarrSpacing.gutter,
-        ConsolarrSpacing.lg,
-      ),
+      controller: widget.controller,
+      padding: padding,
       children: [
         Text(
           widget.movie.year == null
@@ -289,75 +321,73 @@ class _AddOptionsFormState extends ConsumerState<AddOptionsForm> {
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: ConsolarrSpacing.sm),
-        if (!loading && !ready)
+        if (!ready)
           Text(l10n.radarrAddNeedsSetup)
         else ...[
-          DropdownButtonFormField<int>(
-            initialValue: _profile,
-            isExpanded: true,
-            decoration: InputDecoration(labelText: l10n.radarrQualityProfile),
-            items: [
-              for (final p in profileList)
-                DropdownMenuItem(value: p.id, child: Text(p.name)),
-            ],
-            onChanged: _adding ? null : (v) => setState(() => _profile = v),
+          ArrOptionPicker<int>(
+            label: l10n.radarrQualityProfile,
+            value: _profile,
+            options: [for (final p in profileList) ArrOption(p.id, p.name)],
+            onChanged: (v) {
+              if (!_adding) setState(() => _profile = v);
+            },
           ),
-          const SizedBox(height: ConsolarrSpacing.md),
-          DropdownButtonFormField<String>(
-            initialValue: _root,
-            isExpanded: true,
-            decoration: InputDecoration(labelText: l10n.radarrRootFolder),
-            items: [
-              for (final r in rootList)
-                DropdownMenuItem(value: r.path, child: Text(r.path)),
-            ],
-            onChanged: _adding ? null : (v) => setState(() => _root = v),
+          ArrOptionPicker<String>(
+            label: l10n.radarrRootFolder,
+            value: _root,
+            options: [for (final r in rootList) ArrOption(r.path, r.path)],
+            onChanged: (v) {
+              if (!_adding) setState(() => _root = v);
+            },
           ),
-          const SizedBox(height: ConsolarrSpacing.md),
-          DropdownButtonFormField<MinimumAvailability>(
-            initialValue: _min,
-            isExpanded: true,
-            decoration: InputDecoration(
-              labelText: l10n.radarrMinimumAvailability,
-            ),
-            items: [
+          ArrOptionPicker<MinimumAvailability>(
+            label: l10n.radarrMinimumAvailability,
+            value: _min,
+            options: [
               for (final m in MinimumAvailability.values)
                 if (m != MinimumAvailability.unknown)
-                  DropdownMenuItem(
-                    value: m,
-                    child: Text(minimumAvailabilityText(l10n, m)),
-                  ),
+                  ArrOption(m, minimumAvailabilityText(l10n, m)),
             ],
-            onChanged: _adding ? null : (v) => setState(() => _min = v ?? _min),
+            onChanged: (v) {
+              if (!_adding) setState(() => _min = v);
+            },
           ),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(l10n.radarrMonitored),
+          ArrOptionSwitch(
+            title: l10n.radarrMonitored,
             value: _monitored,
-            onChanged: _adding ? null : (v) => setState(() => _monitored = v),
+            onChanged: (v) {
+              if (!_adding) setState(() => _monitored = v);
+            },
           ),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(l10n.radarrSearchAfterAdd),
+          ArrOptionSwitch(
+            title: l10n.radarrSearchAfterAdd,
             value: _search,
-            onChanged: _adding ? null : (v) => setState(() => _search = v),
+            onChanged: (v) {
+              if (!_adding) setState(() => _search = v);
+            },
           ),
           if (hasCollection)
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(l10n.radarrAddCollection),
-              subtitle: Text(
-                l10n.radarrAddCollectionHint(widget.movie.collectionTitle!),
+            ArrOptionSwitch(
+              title: l10n.radarrAddCollection,
+              subtitle: l10n.radarrAddCollectionHint(
+                widget.movie.collectionTitle!,
               ),
               value: _collection,
-              onChanged: _adding
-                  ? null
-                  : (v) => setState(() => _collection = v),
+              onChanged: (v) {
+                if (!_adding) setState(() => _collection = v);
+              },
             ),
           if (tags.isNotEmpty) ...[
-            Text(
-              l10n.radarrTags,
-              style: Theme.of(context).textTheme.titleSmall,
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Semantics(
+                header: true,
+                child: Text(
+                  l10n.radarrTags,
+                  style: Theme.of(context).textTheme.titleSmall
+                      ?.copyWith(color: context.roles.textPrimary),
+                ),
+              ),
             ),
             Wrap(
               spacing: ConsolarrSpacing.sm,
