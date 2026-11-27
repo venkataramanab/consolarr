@@ -8,6 +8,7 @@ import 'package:consolarr/features/servers/domain/server_models.dart';
 import 'package:consolarr/features/settings/application/connection_check.dart';
 import 'package:consolarr/features/settings/application/settings_providers.dart';
 import 'package:consolarr/features/settings/data/device_authenticator.dart';
+import 'package:consolarr/features/settings/data/settings_store.dart';
 import 'package:consolarr/features/settings/settings_routes.dart';
 import 'package:consolarr/features/shell/application/shell_providers.dart';
 import 'package:consolarr/src/first_frame.dart';
@@ -71,10 +72,12 @@ class ScreenHarness {
     this.serversStream,
     this.healthTester,
     this.uiServers,
+    InMemorySettingsStore? store,
   }) : base = SettingsHarness(
          stored: stored,
          auth: auth,
          recordingSinks: recordingSinks,
+         store: store,
        ),
        ui = UiHarness(servers: servers),
        serverList = servers;

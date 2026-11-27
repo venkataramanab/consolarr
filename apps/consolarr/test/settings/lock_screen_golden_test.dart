@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'dart:async';
+
 import 'package:consolarr/consolarr.dart';
+import 'package:consolarr/features/settings/application/lock_controller.dart';
 import 'package:consolarr/features/settings/data/device_authenticator.dart';
 import 'package:consolarr/src/database/app_database.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
@@ -18,6 +21,7 @@ Future<void> _golden(
   Size size = const Size(360, 800),
   double scale = 1,
   Locale? locale,
+  int taps = 0,
 }) async {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   final h = SettingsHarness(
@@ -48,6 +52,10 @@ Future<void> _golden(
     ),
   );
   await tester.pumpAndSettle();
+  for (var i = 0; i < taps; i++) {
+    await tester.tap(find.byType(FilledButton));
+    await tester.pumpAndSettle();
+  }
   await expectLater(
     find.byType(MaterialApp),
     matchesGoldenFile('goldens/lock_screen_$name.png'),
@@ -63,6 +71,61 @@ void main() {
       'failed_dark_en',
       auth: FakeDeviceAuthenticator(results: [DeviceAuthResult.failed]),
     );
+  });
+
+  testWidgets('golden: locked, prompt pending', (tester) async {
+    final auth = FakeDeviceAuthenticator()
+      ..hold = Completer<DeviceAuthResult>();
+    await _golden(tester, 'locked_dark_en', auth: auth);
+    await _golden(
+      tester,
+      'locked_ar_320x568_x2',
+      auth: FakeDeviceAuthenticator()..hold = Completer<DeviceAuthResult>(),
+      size: const Size(320, 568),
+      scale: 2,
+      locale: const Locale('ar'),
+    );
+  });
+
+  testWidgets('golden: cool-down after three failures', (tester) async {
+    for (final (name, size, scale, locale) in [
+      ('cooldown_dark_en', const Size(360, 800), 1.0, null),
+      ('cooldown_ar_320x568_x2', const Size(320, 568), 2.0, const Locale('ar')),
+    ]) {
+      await _golden(
+        tester,
+        name,
+        auth: FakeDeviceAuthenticator(results: [DeviceAuthResult.failed]),
+        size: size,
+        scale: scale,
+        locale: locale,
+        taps: lockMaxAttempts - 1,
+      );
+    }
+  });
+
+  testWidgets('golden: biometrics unavailable', (tester) async {
+    for (final (name, size, scale, locale) in [
+      ('no_biometrics_dark_en', const Size(360, 800), 1.0, null),
+      (
+        'no_biometrics_ar_320x568_x2',
+        const Size(320, 568),
+        2.0,
+        const Locale('ar'),
+      ),
+    ]) {
+      await _golden(
+        tester,
+        name,
+        auth: FakeDeviceAuthenticator(
+          biometrics: false,
+          results: [DeviceAuthResult.failed],
+        ),
+        size: size,
+        scale: scale,
+        locale: locale,
+      );
+    }
   });
 
   testWidgets('golden: device lock removed, large text, small phone', (

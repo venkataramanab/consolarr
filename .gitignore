@@ -45,6 +45,7 @@ debug-info/
 
 # Golden test failure artefacts (uploaded by CI on failure, never committed)
 **/test/failures/
+**/test/*/failures/
 
 # Certificates and keys for tests are generated at test time into this
 # directory and never committed (see tools/ci/repo_guard.sh)
