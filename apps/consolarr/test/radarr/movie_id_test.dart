@@ -5,7 +5,6 @@ import 'package:consolarr/features/radarr/application/radarr_providers.dart';
 import 'package:consolarr/features/radarr/radarr_routes.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'support.dart';
 import 'switching.dart';
 
 void main() {

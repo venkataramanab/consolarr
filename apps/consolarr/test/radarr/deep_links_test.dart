@@ -13,6 +13,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:test_harness/test_harness.dart';
 
 import 'support.dart';
+import 'switching.dart';
 
 const _v = HarnessVariant(
   size: Size(360, 800),
@@ -82,12 +83,18 @@ void main() {
     expect(find.text('This movie no longer exists'), findsOneWidget);
   });
 
-  testWidgets('an id that is not a number says the same', (tester) async {
-    final api = FakeRadarrApi(moviesResult: Result.ok([fakeMovie(7)]))
-      ..movieResult = const Result.err(AppError(ErrorCategory.notFound));
-    await open(tester, '/radarr/movie/abc', api);
-    expect(find.text('This movie no longer exists'), findsOneWidget);
-  });
+  for (final id in ['abc', '0', '-1', '01', '1.5', '2147483648']) {
+    testWidgets('the id "$id" is "gone" at once, without any request', (
+      tester,
+    ) async {
+      final api = GatedApi(moviesResult: Result.ok([fakeMovie(7)]))
+        ..movieResult = Result.ok(fakeMovie(7));
+      await open(tester, '/radarr/movie/$id', api);
+      expect(find.text('This movie no longer exists'), findsOneWidget);
+      expect(api.movieCalls, 0);
+      expect(api.moviesCalls, 0);
+    });
+  }
 
   testWidgets('the add flow takes the term from the link', (tester) async {
     final api = FakeRadarrApi()

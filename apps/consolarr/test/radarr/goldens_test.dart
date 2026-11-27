@@ -124,21 +124,21 @@ void main() {
       _v('en', Brightness.dark),
       FakeRadarrApi()
         ..queueResult = const Result.ok([
-          RadarrQueueItem(
+          ArrQueueItem(
             id: 1,
             movieId: 7,
             title: 'Example.Movie.2024.1080p',
-            status: 'downloading',
+            state: ArrQueueState.downloading,
             size: 1000,
             sizeLeft: 400,
             timeLeft: Duration(minutes: 12),
           ),
-          RadarrQueueItem(
+          ArrQueueItem(
             id: 2,
             title: 'Other.Movie.2023',
-            status: 'completed',
-            trackedState: 'importPending',
+            state: ArrQueueState.importPending,
             size: 1000,
+            sizeLeft: 0,
           ),
         ]),
       const QueuePage(

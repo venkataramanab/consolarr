@@ -789,10 +789,10 @@ class SearchStatusNotifier extends Notifier<Map<SearchKey, SearchPhase>> {
 
   /// A finished search may have queued a release or changed a movie.
   void _refreshAfterSearch() {
-    if (ref.exists(queueProvider)) {
+    if (ref.read(queueProvider.exists)) {
       unawaited(ref.read(queueProvider.notifier).refresh());
     }
-    if (ref.exists(movieLibraryProvider)) {
+    if (ref.read(movieLibraryProvider.exists)) {
       unawaited(ref.read(movieLibraryProvider.notifier).refresh());
     }
   }
@@ -1095,7 +1095,7 @@ Future<AppError?> _addMovie(Ref ref, AddMovieRequest request) async {
           ),
         ),
   );
-  if (ref.exists(movieLibraryProvider)) {
+  if (ref.read(movieLibraryProvider.exists)) {
     unawaited(ref.read(movieLibraryProvider.notifier).refresh());
   }
   return null;

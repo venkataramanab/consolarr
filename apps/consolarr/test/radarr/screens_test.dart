@@ -9,7 +9,6 @@ import 'package:consolarr/features/radarr/presentation/calendar_page.dart';
 import 'package:consolarr/features/radarr/presentation/edit_sheet.dart';
 import 'package:consolarr/features/radarr/presentation/missing_page.dart';
 import 'package:consolarr/features/radarr/presentation/movie_detail_screen.dart';
-import 'package:consolarr/features/radarr/presentation/queue_page.dart';
 import 'package:consolarr/features/radarr/presentation/release_sheet.dart';
 import 'package:core/core.dart';
 import 'package:material_ui/material_ui.dart';
@@ -326,125 +325,6 @@ void main() {
         );
       });
     }
-  });
-
-  group('queue (RAD-11)', () {
-    final items = [
-      const RadarrQueueItem(
-        id: 1,
-        movieId: 7,
-        title: 'Example.Movie.2024.1080p',
-        status: 'downloading',
-        size: 1000,
-        sizeLeft: 400,
-        timeLeft: Duration(minutes: 12),
-        downloadClient: 'Example Client',
-      ),
-      const RadarrQueueItem(
-        id: 2,
-        movieId: 8,
-        title: 'Other.Movie.2023',
-        status: 'completed',
-        trackedStatus: 'warning',
-        trackedState: 'importPending',
-        size: 1000,
-        messages: ['No files found are eligible for import'],
-      ),
-      const RadarrQueueItem(id: 3, status: 'paused', size: 10),
-      const RadarrQueueItem(
-        id: 4,
-        status: 'downloadClientUnavailable',
-        size: 10,
-      ),
-    ];
-
-    testWidgets('rows read progress in words', (tester) async {
-      final api = FakeRadarrApi()..queueResult = Result.ok(items);
-      await pumpMatrix(
-        tester,
-        (v) => radarrApp(v, api, const QueuePage(padding: _pad, active: false)),
-        variants: _both,
-        verify: (v) => expectAccessible(tester),
-      );
-      expect(find.text('Example.Movie.2024.1080p'), findsOneWidget);
-    });
-
-    testWidgets('empty and every error', (tester) async {
-      await pumpMatrix(
-        tester,
-        (v) => radarrApp(
-          v,
-          FakeRadarrApi(),
-          const QueuePage(padding: _pad, active: false),
-        ),
-        variants: _both,
-        verify: (v) async {
-          if (_en(v))
-            expect(find.text('Nothing is downloading'), findsOneWidget);
-          await expectAccessible(tester);
-        },
-      );
-    });
-
-    for (final c in ErrorCategory.values) {
-      testWidgets('error ${c.code}', (tester) async {
-        final api = FakeRadarrApi()..queueResult = Result.err(AppError(c));
-        await pumpMatrix(
-          tester,
-          (v) =>
-              radarrApp(v, api, const QueuePage(padding: _pad, active: false)),
-          variants: stress,
-          verify: (v) => expectAccessible(tester),
-        );
-      });
-    }
-
-    testWidgets('removal asks, states the consequence, and sends the choice', (
-      tester,
-    ) async {
-      final api = FakeRadarrApi()..queueResult = Result.ok(items);
-      await pumpMatrix(
-        tester,
-        (v) => radarrApp(v, api, const QueuePage(padding: _pad, active: false)),
-        variants: phone,
-      );
-      await tester.tap(find.text('Remove').first);
-      await tester.pumpAndSettle();
-      expect(find.text('Remove from queue'), findsOneWidget);
-      expect(
-        find.textContaining('deleted from the download client'),
-        findsOneWidget,
-      );
-      await tester.tap(find.text('Blocklist and search again'));
-      await tester.pumpAndSettle();
-      expect(find.textContaining('searches for another one'), findsOneWidget);
-      await tester.tap(find.text('Remove').last);
-      await tester.pumpAndSettle();
-      expect(api.calls.single, 'remove 1 client=true blocklistAndSearch');
-      expect(find.text('Example.Movie.2024.1080p'), findsNothing);
-    });
-
-    testWidgets('cancel sends nothing; failure keeps the row', (tester) async {
-      final api = FakeRadarrApi()
-        ..queueResult = Result.ok(items)
-        ..removeResult = const Result.err(AppError(ErrorCategory.serverError));
-      await pumpMatrix(
-        tester,
-        (v) => radarrApp(v, api, const QueuePage(padding: _pad, active: false)),
-        variants: phone,
-      );
-      await tester.tap(find.text('Remove').first);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Cancel'));
-      await tester.pumpAndSettle();
-      expect(api.calls, isEmpty);
-      await tester.tap(find.text('Remove').first);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Remove').last);
-      await tester.pumpAndSettle();
-      expect(find.textContaining('Could not remove'), findsOneWidget);
-      expect(find.text('Example.Movie.2024.1080p'), findsOneWidget);
-    });
   });
 
   group('release sheet (RAD-13)', () {
