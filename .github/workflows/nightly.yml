@@ -26,6 +26,17 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          # Open-source provider (plain actions/cache); the default "enhanced"
+          # provider is a proprietary download we do not run.
+          cache-provider: basic
+          # Only pushes to main write the cache; PRs (forks included) read only.
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          # No build scans, no terms-of-use acceptance, no dependency submission.
+          build-scan-publish: false
+          dependency-graph: disabled
+          add-job-summary-as-pr-comment: never
       - uses: ./.github/actions/setup-flutter
 
       - name: Enable KVM
@@ -60,6 +71,17 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          # Open-source provider (plain actions/cache); the default "enhanced"
+          # provider is a proprietary download we do not run.
+          cache-provider: basic
+          # Only pushes to main write the cache; PRs (forks included) read only.
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          # No build scans, no terms-of-use acceptance, no dependency submission.
+          build-scan-publish: false
+          dependency-graph: disabled
+          add-job-summary-as-pr-comment: never
       - uses: ./.github/actions/setup-flutter
 
       - name: Start Sonarr, qBittorrent and toxiproxy
