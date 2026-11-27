@@ -4,7 +4,6 @@ import 'package:consolarr/consolarr.dart';
 import 'package:consolarr/features/settings/application/settings_providers.dart';
 import 'package:consolarr/features/settings/domain/app_settings.dart';
 import 'package:consolarr/features/settings/presentation/app_lock_gate.dart';
-import 'package:consolarr/src/app.dart';
 import 'package:consolarr/src/database/app_database.dart';
 import 'package:design_system/design_system.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;

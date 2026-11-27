@@ -4,8 +4,6 @@ import 'package:consolarr/consolarr.dart';
 import 'package:consolarr/features/servers/application/server_connection.dart';
 import 'package:consolarr/features/servers/application/servers_providers.dart';
 import 'package:consolarr/features/settings/application/settings_providers.dart';
-import 'package:consolarr/src/first_frame.dart';
-import 'package:consolarr/src/providers.dart';
 import 'package:consolarr/src/database/app_database.dart';
 import 'package:consolarr/src/images/image_cache_config.dart';
 import 'package:security/security.dart';

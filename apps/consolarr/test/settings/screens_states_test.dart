@@ -3,7 +3,6 @@
 import 'dart:async';
 
 import 'package:consolarr/features/servers/application/servers_providers.dart';
-import 'package:consolarr/features/shell/application/shell_providers.dart';
 import 'package:consolarr/features/servers/domain/server_models.dart';
 import 'package:consolarr/features/settings/application/connection_check.dart';
 import 'package:consolarr/features/settings/application/diagnostics_providers.dart';
@@ -19,7 +18,6 @@ import 'package:design_system/design_system.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart' show SystemChannels;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
