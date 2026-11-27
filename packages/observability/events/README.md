@@ -1,0 +1,33 @@
+# Event catalog
+
+Typed analytics events are declared here and turned into
+`lib/src/events/catalog.dart` by the committed generator:
+
+    dart run packages/observability/tool/generate_events.dart
+
+CI-style drift check: `test/event_catalog_test.dart` fails when the committed
+catalog differs from the generator output.
+
+## Schema (one file per product area: servers, sonarr, torrents, ...)
+
+```yaml
+enums:
+  screen_name:            # snake_case key
+    dart: ScreenName      # required the first time an enum is declared
+    values: [servers_list, server_editor]   # stable wire codes
+events:
+  screen_viewed:          # snake_case event name, globally unique
+    description: One line, no data examples.
+    params:
+      screen: {type: screen_name}                 # enum
+      major_version: {type: int, optional: true}  # int / bool / enum only
+```
+
+Rules (enforced by the generator):
+
+* Parameter types are `bool`, `int` or the name of a declared enum. There is no
+  string type, so URLs, hosts, keys, usernames and titles cannot be reported.
+* Files are processed in file-name order. An enum declared in several files is
+  merged by name (values are appended; a repeated value or a different `dart`
+  name is an error). Event names must be unique across files.
+* Add a new area's screens/events to its own file; later waves add rows only.

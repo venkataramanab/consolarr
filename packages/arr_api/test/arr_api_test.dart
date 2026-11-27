@@ -6,6 +6,10 @@ import 'package:test/test.dart';
 
 class _Sonarr implements SonarrApi {
   @override
+  Future<Result<List<SonarrSeries>>> series() async => const Result.ok([]);
+  @override
+  Uri? artworkUri(SonarrSeries series, SonarrImageType type) => null;
+  @override
   ServiceKind get kind => ServiceKind.sonarr;
   @override
   Future<Result<ArrSystemStatus>> systemStatus() async =>

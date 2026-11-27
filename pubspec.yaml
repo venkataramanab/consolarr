@@ -46,6 +46,14 @@ melos:
       packageFilters:
         dirExists: test
 
+    codegen:
+      description: Generate drift code (git-ignored, never committed). Run after pub get.
+      run: cd apps/consolarr && dart run build_runner build --delete-conflicting-outputs
+
+    events:
+      description: Regenerate the typed analytics event catalog from packages/observability/events/*.yaml.
+      run: dart run packages/observability/tool/generate_events.dart
+
     test:lints:
       description: Run the custom lint rule tests (tools/consolarr_lints).
       run: cd tools/consolarr_lints && dart pub get && dart test

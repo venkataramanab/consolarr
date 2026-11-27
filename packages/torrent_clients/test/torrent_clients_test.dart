@@ -13,6 +13,13 @@ class _FakeClient implements TorrentClient {
 
   @override
   Future<Result<String>> fetchVersion() async => _result;
+
+  @override
+  Future<Result<List<Torrent>>> listTorrents() async => const Result.ok([]);
+
+  @override
+  Future<Result<TransferInfo>> transferInfo() async =>
+      const Result.err(AppError(ErrorCategory.networkUnreachable));
 }
 
 void main() {

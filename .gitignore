@@ -35,6 +35,10 @@ GoogleService-Info.plist
 **/android/**/GeneratedPluginRegistrant.*
 .kotlin/
 
+# drift generated code is built by `dart run build_runner build` (CI does it in
+# the setup-flutter action); it is never committed.
+apps/consolarr/lib/src/database/*.g.dart
+
 # Local tooling output
 .melos_tool/
 debug-info/

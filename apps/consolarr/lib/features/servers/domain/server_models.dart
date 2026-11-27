@@ -1,0 +1,97 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+import 'package:core/core.dart';
+
+/// A stored server plus facts the list needs. Holds no secret values.
+class ServerEntry {
+  const ServerEntry({
+    required this.profile,
+    required this.sortOrder,
+    this.isStartup = false,
+    this.needsCredentials = false,
+  });
+
+  final ServerProfile profile;
+  final int sortOrder;
+
+  /// The server opened on launch (SRV-01).
+  final bool isStartup;
+
+  /// A required secret is missing (Keystore loss, SRV-09): the UI prompts for
+  /// re-entry instead of failing.
+  final bool needsCredentials;
+}
+
+/// One custom request header (SRV-04). The value is a secret.
+class HeaderEntry {
+  const HeaderEntry({required this.name, required this.value});
+  final String name;
+  final String value;
+}
+
+/// Secret values for one server. Any field may be absent.
+class ServerCredentials {
+  const ServerCredentials({
+    this.apiKey,
+    this.username,
+    this.password,
+    this.headers = const [],
+  });
+
+  static const empty = ServerCredentials();
+
+  final String? apiKey;
+  final String? username;
+  final String? password;
+  final List<HeaderEntry> headers;
+}
+
+/// Everything the editor collects (SRV-02, SRV-04, SRV-07). Not validated
+/// until it goes through `ServerProfile.parse` in the repository.
+class ServerDraft {
+  const ServerDraft({
+    required this.name,
+    required this.kind,
+    required this.address,
+    this.id,
+    this.pathPrefix = '',
+    this.authMode = AuthMode.apiKey,
+    this.allowCleartext = false,
+    this.credentials = ServerCredentials.empty,
+  });
+
+  /// `null` for a new server; the repository assigns the id.
+  final String? id;
+  final String name;
+  final ServiceKind kind;
+  final String address;
+  final String pathPrefix;
+  final AuthMode authMode;
+  final bool allowCleartext;
+  final ServerCredentials credentials;
+}
+
+/// Result of a connection test (SRV-05).
+sealed class ConnectionTestOutcome {
+  const ConnectionTestOutcome();
+}
+
+final class ConnectionTestSuccess extends ConnectionTestOutcome {
+  const ConnectionTestSuccess({required this.version, this.majorVersion});
+
+  /// Display version string of the server (plain text from the server).
+  final String version;
+  final int? majorVersion;
+}
+
+final class ConnectionTestFailure extends ConnectionTestOutcome {
+  const ConnectionTestFailure(this.error);
+
+  /// May be a `CertificateDecisionRequired` / `TlsPinMismatch` /
+  /// `CertificateExpired` from the security package, which the UI answers with
+  /// the trust sheet.
+  final AppError error;
+}
+
+/// Health of one server for the list (SRV-10).
+enum ServerHealth { checking, healthy, degraded, unauthorized, unreachable }
