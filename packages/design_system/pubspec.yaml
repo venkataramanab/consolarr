@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+name: design_system
+description: Design tokens and theme for Consolarr.
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.14.0
+
+dependencies:
+  material_ui: ^1.11.1
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700

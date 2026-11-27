@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+name: torrent_clients
+description: Torrent client interfaces (qBittorrent, Transmission, Deluge).
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.14.0
+
+dependencies:
+  core:
+
+dev_dependencies:
+  test: ^1.25.0

@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+name: observability
+description: Telemetry interfaces, no-op implementations, redaction and logging (no SDKs).
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.14.0
+
+dev_dependencies:
+  test: ^1.25.0

@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+name: test_harness
+description: Shared widget/golden/accessibility/fault-injection test helpers (dev dependency only).
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.14.0
+
+dependencies:
+  material_ui: ^1.11.1
+  design_system:
+  dio: ^5.11.1
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  flutter_test:
+    sdk: flutter
+  l10n:
+
+flutter:
+  fonts:
+    # Test-only Arabic glyphs (SIL OFL) so RTL goldens don't render "no glyph".
+    - family: NotoSansArabic
+      fonts:
+        - asset: assets/fonts/NotoSansArabic-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/NotoSansArabic-Bold.ttf
+          weight: 700

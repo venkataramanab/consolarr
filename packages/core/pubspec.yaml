@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+name: core
+description: Domain models and typed errors shared by all Consolarr packages (no UI).
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.14.0
+
+dev_dependencies:
+  test: ^1.25.0
