@@ -2,5 +2,5 @@
 # Torrent clients area (TOR-*). Add torrent events here.
 enums:
   screen_name:
-    values: [torrent_list]
+    values: [torrent_list, torrent_detail, torrent_add, torrent_speed_limits]
 events: {}

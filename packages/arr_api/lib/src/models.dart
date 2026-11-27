@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:arr_api/src/arr_common.dart';
 import 'package:arr_api/src/json_read.dart';
 import 'package:core/core.dart';
 
@@ -11,8 +12,11 @@ enum SeriesStatus { continuing, ended, upcoming, deleted, unknown }
 /// Sonarr series type.
 enum SeriesType { standard, daily, anime, unknown }
 
-/// Artwork kinds the app uses.
-enum SonarrImageType { poster, banner, fanart, unknown }
+/// Artwork kinds the app uses (shared with Radarr, see `ArrImageType`).
+typedef SonarrImageType = ArrImageType;
+
+/// One artwork reference (shared with Radarr, see `ArrImage`).
+typedef SonarrImage = ArrImage;
 
 SeriesStatus _status(String? v) => SeriesStatus.values.firstWhere(
   (e) => e.name == v,
@@ -23,13 +27,6 @@ SeriesType _seriesType(String? v) => SeriesType.values.firstWhere(
   (e) => e.name == v,
   orElse: () => SeriesType.unknown,
 );
-
-SonarrImageType _imageType(String? v) => switch (v) {
-  'poster' => SonarrImageType.poster,
-  'banner' => SonarrImageType.banner,
-  'fanart' => SonarrImageType.fanart,
-  _ => SonarrImageType.unknown,
-};
 
 /// The subset of `/system/status` the app needs.
 class ArrSystemStatus {
@@ -43,30 +40,6 @@ class ArrSystemStatus {
 
   /// Leading numeric component of [version], or null when unparsable.
   int? get majorVersion => int.tryParse(version.split('.').first);
-}
-
-/// One artwork reference. Only the server-relative [url] is kept; the
-/// third-party `remoteUrl` is deliberately dropped so the app never contacts
-/// other hosts.
-class SonarrImage {
-  const SonarrImage({required this.type, this.url});
-
-  factory SonarrImage.fromJson(Map<String, Object?> json) => SonarrImage(
-    type: _imageType(JsonRead.string(json, 'coverType')),
-    url: JsonRead.string(json, 'url'),
-  );
-
-  final SonarrImageType type;
-  final String? url;
-
-  Map<String, Object?> toJson() => {'coverType': type.name, 'url': url};
-
-  @override
-  bool operator ==(Object other) =>
-      other is SonarrImage && other.type == type && other.url == url;
-
-  @override
-  int get hashCode => Object.hash(type, url);
 }
 
 /// Episode and size statistics of a series.

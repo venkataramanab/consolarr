@@ -9,7 +9,7 @@ import 'package:dio/dio.dart';
 import 'package:test_harness/test_harness.dart';
 
 /// A fake Sonarr API with scripted answers.
-class FakeSonarrApi implements SonarrApi {
+class FakeSonarrApi with EmptyArrLists implements SonarrApi {
   FakeSonarrApi({
     this.seriesResult = const Result.ok([]),
     this.statusResult = const Result.ok(ArrSystemStatus(version: '4.0.1.0')),

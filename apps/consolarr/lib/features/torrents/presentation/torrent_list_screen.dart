@@ -2,7 +2,7 @@
 
 import 'dart:async';
 
-import 'package:consolarr/features/servers/application/error_messages.dart';
+import 'package:consolarr/shared/errors/connection_error_message.dart';
 import 'package:consolarr/features/shell/presentation/floating_top_bar_scaffold.dart';
 import 'package:consolarr/features/torrents/application/torrents_providers.dart';
 import 'package:consolarr/features/torrents/presentation/format.dart';

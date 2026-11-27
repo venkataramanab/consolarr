@@ -2,7 +2,7 @@
 
 import 'dart:ui';
 
-import 'package:consolarr/features/servers/application/error_messages.dart';
+import 'package:consolarr/shared/errors/connection_error_message.dart';
 import 'package:core/core.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:l10n/l10n.dart';

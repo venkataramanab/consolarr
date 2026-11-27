@@ -2,5 +2,5 @@
 # Sonarr area (SON-*). Add Sonarr events here; screens merge into screen_name.
 enums:
   screen_name:
-    values: [sonarr_library]
+    values: [sonarr_library, sonarr_series_detail, sonarr_calendar, sonarr_queue, sonarr_history, sonarr_add_series, sonarr_interactive_search]
 events: {}

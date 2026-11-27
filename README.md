@@ -64,9 +64,13 @@ Release builds use `--obfuscate --split-debug-info` (keep the generated
 
 Useful tasks:
 
-- `dart run melos run l10n` regenerates localizations (edit the per-feature
-  ARB files under `apps/consolarr/lib/features/<feature>/l10n/`, never the
-  generated output; the `en_XA` pseudo-locale is generated, never hand-edited).
+- `dart run melos run codegen` generates everything that is git-ignored: the
+  event catalog, the merged localizations and the drift code. Run it after
+  `flutter pub get` and after merging a branch that changed an ARB file, an
+  event YAML or a drift table. Edit the per-feature ARB files under
+  `apps/consolarr/lib/features/<feature>/l10n/` (shared strings:
+  `apps/consolarr/lib/shared/l10n/`), never the generated output; the `en_XA`
+  pseudo-locale is generated, never hand-edited.
 - `dart run melos run goldens:update` regenerates golden images.
 - Copy `dart_defines.example.json` to `dart_defines.json` (git-ignored) only if
   you need build-time defines locally.

@@ -13,14 +13,20 @@ const pseudoLocale = 'en_XA';
 
 const _encoder = JsonEncoder.withIndent('  ');
 
-/// Feature l10n directories: `apps/consolarr/lib/features/<f>/l10n`.
+/// l10n source directories: `apps/consolarr/lib/features/<f>/l10n` for each
+/// feature, plus `apps/consolarr/lib/shared/l10n` for strings several
+/// features use (connection errors, common actions).
 List<Directory> featureL10nDirs(Directory repoRoot) {
-  final features = Directory('${repoRoot.path}/apps/consolarr/lib/features');
+  final lib = '${repoRoot.path}/apps/consolarr/lib';
   final dirs = <Directory>[];
-  for (final f in features.listSync().whereType<Directory>()) {
+  for (final f in Directory(
+    '$lib/features',
+  ).listSync().whereType<Directory>()) {
     final l10n = Directory('${f.path}/l10n');
     if (l10n.existsSync()) dirs.add(l10n);
   }
+  final shared = Directory('$lib/shared/l10n');
+  if (shared.existsSync()) dirs.add(shared);
   dirs.sort((a, b) => a.path.compareTo(b.path));
   return dirs;
 }

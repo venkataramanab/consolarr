@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'package:consolarr/features/servers/application/auth_headers.dart';
 import 'package:consolarr/features/servers/application/connection_tester.dart';
 import 'package:consolarr/features/servers/domain/server_models.dart';
+import 'package:consolarr/features/servers/presentation/service_kind_info.dart';
 import 'package:core/core.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -219,13 +221,41 @@ void main() {
     });
   });
 
-  test('services without a client yet fail with unsupported_version', () async {
-    final r = await run(
-      StubAdapter((o) => json('{}')),
-      profile(ServiceKind.radarr),
-      sonarrKey,
-    );
-    expect(failure(r).category, ErrorCategory.unsupportedVersion);
+  group('per-kind registry', () {
+    test('a kind without a probe is not reported as an old version, and no '
+        'request is made', () async {
+      final factory = _Factory(StubAdapter((o) => json('{}')));
+      for (final kind in [
+        ServiceKind.radarr,
+        ServiceKind.transmission,
+        ServiceKind.deluge,
+      ]) {
+        final r = await DefaultConnectionTester(factory)
+            .test(profile(kind), sonarrKey);
+        final error = failure(r);
+        expect(error.category, isNot(ErrorCategory.unsupportedVersion));
+        expect(error.debugDetail, contains('no connection probe'));
+      }
+      expect(factory.seen, isEmpty);
+    });
+
+    test('every kind the editor offers has a probe and an auth builder', () {
+      for (final kind in supportedServiceKinds) {
+        expect(connectionProbes, contains(kind), reason: kind.name);
+        expect(authHeaderBuilders, contains(kind), reason: kind.name);
+      }
+    });
+
+    test('a probe can be injected (W4 services plug in here)', () async {
+      final r = await DefaultConnectionTester(
+        _Factory(StubAdapter((o) => json('{}'))),
+        probes: {
+          ServiceKind.radarr: (dio, profile, credentials) async =>
+              const ConnectionTestSuccess(version: '5.0.0', majorVersion: 5),
+        },
+      ).test(profile(ServiceKind.radarr), sonarrKey);
+      expect(r, isA<ConnectionTestSuccess>());
+    });
   });
 
   group('TrackedConnectionTester', () {

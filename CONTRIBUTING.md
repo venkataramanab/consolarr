@@ -11,7 +11,8 @@ Thanks for helping! Please read the [Code of Conduct](CODE_OF_CONDUCT.md) first.
    [lefthook](lefthook.yml) pre-commit hook (gitleaks) and CI will scan again.
 2. **Test first.** Write the failing test, then the code.
 3. **No hardcoded user-facing text.** Add strings to the feature's ARB files
-   (every key needs an `@description`) and run `dart run melos run l10n`.
+   (every key needs an `@description`) and run `dart run melos run codegen`
+   (generated output is never committed).
    The `consolarr_no_ui_string` lint enforces this; for genuinely non-UI
    strings use `// ignore: consolarr_no_ui_string -- <reason>`.
 4. **No `print` / `debugPrint`** outside the logger; **no TLS trust APIs**

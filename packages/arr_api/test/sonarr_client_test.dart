@@ -102,6 +102,70 @@ void main() {
     });
   });
 
+  group('shared lists (profiles, root folders, tags)', () {
+    test('parse their rows and skip malformed ones', () async {
+      final a = FakeAdapter.fixed(
+        jsonEncode([
+          {'id': 1, 'name': 'HD-1080p'},
+          {'id': 'x'},
+          {'id': 2, 'name': 'Any'},
+        ]),
+      );
+      final r = await _client(a).qualityProfiles();
+      expect(r.valueOrNull, const [
+        ArrQualityProfile(id: 1, name: 'HD-1080p'),
+        ArrQualityProfile(id: 2, name: 'Any'),
+      ]);
+      expect(a.requests.single.uri.path, '/api/v3/qualityprofile');
+    });
+
+    test('root folders and tags use the v3 endpoints', () async {
+      final folders = FakeAdapter.fixed(
+        jsonEncode([
+          {'id': 1, 'path': '/media/tv', 'freeSpace': 1000},
+        ]),
+      );
+      final f = await _client(folders).rootFolders();
+      expect(f.valueOrNull, const [
+        ArrRootFolder(id: 1, path: '/media/tv', freeSpace: 1000),
+      ]);
+      expect(folders.requests.single.uri.path, '/api/v3/rootfolder');
+
+      final tags = FakeAdapter.fixed(
+        jsonEncode([
+          {'id': 3, 'label': 'kids'},
+        ]),
+      );
+      final t = await _client(tags).tags();
+      expect(t.valueOrNull, const [ArrTag(id: 3, label: 'kids')]);
+      expect(tags.requests.single.uri.path, '/api/v3/tag');
+    });
+
+    test('failures are typed and a non-array body is parse_error', () async {
+      expect(
+        (await _client(
+          FakeAdapter.fixed('', status: 401),
+        ).tags()).errorOrNull?.category,
+        ErrorCategory.authFailed,
+      );
+      expect(
+        (await _client(
+          FakeAdapter.fixed('{}'),
+        ).rootFolders()).errorOrNull?.category,
+        ErrorCategory.parseError,
+      );
+    });
+
+    test('a path prefix is kept', () async {
+      final a = FakeAdapter.fixed('[]');
+      final c = SonarrClient(
+        dio: dioWith(a, base: 'https://nas.example/sonarr'),
+      );
+      await c.tags();
+      expect(a.requests.single.uri.path, '/sonarr/api/v3/tag');
+    });
+  });
+
   group('series', () {
     test('lists series from api/v3/series', () async {
       final a = FakeAdapter.fixed(
@@ -160,7 +224,7 @@ void main() {
         final big = jsonEncode([
           for (var i = 0; i < 400; i++) fullSeries(id: i),
         ]);
-        expect(big.length, greaterThan(SonarrClient.isolateThresholdBytes));
+        expect(big.length, greaterThan(ArrClientBase.isolateThresholdBytes));
         final large = SonarrClient(
           dio: dioWith(FakeAdapter.fixed(big)),
           parseRunner: counting,

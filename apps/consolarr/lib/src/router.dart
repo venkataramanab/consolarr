@@ -1,70 +1,49 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:consolarr/features/about/about_screen.dart';
-import 'package:consolarr/features/home/home_screen.dart';
-import 'package:consolarr/features/servers/presentation/server_editor_screen.dart';
-import 'package:consolarr/features/servers/presentation/servers_list_screen.dart';
+import 'package:consolarr/features/home/home_routes.dart';
 import 'package:consolarr/features/servers/presentation/onboarding_screen.dart';
+import 'package:consolarr/features/servers/presentation/server_editor_screen.dart';
+import 'package:consolarr/features/servers/presentation/servers_routes.dart';
 import 'package:consolarr/features/shell/presentation/app_shell.dart';
-import 'package:consolarr/features/sonarr/presentation/sonarr_library_screen.dart';
-import 'package:consolarr/features/torrents/presentation/torrent_list_screen.dart';
+import 'package:consolarr/features/sonarr/sonarr_routes.dart';
+import 'package:consolarr/features/torrents/torrents_routes.dart';
+import 'package:consolarr/src/navigation/app_destination.dart';
+import 'package:consolarr/src/navigation/destinations.dart';
 import 'package:core/core.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-/// Route paths.
+/// Route paths of the flows above the shell. The shell's own branches are
+/// described by `appDestinations` (see `lib/src/navigation`).
 abstract final class AppRoutes {
-  static const home = '/';
-  static const sonarr = '/sonarr';
-  static const torrents = '/torrents';
-  static const servers = '/servers';
+  static const home = homeRoute;
+  static const sonarr = sonarrRoute;
+  static const torrents = torrentsRoute;
+  static const servers = ServersRoutes.list;
   static const serverNew = '/servers/new';
   static String serverEdit(String id) => '/servers/${Uri.encodeComponent(id)}';
   static const onboarding = '/onboarding';
   static const about = '/about';
 }
 
-/// Builds the app router. Exposed for tests.
-GoRouter buildRouter({String initialLocation = AppRoutes.home}) {
+/// Builds the app router. Exposed for tests. The shell branches come from
+/// [destinations] (default: `appDestinations`), in that order.
+GoRouter buildRouter({
+  String initialLocation = AppRoutes.home,
+  List<AppDestination>? destinations,
+}) {
   return GoRouter(
     initialLocation: initialLocation,
     routes: [
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => AppShell(navigationShell: shell),
         branches: [
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: AppRoutes.home,
-                builder: (context, state) => const HomeScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: AppRoutes.sonarr,
-                builder: (context, state) => const SonarrLibraryScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: AppRoutes.torrents,
-                builder: (context, state) => const TorrentListScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: AppRoutes.servers,
-                builder: (context, state) => const ServersListScreen(),
-              ),
-            ],
-          ),
+          for (final d in destinations ?? appDestinations)
+            StatefulShellBranch(
+              routes: [GoRoute(path: d.route, builder: d.builder)],
+            ),
         ],
       ),
       // Full-screen flows above the shell: the editor hides the bar so the

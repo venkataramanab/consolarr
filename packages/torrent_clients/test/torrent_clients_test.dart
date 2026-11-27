@@ -11,6 +11,9 @@ class _FakeClient with UnsupportedTorrentActions implements TorrentClient {
   final Result<String> _result;
 
   @override
+  void forgetSession() {}
+
+  @override
   ServiceKind get kind => ServiceKind.qbittorrent;
 
   @override

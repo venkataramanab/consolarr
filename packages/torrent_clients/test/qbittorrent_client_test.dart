@@ -59,6 +59,15 @@ QBittorrentClient _client(
 );
 
 void main() {
+  test(
+    'actions that are not implemented yet fail with UnsupportedAction',
+    () async {
+      final c = _client(_server(data: {}));
+      final r = await c.pause(const ['h']);
+      expect(r.errorOrNull, isA<UnsupportedAction>());
+    },
+  );
+
   group('login and session', () {
     test('logs in once, then sends the cookie, Referer and Origin', () async {
       final a = _server(data: {'app/version': 'v4.6.3'});

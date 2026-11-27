@@ -13,6 +13,10 @@ abstract interface class TorrentClient implements TorrentActions {
   /// [ServiceKind.transmission] or [ServiceKind.deluge].
   ServiceKind get kind;
 
+  /// Forgets the in-memory session (cookie, token). Called when the active
+  /// server or its credentials change, and on dispose. Nothing is persisted.
+  void forgetSession();
+
   /// Fetches the server version string; doubles as a connection test.
   ///
   /// Fails with `auth_failed`, `timeout`, `network_unreachable`,

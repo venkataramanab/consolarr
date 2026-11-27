@@ -37,7 +37,7 @@ melos:
       run: dart format --output=none --set-exit-if-changed .
 
     l10n:
-      description: Merge per-feature ARB files, regenerate en_XA and run gen-l10n.
+      description: Regenerate only the localizations (part of codegen).
       run: dart run packages/l10n/tool/build_l10n.dart
 
     test:
@@ -47,11 +47,18 @@ melos:
         dirExists: test
 
     codegen:
-      description: Generate drift code (git-ignored, never committed). Run after pub get.
-      run: cd apps/consolarr && dart run build_runner build --delete-conflicting-outputs
+      description: >-
+        Generate everything that is git-ignored and never committed: the typed
+        event catalog, the merged localizations (en, ar, en_XA) and the drift
+        code. Run after pub get, and again after merging a branch that changed
+        an ARB file, an event YAML or a drift table.
+      run: >-
+        dart run packages/observability/tool/generate_events.dart &&
+        dart run packages/l10n/tool/build_l10n.dart &&
+        (cd apps/consolarr && dart run build_runner build --delete-conflicting-outputs)
 
     events:
-      description: Regenerate the typed analytics event catalog from packages/observability/events/*.yaml.
+      description: Regenerate only the typed analytics event catalog (part of codegen).
       run: dart run packages/observability/tool/generate_events.dart
 
     test:lints:

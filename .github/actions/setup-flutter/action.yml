@@ -22,9 +22,9 @@ runs:
         flutter config --no-analytics
         flutter pub get
 
-    # drift's generated code is never committed (tools/ci/repo_guard.sh rejects
-    # tracked *.g.dart); every job that analyzes, tests or builds needs it.
-    - name: Generate drift code (git-ignored)
+    # Generated code is never committed (tools/ci/repo_guard.sh rejects tracked
+    # *.g.dart; the event catalog and the merged localizations are git-ignored
+    # too). Every job that analyzes, tests or builds needs it.
+    - name: Generate code (events, localizations, drift; git-ignored)
       shell: bash
-      working-directory: apps/consolarr
-      run: dart run build_runner build --delete-conflicting-outputs
+      run: dart run melos run codegen

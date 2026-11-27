@@ -2,7 +2,7 @@
 
 import 'dart:async';
 
-import 'package:consolarr/features/servers/application/error_messages.dart';
+import 'package:consolarr/shared/errors/connection_error_message.dart';
 import 'package:consolarr/features/servers/domain/server_models.dart';
 import 'package:consolarr/features/servers/presentation/server_editor_screen.dart';
 import 'package:core/core.dart';

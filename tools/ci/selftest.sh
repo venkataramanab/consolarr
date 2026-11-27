@@ -101,6 +101,15 @@ mkdir -p "$g/build"; echo '// x' > "$g/build/x.dart"; git -C "$g" add -f build
 git -C "$g" rm -qrf build
 (cd "$g" && bash tools/ci/repo_guard.sh >/dev/null) || fail "repo without build/ files must pass"
 
+# Codegen output (localizations, event catalog) must never be tracked.
+mkdir -p "$g/packages/l10n/lib/arb"; echo '{}' > "$g/packages/l10n/lib/arb/app_en.arb"; git -C "$g" add -A
+(cd "$g" && bash tools/ci/repo_guard.sh >/dev/null 2>&1) && fail "tracked l10n codegen output must fail"
+git -C "$g" rm -qrf packages
+mkdir -p "$g/packages/observability/lib/src/events"; echo '// x' > "$g/packages/observability/lib/src/events/catalog.dart"; git -C "$g" add -A
+(cd "$g" && bash tools/ci/repo_guard.sh >/dev/null 2>&1) && fail "tracked event catalog must fail"
+git -C "$g" rm -qrf packages
+(cd "$g" && bash tools/ci/repo_guard.sh >/dev/null) || fail "repo without codegen output must pass"
+
 # Generated and oversized Dart files (padded-file scanner bypass).
 echo '// x' > "$g/a.freezed.dart"; git -C "$g" add -A
 (cd "$g" && bash tools/ci/repo_guard.sh >/dev/null 2>&1) && fail "tracked *.freezed.dart must fail"

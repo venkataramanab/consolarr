@@ -31,7 +31,7 @@ events:
 ''';
 
 void main() {
-  test('committed catalog equals generator output (drift check)', () {
+  test('generated catalog equals generator output (run melos run codegen)', () {
     final committed = File('lib/src/events/catalog.dart').readAsStringSync();
     expect(_gen(_yamls()), committed);
   });

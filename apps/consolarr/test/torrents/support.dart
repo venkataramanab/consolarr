@@ -44,6 +44,9 @@ class FakeTorrentClient
       _transfer = const Result.err(AppError(ErrorCategory.serverError));
 
   @override
+  void forgetSession() {}
+
+  @override
   ServiceKind get kind => ServiceKind.qbittorrent;
 
   @override

@@ -4,5 +4,7 @@
 library;
 
 export 'src/arr_api.dart';
+export 'src/arr_client_base.dart';
+export 'src/arr_common.dart';
 export 'src/models.dart';
 export 'src/sonarr_client.dart';

@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'package:consolarr/features/servers/domain/server_models.dart';
 import 'package:consolarr/features/shell/application/shell_providers.dart';
 import 'package:consolarr/features/shell/presentation/server_switcher_sheet.dart';
 import 'package:consolarr/features/shell/presentation/shell_chrome.dart';
-import 'package:core/core.dart';
+import 'package:consolarr/src/navigation/destinations.dart';
 import 'package:design_system/design_system.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:observability/observability.dart';
@@ -36,11 +37,7 @@ class _AppShellState extends ConsumerState<AppShell> {
   void _trackBranch(int index) {
     if (_trackedIndex == index) return;
     _trackedIndex = index;
-    final screen = switch (ShellDestination.values[index]) {
-      ShellDestination.sonarr => ScreenName.sonarrLibrary,
-      ShellDestination.torrents => ScreenName.torrentList,
-      _ => null,
-    };
+    final screen = appDestinations[index].screen;
     if (screen != null) {
       ref.read(eventTrackerProvider).track(ScreenViewedEvent(screen: screen));
     }
@@ -52,45 +49,22 @@ class _AppShellState extends ConsumerState<AppShell> {
     super.dispose();
   }
 
-  static IconData _icon(ShellDestination d, {required bool selected}) =>
-      switch (d) {
-        ShellDestination.home => selected ? Icons.home : Icons.home_outlined,
-        ShellDestination.sonarr => selected ? Icons.tv : Icons.tv_outlined,
-        ShellDestination.torrents =>
-          selected ? Icons.download : Icons.download_outlined,
-        ShellDestination.servers => selected ? Icons.dns : Icons.dns_outlined,
-      };
-
-  static String _label(AppLocalizations l10n, ShellDestination d) =>
-      switch (d) {
-        ShellDestination.home => l10n.navHome,
-        ShellDestination.sonarr => l10n.navSonarr,
-        ShellDestination.torrents => l10n.navTorrents,
-        ShellDestination.servers => l10n.navServers,
-      };
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final destinations = ref.watch(visibleDestinationsProvider);
     final shell = widget.navigationShell;
-    // Branch order is fixed: home, sonarr, torrents, servers.
-    final current = ShellDestination.values[shell.currentIndex];
-    var selected = destinations.indexOf(current);
-    if (selected < 0) selected = 0;
+    final current = shell.currentIndex;
+    final servers = ref.watch(uiServersProvider).value ?? const <ServerEntry>[];
+    // Indices into appDestinations; the open branch is always among them.
+    final visible = visibleDestinationIndices(servers, currentIndex: current);
+    final selected = visible.indexOf(current);
     final media = MediaQuery.of(context);
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _trackBranch(shell.currentIndex),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) => _trackBranch(current));
 
-    final switcherKind = switch (current) {
-      ShellDestination.sonarr => ServiceKind.sonarr,
-      ShellDestination.torrents => ServiceKind.qbittorrent,
-      _ => null,
-    };
+    final switcherKind = appDestinations[current].switcherKind;
 
     return PopScope(
-      canPop: shell.currentIndex == 0,
+      canPop: current == 0,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) shell.goBranch(0);
       },
@@ -124,22 +98,17 @@ class _AppShellState extends ConsumerState<AppShell> {
                 child: FloatingNavBar(
                   selectedIndex: selected,
                   destinations: [
-                    for (final d in destinations)
+                    for (final i in visible)
                       FloatingNavDestination(
-                        icon: _icon(d, selected: false),
-                        selectedIcon: _icon(d, selected: true),
-                        label: _label(l10n, d),
+                        icon: appDestinations[i].icon,
+                        selectedIcon: appDestinations[i].selectedIcon,
+                        label: appDestinations[i].label(l10n),
                         semanticsHint: l10n.navSelectedHint,
                       ),
                   ],
-                  onSelected: (i) {
-                    final index = ShellDestination.values.indexOf(
-                      destinations[i],
-                    );
-                    shell.goBranch(
-                      index,
-                      initialLocation: index == shell.currentIndex,
-                    );
+                  onSelected: (position) {
+                    final index = visible[position];
+                    shell.goBranch(index, initialLocation: index == current);
                   },
                 ),
               ),

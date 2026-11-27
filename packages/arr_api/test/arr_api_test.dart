@@ -4,7 +4,7 @@ import 'package:arr_api/arr_api.dart';
 import 'package:core/core.dart';
 import 'package:test/test.dart';
 
-class _Sonarr implements SonarrApi {
+class _Sonarr with EmptyArrLists implements SonarrApi {
   @override
   Future<Result<List<SonarrSeries>>> series() async => const Result.ok([]);
   @override
@@ -16,7 +16,7 @@ class _Sonarr implements SonarrApi {
       const Result.ok(ArrSystemStatus(version: '4.0.0.0'));
 }
 
-class _Radarr implements RadarrApi {
+class _Radarr with EmptyArrLists implements RadarrApi {
   @override
   ServiceKind get kind => ServiceKind.radarr;
   @override

@@ -2,6 +2,7 @@
 
 import 'dart:io';
 
+import 'package:consolarr/src/database/migrations.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
@@ -64,7 +65,17 @@ class AppStateRows extends Table {
   Set<Column> get primaryKey => {key};
 }
 
-@DriftDatabase(tables: [ServerRows, CachedPayloadRows, AppStateRows])
+@DriftDatabase(
+  tables: [ServerRows, CachedPayloadRows, AppStateRows],
+  // One SQL file per feature, so features add tables without touching this
+  // file (see migrations.dart for the schema version each one owns).
+  include: {
+    '../../features/sonarr/data/sonarr_tables.drift',
+    '../../features/radarr/data/radarr_tables.drift',
+    '../../features/torrents/data/torrents_tables.drift',
+    '../../features/settings/data/settings_tables.drift',
+  },
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
@@ -84,5 +95,11 @@ class AppDatabase extends _$AppDatabase {
       );
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => currentSchemaVersion;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) => m.createAll(),
+    onUpgrade: (m, from, to) => runMigrations(m, this, from, to),
+  );
 }

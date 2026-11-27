@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:consolarr/features/servers/application/server_connection.dart';
 import 'package:consolarr/features/servers/application/servers_providers.dart';
 import 'package:consolarr/features/torrents/application/speed_history.dart';
+import 'package:consolarr/features/torrents/application/torrent_client_registry.dart';
 import 'package:consolarr/features/torrents/data/torrents_repository.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
@@ -16,30 +17,39 @@ final torrentPollIntervalProvider = Provider<Duration>(
   (ref) => const Duration(seconds: 3),
 );
 
-/// The qBittorrent client for the active torrent server, or `null` when none
-/// is configured. The session cookie lives inside the client (memory only) and
-/// is forgotten when the active server changes or the provider is disposed.
-/// Fails like `activeConnectionProvider` (for example `needs_credentials`).
+/// The client for the active torrent server, or `null` when none is
+/// configured. The kind decides the implementation through
+/// [torrentClientFactories]; the first registered kind that has an active
+/// server wins. The session (cookie, token) lives inside the client, in
+/// memory only, and is forgotten when the active server changes or the
+/// provider is disposed. Fails like `activeConnectionProvider` (for example
+/// `needs_credentials`).
 final torrentClientProvider = FutureProvider<TorrentClient?>(retry: _noRetry, (
   ref,
 ) async {
-  final connection = await ref.watch(
-    activeConnectionProvider(ServiceKind.qbittorrent).future,
-  );
-  if (connection == null) return null;
-  final profile = connection.profile;
-  final credentials = profile.authMode == AuthMode.basic
-      ? await ref.watch(serverRepositoryProvider).loadCredentials(profile)
-      : null;
-  final client = QBittorrentClient(
-    dio: connection.dio,
-    username: credentials?.username,
-    password: credentials?.password,
-    onRowsSkipped: (count) =>
-        ref.read(loggerProvider).info('skipped $count malformed torrent rows'),
-  );
-  ref.onDispose(client.forgetSession);
-  return client;
+  for (final entry in torrentClientFactories.entries) {
+    final connection = await ref.watch(
+      activeConnectionProvider(entry.key).future,
+    );
+    if (connection == null) continue;
+    final profile = connection.profile;
+    final credentials = await ref
+        .watch(serverRepositoryProvider)
+        .loadCredentials(profile);
+    final client = entry.value(
+      TorrentClientContext(
+        dio: connection.dio,
+        profile: profile,
+        credentials: credentials,
+        onRowsSkipped: (count) => ref
+            .read(loggerProvider)
+            .info('skipped $count malformed torrent rows'),
+      ),
+    );
+    ref.onDispose(client.forgetSession);
+    return client;
+  }
+  return null;
 });
 
 /// What the torrent list screen shows (sealed, like every feature state).

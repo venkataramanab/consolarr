@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import 'package:consolarr/features/servers/application/error_messages.dart';
+import 'package:consolarr/shared/errors/connection_error_message.dart';
 import 'package:consolarr/features/servers/application/servers_providers.dart';
 import 'package:consolarr/features/servers/domain/server_models.dart';
 import 'package:consolarr/features/servers/presentation/connection_test_panel.dart';

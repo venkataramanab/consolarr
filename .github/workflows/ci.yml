@@ -55,16 +55,6 @@ jobs:
       - name: CI guard self-tests (guards fail on planted violations)
         run: bash tools/ci/selftest.sh
 
-      - name: Generated l10n files are up to date (tracked and untracked)
-        run: |
-          dart run packages/l10n/tool/build_l10n.dart
-          changes=$(git status --porcelain -- packages/l10n)
-          if [ -n "$changes" ]; then
-            echo "::error::Generated l10n files are stale or untracked; run 'dart run melos run l10n' and commit:"
-            echo "$changes"
-            exit 1
-          fi
-
   test:
     name: Unit, widget and golden tests
     runs-on: ubuntu-24.04
