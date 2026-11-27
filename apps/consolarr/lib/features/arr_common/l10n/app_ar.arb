@@ -187,7 +187,7 @@
       }
     }
   },
-  "arrCommonQueueWarningCount": "{count, plural, =1{رسالة واحدة} =2{رسالتان} few{{count} رسائل} other{{count} رسالة}}",
+  "arrCommonQueueWarningCount": "{count, plural, zero{لا رسائل} =1{رسالة واحدة} =2{رسالتان} few{{count} رسائل} many{{count} رسالة} other{{count} رسالة}}",
   "@arrCommonQueueWarningCount": {
     "description": "Label of the chip that expands the server's messages about a queue item.",
     "placeholders": {

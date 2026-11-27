@@ -18,6 +18,7 @@ import 'package:l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:test_harness/test_harness.dart';
 
+import '../arr_common/grid_accessibility.dart';
 import 'fakes.dart';
 import 'support.dart';
 import 'tab_harness.dart';
@@ -331,7 +332,7 @@ void main() {
           ),
         ),
         variants: tabStress,
-        verify: (v) => expectAccessible(tester),
+        verify: (v) => expectGridAccessible(tester, v),
       );
     });
   });

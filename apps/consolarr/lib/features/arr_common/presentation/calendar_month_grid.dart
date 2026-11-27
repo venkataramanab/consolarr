@@ -7,10 +7,14 @@ import 'package:material_ui/material_ui.dart';
 /// marker (count) on days that have items. Kind-agnostic: takes plain values
 /// and localized strings only.
 ///
-/// Cells are at least 48dp wide; on a narrower screen the grid scrolls
-/// sideways instead of shrinking the tap targets. Days are labelled for
-/// screen readers (date and count), the selected day is marked as selected
-/// and today carries a ring, so state is never colour alone.
+/// Seven cells share the width: each is at least [minCellWidth] (40dp) wide
+/// and at least [minCellHeight] (48dp) high, so a 320dp phone fits the whole
+/// month without sideways scrolling. A cell is a little narrower than the
+/// 48dp Material target below about 368dp of grid width; the height stays
+/// 48dp and grows with the text scale. Only a grid narrower than 280dp
+/// scrolls. Days are labelled for screen readers (date and count), the
+/// selected day is marked as selected and today carries a ring, so state is
+/// never colour alone.
 class ArrMonthGrid extends StatelessWidget {
   const ArrMonthGrid({
     required this.year,
@@ -54,8 +58,8 @@ class ArrMonthGrid extends StatelessWidget {
   /// Spoken marker appended to today's label (for example "today").
   final String todayMarker;
 
-  static const double cellWidth = 48;
-  static const double cellHeight = 52;
+  static const double minCellWidth = 40;
+  static const double minCellHeight = 48;
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +70,7 @@ class ArrMonthGrid extends StatelessWidget {
     final rows = ((lead + daysInMonth) / 7).ceil();
     return LayoutBuilder(
       builder: (context, constraints) {
-        final needed = cellWidth * 7;
+        final needed = minCellWidth * 7;
         final width = constraints.maxWidth < needed
             ? needed
             : constraints.maxWidth;
@@ -80,9 +84,12 @@ class ArrMonthGrid extends StatelessWidget {
                     Expanded(
                       child: ExcludeSemantics(
                         child: Center(
-                          child: Text(
-                            weekdayLabels[(firstWeekday + i) % 7],
-                            style: Theme.of(context).textTheme.labelMedium,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              weekdayLabels[(firstWeekday + i) % 7],
+                              style: Theme.of(context).textTheme.labelMedium,
+                            ),
                           ),
                         ),
                       ),
@@ -117,7 +124,7 @@ class ArrMonthGrid extends StatelessWidget {
 
   Widget _cell(BuildContext context, int day, int daysInMonth) {
     if (day < 1 || day > daysInMonth) {
-      return const SizedBox(height: cellHeight);
+      return const SizedBox(height: minCellHeight);
     }
     final roles = context.roles;
     final theme = Theme.of(context);
@@ -136,8 +143,9 @@ class ArrMonthGrid extends StatelessWidget {
       child: InkWell(
         onTap: () => onSelect(day),
         borderRadius: ConsolarrRadii.card,
-        child: SizedBox(
-          height: cellHeight,
+        // The height follows the text (no clamp), never below 48dp.
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: minCellHeight),
           child: Center(
             child: DecoratedBox(
               decoration: BoxDecoration(
@@ -147,36 +155,35 @@ class ArrMonthGrid extends StatelessWidget {
                     ? Border.all(color: roles.accent, width: 2)
                     : null,
               ),
-              child: SizedBox(
-                width: 40,
-                height: 44,
-                child: MediaQuery.withClampedTextScaling(
-                  maxScaleFactor: 1.2,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
                         dayText(day),
                         style: theme.textTheme.bodyMedium?.copyWith(
                           fontWeight: isSelected ? FontWeight.w700 : null,
                         ),
                       ),
-                      // A dot (count > 0) or a short bar (several), plus the
-                      // count is in the semantics label.
-                      SizedBox(
-                        height: 6,
-                        child: count == 0
-                            ? null
-                            : DecoratedBox(
-                                decoration: BoxDecoration(
-                                  color: roles.accent,
-                                  borderRadius: BorderRadius.circular(3),
-                                ),
-                                child: SizedBox(width: count > 1 ? 16 : 6),
+                    ),
+                    // A dot (count > 0) or a short bar (several), plus the
+                    // count is in the semantics label.
+                    SizedBox(
+                      height: 6,
+                      child: count == 0
+                          ? null
+                          : DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: roles.accent,
+                                borderRadius: BorderRadius.circular(3),
                               ),
-                      ),
-                    ],
-                  ),
+                              child: SizedBox(width: count > 1 ? 16 : 6),
+                            ),
+                    ),
+                  ],
                 ),
               ),
             ),

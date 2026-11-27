@@ -174,7 +174,7 @@
   "@sonarrAgeJustNow": {
     "description": "Relative age used when cached data is less than a minute old."
   },
-  "sonarrAgeMinutes": "{count, plural, =1{قبل دقيقة} =2{قبل دقيقتين} few{قبل {count} دقائق} other{قبل {count} دقيقة}}",
+  "sonarrAgeMinutes": "{count, plural, =1{قبل دقيقة} =2{قبل دقيقتين} few{قبل {count} دقائق} many{قبل {count} دقيقة} other{قبل {count} دقيقة}}",
   "@sonarrAgeMinutes": {
     "description": "Relative age in minutes for the offline banner.",
     "placeholders": {
@@ -184,7 +184,7 @@
       }
     }
   },
-  "sonarrAgeHours": "{count, plural, =1{قبل ساعة} =2{قبل ساعتين} few{قبل {count} ساعات} other{قبل {count} ساعة}}",
+  "sonarrAgeHours": "{count, plural, =1{قبل ساعة} =2{قبل ساعتين} few{قبل {count} ساعات} many{قبل {count} ساعة} other{قبل {count} ساعة}}",
   "@sonarrAgeHours": {
     "description": "Relative age in hours for the offline banner.",
     "placeholders": {
@@ -194,7 +194,7 @@
       }
     }
   },
-  "sonarrAgeDays": "{count, plural, =1{قبل يوم} =2{قبل يومين} few{قبل {count} أيام} other{قبل {count} يومًا}}",
+  "sonarrAgeDays": "{count, plural, =1{قبل يوم} =2{قبل يومين} few{قبل {count} أيام} many{قبل {count} يومًا} other{قبل {count} يوم}}",
   "@sonarrAgeDays": {
     "description": "Relative age in days for the offline banner.",
     "placeholders": {
@@ -242,7 +242,7 @@
       }
     }
   },
-  "sonarrEpisodesProgress": "{total, plural, =1{{have}/1 حلقة} =2{{have}/2 حلقتان} few{{have}/{total} حلقات} other{{have}/{total} حلقة}}",
+  "sonarrEpisodesProgress": "{total, plural, =1{{have}/1 حلقة} =2{{have}/2 حلقتان} few{{have}/{total} حلقات} many{{have}/{total} حلقة} other{{have}/{total} حلقة}}",
   "@sonarrEpisodesProgress": {
     "description": "Episode progress in the series list: downloaded over total episodes.",
     "placeholders": {
@@ -256,7 +256,7 @@
       }
     }
   },
-  "sonarrSeasonCount": "{count, plural, =1{موسم واحد} =2{موسمان} few{{count} مواسم} other{{count} موسمًا}}",
+  "sonarrSeasonCount": "{count, plural, zero{لا مواسم} =1{موسم واحد} =2{موسمان} few{{count} مواسم} many{{count} موسمًا} other{{count} موسم}}",
   "@sonarrSeasonCount": {
     "description": "Number of seasons of a series.",
     "placeholders": {
@@ -316,7 +316,7 @@
   "@sonarrNextAiringTomorrow": {
     "description": "Relative label for a series whose next episode airs tomorrow."
   },
-  "sonarrNextAiringInDays": "{days, plural, =1{يُعرض بعد يوم} =2{يُعرض بعد يومين} few{يُعرض بعد {days} أيام} other{يُعرض بعد {days} يومًا}}",
+  "sonarrNextAiringInDays": "{days, plural, =1{يُعرض بعد يوم} =2{يُعرض بعد يومين} few{يُعرض بعد {days} أيام} many{يُعرض بعد {days} يومًا} other{يُعرض بعد {days} يوم}}",
   "@sonarrNextAiringInDays": {
     "description": "Relative label for the next episode airing in a number of days.",
     "placeholders": {
@@ -392,7 +392,7 @@
   "@sonarrQueueRemoveOffline": {
     "description": "Explanation (tooltip) of the disabled remove button while the queue is offline."
   },
-  "sonarrQueueEpisodeCode": "S{season}E{episode}",
+  "sonarrQueueEpisodeCode": "م{season} ح{episode}",
   "@sonarrQueueEpisodeCode": {
     "description": "Season and episode code of a queue row.",
     "placeholders": {
@@ -536,7 +536,7 @@
       }
     }
   },
-  "sonarrDetailRatingValue": "{value} من 10 ({votes, plural, =1{صوت واحد} =2{صوتان} few{{votes} أصوات} other{{votes} صوتًا}})",
+  "sonarrDetailRatingValue": "{value} من 10 ({votes, plural, =1{صوت واحد} =2{صوتان} few{{votes} أصوات} many{{votes} صوتًا} other{{votes} صوت}})",
   "@sonarrDetailRatingValue": {
     "description": "Series rating on a ten point scale with the vote count.",
     "placeholders": {
@@ -939,7 +939,7 @@
       }
     }
   },
-  "sonarrCalendarEpisodeCode": "S{season}E{episode}",
+  "sonarrCalendarEpisodeCode": "م{season} ح{episode}",
   "@sonarrCalendarEpisodeCode": {
     "description": "Season and episode number of an episode, for example S1E4.",
     "placeholders": {
@@ -1341,7 +1341,7 @@
       }
     }
   },
-  "sonarrLibraryPartialBanner": "{count, plural, =1{تعذرت قراءة مسلسل واحد ولم يُعرض.} =2{تعذرت قراءة مسلسلين ولم يُعرضا.} few{تعذرت قراءة {count} مسلسلات ولم تُعرض.} other{تعذرت قراءة {count} مسلسلًا ولم تُعرض.}}",
+  "sonarrLibraryPartialBanner": "{count, plural, =1{تعذرت قراءة مسلسل واحد ولم يُعرض.} =2{تعذرت قراءة مسلسلين ولم يُعرضا.} few{تعذرت قراءة {count} مسلسلات ولم تُعرض.} many{تعذرت قراءة {count} مسلسلًا ولم تُعرض.} other{تعذرت قراءة {count} مسلسل ولم تُعرض.}}",
   "@sonarrLibraryPartialBanner": {
     "description": "Notice shown when some series rows from the server were unreadable and skipped.",
     "placeholders": {
@@ -1581,7 +1581,7 @@
   "@sonarrReleaseProtocolUsenet": {
     "description": "Name of the usenet protocol."
   },
-  "sonarrReleaseAgeMinutes": "{count, plural, =1{عمره دقيقة} =2{عمره دقيقتان} few{عمره {count} دقائق} other{عمره {count} دقيقة}}",
+  "sonarrReleaseAgeMinutes": "{count, plural, =1{عمره دقيقة} =2{عمره دقيقتان} few{عمره {count} دقائق} many{عمره {count} دقيقة} other{عمره {count} دقيقة}}",
   "@sonarrReleaseAgeMinutes": {
     "description": "Age of a release in minutes.",
     "placeholders": {
@@ -1591,7 +1591,7 @@
       }
     }
   },
-  "sonarrReleaseAgeHours": "{count, plural, =1{عمره ساعة} =2{عمره ساعتان} few{عمره {count} ساعات} other{عمره {count} ساعة}}",
+  "sonarrReleaseAgeHours": "{count, plural, =1{عمره ساعة} =2{عمره ساعتان} few{عمره {count} ساعات} many{عمره {count} ساعة} other{عمره {count} ساعة}}",
   "@sonarrReleaseAgeHours": {
     "description": "Age of a release in hours.",
     "placeholders": {
@@ -1601,7 +1601,7 @@
       }
     }
   },
-  "sonarrReleaseAgeDays": "{count, plural, =1{عمره يوم} =2{عمره يومان} few{عمره {count} أيام} other{عمره {count} يومًا}}",
+  "sonarrReleaseAgeDays": "{count, plural, =1{عمره يوم} =2{عمره يومان} few{عمره {count} أيام} many{عمره {count} يومًا} other{عمره {count} يوم}}",
   "@sonarrReleaseAgeDays": {
     "description": "Age of a release in days.",
     "placeholders": {
@@ -1611,7 +1611,7 @@
       }
     }
   },
-  "sonarrReleaseSeeders": "{count, plural, =1{مصدر واحد} =2{مصدران} few{{count} مصادر} other{{count} مصدرًا}}",
+  "sonarrReleaseSeeders": "{count, plural, zero{لا مصادر} =1{مصدر واحد} =2{مصدران} few{{count} مصادر} many{{count} مصدرًا} other{{count} مصدر}}",
   "@sonarrReleaseSeeders": {
     "description": "Number of seeders of a torrent release.",
     "placeholders": {

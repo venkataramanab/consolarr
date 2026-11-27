@@ -16,6 +16,7 @@ Future<bool> confirmSearch(BuildContext context, SearchConfirmKind kind) async {
   final result = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
+      scrollable: true,
       title: Text(
         season
             ? l10n.sonarrDetailSearchSeasonTitle

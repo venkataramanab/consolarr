@@ -6,6 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:test_harness/test_harness.dart';
 
+import 'grid_accessibility.dart';
+
 const _weekdays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 Widget _grid(
@@ -49,9 +51,54 @@ void main() {
       variants: tabStressVariants,
       verify: (v) async {
         expect(find.bySemanticsLabel(RegExp(r'^day \d+,')), findsNWidgets(31));
-        await expectAccessible(tester);
+        await expectGridAccessible(tester, v);
       },
     );
+  });
+
+  testWidgets('320dp fits seven cells without sideways scrolling', (
+    tester,
+  ) async {
+    await pumpMatrix(
+      tester,
+      (v) => _grid(v),
+      // The harness reports an overflow as a failure, so none may occur.
+      variants: harnessMatrix(
+        sizes: const [Size(320, 568)],
+        brightnesses: const [Brightness.dark],
+      ),
+      verify: (v) async {
+        expect(find.byType(SingleChildScrollView), findsNothing);
+        final grid = tester.getRect(find.byType(ArrMonthGrid));
+        expect(grid.right, lessThanOrEqualTo(320));
+        for (final cell in tester.widgetList<InkWell>(find.byType(InkWell))) {
+          expect(cell.onTap, isNotNull);
+        }
+        final first = tester.getSize(find.byType(InkWell).first);
+        expect(first.width, greaterThanOrEqualTo(ArrMonthGrid.minCellWidth));
+        expect(first.height, greaterThanOrEqualTo(ArrMonthGrid.minCellHeight));
+        // At large text the cell grows instead of clipping its digits.
+        if (v.textScale == 2.0) {
+          expect(first.height, greaterThan(ArrMonthGrid.minCellHeight));
+        }
+        await expectGridAccessible(tester, v);
+      },
+    );
+  });
+
+  testWidgets('narrower than 280dp the grid scrolls instead of shrinking', (
+    tester,
+  ) async {
+    const v = HarnessVariant(
+      size: Size(280, 568),
+      textScale: 1,
+      locale: Locale('en'),
+      brightness: Brightness.dark,
+    );
+    applyVariantView(tester, v);
+    await tester.pumpWidget(_grid(v));
+    await tester.pumpAndSettle();
+    expect(find.byType(SingleChildScrollView), findsOneWidget);
   });
 
   testWidgets('February of a leap year has 29 days', (tester) async {

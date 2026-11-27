@@ -335,6 +335,7 @@ class _ResendConfirm extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return AlertDialog(
+      scrollable: true,
       title: Text(l10n.sonarrReleaseResendTitle),
       content: Text(l10n.sonarrReleaseResendMessage),
       actions: [

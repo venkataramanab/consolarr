@@ -70,6 +70,9 @@ class _WantedHeaderState extends ConsumerState<WantedHeader> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
+        // Title, body and buttons scroll together: at the largest text size
+        // the body must stay readable on a small screen.
+        scrollable: true,
         title: Text(l10n.sonarrWantedSearchAllTitle),
         content: Text(l10n.sonarrWantedSearchAllBody),
         actions: [
