@@ -51,6 +51,28 @@ void main() {
     });
   });
 
+  group('non-text contrast (WCAG 1.4.11)', () {
+    for (final name in ['dark high contrast', 'light high contrast']) {
+      test('$name: track and border reach 3:1 on every surface', () {
+        final c = palettes[name]!;
+        for (final surface in c.surfaces) {
+          expect(
+            contrastRatio(c.track, surface),
+            greaterThanOrEqualTo(3),
+            reason: '$name track on $surface',
+          );
+        }
+      });
+    }
+
+    test('track is not a text surface', () {
+      for (final c in palettes.values) {
+        expect(c.surfaces, isNot(contains(c.track)));
+        expect(c.graphics, contains(c.track));
+      }
+    });
+  });
+
   test('forBrightness picks all four variants', () {
     expect(
       ConsolarrColorRoles.forBrightness(Brightness.dark),

@@ -67,14 +67,14 @@ class ConsolarrColorRoles {
   );
 
   /// High-contrast dark variant: near-white text on deeper surfaces, text and
-  /// status colours at WCAG AAA (7:1) on every surface, a more visible track.
+  /// status colours at WCAG AAA (7:1) on every surface, a track and border that reach 3:1 on every surface.
   static const darkHighContrast = ConsolarrColorRoles(
     brightness: Brightness.dark,
     chrome: Color(0xFF0B0D10),
     page: Color(0xFF0F1216),
     card: Color(0xFF161A20),
     raised: Color(0xFF1E232B),
-    track: Color(0xFF2B323D),
+    track: Color(0xFF727C8A),
     textPrimary: Color(0xFFFFFFFF),
     textSecondary: Color(0xFFE6EAF0),
     textTertiary: Color(0xFFCFD6E1),
@@ -92,7 +92,7 @@ class ConsolarrColorRoles {
     page: Color(0xFFFFFFFF),
     card: Color(0xFFFFFFFF),
     raised: Color(0xFFFFFFFF),
-    track: Color(0xFFDDE2EA),
+    track: Color(0xFF6B7280),
     textPrimary: Color(0xFF000000),
     textSecondary: Color(0xFF1B222D),
     textTertiary: Color(0xFF2F3947),
@@ -148,8 +148,14 @@ class ConsolarrColorRoles {
   final Color warning;
   final Color error;
 
-  /// All surfaces, outermost to innermost.
-  List<Color> get surfaces => [chrome, page, card, raised, track];
+  /// Surfaces text is drawn on, outermost to innermost. [track] is not one of
+  /// them: it is a graphic (progress track, skeleton, borders, dividers) and
+  /// carries no text.
+  List<Color> get surfaces => [chrome, page, card, raised];
+
+  /// Non-text colours that must stay distinguishable from every surface (in
+  /// the high-contrast variants at 3:1, WCAG 1.4.11).
+  List<Color> get graphics => [track];
 
   /// All text tiers, strongest first.
   List<Color> get textTiers => [textPrimary, textSecondary, textTertiary];
