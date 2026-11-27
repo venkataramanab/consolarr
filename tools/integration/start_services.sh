@@ -12,7 +12,7 @@ set -euo pipefail
 out="${1:-integration.env}"
 sonarr_image="lscr.io/linuxserver/sonarr:4.0.20.3014-ls6@sha256:339814bbf50599ac3b59077c252f29833d0138b59a062d0e82ce37bdc7f04f86"
 qbit_image="lscr.io/linuxserver/qbittorrent:5.3.1_v2.1.3-ls490@sha256:1fa2f9692501f27ce51c4fffd771d63ec38f1163cb648941c324344b7c5a3915"
-toxi_image="ghcr.io/shopify/toxiproxy:2.12.0"
+toxi_image="ghcr.io/shopify/toxiproxy:2.12.0@sha256:9378ed52a28bc50edc1350f936f518f31fa95f0d15917d6eb40b8e376d1a214e"
 
 docker network create consolarr-it >/dev/null 2>&1 || true
 

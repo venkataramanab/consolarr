@@ -314,6 +314,61 @@ void main() {
       expect(r.data, hasLength(5000));
     });
 
+    test('defaults: 16 MiB body cap and a total request deadline', () {
+      const limits = HttpLimits();
+      expect(limits.maxResponseBytes, 16 * 1024 * 1024);
+      expect(limits.requestDeadline, greaterThan(limits.receiveTimeout));
+    });
+
+    test('a slow-drip body is cut off by the total deadline, although every '
+        'chunk arrives within the receive timeout', () async {
+      final s = await serve(
+        handler: (r) async {
+          r.response.bufferOutput = false;
+          for (var i = 0; i < 100; i++) {
+            r.response.add([120]);
+            await r.response.flush();
+            await Future<void>.delayed(const Duration(milliseconds: 100));
+          }
+        },
+      );
+      final dio = factory(
+        limits: const HttpLimits(
+          receiveTimeout: Duration(seconds: 30),
+          requestDeadline: Duration(milliseconds: 600),
+        ),
+      ).create(s.profile(allowCleartext: true));
+      final watch = Stopwatch()..start();
+      final err = await _failure(dio.get<Object>('/drip'));
+      expect(err.category, ErrorCategory.timeout);
+      expect(watch.elapsed, lessThan(const Duration(seconds: 4)));
+    });
+
+    test(
+      'a server that never answers is cut off by the total deadline',
+      () async {
+        final s = await serve(
+          handler: (r) => Future<void>.delayed(const Duration(seconds: 5)),
+        );
+        final dio = factory(
+          limits: const HttpLimits(
+            receiveTimeout: Duration(seconds: 30),
+            requestDeadline: Duration(milliseconds: 300),
+          ),
+        ).create(s.profile(allowCleartext: true));
+        final err = await _failure(dio.get<Object>('/hang'));
+        expect(err.category, ErrorCategory.timeout);
+      },
+    );
+
+    test('a fast response within the deadline is unaffected', () async {
+      final s = await serve(handler: (r) => r.response.write('{"ok":true}'));
+      final dio = factory(
+        limits: const HttpLimits(requestDeadline: Duration(seconds: 5)),
+      ).create(s.profile(allowCleartext: true));
+      expect((await dio.get<Object>('/ok')).statusCode, 200);
+    });
+
     test('a slow server maps to timeout', () async {
       final s = await serve(
         handler: (r) => Future<void>.delayed(const Duration(seconds: 2)),
@@ -327,7 +382,7 @@ void main() {
 
     test('defaults are sane', () {
       const l = HttpLimits();
-      expect(l.maxResponseBytes, 64 * 1024 * 1024);
+      expect(l.maxResponseBytes, 16 * 1024 * 1024);
       expect(l.maxRedirects, 5);
       expect(l.connectTimeout, greaterThan(Duration.zero));
     });

@@ -10,16 +10,26 @@ class HttpLimits {
     this.connectTimeout = const Duration(seconds: 10),
     this.sendTimeout = const Duration(seconds: 20),
     this.receiveTimeout = const Duration(seconds: 30),
-    this.maxResponseBytes = 64 * 1024 * 1024,
+    this.requestDeadline = const Duration(seconds: 60),
+    this.maxResponseBytes = 16 * 1024 * 1024,
     this.maxRedirects = 5,
   });
 
   final Duration connectTimeout;
   final Duration sendTimeout;
+
+  /// Per-chunk idle timeout only: a server that drips one byte at a time keeps
+  /// resetting it, so it is not a bound on the request.
   final Duration receiveTimeout;
 
+  /// Upper bound for a whole request: from the first connection attempt (every
+  /// redirect hop included) until the last body byte. Exceeding it fails with
+  /// `timeout`.
+  final Duration requestDeadline;
+
   /// Responses larger than this fail with `response_too_large`; checked
-  /// against `Content-Length` and again while streaming.
+  /// against `Content-Length` and again while streaming. Callers that really
+  /// need more (artwork) raise it per request with [maxResponseBytesKey].
   final int maxResponseBytes;
 
   /// Redirect hops followed before the request is refused.

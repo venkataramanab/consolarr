@@ -113,6 +113,27 @@ DioException _fail(RequestOptions options, AppError error) => DioException(
   message: error.category.code,
 );
 
+/// The total time budget of one request (all redirect hops and the body).
+class _Deadline {
+  _Deadline(this.budget) : _start = Stopwatch()..start();
+
+  final Duration budget;
+  final Stopwatch _start;
+
+  Duration get remaining {
+    final left = budget - _start.elapsed;
+    return left.isNegative ? Duration.zero : left;
+  }
+
+  DioException error(RequestOptions options) => _fail(
+    options,
+    const AppError(
+      ErrorCategory.timeout,
+      debugDetail: 'request deadline exceeded',
+    ),
+  );
+}
+
 class _SecureAdapter implements HttpClientAdapter {
   _SecureAdapter({
     required this.profile,
@@ -185,6 +206,8 @@ class _SecureAdapter implements HttpClientAdapter {
   ) async {
     final maxBytes =
         options.extra[maxResponseBytesKey] as int? ?? limits.maxResponseBytes;
+    // One deadline for the whole request: every hop and the body stream.
+    final deadline = _Deadline(limits.requestDeadline);
     var current = options.copyWith(followRedirects: false);
     var stream = requestStream;
     var hops = 0;
@@ -193,11 +216,14 @@ class _SecureAdapter implements HttpClientAdapter {
       final uri = current.uri;
       if (hops == 0) _checkFirstHop(current, uri);
 
-      final response = await _send(current, uri, stream, cancelFuture);
+      final response = await _send(current, uri, stream, cancelFuture).timeout(
+        deadline.remaining,
+        onTimeout: () => throw deadline.error(current),
+      );
       final status = response.statusCode;
       final location = response.headers['location']?.firstOrNull;
       if (!_redirectStatuses.contains(status) || location == null) {
-        return _limited(response, current, maxBytes);
+        return _limited(response, current, maxBytes, deadline);
       }
 
       unawaited(response.stream.listen((_) {}).cancel());
@@ -320,6 +346,7 @@ class _SecureAdapter implements HttpClientAdapter {
     ResponseBody response,
     RequestOptions options,
     int maxBytes,
+    _Deadline deadline,
   ) {
     final declared = int.tryParse(
       response.headers[Headers.contentLengthHeader]?.firstOrNull ?? '',
@@ -332,17 +359,58 @@ class _SecureAdapter implements HttpClientAdapter {
       unawaited(response.stream.listen((_) {}).cancel());
       throw tooLarge;
     }
-    Stream<Uint8List> counted() async* {
-      var total = 0;
-      await for (final chunk in response.stream) {
-        total += chunk.length;
-        if (total > maxBytes) throw tooLarge;
-        yield chunk;
+
+    // Counts bytes and enforces the total deadline while the body streams (a
+    // slow drip keeps resetting the per-chunk receive timeout).
+    final controller = StreamController<Uint8List>();
+    StreamSubscription<Uint8List>? subscription;
+    Timer? timer;
+    void abort(Object error) {
+      timer?.cancel();
+      final sub = subscription;
+      subscription = null;
+      if (sub != null) unawaited(sub.cancel());
+      if (!controller.isClosed) {
+        controller.addError(error);
+        unawaited(controller.close());
       }
     }
 
+    controller.onListen = () {
+      var total = 0;
+      timer = Timer(deadline.remaining, () => abort(deadline.error(options)));
+      subscription = response.stream.listen(
+        (chunk) {
+          total += chunk.length;
+          if (total > maxBytes) {
+            abort(tooLarge);
+          } else if (!controller.isClosed) {
+            controller.add(chunk);
+          }
+        },
+        onError: (Object e, StackTrace st) {
+          timer?.cancel();
+          if (!controller.isClosed) controller.addError(e, st);
+        },
+        onDone: () {
+          timer?.cancel();
+          if (!controller.isClosed) unawaited(controller.close());
+        },
+      );
+    };
+    controller.onPause = () {
+      subscription?.pause();
+    };
+    controller.onResume = () {
+      subscription?.resume();
+    };
+    controller.onCancel = () {
+      timer?.cancel();
+      return subscription?.cancel();
+    };
+
     return ResponseBody(
-      counted(),
+      controller.stream,
       response.statusCode,
       headers: response.headers,
       statusMessage: response.statusMessage,
