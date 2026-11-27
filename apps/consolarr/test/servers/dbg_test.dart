@@ -12,6 +12,8 @@ void main() {
     print('repo ok');
     print(await repo.watchAll().first);
     print('stream ok');
-    print(await c.read(serversProvider.future));
+    c.listen(serversProvider, (a, b) { print('got $b'); });
+    await Future<void>.delayed(const Duration(seconds: 1));
+    print(c.read(serversProvider));
   });
 }
