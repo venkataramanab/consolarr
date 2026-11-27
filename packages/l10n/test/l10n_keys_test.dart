@@ -112,8 +112,25 @@ void main() {
         sources.add(entity.readAsStringSync());
       }
     }
-    final unused = findUnusedKeys(keysOf(merged), sources);
-    expect(unused, isEmpty, reason: 'Unused localization keys: $unused');
+    final unused = findUnusedKeys(keysOf(merged), sources).toSet();
+    final reserved = _reservedKeys(root);
+    expect(
+      unused.difference(reserved),
+      isEmpty,
+      reason: 'Unused localization keys: ${unused.difference(reserved)}',
+    );
+    expect(
+      reserved.difference(keysOf(merged)),
+      isEmpty,
+      reason: 'reserved_keys.txt names keys that do not exist',
+    );
+    expect(
+      reserved.difference(unused),
+      isEmpty,
+      reason:
+          'These reserved keys are in use now: remove them from '
+          'apps/consolarr/lib/shared/l10n/reserved_keys.txt',
+    );
   });
 
   group('generated files', () {
@@ -143,6 +160,19 @@ void main() {
       }
     });
   });
+}
+
+/// Keys declared ahead of use (see `reserved_keys.txt`).
+Set<String> _reservedKeys(Directory root) {
+  final file = File(
+    '${root.path}/apps/consolarr/lib/shared/l10n/reserved_keys.txt',
+  );
+  if (!file.existsSync()) return {};
+  return {
+    for (final line in file.readAsLinesSync())
+      if (line.trim().isNotEmpty && !line.trimLeft().startsWith('#'))
+        line.trim(),
+  };
 }
 
 Set<String> placeholdersOf(Object? meta) {

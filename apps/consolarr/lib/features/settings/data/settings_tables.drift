@@ -1,0 +1,6 @@
+-- SPDX-License-Identifier: GPL-3.0-or-later
+--
+-- Tables of the settings feature (drift SQL; included by AppDatabase). Add
+-- CREATE TABLE statements here, create them in the `settingsMigration` step of
+-- the schema version this feature owns (see lib/src/database/migrations.dart),
+-- and never touch another feature's file or version.

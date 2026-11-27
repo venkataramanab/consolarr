@@ -3,20 +3,30 @@
 import 'package:consolarr/features/about/about_screen.dart';
 import 'package:consolarr/features/home/home_screen.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:consolarr/features/servers/domain/server_models.dart';
+import 'package:consolarr/features/shell/application/shell_providers.dart';
 import 'package:test_harness/test_harness.dart';
+
+Widget _home(HarnessVariant v, Widget home) => ProviderScope(
+  overrides: [
+    uiServersProvider.overrideWithValue(const AsyncData(<ServerEntry>[])),
+  ],
+  child: harnessApp(v, Scaffold(body: home)),
+);
 
 void main() {
   testWidgets('home: no overflow across sizes, scales, locales and themes', (
     tester,
   ) async {
-    await pumpMatrix(tester, (v) => harnessApp(v, const HomeScreen()));
+    await pumpMatrix(tester, (v) => _home(v, const HomeScreen()));
   });
 
   testWidgets('about: no overflow across sizes, scales, locales and themes', (
     tester,
   ) async {
-    await pumpMatrix(tester, (v) => harnessApp(v, const AboutScreen()));
+    await pumpMatrix(tester, (v) => _home(v, const AboutScreen()));
   });
 
   testWidgets(
@@ -24,7 +34,7 @@ void main() {
     (tester) async {
       await pumpMatrix(
         tester,
-        (v) => harnessApp(v, const HomeScreen()),
+        (v) => _home(v, const HomeScreen()),
         variants: harnessMatrix(
           textScales: [2],
           locales: [const Locale('ar'), const Locale('en', 'XA')],
@@ -41,7 +51,7 @@ void main() {
   testWidgets('home: accessibility guidelines at 1.0 in en', (tester) async {
     await pumpMatrix(
       tester,
-      (v) => harnessApp(v, const HomeScreen()),
+      (v) => _home(v, const HomeScreen()),
       variants: harnessMatrix(textScales: [1], locales: [const Locale('en')]),
       verify: (v) => expectAccessible(tester),
     );
@@ -51,7 +61,7 @@ void main() {
     late TextDirection direction;
     await pumpMatrix(
       tester,
-      (v) => harnessApp(
+      (v) => _home(
         v,
         Builder(
           builder: (context) {

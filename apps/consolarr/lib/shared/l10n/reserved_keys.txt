@@ -1,0 +1,13 @@
+# Shared l10n keys declared ahead of use, so parallel feature work does not
+# add duplicate common strings. The l10n key test tolerates these keys being
+# unused and FAILS when one is used (delete its line here when you use it).
+# One key per line; '#' starts a comment.
+commonCancel
+commonClose
+commonDelete
+commonSave
+commonDone
+commonAdd
+commonRefresh
+commonSearch
+commonRetry

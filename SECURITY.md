@@ -34,14 +34,14 @@ against [OWASP MASVS](https://mas.owasp.org/MASVS/).
 
 | Control | Area | Status | Notes |
 | --- | --- | --- | --- |
-| MASVS-STORAGE-1 | Secrets stored with OS-protected key storage | TODO | `SecretStore` interface exists; implementation pending |
+| MASVS-STORAGE-1 | Secrets stored with OS-protected key storage | DONE | `FlutterSecureSecretStore`; Keystore loss handled as "needs credentials" |
 | MASVS-STORAGE-2 | No sensitive data in backups, logs or caches | TODO | Backups disabled in manifest; backup-content test pending; `Redactor` in place |
 | MASVS-CRYPTO-1 | Strong, current cryptography only | TODO | Applies to pinning fingerprints and any export format |
 | MASVS-CRYPTO-2 | Proper key management | TODO | |
-| MASVS-AUTH-1 | Authentication to user servers handled securely | TODO | Credentials in separate fields, never in URLs |
+| MASVS-AUTH-1 | Authentication to user servers handled securely | DONE | Credentials in separate fields, headers only, never in URLs (images included) |
 | MASVS-AUTH-2 | Local authentication (app lock) | TODO | Later |
-| MASVS-NETWORK-1 | TLS for all traffic, hostname verification always on | TODO | `SecureHttpClientFactory` contract defined |
-| MASVS-NETWORK-2 | Trust-on-first-use pinning, mismatch blocking | TODO | Planned for W3 |
+| MASVS-NETWORK-1 | TLS for all traffic, hostname verification always on | DONE | `DefaultSecureHttpClientFactory`; per-server cleartext opt-in; redirect policy |
+| MASVS-NETWORK-2 | Trust-on-first-use pinning, mismatch blocking | DONE | Pin checked on every connection before any request bytes; explicit re-trust |
 | MASVS-PLATFORM-1 | Minimal exported components and permissions | TODO | Manifest hardened; review per release |
 | MASVS-PLATFORM-2 | Safe handling of external input | TODO | |
 | MASVS-CODE-1 | Dependencies scanned, builds reproducible-minded | TODO | osv-scanner and licence check in CI |

@@ -69,7 +69,7 @@ void main() {
       address: 'https://sonarr.example/',
     ).valueOrNull!;
     final SecureHttpClientFactory f = _PlainFactory();
-    expect(f.create(profile).options.baseUrl, 'https://sonarr.example/');
+    expect(f.create(profile).options.baseUrl, profile.baseUri.toString());
   });
 
   group('PinKey', () {

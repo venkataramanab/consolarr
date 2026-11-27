@@ -3,13 +3,17 @@
 // Merges per-feature ARB files into packages/l10n, generates the en_XA
 // pseudo-locale and runs `flutter gen-l10n`.
 //
-// Usage: dart run packages/l10n/tool/build_l10n.dart
+// Usage: dart run packages/l10n/tool/build_l10n.dart [--arb-only]
+//
+// `--arb-only` stops after writing the merged ARB files. `flutter pub get`
+// needs them (the package has `flutter: generate: true`), so a fresh checkout
+// runs this first and the full script after `pub get`.
 
 import 'dart:io';
 
 import 'src/merge.dart';
 
-Future<void> main() async {
+Future<void> main(List<String> args) async {
   // This script lives at <root>/packages/l10n/tool/build_l10n.dart.
   final script = File.fromUri(Platform.script);
   final l10nPackage = script.parent.parent;
@@ -22,6 +26,11 @@ Future<void> main() async {
   for (final e in merged.entries) {
     File('${arbDir.path}/app_${e.key}.arb')
         .writeAsStringSync(encodeArb(e.value));
+  }
+
+  if (args.contains('--arb-only')) {
+    stdout.writeln('l10n: merged ARB files written.');
+    return;
   }
 
   final outDir = Directory('${l10nPackage.path}/lib/src/generated');

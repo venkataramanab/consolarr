@@ -8,7 +8,7 @@
   "@homeEmptyHeading": {
     "description": "Headline of the placeholder state on the home screen before any server is configured."
   },
-  "homeEmptyBody": "أضف خادم وسائط أو عميل تنزيل للبدء. هذه الشاشة مؤقتة.",
+  "homeEmptyBody": "أضف خادم وسائط أو عميل تنزيل للبدء.",
   "@homeEmptyBody": {
     "description": "One-line hint under the placeholder headline on the home screen."
   },

@@ -9,6 +9,8 @@ environment:
 
 dependencies:
   core:
+  dio: ^5.11.1
+  security:
 
 dev_dependencies:
   test: ^1.25.0

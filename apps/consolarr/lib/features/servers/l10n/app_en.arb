@@ -1,0 +1,555 @@
+{
+  "@@locale": "en",
+  "serversTitle": "Servers",
+  "@serversTitle": {
+    "description": "Title of the servers list screen."
+  },
+  "serversAddTooltip": "Add a server",
+  "@serversAddTooltip": {
+    "description": "Tooltip and accessible label of the add-server button in the servers list top bar."
+  },
+  "serversEmptyHeadline": "No servers yet",
+  "@serversEmptyHeadline": {
+    "description": "Headline of the servers list when no server is configured."
+  },
+  "serversEmptyMessage": "Add Sonarr or qBittorrent to browse your library and downloads from here.",
+  "@serversEmptyMessage": {
+    "description": "Hint under the empty servers list headline."
+  },
+  "serversEmptyAction": "Add your first server",
+  "@serversEmptyAction": {
+    "description": "Primary action label of the empty servers list."
+  },
+  "serversLoadErrorHeadline": "Couldn't load your servers",
+  "@serversLoadErrorHeadline": {
+    "description": "Headline when the saved servers could not be read from the device."
+  },
+  "serversLoadErrorMessage": "The saved servers could not be read from this device.",
+  "@serversLoadErrorMessage": {
+    "description": "Message when the saved servers could not be read."
+  },
+  "serversRetry": "Try again",
+  "@serversRetry": {
+    "description": "Retry button label in the servers feature."
+  },
+  "serversCancel": "Cancel",
+  "@serversCancel": {
+    "description": "Cancel button label in servers dialogs."
+  },
+  "serverKindSonarr": "Sonarr",
+  "@serverKindSonarr": {
+    "description": "Display name of the Sonarr service (brand name)."
+  },
+  "serverKindRadarr": "Radarr",
+  "@serverKindRadarr": {
+    "description": "Display name of the Radarr service (brand name)."
+  },
+  "serverKindQbittorrent": "qBittorrent",
+  "@serverKindQbittorrent": {
+    "description": "Display name of the qBittorrent service (brand name)."
+  },
+  "serverKindTransmission": "Transmission",
+  "@serverKindTransmission": {
+    "description": "Display name of the Transmission service (brand name)."
+  },
+  "serverKindDeluge": "Deluge",
+  "@serverKindDeluge": {
+    "description": "Display name of the Deluge service (brand name)."
+  },
+  "serverKindSonarrDescription": "TV series library",
+  "@serverKindSonarrDescription": {
+    "description": "Short description of Sonarr on the service choice tile."
+  },
+  "serverKindQbittorrentDescription": "Torrent downloads",
+  "@serverKindQbittorrentDescription": {
+    "description": "Short description of qBittorrent on the service choice tile."
+  },
+  "serverKindOtherDescription": "Not available yet",
+  "@serverKindOtherDescription": {
+    "description": "Description for a service that is not supported yet."
+  },
+  "serverHealthChecking": "Checking…",
+  "@serverHealthChecking": {
+    "description": "Health text of a server being checked."
+  },
+  "serverHealthHealthy": "Online",
+  "@serverHealthHealthy": {
+    "description": "Health text of a healthy server."
+  },
+  "serverHealthDegraded": "Responding with problems",
+  "@serverHealthDegraded": {
+    "description": "Health text of a server that answers with errors or slowly."
+  },
+  "serverHealthUnauthorized": "Sign-in failed",
+  "@serverHealthUnauthorized": {
+    "description": "Health text of a server that rejected the credentials."
+  },
+  "serverHealthUnreachable": "Unreachable",
+  "@serverHealthUnreachable": {
+    "description": "Health text of a server that cannot be reached."
+  },
+  "serverHealthUnknown": "Couldn't check",
+  "@serverHealthUnknown": {
+    "description": "Health text when the health check itself failed."
+  },
+  "serverBadgeCleartext": "Plain http",
+  "@serverBadgeCleartext": {
+    "description": "Warning badge on a server that is allowed to use unencrypted http."
+  },
+  "serverBadgeNeedsCredentials": "Needs credentials",
+  "@serverBadgeNeedsCredentials": {
+    "description": "Badge on a server whose saved secrets are missing."
+  },
+  "serverBadgeActive": "Active",
+  "@serverBadgeActive": {
+    "description": "Badge on the server used by default for its service."
+  },
+  "serverBadgeStartup": "Opens at launch",
+  "@serverBadgeStartup": {
+    "description": "Badge on the server opened when the app starts."
+  },
+  "serverMenuTooltip": "More actions for {name}",
+  "@serverMenuTooltip": {
+    "description": "Tooltip and accessible label of the per-server actions menu.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Server display name."
+      }
+    }
+  },
+  "serverDragHandleLabel": "Reorder {name}",
+  "@serverDragHandleLabel": {
+    "description": "Accessible label of the drag handle that reorders a server.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Server display name."
+      }
+    }
+  },
+  "serverActionEdit": "Edit",
+  "@serverActionEdit": {
+    "description": "Menu action: edit a server."
+  },
+  "serverActionSetActive": "Make active",
+  "@serverActionSetActive": {
+    "description": "Menu action: use this server by default for its service."
+  },
+  "serverActionSetStartup": "Open at launch",
+  "@serverActionSetStartup": {
+    "description": "Menu action: open this server when the app starts."
+  },
+  "serverActionClearStartup": "Don't open at launch",
+  "@serverActionClearStartup": {
+    "description": "Menu action: stop opening this server at launch."
+  },
+  "serverActionMoveUp": "Move up",
+  "@serverActionMoveUp": {
+    "description": "Menu action: move a server up in the list (alternative to dragging)."
+  },
+  "serverActionMoveDown": "Move down",
+  "@serverActionMoveDown": {
+    "description": "Menu action: move a server down in the list (alternative to dragging)."
+  },
+  "serverActionDelete": "Delete",
+  "@serverActionDelete": {
+    "description": "Menu action: delete a server."
+  },
+  "serverDeleteTitle": "Delete {name}?",
+  "@serverDeleteTitle": {
+    "description": "Title of the delete-server confirmation.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Server display name."
+      }
+    }
+  },
+  "serverDeleteBody": "This removes the saved credentials, the trusted certificate and the cached data for this server from this device. The server itself is not changed.",
+  "@serverDeleteBody": {
+    "description": "Consequences spelled out in the delete-server confirmation."
+  },
+  "serverDeleteConfirm": "Delete",
+  "@serverDeleteConfirm": {
+    "description": "Confirm button of the delete-server dialog."
+  },
+  "serverEditorTitleNew": "Add server",
+  "@serverEditorTitleNew": {
+    "description": "Title of the server editor when creating a server."
+  },
+  "serverEditorTitleEdit": "Edit server",
+  "@serverEditorTitleEdit": {
+    "description": "Title of the server editor when editing a server."
+  },
+  "serverEditorSave": "Save",
+  "@serverEditorSave": {
+    "description": "Save button of the server editor."
+  },
+  "serverSaveFailedHeadline": "Couldn't save the server",
+  "@serverSaveFailedHeadline": {
+    "description": "Headline shown when saving a server failed."
+  },
+  "serverSectionService": "Service",
+  "@serverSectionService": {
+    "description": "Section heading: service type and name."
+  },
+  "serverSectionAddress": "Address",
+  "@serverSectionAddress": {
+    "description": "Section heading: server address."
+  },
+  "serverSectionAuth": "Authentication",
+  "@serverSectionAuth": {
+    "description": "Section heading: authentication."
+  },
+  "serverSectionHeaders": "Custom headers",
+  "@serverSectionHeaders": {
+    "description": "Section heading: custom request headers."
+  },
+  "serverSectionSecurity": "Security",
+  "@serverSectionSecurity": {
+    "description": "Section heading: transport security."
+  },
+  "serverFieldName": "Display name",
+  "@serverFieldName": {
+    "description": "Label of the server display name field."
+  },
+  "serverFieldAddress": "Address",
+  "@serverFieldAddress": {
+    "description": "Label of the server address field."
+  },
+  "serverFieldAddressHint": "https://host.example:8989",
+  "@serverFieldAddressHint": {
+    "description": "Placeholder example for the server address field."
+  },
+  "serverFieldPathPrefix": "Path prefix (optional)",
+  "@serverFieldPathPrefix": {
+    "description": "Label of the optional reverse-proxy path prefix field."
+  },
+  "serverPathPrefixHelper": "Only needed if a reverse proxy serves the app under a path, for example /sonarr.",
+  "@serverPathPrefixHelper": {
+    "description": "Helper text under the path prefix field."
+  },
+  "serverAuthNone": "None",
+  "@serverAuthNone": {
+    "description": "Authentication mode: no credentials."
+  },
+  "serverAuthApiKey": "API key",
+  "@serverAuthApiKey": {
+    "description": "Authentication mode: API key."
+  },
+  "serverAuthBasic": "Username and password",
+  "@serverAuthBasic": {
+    "description": "Authentication mode: username and password."
+  },
+  "serverFieldApiKey": "API key",
+  "@serverFieldApiKey": {
+    "description": "Label of the API key field."
+  },
+  "serverFieldUsername": "Username",
+  "@serverFieldUsername": {
+    "description": "Label of the username field."
+  },
+  "serverFieldPassword": "Password",
+  "@serverFieldPassword": {
+    "description": "Label of the password field."
+  },
+  "serverSecretKeepHint": "Leave empty to keep the saved value.",
+  "@serverSecretKeepHint": {
+    "description": "Helper under a secret field when editing a server with a saved secret."
+  },
+  "serverSecretShow": "Show value",
+  "@serverSecretShow": {
+    "description": "Tooltip of the button that reveals a secret field."
+  },
+  "serverSecretHide": "Hide value",
+  "@serverSecretHide": {
+    "description": "Tooltip of the button that hides a secret field."
+  },
+  "serverHeadersHelper": "For reverse-proxy gateways. Values are stored securely on this device.",
+  "@serverHeadersHelper": {
+    "description": "Helper text of the custom headers section."
+  },
+  "serverHeaderName": "Header name",
+  "@serverHeaderName": {
+    "description": "Label of a custom header name field."
+  },
+  "serverHeaderValue": "Header value",
+  "@serverHeaderValue": {
+    "description": "Label of a custom header value field."
+  },
+  "serverHeaderAdd": "Add header",
+  "@serverHeaderAdd": {
+    "description": "Button that adds a custom header row."
+  },
+  "serverHeaderRemove": "Remove header",
+  "@serverHeaderRemove": {
+    "description": "Tooltip of the button that removes a custom header row."
+  },
+  "serverCleartextTitle": "Allow plain http",
+  "@serverCleartextTitle": {
+    "description": "Label of the per-server switch that allows unencrypted http."
+  },
+  "serverCleartextRisk": "Plain http sends your API key, password and every response without encryption, so anyone on the network can read them. Only allow it on a network you trust, such as your home network.",
+  "@serverCleartextRisk": {
+    "description": "Risk explanation shown with the plain http switch."
+  },
+  "serverCleartextNeeded": "This address uses http. Turn on plain http, or use an https address.",
+  "@serverCleartextNeeded": {
+    "description": "Hint shown when the address is http but plain http is not allowed."
+  },
+  "serverErrorNameRequired": "Enter a name for this server.",
+  "@serverErrorNameRequired": {
+    "description": "Validation error: empty display name."
+  },
+  "serverErrorAddressRequired": "Enter the server address.",
+  "@serverErrorAddressRequired": {
+    "description": "Validation error: empty address."
+  },
+  "serverErrorAddressInvalid": "Enter a full address such as https://host.example:8989.",
+  "@serverErrorAddressInvalid": {
+    "description": "Validation error: address is not a valid http(s) URL."
+  },
+  "serverErrorAddressCredentials": "Don't put a username or password in the address. Use the fields below.",
+  "@serverErrorAddressCredentials": {
+    "description": "Validation error: address contains credentials."
+  },
+  "serverErrorAddressQuery": "Remove everything after the ? in the address. Keys belong in the key field.",
+  "@serverErrorAddressQuery": {
+    "description": "Validation error: address contains a query string."
+  },
+  "serverErrorAddressPort": "The port must be a number from 1 to 65535.",
+  "@serverErrorAddressPort": {
+    "description": "Validation error: the port in the address is not between 1 and 65535."
+  },
+  "serverErrorAddressNonAscii": "Use the ASCII form of the host name (for example xn--...), not special characters.",
+  "@serverErrorAddressNonAscii": {
+    "description": "Validation error: the host name contains non-ASCII characters; the user should enter its ASCII (punycode) form."
+  },
+  "serverErrorSecretsReenter": "You changed the server address. Enter the key or password again; stored secrets are never sent to a different address.",
+  "@serverErrorSecretsReenter": {
+    "description": "Validation error: the address origin changed, so the stored key or password must be entered again before saving or testing."
+  },
+  "serverSecretReenterHint": "You changed the server address, so the stored key or password will not be used. Enter it again.",
+  "@serverSecretReenterHint": {
+    "description": "Hint shown above the credential fields after the address (scheme, host or port) was changed: stored secrets are not reused."
+  },
+  "serverErrorPrefixInvalid": "Use a path such as /sonarr, without spaces, ? or ...",
+  "@serverErrorPrefixInvalid": {
+    "description": "Validation error: invalid path prefix."
+  },
+  "serverErrorHeaderInvalid": "Header names may use letters, digits and - _ . only, and must be unique.",
+  "@serverErrorHeaderInvalid": {
+    "description": "Validation error: invalid or duplicate header names."
+  },
+  "serverTestButton": "Test connection",
+  "@serverTestButton": {
+    "description": "Button that tests the connection to the server."
+  },
+  "serverTestTesting": "Testing…",
+  "@serverTestTesting": {
+    "description": "Shown while the connection test runs."
+  },
+  "serverTestSuccess": "Connected. Server version {version}.",
+  "@serverTestSuccess": {
+    "description": "Connection test success message.",
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "description": "Version text reported by the server."
+      }
+    }
+  },
+  "serverTestSuccessLabel": "Connected",
+  "@serverTestSuccessLabel": {
+    "description": "Short success chip label for the connection test."
+  },
+  "serverTestFailedLabel": "Failed",
+  "@serverTestFailedLabel": {
+    "description": "Short failure chip label for the connection test."
+  },
+  "serverPinTitle": "Trusted certificate",
+  "@serverPinTitle": {
+    "description": "Heading of the pinned certificate details."
+  },
+  "serverPinFingerprint": "SHA-256 fingerprint",
+  "@serverPinFingerprint": {
+    "description": "Label of the pinned certificate fingerprint."
+  },
+  "serverPinRemove": "Remove trusted certificate",
+  "@serverPinRemove": {
+    "description": "Button that forgets the pinned certificate."
+  },
+  "serverPinRemoveTitle": "Remove trusted certificate?",
+  "@serverPinRemoveTitle": {
+    "description": "Title of the confirmation for forgetting a pin."
+  },
+  "serverPinRemoveBody": "The next connection will ask you to review the server's certificate again.",
+  "@serverPinRemoveBody": {
+    "description": "Consequence text of the forget-pin confirmation."
+  },
+  "serverPinRemoveConfirm": "Remove",
+  "@serverPinRemoveConfirm": {
+    "description": "Confirm button of the forget-pin dialog."
+  },
+  "serverNeedsCredentialsBanner": "The saved credentials for this server are missing. Enter them again and save.",
+  "@serverNeedsCredentialsBanner": {
+    "description": "Banner in the editor when the saved secrets are missing."
+  },
+  "serverDiscardTitle": "Discard changes?",
+  "@serverDiscardTitle": {
+    "description": "Title of the unsaved-changes dialog."
+  },
+  "serverDiscardBody": "Your changes to this server haven't been saved.",
+  "@serverDiscardBody": {
+    "description": "Body of the unsaved-changes dialog."
+  },
+  "serverDiscardConfirm": "Discard",
+  "@serverDiscardConfirm": {
+    "description": "Discard button of the unsaved-changes dialog."
+  },
+  "serverDiscardKeep": "Keep editing",
+  "@serverDiscardKeep": {
+    "description": "Keep-editing button of the unsaved-changes dialog."
+  },
+  "certSheetTitleFirstUse": "Trust this certificate?",
+  "@certSheetTitleFirstUse": {
+    "description": "Title of the certificate sheet on first contact."
+  },
+  "certSheetExplanationFirstUse": "This server uses a certificate your device doesn't recognise. Compare the fingerprint with the one on your server before trusting it.",
+  "@certSheetExplanationFirstUse": {
+    "description": "Explanation on the first-use certificate sheet."
+  },
+  "certSheetTitleMismatch": "Certificate changed",
+  "@certSheetTitleMismatch": {
+    "description": "Title of the certificate sheet when a pinned certificate changed."
+  },
+  "certSheetExplanationMismatch": "This server now presents a different certificate than the one you trusted. Connections stay blocked until you decide.",
+  "@certSheetExplanationMismatch": {
+    "description": "Explanation on the mismatch certificate sheet."
+  },
+  "certSheetMismatchWarning": "If you did not replace the certificate yourself, someone may be intercepting the connection. Do not trust it.",
+  "@certSheetMismatchWarning": {
+    "description": "Prominent warning on the mismatch certificate sheet."
+  },
+  "certSheetTitleExpired": "Certificate expired",
+  "@certSheetTitleExpired": {
+    "description": "Title of the certificate sheet for an expired certificate."
+  },
+  "certSheetExplanationExpired": "This server's certificate is expired or not valid yet, so it cannot be trusted. Renew it on the server.",
+  "@certSheetExplanationExpired": {
+    "description": "Explanation on the expired certificate sheet."
+  },
+  "certSheetFingerprint": "SHA-256 fingerprint",
+  "@certSheetFingerprint": {
+    "description": "Label of the certificate fingerprint on the sheet."
+  },
+  "certSheetPreviousFingerprint": "Previously trusted fingerprint",
+  "@certSheetPreviousFingerprint": {
+    "description": "Label of the previously pinned fingerprint on the mismatch sheet."
+  },
+  "certSheetSubject": "Subject",
+  "@certSheetSubject": {
+    "description": "Label of the certificate subject."
+  },
+  "certSheetIssuer": "Issuer",
+  "@certSheetIssuer": {
+    "description": "Label of the certificate issuer."
+  },
+  "certSheetValidity": "Valid",
+  "@certSheetValidity": {
+    "description": "Label of the certificate validity period."
+  },
+  "certSheetValidityRange": "{from} to {until}",
+  "@certSheetValidityRange": {
+    "description": "Certificate validity range text.",
+    "placeholders": {
+      "from": {
+        "type": "String",
+        "description": "Start date, already formatted."
+      },
+      "until": {
+        "type": "String",
+        "description": "End date, already formatted."
+      }
+    }
+  },
+  "certSheetAccept": "Trust certificate",
+  "@certSheetAccept": {
+    "description": "Accept button of the first-use certificate sheet."
+  },
+  "certSheetAcceptMismatch": "Trust new certificate",
+  "@certSheetAcceptMismatch": {
+    "description": "Accept (re-trust) button of the mismatch certificate sheet."
+  },
+  "certSheetReject": "Don't trust",
+  "@certSheetReject": {
+    "description": "Reject button of the certificate sheet."
+  },
+  "certSheetHandle": "Drag handle",
+  "@certSheetHandle": {
+    "description": "Accessible label of the sheet drag handle."
+  },
+  "onboardingWelcomeTitle": "Welcome to Consolarr",
+  "@onboardingWelcomeTitle": {
+    "description": "Headline of the first-run welcome step."
+  },
+  "onboardingWelcomeBody": "Control your self-hosted media services from your phone. Let's connect your first server.",
+  "@onboardingWelcomeBody": {
+    "description": "Body text of the first-run welcome step."
+  },
+  "onboardingStart": "Get started",
+  "@onboardingStart": {
+    "description": "Primary button of the welcome step."
+  },
+  "onboardingSkip": "Skip for now",
+  "@onboardingSkip": {
+    "description": "Button that skips first-run setup."
+  },
+  "onboardingChooseTitle": "Which service?",
+  "@onboardingChooseTitle": {
+    "description": "Headline of the service choice step."
+  },
+  "onboardingChooseBody": "You can add more servers later.",
+  "@onboardingChooseBody": {
+    "description": "Body text of the service choice step."
+  },
+  "onboardingDetailsTitle": "Server details",
+  "@onboardingDetailsTitle": {
+    "description": "Headline of the details step."
+  },
+  "onboardingTestTitle": "Test and finish",
+  "@onboardingTestTitle": {
+    "description": "Headline of the test step."
+  },
+  "onboardingNext": "Next",
+  "@onboardingNext": {
+    "description": "Next button of the onboarding stepper."
+  },
+  "onboardingBack": "Back",
+  "@onboardingBack": {
+    "description": "Back button of the onboarding stepper."
+  },
+  "onboardingFinish": "Finish",
+  "@onboardingFinish": {
+    "description": "Finish button of the onboarding stepper."
+  },
+  "onboardingStepOf": "Step {current} of {total}",
+  "@onboardingStepOf": {
+    "description": "Progress text of the onboarding stepper.",
+    "placeholders": {
+      "current": {
+        "type": "int",
+        "description": "Current step number."
+      },
+      "total": {
+        "type": "int",
+        "description": "Number of steps."
+      }
+    }
+  },
+  "onboardingTestFirst": "Test the connection before finishing.",
+  "@onboardingTestFirst": {
+    "description": "Hint on the test step until the connection test succeeded."
+  }
+}

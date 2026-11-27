@@ -5,5 +5,6 @@ library;
 
 export 'src/app_error.dart';
 export 'src/cleartext_policy.dart';
+export 'src/parsed_rows.dart';
 export 'src/result.dart';
 export 'src/server_profile.dart';

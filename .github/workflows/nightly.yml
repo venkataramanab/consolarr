@@ -44,3 +44,51 @@ jobs:
           disable-animations: true
           working-directory: apps/${{ matrix.app }}
           script: flutter test integration_test/app_launch_test.dart
+
+  # Real Sonarr and qBittorrent (pinned by digest) plus toxiproxy for one
+  # latency + connection-drop scenario. Servers are plain http on the LAN-like
+  # emulator host network, so the test opts in to cleartext per server.
+  integration:
+    name: Emulator integration (Sonarr + qBittorrent + toxiproxy, API 34)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: ./.github/actions/setup-flutter
+
+      - name: Start Sonarr, qBittorrent and toxiproxy
+        run: bash tools/integration/start_services.sh "$RUNNER_TEMP/integration.env"
+
+      - name: Seed (empty root folder + one series, one tiny local torrent)
+        run: python3 tools/integration/seed.py "$RUNNER_TEMP/integration.env"
+
+      - name: Create toxiproxy proxies
+        run: bash tools/integration/toxiproxy_setup.sh
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Add both servers and see both lists (emulator)
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          script: bash tools/integration/run_tests.sh ${{ runner.temp }}/integration.env
+
+      - name: Service logs on failure
+        if: failure()
+        run: |
+          docker logs it-sonarr 2>&1 | tail -n 80 || true
+          docker logs it-qbit 2>&1 | tail -n 80 || true

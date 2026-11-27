@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Radarr area (RAD-*). Add Radarr events here; screens merge into screen_name.
+enums:
+  screen_name:
+    values:
+      - radarr_library
+      - radarr_movie_detail
+      - radarr_calendar
+      - radarr_queue
+      - radarr_history
+      - radarr_add_movie
+      - radarr_interactive_search
+events: {}

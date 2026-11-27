@@ -8,7 +8,7 @@
   "@homeEmptyHeading": {
     "description": "Headline of the placeholder state on the home screen before any server is configured."
   },
-  "homeEmptyBody": "Add a media server or download client to get started. This screen is a placeholder.",
+  "homeEmptyBody": "Add a media server or download client to get started.",
   "@homeEmptyBody": {
     "description": "One-line hint under the placeholder headline on the home screen."
   },

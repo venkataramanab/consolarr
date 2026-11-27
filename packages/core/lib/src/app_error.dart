@@ -13,7 +13,11 @@ enum ErrorCategory {
   notFound('not_found'),
   serverError('server_error'),
   networkUnreachable('network_unreachable'),
-  parseError('parse_error');
+  parseError('parse_error'),
+  tlsUntrusted('tls_untrusted'),
+  tlsExpired('tls_expired'),
+  redirectRefused('redirect_refused'),
+  responseTooLarge('response_too_large');
 
   const ErrorCategory(this.code);
 
@@ -51,3 +55,18 @@ class AppError implements Exception {
   @override
   String toString() => 'AppError(${category.code})';
 }
+
+/// Failures after which cached or last-good data is shown (with an offline
+/// marker) instead of an error: the server is not reachable or not healthy.
+///
+/// Everything else is shown as such and never hidden behind old data:
+/// `auth_failed`, `unsupported_version`, `cleartext_refused`, redirects and
+/// every TLS category (a pin mismatch must block).
+const Set<ErrorCategory> kOfflineFallbackCategories = {
+  ErrorCategory.networkUnreachable,
+  ErrorCategory.timeout,
+  ErrorCategory.serverError,
+  ErrorCategory.notFound,
+  ErrorCategory.parseError,
+  ErrorCategory.responseTooLarge,
+};

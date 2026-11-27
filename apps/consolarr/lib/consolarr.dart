@@ -4,5 +4,6 @@
 library;
 
 export 'src/app.dart';
+export 'src/first_frame.dart';
 export 'src/providers.dart';
 export 'src/router.dart';

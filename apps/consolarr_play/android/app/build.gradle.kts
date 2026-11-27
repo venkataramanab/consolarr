@@ -32,6 +32,15 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    // Native libraries are stored compressed in the APK (the installer
+    // extracts them). Uncompressed (page-aligned, mmap-able) storage is the
+    // AGP default for minSdk 23+, but it makes the APK about twice as large.
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
     defaultConfig {
         applicationId = "org.consolarr.app"
         // Distinct id so the Play build can be installed beside the foss build.
@@ -40,6 +49,29 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+    }
+
+    // `flutter build apk --target-platform android-arm64` only filters
+    // Flutter's own libraries. Plugin libraries (libdartjni.so, SQLite) for
+    // the other ABIs would still be packaged, so drop them here too.
+    val flutterAbis =
+        mapOf(
+            "android-arm" to "armeabi-v7a",
+            "android-arm64" to "arm64-v8a",
+            "android-x64" to "x86_64",
+        )
+    val requestedAbis =
+        providers.gradleProperty("target-platform").orNull
+            ?.split(",")
+            ?.mapNotNull { flutterAbis[it.trim()] }
+            .orEmpty()
+    if (requestedAbis.isNotEmpty()) {
+        val dropped = (flutterAbis.values + "x86") - requestedAbis.toSet()
+        packaging {
+            jniLibs {
+                excludes += dropped.map { "lib/$it/**" }
+            }
+        }
     }
 
     signingConfigs {

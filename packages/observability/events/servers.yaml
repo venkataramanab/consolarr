@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Servers area (SRV-*). Schema: see README.md. Owns the shared enums and the
+# server / certificate events.
+enums:
+  screen_name:
+    dart: ScreenName
+    values: [shell, onboarding, servers_list, server_editor, certificate_sheet]
+  service_kind_param:
+    dart: ServiceKindParam
+    values: [sonarr, radarr, qbittorrent, transmission, deluge]
+  # Exactly the wire codes of core's ErrorCategory (a test in the app checks).
+  error_category_param:
+    dart: ErrorCategoryParam
+    values:
+      - auth_failed
+      - timeout
+      - tls_pin_mismatch
+      - cleartext_refused
+      - unsupported_version
+      - not_found
+      - server_error
+      - network_unreachable
+      - parse_error
+      - tls_untrusted
+      - tls_expired
+      - redirect_refused
+      - response_too_large
+  certificate_decision_param:
+    dart: CertificateDecisionParam
+    values: [accepted, rejected, mismatch]
+events:
+  screen_viewed:
+    description: A screen became visible.
+    params:
+      screen: {type: screen_name}
+  server_added:
+    description: A server profile was saved. Carries the service kind only.
+    params:
+      service_kind: {type: service_kind_param}
+  connection_test_result:
+    description: A connection test finished; error_category is absent on success.
+    params:
+      service_kind: {type: service_kind_param}
+      error_category: {type: error_category_param, optional: true}
+      major_version: {type: int, optional: true}
+  certificate_decision:
+    description: The user decided on a certificate, or a pinned certificate changed.
+    params:
+      decision: {type: certificate_decision_param}
