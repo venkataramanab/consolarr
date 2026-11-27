@@ -14,7 +14,13 @@ import 'package:consolarr_lints/src/paths.dart';
 /// positions: the first positional argument of `Text`/`SelectableText`, and
 /// the `tooltip`, `semanticsLabel`, `semanticLabel`, `hintText`, `labelText`,
 /// `helperText`, `errorText` and `counterText` named arguments, plus
-/// `SnackBar.content`, `Tooltip.message` and `Semantics.label`/`hint`.
+/// `SnackBar.content`, `Tooltip.message`, `Semantics.label`/`hint`,
+/// `TextSpan.text` (so `Text.rich`), `Tab.text` and the `label` of
+/// `NavigationDestination`, `NavigationRailDestination`, `NavigationRail`,
+/// `NavigationDrawerDestination` and `BottomNavigationBarItem`.
+///
+/// Conditionals (`b ? 'a' : 'b'`), `??` fallbacks, `+` concatenations and
+/// parentheses are looked through.
 ///
 /// Literals without any letter (for example a `'·'` separator) are ignored.
 /// For non-UI strings that happen to sit in such a position, suppress with a
@@ -73,6 +79,13 @@ const _typeSpecificArguments = <String, Set<String>>{
   'SnackBar': {'content'},
   'Tooltip': {'message'},
   'Semantics': {'label', 'hint'},
+  'TextSpan': {'text'},
+  'Tab': {'text'},
+  'NavigationDestination': {'label'},
+  'NavigationRailDestination': {'label'},
+  'NavigationRail': {'label'},
+  'NavigationDrawerDestination': {'label'},
+  'BottomNavigationBarItem': {'label'},
 };
 
 class _Visitor extends SimpleAstVisitor<void> {
@@ -114,8 +127,27 @@ class _Visitor extends SimpleAstVisitor<void> {
   }
 
   void _check(Expression expression) {
-    if (expression is StringLiteral && _hasLetters(expression)) {
-      rule.reportAtNode(expression);
+    switch (expression) {
+      case StringLiteral() when _hasLetters(expression):
+        rule.reportAtNode(expression);
+      case ParenthesizedExpression(:final expression):
+        _check(expression);
+      case ConditionalExpression(:final thenExpression, :final elseExpression):
+        _check(thenExpression);
+        _check(elseExpression);
+      case BinaryExpression(
+        :final leftOperand,
+        :final rightOperand,
+        :final operator,
+      ):
+        final op = operator.lexeme;
+        if (op == '+') {
+          _check(leftOperand);
+          _check(rightOperand);
+        } else if (op == '??') {
+          _check(rightOperand);
+        }
+      default:
     }
   }
 }

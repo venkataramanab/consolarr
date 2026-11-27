@@ -17,6 +17,12 @@ class InputDecoration {
   InputDecoration copyWith({String? hintText}) => this;
 }
 class IconButton { const IconButton({String? tooltip}); }
+class TextSpan { const TextSpan({String? text, List<Object>? children}); }
+class Tab { const Tab({String? text}); }
+class NavigationDestination { const NavigationDestination({required String label}); }
+class NavigationRailDestination { const NavigationRailDestination({required Object label}); }
+class NavigationRail { const NavigationRail({String? label}); }
+class BottomNavigationBarItem { const BottomNavigationBarItem({required String label}); }
 ''';
 
 @reflectiveTest
@@ -62,6 +68,52 @@ class NoUiStringTest extends AnalysisRuleTest {
     ]);
   }
 
+  Future<void> test_conditional_and_concatenation() async {
+    final src =
+        "$_widgets\nvoid f(bool b, String n, String? m) { Text(b ? 'Yes' : 'No'); "
+        "Text('Hello ' + n); Text(n + ' items'); Text(('Paren')); "
+        "Text(m ?? 'Fallback'); Text(b ? n : n); Text(n + n); }";
+    await assertDiagnostics(src, [
+      lint(src.indexOf("'Yes'"), 5),
+      lint(src.indexOf("'No'"), 4),
+      lint(src.indexOf("'Hello '"), 8),
+      lint(src.indexOf("' items'"), 8),
+      lint(src.indexOf("'Paren'"), 7),
+      lint(src.indexOf("'Fallback'"), 10),
+    ]);
+  }
+
+  Future<void> test_text_span_and_tab() async {
+    final src =
+        "$_widgets\nvoid f() { const TextSpan(text: 'Rich'); "
+        "const Tab(text: 'Tab one'); }";
+    await assertDiagnostics(src, [
+      lint(src.indexOf("'Rich'"), 6),
+      lint(src.indexOf("'Tab one'"), 9),
+    ]);
+  }
+
+  Future<void> test_navigation_labels() async {
+    final src =
+        "$_widgets\nvoid f() { const NavigationDestination(label: 'Home'); "
+        "const NavigationRailDestination(label: 'Queue'); "
+        "const NavigationRail(label: 'Rail'); "
+        "const BottomNavigationBarItem(label: 'Calendar'); }";
+    await assertDiagnostics(src, [
+      lint(src.indexOf("'Home'"), 6),
+      lint(src.indexOf("'Queue'"), 7),
+      lint(src.indexOf("'Rail'"), 6),
+      lint(src.indexOf("'Calendar'"), 10),
+    ]);
+  }
+
+  Future<void> test_navigation_label_from_variable_ok() async {
+    await assertNoDiagnostics(
+      "$_widgets\nvoid f(String s) { NavigationDestination(label: s); "
+      "Tab(text: s); TextSpan(text: s); }",
+    );
+  }
+
   Future<void> test_ignore_comment() async {
     await assertNoDiagnostics(
       "$_widgets\nvoid f() {\n"
@@ -79,26 +131,79 @@ class NoBadCertificateCallbackTest extends AnalysisRuleTest {
     super.setUp();
   }
 
-  Future<void> test_reported_elsewhere() async {
-    const src = '''
+  static const _src = '''
 class C { void Function()? badCertificateCallback; }
 void f(C c) { c.badCertificateCallback = () {}; }
 ''';
-    await assertDiagnostics(src, [
-      lint(src.indexOf('badCertificateCallback = '), 22),
+
+  Future<void> test_reported_elsewhere() async {
+    await assertDiagnostics(_src, [
+      lint(_src.indexOf('badCertificateCallback = '), 22),
     ]);
   }
 
   Future<void> test_allowed_in_factory_file() async {
-    const src = '''
-class C { void Function()? badCertificateCallback; }
-void f(C c) { c.badCertificateCallback = () {}; }
-''';
-    final path =
-        '$testPackageRootPath/packages/security/lib/src/http/'
-        'secure_http_client_factory.dart';
-    newFile(path, src);
+    const root = '/home/test/packages/security';
+    newPubspecYamlFile(root, 'name: security');
+    final path = '$root/lib/src/http/secure_http_client_factory.dart';
+    newFile(path, _src);
     await assertNoDiagnosticsInFile(path);
+  }
+
+  Future<void> test_lookalike_path_is_not_allowed() async {
+    // Same trailing path, different package location: must still be reported.
+    const root = '/home/test/apps/x/packages/other';
+    newPubspecYamlFile(root, 'name: other');
+    final path = '$root/lib/src/http/secure_http_client_factory.dart';
+    newFile(path, _src);
+    await assertDiagnosticsInFile(path, [
+      lint(_src.indexOf('badCertificateCallback = '), 22),
+    ]);
+  }
+
+  Future<void> test_other_file_in_security_package_is_not_allowed() async {
+    const root = '/home/test/packages/security';
+    newPubspecYamlFile(root, 'name: security');
+    final path = '$root/lib/src/http/other.dart';
+    newFile(path, _src);
+    await assertDiagnosticsInFile(path, [
+      lint(_src.indexOf('badCertificateCallback = '), 22),
+    ]);
+  }
+
+  Future<void> test_other_trust_apis_reported() async {
+    const src = '''
+class HttpOverrides {}
+class MyOverrides extends HttpOverrides {}
+class SecurityContext {
+  SecurityContext({bool withTrustedRoots = false});
+  void setTrustedCertificates(String f) {}
+  void setTrustedCertificatesBytes(List<int> b) {}
+}
+void g({Object? onBadCertificate}) {}
+void f() {
+  final c = SecurityContext(withTrustedRoots: false);
+  c.setTrustedCertificates('x');
+  c.setTrustedCertificatesBytes([]);
+  g(onBadCertificate: 1);
+}
+''';
+    await assertDiagnostics(src, [
+      lint(src.indexOf('extends HttpOverrides') + 8, 13),
+      lint(src.indexOf('withTrustedRoots: false)'), 23),
+      lint(src.indexOf('c.setTrustedCertificates') + 2, 22),
+      lint(src.indexOf('c.setTrustedCertificatesBytes') + 2, 27),
+      lint(src.indexOf('onBadCertificate: 1'), 19),
+    ]);
+  }
+
+  Future<void> test_trusted_roots_true_ok() async {
+    await assertNoDiagnostics('''
+class SecurityContext {
+  SecurityContext({bool withTrustedRoots = false});
+}
+void f() { SecurityContext(withTrustedRoots: true); }
+''');
   }
 }
 

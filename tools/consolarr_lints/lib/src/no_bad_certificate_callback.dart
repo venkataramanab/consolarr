@@ -8,24 +8,40 @@ import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/error/error.dart';
 import 'package:consolarr_lints/src/paths.dart';
 
-/// The only file allowed to touch `badCertificateCallback`.
-const allowedBadCertificateFile =
-    'packages/security/lib/src/http/secure_http_client_factory.dart';
+/// The package that owns TLS trust decisions.
+const allowedTlsPackage = 'security';
 
-/// Reports any use of `badCertificateCallback` outside the one file that
-/// implements trust-on-first-use pinning.
+/// The only file (relative to [allowedTlsPackage]) allowed to touch TLS trust.
+const allowedTlsFile = 'lib/src/http/secure_http_client_factory.dart';
+
+/// Repo-relative form of the allowed file, for messages.
+const allowedBadCertificateFile = 'packages/security/$allowedTlsFile';
+
+/// Identifiers that can weaken or replace certificate validation.
+const forbiddenTlsIdentifiers = {
+  'badCertificateCallback',
+  'onBadCertificate',
+  'HttpOverrides',
+  'setTrustedCertificates',
+  'setTrustedCertificatesBytes',
+};
+
+/// Reports any use of TLS-trust-altering APIs outside the one file that
+/// implements trust-on-first-use pinning: `badCertificateCallback`,
+/// `onBadCertificate`, `HttpOverrides`, `setTrustedCertificates(Bytes)` and
+/// `SecurityContext(withTrustedRoots: false)`.
 class NoBadCertificateCallback extends AnalysisRule {
   NoBadCertificateCallback()
     : super(
         name: 'consolarr_bad_certificate_callback',
         description:
-            'badCertificateCallback may only be used in '
+            'TLS trust may only be customised in '
             'secure_http_client_factory.dart.',
       );
 
   static const LintCode code = LintCode(
     'consolarr_bad_certificate_callback',
-    'badCertificateCallback is only allowed in '
+    'Certificate validation may only be customised in '
         'packages/security/lib/src/http/secure_http_client_factory.dart.',
     correctionMessage:
         'Obtain HTTP clients from SecureHttpClientFactory instead.',
@@ -39,13 +55,19 @@ class NoBadCertificateCallback extends AnalysisRule {
     RuleVisitorRegistry registry,
     RuleContext context,
   ) {
-    if (pathEndsWith(
-      context.definingUnit.file.path,
-      allowedBadCertificateFile,
+    if (isFileInPackage(
+      filePath: context.definingUnit.file.path,
+      packageRoot: context.package?.root.path,
+      packageName: allowedTlsPackage,
+      relativePath: allowedTlsFile,
     )) {
       return;
     }
-    registry.addSimpleIdentifier(this, _Visitor(this));
+    final visitor = _Visitor(this);
+    registry
+      ..addSimpleIdentifier(this, visitor)
+      ..addNamedType(this, visitor)
+      ..addNamedArgument(this, visitor);
   }
 }
 
@@ -56,7 +78,27 @@ class _Visitor extends SimpleAstVisitor<void> {
 
   @override
   void visitSimpleIdentifier(SimpleIdentifier node) {
-    if (node.name == 'badCertificateCallback') {
+    if (forbiddenTlsIdentifiers.contains(node.name)) {
+      rule.reportAtNode(node);
+    }
+  }
+
+  @override
+  void visitNamedType(NamedType node) {
+    if (forbiddenTlsIdentifiers.contains(node.name.lexeme)) {
+      rule.reportAtNode(node);
+    }
+  }
+
+  @override
+  void visitNamedArgument(NamedArgument node) {
+    final name = node.name.lexeme;
+    final value = node.argumentExpression;
+    if (forbiddenTlsIdentifiers.contains(name)) {
+      rule.reportAtNode(node);
+    } else if (name == 'withTrustedRoots' &&
+        value is BooleanLiteral &&
+        !value.value) {
       rule.reportAtNode(node);
     }
   }

@@ -8,8 +8,9 @@ import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/error/error.dart';
 import 'package:consolarr_lints/src/paths.dart';
 
-/// The only file allowed to call `print`/`debugPrint`.
-const allowedPrintFile = 'packages/observability/lib/src/logger.dart';
+/// The package and package-relative file allowed to call `print`/`debugPrint`.
+const allowedPrintPackage = 'observability';
+const allowedPrintFile = 'lib/src/logger.dart';
 
 /// Reports calls to `print` and `debugPrint` outside the redacting logger.
 class NoPrint extends AnalysisRule {
@@ -33,7 +34,14 @@ class NoPrint extends AnalysisRule {
     RuleVisitorRegistry registry,
     RuleContext context,
   ) {
-    if (pathEndsWith(context.definingUnit.file.path, allowedPrintFile)) return;
+    if (isFileInPackage(
+      filePath: context.definingUnit.file.path,
+      packageRoot: context.package?.root.path,
+      packageName: allowedPrintPackage,
+      relativePath: allowedPrintFile,
+    )) {
+      return;
+    }
     registry.addMethodInvocation(this, _Visitor(this));
   }
 }
