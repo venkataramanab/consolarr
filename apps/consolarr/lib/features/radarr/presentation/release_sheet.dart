@@ -347,14 +347,16 @@ class _ReleaseRowState extends State<ReleaseRow> {
                 Text(r.customFormats.join(', ')),
               ],
             ],
-            Row(
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: ConsolarrSpacing.sm,
               children: [
                 TextButton.icon(
                   onPressed: () => setState(() => _open = !_open),
                   icon: Icon(_open ? Icons.expand_less : Icons.expand_more),
                   label: Text(_open ? l10n.radarrCollapse : l10n.radarrExpand),
                 ),
-                const Spacer(),
                 FilledButton.icon(
                   onPressed:
                       phase == GrabPhase.grabbing || phase == GrabPhase.grabbed

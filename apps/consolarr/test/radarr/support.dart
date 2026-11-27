@@ -36,6 +36,7 @@ class FakeRadarrApi with EmptyArrLists implements RadarrApi {
     CommandStatus.started,
     CommandStatus.completed,
   ];
+  List<ArrRootFolder> rootFoldersResult = const [];
   final List<ArrQualityProfile> profiles;
   final List<String> calls = [];
   int moviesCalls = 0;
@@ -51,6 +52,10 @@ class FakeRadarrApi with EmptyArrLists implements RadarrApi {
   @override
   Future<Result<List<ArrQualityProfile>>> qualityProfiles() async =>
       Result.ok(profiles);
+
+  @override
+  Future<Result<List<ArrRootFolder>>> rootFolders() async =>
+      Result.ok(rootFoldersResult);
 
   @override
   Future<Result<List<RadarrMovie>>> movies() async {

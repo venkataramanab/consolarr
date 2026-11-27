@@ -195,17 +195,7 @@ class QueueRow extends ConsumerWidget {
               ? null
               : () => openMovie(context, item.movieId!),
         ),
-        if (item.messages.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: ConsolarrSpacing.xs),
-            child: StatusChip(
-              label: l10n.radarrQueueMessages(item.messages.length),
-              icon: Icons.warning_amber,
-              tone: StatusTone.warning,
-              // Plain text from the server.
-              details: item.messages.join('\n'),
-            ),
-          ),
+        if (item.messages.isNotEmpty) _MessagesPanel(messages: item.messages),
         Align(
           alignment: AlignmentDirectional.centerEnd,
           child: TextButton.icon(
@@ -338,6 +328,45 @@ class _RemovalDialogState extends State<RemovalDialog> {
               Navigator.of(context).pop(RemovalChoice(_fromClient, _blocklist)),
           child: Text(l10n.radarrRemoveConfirm),
         ),
+      ],
+    );
+  }
+}
+
+/// Expandable warning and error texts of a queue item (plain text).
+class _MessagesPanel extends StatefulWidget {
+  const _MessagesPanel({required this.messages});
+
+  final List<String> messages;
+
+  @override
+  State<_MessagesPanel> createState() => _MessagesPanelState();
+}
+
+class _MessagesPanelState extends State<_MessagesPanel> {
+  bool _open = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextButton.icon(
+          onPressed: () => setState(() => _open = !_open),
+          icon: Icon(_open ? Icons.expand_less : Icons.warning_amber),
+          label: Text(l10n.radarrQueueMessages(widget.messages.length)),
+        ),
+        if (_open)
+          Padding(
+            padding: const EdgeInsetsDirectional.only(
+              start: ConsolarrSpacing.md,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [for (final m in widget.messages) Text('• $m')],
+            ),
+          ),
       ],
     );
   }
