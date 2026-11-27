@@ -38,6 +38,29 @@ plant a.dart 'var x = 1; // nosemgrep'
 bash "$s/tools/ci/check_suppressions.sh" "$s" >/dev/null 2>&1 && fail "nosemgrep must fail"
 plant a.dart '// ignore_for_file: consolarr_no_print'
 bash "$s/tools/ci/check_suppressions.sh" "$s" >/dev/null 2>&1 && fail "ignore_for_file must fail"
+# Bypass probes (each must fail on its own, and in combination).
+probe() { # probe <label> <content...>: planted file must be rejected
+  local label=$1; shift
+  plant a.dart "$(printf '%s\n' "$@")"
+  bash "$s/tools/ci/check_suppressions.sh" "$s" >/dev/null 2>&1 && fail "$label must fail"
+  return 0
+}
+probe "ignore: type=lint" '// ignore: type=lint' 'var x = 1;'
+probe "ignore_for_file: type=lint" '// ignore_for_file: type=lint'
+probe "ignore_for_file: type = lint (spaces)" '//ignore_for_file:   type = lint'
+probe "ignore list containing type=lint" 'var x = 1; // ignore: unused_local_variable, type=lint'
+probe "short-form nosem" 'var x = 1; // nosem'
+probe "nosem with rule id" 'var x = 1; // nosem: consolarr-bad-certificate-callback'
+probe "block-comment nosemgrep" 'var x = 1; /* nosemgrep */'
+probe "block-comment nosem" 'var x = 1; /* nosem */'
+probe "doc-comment nosem" '/// nosem'
+probe "comment after a string literal" "var x = 'a'; // nosemgrep"
+probe "comment after a double-quoted string" 'var x = "a"; // ignore: consolarr_no_print'
+probe "ignore after a string literal" "var x = 'a'; // ignore_for_file: type=lint"
+probe "combined bypass" '// ignore: type=lint' 'HttpClient()..badCertificateCallback = (_, __, ___) => true; // nosem'
+plant a.dart '// ignore: unused_local_variable
+var nosemantics = 1; // not a suppression'
+bash "$s/tools/ci/check_suppressions.sh" "$s" >/dev/null 2>&1 || fail "unrelated words/ignores must pass"
 rm "$s/a.dart"
 printf 'analyzer:\n  errors:\n    consolarr_no_print: ignore\n' > "$s/analysis_options.yaml"; git -C "$s" add -A
 bash "$s/tools/ci/check_suppressions.sh" "$s" >/dev/null 2>&1 && fail "analysis_options override must fail"
@@ -58,5 +81,31 @@ git -C "$g" rm -qf server.pem
 mkdir -p "$g/pkg/test/.generated"; echo "pkg/test/.generated/" > "$g/.gitignore"
 echo x > "$g/pkg/test/.generated/fixture.pem"
 (cd "$g" && bash tools/ci/repo_guard.sh >/dev/null) || fail "test-time generated certs in an ignored dir must pass"
+
+mkdir -p "$g/apps/x/lib/build"; echo '// x' > "$g/apps/x/lib/build/x.dart"; git -C "$g" add -f apps
+(cd "$g" && bash tools/ci/repo_guard.sh >/dev/null 2>&1) && fail "tracked file under lib/build/ must fail"
+git -C "$g" rm -qrf apps
+mkdir -p "$g/build"; echo '// x' > "$g/build/x.dart"; git -C "$g" add -f build
+(cd "$g" && bash tools/ci/repo_guard.sh >/dev/null 2>&1) && fail "tracked root build/ file must fail"
+git -C "$g" rm -qrf build
+(cd "$g" && bash tools/ci/repo_guard.sh >/dev/null) || fail "repo without build/ files must pass"
+
+echo "== analysis_options guard"
+a="$scratch/ao"; new_repo "$a"
+mkdir -p "$a/apps/app" "$a/packages/p" "$a/tools/consolarr_lints"
+printf 'plugins:\n  consolarr_lints:\n    path: tools/consolarr_lints\n' > "$a/analysis_options.yaml"
+printf 'include: ../../analysis_options.yaml\n' > "$a/apps/app/analysis_options.yaml"
+printf 'include: package:lints/recommended.yaml\n' > "$a/tools/consolarr_lints/analysis_options.yaml"
+git -C "$a" add -A
+bash "$a/tools/ci/check_analysis_options.sh" "$a" >/dev/null || fail "nested file including the root must pass"
+printf 'linter:\n  rules:\n    avoid_print: false\n' > "$a/packages/p/analysis_options.yaml"; git -C "$a" add -A
+bash "$a/tools/ci/check_analysis_options.sh" "$a" >/dev/null 2>&1 && fail "nested file without include must fail"
+printf 'include: package:lints/recommended.yaml\n' > "$a/packages/p/analysis_options.yaml"; git -C "$a" add -A
+bash "$a/tools/ci/check_analysis_options.sh" "$a" >/dev/null 2>&1 && fail "nested file including something else must fail"
+printf 'include: ../../apps/app/analysis_options.yaml\n' > "$a/packages/p/analysis_options.yaml"; git -C "$a" add -A
+bash "$a/tools/ci/check_analysis_options.sh" "$a" >/dev/null 2>&1 && fail "include chain not reaching the root directly must fail"
+printf 'include: ../../analysis_options.yaml\n' > "$a/packages/p/analysis_options.yaml"
+printf 'include: package:lints/recommended.yaml\n' > "$a/apps/analysis_options.yaml"; git -C "$a" add -A
+bash "$a/tools/ci/check_analysis_options.sh" "$a" >/dev/null 2>&1 && fail "only the plugin package itself is exempt"
 
 echo "All CI guard self-tests passed."

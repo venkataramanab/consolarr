@@ -49,6 +49,9 @@ jobs:
       - name: No lint or Semgrep suppressions outside the allowlist
         run: bash tools/ci/check_suppressions.sh
 
+      - name: Every analysis_options.yaml includes the root one (custom lints stay on)
+        run: bash tools/ci/check_analysis_options.sh
+
       - name: CI guard self-tests (guards fail on planted violations)
         run: bash tools/ci/selftest.sh
 
@@ -167,7 +170,9 @@ jobs:
         run: |
           python -m pip install --disable-pip-version-check --require-hashes --only-binary=:all: \
             -r tools/ci/semgrep-requirements.txt
-          semgrep scan --config tools/semgrep/consolarr.yml --error --metrics=off apps packages
+          # Inline suppression comments must never hide a finding.
+          semgrep scan --config tools/semgrep/consolarr.yml --disable-nosem --error --metrics=off apps packages
+          bash tools/ci/semgrep_selftest.sh
 
       - name: semgrep (registry Dart rules, advisory)
         continue-on-error: true

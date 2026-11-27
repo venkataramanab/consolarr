@@ -4,4 +4,8 @@
 # other paths) do not apply: tests and generated files are scanned too.
 .git/
 .dart_tool/
-build/
+# Real build output only (anchored); a source folder named build/ is scanned.
+/build/
+/apps/*/build/
+/packages/*/build/
+/tools/*/build/

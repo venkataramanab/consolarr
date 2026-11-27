@@ -3,7 +3,14 @@
 # Exact `<repo-relative file> | <rule>` pairs where a project lint may be
 # suppressed. Only the UI-string rule appears here, and only where a test
 # fixture is deliberately not user-facing text. The certificate and print
-# rules, and `nosemgrep`, must never be listed.
+# rules, `nosemgrep` and `nosem` must never be listed.
 packages/test_harness/test/accessibility_test.dart | consolarr_no_ui_string
 packages/test_harness/test/matrix_test.dart | consolarr_no_ui_string
 tools/consolarr_lints/test/rules_test.dart | consolarr_no_ui_string
+# The documentation / quick-fix text of the rule itself spells out the syntax.
+tools/consolarr_lints/lib/src/no_ui_string.dart | consolarr_no_ui_string
+# gen-l10n output carries a blanket `type=lint` header. These files are
+# regenerated and diffed in CI (l10n drift check) and still scanned by Semgrep.
+packages/l10n/lib/src/generated/app_localizations.dart | type=lint
+packages/l10n/lib/src/generated/app_localizations_ar.dart | type=lint
+packages/l10n/lib/src/generated/app_localizations_en.dart | type=lint

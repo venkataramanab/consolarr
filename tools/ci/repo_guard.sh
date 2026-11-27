@@ -5,7 +5,12 @@
 #  1. fails if keystore / credential-looking files are committed (or sit
 #     untracked and un-ignored) outside the explicit allowlist in
 #     tools/ci/forbidden_files_allowlist.txt;
-#  2. fails if any term from $CLEANROOM_TERMS (newline-separated, supplied by
+#  2. fails if any tracked file lives under a `build/` directory (build output
+#     is excluded from nothing but the root, apps/*, packages/* and tools/*
+#     `build/` directories, so a source file hidden in a `lib/build/` folder
+#     would otherwise be compiled but could not be hidden from scanners: it
+#     must simply not exist);
+#  3. fails if any term from $CLEANROOM_TERMS (newline-separated, supplied by
 #     the CLEANROOM_TERMS repository *secret*) appears in file contents or
 #     paths. Skips cleanly when the secret is unavailable (pull requests from
 #     forks never receive secrets).
@@ -53,7 +58,15 @@ if [ -n "$hits" ]; then
   fail=1
 fi
 
-# --- 2. clean-room terms -----------------------------------------------------
+# --- 2. tracked files under build/ ------------------------------------------
+build_hits=$(git ls-files --cached | grep -E '(^|/)build/' || true)
+if [ -n "$build_hits" ]; then
+  echo "::error::Tracked files under a build/ directory (build output is git-ignored and never scanned; do not force-add):"
+  printf '%s\n' "$build_hits"
+  fail=1
+fi
+
+# --- 3. clean-room terms -----------------------------------------------------
 if [ ! -s "$terms_file" ]; then
   echo "CLEANROOM_TERMS secret not available (fork pull request or not configured): clean-room term check skipped."
 else

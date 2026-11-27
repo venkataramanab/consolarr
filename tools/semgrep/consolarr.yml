@@ -40,7 +40,10 @@ rules:
       UserPinConfirmation proves the user accepted a certificate fingerprint.
       Construct it only in the confirmation UI (apps/*/lib/features/) right
       after the user's explicit accept, never in services or packages.
-    pattern-regex: \bUserPinConfirmation\s*\.\s*userAccepted\b
+      The rule matches the constructor name `userAccepted` itself, not the
+      class name, so `typedef C = UserPinConfirmation;`, import prefixes and
+      constructor tear-offs (`C.userAccepted`) cannot get around it.
+    pattern-regex: \buserAccepted\b
     paths:
       include:
         - "apps/"

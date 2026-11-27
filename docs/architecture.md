@@ -52,8 +52,14 @@ apps/consolarr_play ──────► consolarr   (Play entry point, only pl
    `packages/security/lib/src/http/secure_http_client_factory.dart` (lint +
    Semgrep; the test harness's access guard may name `HttpOverrides` to observe
    client creation). The rule also covers generated `*.g.dart` files, and CI
-   fails on any `// ignore: consolarr_...` / `nosemgrep` suppression that is
-   not in `tools/ci/suppression_allowlist.txt`. `.github/CODEOWNERS` requires
+   fails on any `// ignore: consolarr_...`, `type=lint` or `nosemgrep` /
+   `nosem` suppression (line or block comment, wherever it sits on the line)
+   that is not in `tools/ci/suppression_allowlist.txt`; Semgrep also runs with
+   `--disable-nosem`. Only real build output (`build/`, `apps|packages|tools/*/build/`)
+   is excluded from analysis and scanning, the repo guard rejects tracked files
+   under any `build/`, and every nested `analysis_options.yaml` must include the
+   root one so the plugin stays loaded. `UserPinConfirmation.userAccepted` is
+   matched by constructor name, so aliases and tear-offs are caught. `.github/CODEOWNERS` requires
    the owner's review for `packages/security/**`, `tools/**` and `.github/**`.
 7. **No hardcoded user-facing text.** Strings live in per-feature ARB files.
 
