@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// TODO(arr_common): the release row and sheet shell are local copies; swap
-// them for the shared ones from `features/arr_common` once W4a merges.
-
 import 'package:arr_api/arr_api.dart';
+import 'package:consolarr/features/arr_common/presentation/queue_row_builder.dart';
+import 'package:consolarr/features/arr_common/presentation/release_controls.dart';
+import 'package:consolarr/features/arr_common/presentation/release_row.dart';
 import 'package:consolarr/features/radarr/application/radarr_providers.dart';
 import 'package:consolarr/features/radarr/domain/release_query.dart';
 import 'package:consolarr/features/radarr/presentation/common.dart';
 import 'package:consolarr/features/radarr/presentation/screen_view.dart';
-import 'package:consolarr/features/radarr/presentation/stand_ins/glass_sheet.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,7 +22,12 @@ Future<void> showReleaseSheet(BuildContext context, int movieId) {
     context: context,
     title: l10n.radarrReleasesTitle,
     closeLabel: l10n.radarrClose,
-    builder: (_) => ReleaseSheetBody(movieId: movieId),
+    detents: GlassSheetDetents.full,
+    // The sheet paints its own surface: tiles need a Material of their own.
+    scrollBuilder: (context, controller) => Material(
+      type: MaterialType.transparency,
+      child: ReleaseSheetBody(movieId: movieId, controller: controller),
+    ),
   );
 }
 
@@ -36,11 +40,84 @@ String sortText(AppLocalizations l10n, ReleaseSortKey k) => switch (k) {
   ReleaseSortKey.quality => l10n.radarrReleaseSortQuality,
 };
 
-/// Search field, sort and filter chips, and the result list.
+/// "5 minutes old", "3 hours old", "4 days old".
+String releaseAgeText(AppLocalizations l10n, int minutes) {
+  if (minutes < 60) return l10n.radarrReleaseAgeMinutes(minutes);
+  if (minutes < 60 * 48) return l10n.radarrReleaseAgeHours(minutes ~/ 60);
+  return l10n.radarrReleaseAgeDays(minutes ~/ (60 * 24));
+}
+
+ReleaseRowLabels releaseRowLabels(AppLocalizations l10n) => ReleaseRowLabels(
+  download: l10n.radarrDownload,
+  downloadAgain: l10n.radarrReleaseDownloadAgain,
+  grabbing: l10n.radarrGrabbing,
+  grabbed: l10n.radarrGrabbed,
+  failed: l10n.radarrGrabFailed,
+  maybeSent: l10n.radarrReleaseMaybeSent,
+  rejectedBadge: l10n.radarrRejectedChip,
+  expand: l10n.radarrExpand,
+  collapse: l10n.radarrCollapse,
+  rejectionsHeading: l10n.radarrRejectionReasons,
+  customFormatsHeading: l10n.radarrCustomFormats,
+  languagesHeading: l10n.radarrReleaseLanguages,
+);
+
+ReleaseGrabState grabStateOf(GrabPhase? phase) => switch (phase) {
+  null => ReleaseGrabState.idle,
+  GrabPhase.grabbing => ReleaseGrabState.grabbing,
+  GrabPhase.grabbed => ReleaseGrabState.grabbed,
+  GrabPhase.failed => ReleaseGrabState.failed,
+  GrabPhase.maybeSent => ReleaseGrabState.maybeSent,
+};
+
+/// The view-model of one release row.
+ReleaseRowData releaseRowData(
+  AppLocalizations l10n,
+  ArrRelease r,
+  GrabPhase? phase,
+) {
+  final grab = grabStateOf(phase);
+  final facts = [
+    ?r.qualityName,
+    if (r.size > 0) queueSizeText(l10n, r.size),
+    releaseAgeText(l10n, r.ageMinutes),
+    if (r.seeders != null) l10n.radarrSeeders(r.seeders!),
+    ?r.indexer,
+  ];
+  final stateText = switch (grab) {
+    ReleaseGrabState.idle => null,
+    ReleaseGrabState.grabbing => l10n.radarrGrabbing,
+    ReleaseGrabState.grabbed => l10n.radarrGrabbed,
+    ReleaseGrabState.failed => l10n.radarrGrabFailed,
+    ReleaseGrabState.maybeSent => l10n.radarrReleaseMaybeSent,
+  };
+  final details = [
+    ...facts,
+    if (r.isRejected) l10n.radarrRejectedChip,
+    ?stateText,
+  ].join(', ');
+  return ReleaseRowData(
+    title: r.title,
+    facts: facts,
+    semanticsLabel: l10n.radarrReleaseSemantics(r.title, details),
+    isRejected: r.isRejected,
+    rejections: r.rejections,
+    customFormats: r.customFormats,
+    languages: r.languages,
+    grab: grab,
+  );
+}
+
+const _groupStatus = 'status';
+const _groupProtocol = 'protocol';
+const _groupResolution = 'resolution';
+
+/// Search field, sort and filter controls, and the result list.
 class ReleaseSheetBody extends ConsumerStatefulWidget {
-  const ReleaseSheetBody({required this.movieId, super.key});
+  const ReleaseSheetBody({required this.movieId, this.controller, super.key});
 
   final int movieId;
+  final ScrollController? controller;
 
   @override
   ConsumerState<ReleaseSheetBody> createState() => _ReleaseSheetBodyState();
@@ -48,186 +125,291 @@ class ReleaseSheetBody extends ConsumerStatefulWidget {
 
 class _ReleaseSheetBodyState extends ConsumerState<ReleaseSheetBody> {
   ReleaseSortKey _sort = ReleaseSortKey.bestMatch;
+  bool _ascending = false;
   ReleaseFilter _filter = const ReleaseFilter();
+
+  /// The result list the grab states were last synced with the queue for.
+  List<ArrRelease>? _synced;
+
+  void _retry() => ref.invalidate(releasesProvider(widget.movieId));
+
+  /// A reopened sheet must not offer "Download" for what is queued already.
+  void _syncOnce(List<ArrRelease> all) {
+    if (identical(_synced, all)) return;
+    _synced = all;
+    Future<void>.microtask(() async {
+      if (!mounted) return;
+      await ref
+          .read(grabStatusProvider.notifier)
+          .syncWithQueue(all, widget.movieId);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final async = ref.watch(releasesProvider(widget.movieId));
-    final grabs = ref.watch(grabStatusProvider);
-    return RadarrScreenView(
-      screen: ScreenName.radarrInteractiveSearch,
-      child: SizedBox(
-        height: MediaQuery.sizeOf(context).height * 0.85,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: ConsolarrSpacing.gutter,
-              ),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: l10n.radarrReleaseSearchHint,
-                  prefixIcon: const Icon(Icons.search),
-                ),
-                onChanged: (v) =>
-                    setState(() => _filter = _filter.copyWith(text: v)),
-              ),
-            ),
-            _chips(l10n),
-            Expanded(child: _results(context, async, grabs)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _chips(AppLocalizations l10n) => SingleChildScrollView(
-    scrollDirection: Axis.horizontal,
-    padding: const EdgeInsets.symmetric(horizontal: ConsolarrSpacing.gutter),
-    child: Row(
-      children: [
-        PopupMenuButton<ReleaseSortKey>(
-          tooltip: l10n.radarrReleaseSortAction,
-          initialValue: _sort,
-          onSelected: (k) => setState(() => _sort = k),
-          itemBuilder: (_) => [
-            for (final k in ReleaseSortKey.values)
-              PopupMenuItem(value: k, child: Text(sortText(l10n, k))),
-          ],
-          child: Chip(
-            avatar: const Icon(Icons.sort, size: 18),
-            label: Text(l10n.radarrReleaseSortedBy(sortText(l10n, _sort))),
-          ),
-        ),
-        const SizedBox(width: ConsolarrSpacing.sm),
-        for (final a in ReleaseAcceptance.values) ...[
-          ChoiceChip(
-            label: Text(switch (a) {
-              ReleaseAcceptance.all => l10n.radarrReleaseAll,
-              ReleaseAcceptance.accepted => l10n.radarrReleaseAccepted,
-              ReleaseAcceptance.rejected => l10n.radarrReleaseRejected,
-            }),
-            selected: _filter.acceptance == a,
-            onSelected: (_) =>
-                setState(() => _filter = _filter.copyWith(acceptance: a)),
-          ),
-          const SizedBox(width: ConsolarrSpacing.sm),
-        ],
-        for (final p in const ['torrent', 'usenet']) ...[
-          FilterChip(
-            label: Text(
-              p == 'torrent'
-                  ? l10n.radarrProtocolTorrent
-                  : l10n.radarrProtocolUsenet,
-            ),
-            selected: _filter.protocol == p,
-            onSelected: (on) => setState(
-              () => _filter = _filter.copyWith(protocol: on ? p : null),
-            ),
-          ),
-          const SizedBox(width: ConsolarrSpacing.sm),
-        ],
-        for (final r in const [2160, 1080, 720]) ...[
-          FilterChip(
-            label: Text(l10n.radarrResolution(r)),
-            selected: _filter.resolution == r,
-            onSelected: (on) => setState(
-              () => _filter = _filter.copyWith(resolution: on ? r : null),
-            ),
-          ),
-          const SizedBox(width: ConsolarrSpacing.sm),
-        ],
-      ],
-    ),
-  );
-
-  Widget _results(
-    BuildContext context,
-    AsyncValue<Result<List<RadarrRelease>>> async,
-    Map<String, GrabPhase> grabs,
-  ) {
-    final l10n = context.l10n;
+    final Widget body;
     // Loading and error first: the previous movie's results must never show.
     if (async.isLoading) {
-      return Semantics(
+      body = Semantics(
         label: l10n.radarrSearchingReleases,
         liveRegion: true,
         child: ExcludeSemantics(
           child: ListView.builder(
+            controller: widget.controller,
             physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.all(ConsolarrSpacing.gutter),
-            itemCount: 6,
+            itemCount: 5,
             itemBuilder: (_, _) => const Padding(
               padding: EdgeInsets.only(bottom: ConsolarrSpacing.sm),
-              child: SkeletonBox(height: 84, borderRadius: ConsolarrRadii.card),
+              child: SkeletonBox(
+                height: 120,
+                borderRadius: ConsolarrRadii.card,
+              ),
             ),
           ),
         ),
       );
+    } else {
+      final result = async.hasError ? null : async.value;
+      final error = result == null
+          ? const AppError(ErrorCategory.parseError)
+          : result.errorOrNull;
+      if (error != null) {
+        body = radarrErrorView(context, error, onRetry: _retry);
+      } else {
+        final all = result!.valueOrNull!;
+        if (all.isEmpty) {
+          body = EmptyState(
+            icon: Icons.search_off,
+            headline: l10n.radarrNoReleasesHeadline,
+            message: l10n.radarrNoReleasesMessage,
+            actionLabel: l10n.radarrRetry,
+            onAction: _retry,
+          );
+        } else {
+          _syncOnce(all);
+          body = _list(context, all);
+        }
+      }
     }
-    final result = async.hasError ? null : async.value;
-    if (result == null) {
-      return radarrErrorView(
-        context,
-        const AppError(ErrorCategory.parseError),
-        onRetry: () => ref.invalidate(releasesProvider(widget.movieId)),
-      );
-    }
-    final error = result.errorOrNull;
-    if (error != null) {
-      return radarrErrorView(
-        context,
-        error,
-        onRetry: () => ref.invalidate(releasesProvider(widget.movieId)),
-      );
-    }
-    final all = result.valueOrNull!;
-    if (all.isEmpty) {
-      return EmptyState(
-        icon: Icons.search_off,
-        headline: l10n.radarrNoReleasesHeadline,
-        message: l10n.radarrNoReleasesMessage,
-        actionLabel: l10n.radarrRetry,
-        onAction: () => ref.invalidate(releasesProvider(widget.movieId)),
-      );
-    }
-    final rows = applyReleaseQuery(all, _sort, _filter);
-    if (rows.isEmpty) {
-      return EmptyState(
-        icon: Icons.filter_alt_off_outlined,
-        headline: l10n.radarrNoReleaseMatchHeadline,
-        message: l10n.radarrNoReleaseMatchMessage,
-        actionLabel: l10n.radarrClearFilters,
-        onAction: () => setState(() => _filter = const ReleaseFilter()),
-      );
-    }
-    return ListView.builder(
-      padding: const EdgeInsets.all(ConsolarrSpacing.gutter),
-      itemCount: rows.length,
-      itemBuilder: (context, i) => Padding(
-        padding: const EdgeInsets.only(bottom: ConsolarrSpacing.sm),
-        child: ReleaseRow(
-          key: ValueKey(rows[i].guid),
-          release: rows[i],
-          phase: grabs[rows[i].guid],
-          onGrab: () => _grab(context, rows[i]),
-        ),
-      ),
+    return RadarrScreenView(
+      screen: ScreenName.radarrInteractiveSearch,
+      child: body,
     );
   }
 
-  Future<void> _grab(BuildContext context, RadarrRelease release) async {
-    if (release.rejected) {
+  int get _activeFilters =>
+      (_filter.acceptance == ReleaseAcceptance.all ? 0 : 1) +
+      (_filter.protocol == null ? 0 : 1) +
+      (_filter.resolution == null ? 0 : 1);
+
+  List<ReleaseFilterGroup> _groups(AppLocalizations l10n) => [
+    ReleaseFilterGroup(
+      id: _groupStatus,
+      label: l10n.radarrReleaseGroupStatus,
+      options: [
+        ReleaseFilterOption(
+          id: ReleaseAcceptance.accepted.name,
+          label: l10n.radarrReleaseAccepted,
+          selected: _filter.acceptance == ReleaseAcceptance.accepted,
+        ),
+        ReleaseFilterOption(
+          id: ReleaseAcceptance.rejected.name,
+          label: l10n.radarrReleaseRejected,
+          selected: _filter.acceptance == ReleaseAcceptance.rejected,
+        ),
+      ],
+    ),
+    ReleaseFilterGroup(
+      id: _groupProtocol,
+      label: l10n.radarrReleaseGroupProtocol,
+      options: [
+        ReleaseFilterOption(
+          id: 'torrent',
+          label: l10n.radarrProtocolTorrent,
+          selected: _filter.protocol == 'torrent',
+        ),
+        ReleaseFilterOption(
+          id: 'usenet',
+          label: l10n.radarrProtocolUsenet,
+          selected: _filter.protocol == 'usenet',
+        ),
+      ],
+    ),
+    ReleaseFilterGroup(
+      id: _groupResolution,
+      label: l10n.radarrReleaseGroupResolution,
+      options: [
+        for (final r in const [2160, 1080, 720])
+          ReleaseFilterOption(
+            id: '$r',
+            label: l10n.radarrResolution(r),
+            selected: _filter.resolution == r,
+          ),
+      ],
+    ),
+  ];
+
+  void _toggle(String group, String id) => setState(() {
+    switch (group) {
+      case _groupStatus:
+        final a = ReleaseAcceptance.values.byName(id);
+        _filter = _filter.copyWith(
+          acceptance: _filter.acceptance == a ? ReleaseAcceptance.all : a,
+        );
+      case _groupProtocol:
+        _filter = _filter.copyWith(
+          protocol: _filter.protocol == id ? null : id,
+        );
+      default:
+        final r = int.parse(id);
+        _filter = _filter.copyWith(
+          resolution: _filter.resolution == r ? null : r,
+        );
+    }
+  });
+
+  void _clear() => setState(
+    () => _filter = _filter.copyWith(
+      acceptance: ReleaseAcceptance.all,
+      protocol: null,
+      resolution: null,
+    ),
+  );
+
+  Widget _list(BuildContext context, List<ArrRelease> all) {
+    final l10n = context.l10n;
+    final grabs = ref.watch(grabStatusProvider);
+    final shown = applyReleaseQuery(all, _sort, _filter, ascending: _ascending);
+    final labels = releaseRowLabels(l10n);
+    final header = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextField(
+          decoration: InputDecoration(
+            hintText: l10n.radarrReleaseSearchHint,
+            prefixIcon: const Icon(Icons.search),
+          ),
+          onChanged: (v) => setState(() => _filter = _filter.copyWith(text: v)),
+        ),
+        ReleaseControls<ReleaseSortKey>(
+          labels: ReleaseControlsLabels(
+            sortButton: l10n.radarrReleaseSortedBy(sortText(l10n, _sort)),
+            reverseSort: l10n.radarrReleaseReverseSort,
+            filterButton: l10n.radarrReleaseFilters(_activeFilters),
+            clearFilters: l10n.radarrClearFilters,
+          ),
+          sortOptions: [
+            for (final k in ReleaseSortKey.values)
+              ReleaseSortOption(k, sortText(l10n, k)),
+          ],
+          selectedSort: _sort,
+          onSort: (k) => setState(() {
+            _sort = k;
+            _ascending = false;
+          }),
+          onReverse: () => setState(() => _ascending = !_ascending),
+          groups: _groups(l10n),
+          activeFilters: _activeFilters,
+          onToggleFilter: _toggle,
+          onClearFilters: _clear,
+        ),
+      ],
+    );
+    return ListView.builder(
+      controller: widget.controller,
+      padding: const EdgeInsets.fromLTRB(
+        ConsolarrSpacing.gutter,
+        0,
+        ConsolarrSpacing.gutter,
+        ConsolarrSpacing.xl,
+      ),
+      itemCount: shown.length + (shown.isEmpty ? 2 : 1),
+      itemBuilder: (context, index) {
+        if (index == 0) return header;
+        if (shown.isEmpty) {
+          return SizedBox(
+            height: 320,
+            child: EmptyState(
+              icon: Icons.filter_alt_off_outlined,
+              headline: l10n.radarrNoReleaseMatchHeadline,
+              message: l10n.radarrNoReleaseMatchMessage,
+              actionLabel: l10n.radarrClearFilters,
+              onAction: () => setState(() => _filter = const ReleaseFilter()),
+            ),
+          );
+        }
+        final release = shown[index - 1];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: ConsolarrSpacing.sm),
+          child: ReleaseRow(
+            key: ValueKey(grabKey(release)),
+            data: releaseRowData(l10n, release, grabs[grabKey(release)]),
+            labels: labels,
+            onDownload: () => _download(context, release),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _download(BuildContext context, ArrRelease release) async {
+    final notifier = ref.read(grabStatusProvider.notifier);
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final queuedText = context.l10n.radarrReleaseAlreadyQueued;
+    if (ref.read(grabStatusProvider)[grabKey(release)] == GrabPhase.maybeSent) {
+      // The first request may have arrived: look in the queue, and otherwise
+      // ask, before anything is sent again.
+      if (await notifier.confirmQueued(release, widget.movieId)) {
+        messenger?.showSnackBar(SnackBar(content: Text(queuedText)));
+        return;
+      }
+      if (!context.mounted) return;
+      final again = await showDialog<bool>(
+        context: context,
+        builder: (context) => const _ResendConfirm(),
+      );
+      if (again ?? false) {
+        await notifier.grab(release, confirmedResend: true);
+      }
+      return;
+    }
+    if (release.isRejected) {
       final ok = await confirmRejectedGrab(context, release);
       if (ok != true) return;
     }
-    await ref.read(grabStatusProvider.notifier).grab(release);
+    await notifier.grab(release);
+  }
+}
+
+class _ResendConfirm extends StatelessWidget {
+  const _ResendConfirm();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return AlertDialog(
+      scrollable: true,
+      title: Text(l10n.radarrReleaseResendTitle),
+      content: Text(l10n.radarrReleaseResendMessage),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Text(l10n.radarrCancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: Text(l10n.radarrReleaseResendConfirm),
+        ),
+      ],
+    );
   }
 }
 
 /// Rejected releases need a confirmation that shows the reasons.
-Future<bool?> confirmRejectedGrab(BuildContext context, RadarrRelease release) {
+Future<bool?> confirmRejectedGrab(BuildContext context, ArrRelease release) {
   final l10n = context.l10n;
   return showDialog<bool>(
     context: context,
@@ -243,7 +425,7 @@ Future<bool?> confirmRejectedGrab(BuildContext context, RadarrRelease release) {
             for (final reason in release.rejections)
               Padding(
                 padding: const EdgeInsets.only(bottom: ConsolarrSpacing.xs),
-                child: Text('• $reason'),
+                child: Text(l10n.radarrReasonLine(reason)),
               ),
           ],
         ),
@@ -261,132 +443,3 @@ Future<bool?> confirmRejectedGrab(BuildContext context, RadarrRelease release) {
     ),
   );
 }
-
-/// One release: facts at a glance, reasons and formats when expanded.
-class ReleaseRow extends StatefulWidget {
-  const ReleaseRow({
-    required this.release,
-    required this.phase,
-    required this.onGrab,
-    super.key,
-  });
-
-  final RadarrRelease release;
-  final GrabPhase? phase;
-  final VoidCallback onGrab;
-
-  @override
-  State<ReleaseRow> createState() => _ReleaseRowState();
-}
-
-class _ReleaseRowState extends State<ReleaseRow> {
-  bool _open = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final roles = context.roles;
-    final r = widget.release;
-    final facts = [
-      ?r.qualityName,
-      sizeText(l10n, r.size),
-      ageHoursText(l10n, r.ageHours),
-      if (r.seeders != null) l10n.radarrSeeders(r.seeders!),
-      ?r.indexer,
-    ].join(dot);
-    final phase = widget.phase;
-    final (label, icon) = switch (phase) {
-      GrabPhase.grabbing => (l10n.radarrGrabbing, Icons.downloading),
-      GrabPhase.grabbed => (l10n.radarrGrabbed, Icons.check),
-      GrabPhase.failed => (l10n.radarrGrabFailedRetry, Icons.refresh),
-      null => (l10n.radarrDownload, Icons.download),
-    };
-    return Material(
-      color: roles.card,
-      borderRadius: ConsolarrRadii.card,
-      child: Padding(
-        padding: const EdgeInsets.all(ConsolarrSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Release names are plain text from the server.
-            Text(
-              r.title,
-              maxLines: _open ? null : 2,
-              overflow: _open ? null : TextOverflow.ellipsis,
-              style: theme.textTheme.titleSmall,
-            ),
-            const SizedBox(height: ConsolarrSpacing.xs),
-            Text(facts, style: theme.textTheme.bodyMedium),
-            const SizedBox(height: ConsolarrSpacing.xs),
-            Wrap(
-              spacing: ConsolarrSpacing.sm,
-              runSpacing: ConsolarrSpacing.xs,
-              children: [
-                if (r.rejected)
-                  StatusChip(
-                    label: l10n.radarrRejectedChip,
-                    icon: Icons.block,
-                    tone: StatusTone.warning,
-                  ),
-              ],
-            ),
-            if (_open) ...[
-              if (r.rejections.isNotEmpty) ...[
-                const SizedBox(height: ConsolarrSpacing.sm),
-                Text(
-                  l10n.radarrRejectionReasons,
-                  style: theme.textTheme.labelLarge,
-                ),
-                for (final reason in r.rejections) Text('• $reason'),
-              ],
-              if (r.customFormats.isNotEmpty) ...[
-                const SizedBox(height: ConsolarrSpacing.sm),
-                Text(
-                  l10n.radarrCustomFormats,
-                  style: theme.textTheme.labelLarge,
-                ),
-                Text(r.customFormats.join(', ')),
-              ],
-            ],
-            Wrap(
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: ConsolarrSpacing.sm,
-              children: [
-                TextButton.icon(
-                  onPressed: () => setState(() => _open = !_open),
-                  icon: Icon(_open ? Icons.expand_less : Icons.expand_more),
-                  label: Text(_open ? l10n.radarrCollapse : l10n.radarrExpand),
-                ),
-                FilledButton.icon(
-                  onPressed:
-                      phase == GrabPhase.grabbing || phase == GrabPhase.grabbed
-                      ? null
-                      : widget.onGrab,
-                  icon: Icon(icon),
-                  label: Text(label),
-                ),
-              ],
-            ),
-            if (phase == GrabPhase.failed)
-              Semantics(
-                liveRegion: true,
-                child: Text(
-                  l10n.radarrGrabFailed,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: roles.error,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-String ageHoursText(AppLocalizations l10n, int hours) => hours < 48
-    ? l10n.radarrReleaseAgeHours(hours)
-    : l10n.radarrReleaseAgeDays(hours ~/ 24);
