@@ -124,26 +124,19 @@ Map<String, Widget Function()> componentSamples() => {
       onRetry: () {},
     ),
   ),
-  'CertificateTrustSheet': () => CertificateTrustSheet(
-    variant: CertificateSheetVariant.mismatch,
-    title: 'Certificate changed',
-    serverName: longText,
-    explanation: longText,
-    warning: longText,
-    fingerprintLabel: 'SHA-256 fingerprint',
-    fingerprint: fingerprintSample,
-    previousFingerprintLabel: 'Previously trusted',
-    previousFingerprint: fingerprintSample,
-    subjectLabel: 'Subject',
-    subject: longText,
-    issuerLabel: 'Issuer',
-    issuer: longText,
-    validityLabel: 'Valid',
-    validity: 'Jan 1, 2026 to Jan 1, 2027',
-    acceptLabel: 'Trust the new certificate',
-    rejectLabel: 'Cancel',
-    onAccept: () {},
-    onReject: () {},
+  'CertificateTrustSheet (first use)': () =>
+      _trustSheet(CertificateSheetVariant.firstUse),
+  'CertificateTrustSheet (mismatch)': () =>
+      _trustSheet(CertificateSheetVariant.mismatch),
+  'CertificateTrustSheet (expired)': () =>
+      _trustSheet(CertificateSheetVariant.expired),
+  'ArtworkPlaceholder': () => const Padding(
+    padding: EdgeInsets.all(16),
+    child: SizedBox(width: 120, height: 180, child: ArtworkPlaceholder()),
+  ),
+  'MeasuredBarHeight': () => MeasuredBarHeight(
+    height: ValueNotifier<double>(0),
+    child: const GlassBar(padding: EdgeInsets.all(12), child: Text(longText)),
   ),
   'SecretTextField': () => const Padding(
     padding: EdgeInsets.all(16),
@@ -164,3 +157,26 @@ Map<String, Widget Function()> componentSamples() => {
     ),
   ),
 };
+
+CertificateTrustSheet _trustSheet(CertificateSheetVariant variant) =>
+    CertificateTrustSheet(
+      variant: variant,
+      title: 'Certificate changed',
+      serverName: longText,
+      explanation: longText,
+      warning: longText,
+      fingerprintLabel: 'SHA-256 fingerprint',
+      fingerprint: fingerprintSample,
+      previousFingerprintLabel: 'Previously trusted',
+      previousFingerprint: fingerprintSample,
+      subjectLabel: 'Subject',
+      subject: longText,
+      issuerLabel: 'Issuer',
+      issuer: longText,
+      validityLabel: 'Valid',
+      validity: 'Jan 1, 2026 to Jan 1, 2027',
+      acceptLabel: 'Trust the new certificate',
+      rejectLabel: 'Cancel',
+      onAccept: () {},
+      onReject: () {},
+    );

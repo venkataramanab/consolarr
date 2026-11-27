@@ -1508,19 +1508,19 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{size} MB'**
-  String sonarrSizeMb(String size);
+  String sonarrSizeMb(double size);
 
   /// Size on disk in gigabytes.
   ///
   /// In en, this message translates to:
   /// **'{size} GB'**
-  String sonarrSizeGb(String size);
+  String sonarrSizeGb(double size);
 
   /// Size on disk in terabytes.
   ///
   /// In en, this message translates to:
   /// **'{size} TB'**
-  String sonarrSizeTb(String size);
+  String sonarrSizeTb(double size);
 
   /// Relative label for a series whose next episode airs today.
   ///

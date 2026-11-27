@@ -852,18 +852,39 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String sonarrSizeMb(String size) {
-    return '$size ميغابايت';
+  String sonarrSizeMb(double size) {
+    final intl.NumberFormat sizeNumberFormat =
+        intl.NumberFormat.decimalPatternDigits(
+          locale: localeName,
+          decimalDigits: 1,
+        );
+    final String sizeString = sizeNumberFormat.format(size);
+
+    return '$sizeString ميغابايت';
   }
 
   @override
-  String sonarrSizeGb(String size) {
-    return '$size غيغابايت';
+  String sonarrSizeGb(double size) {
+    final intl.NumberFormat sizeNumberFormat =
+        intl.NumberFormat.decimalPatternDigits(
+          locale: localeName,
+          decimalDigits: 1,
+        );
+    final String sizeString = sizeNumberFormat.format(size);
+
+    return '$sizeString غيغابايت';
   }
 
   @override
-  String sonarrSizeTb(String size) {
-    return '$size تيرابايت';
+  String sonarrSizeTb(double size) {
+    final intl.NumberFormat sizeNumberFormat =
+        intl.NumberFormat.decimalPatternDigits(
+          locale: localeName,
+          decimalDigits: 1,
+        );
+    final String sizeString = sizeNumberFormat.format(size);
+
+    return '$sizeString تيرابايت';
   }
 
   @override

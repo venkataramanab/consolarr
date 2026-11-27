@@ -6,6 +6,7 @@ import 'package:core/core.dart';
 import 'package:dio/dio.dart';
 import 'package:security/security.dart';
 import 'package:torrent_clients/src/models.dart';
+import 'package:torrent_clients/src/torrent_actions.dart';
 import 'package:torrent_clients/src/torrent_client.dart';
 
 /// Runs [computation], possibly on another isolate. Inject an inline version
@@ -26,7 +27,9 @@ ParsedRows<Torrent> _parseTorrents(String body) => parseTorrentList(body);
 ///
 /// WebUI API v2 exists since qBittorrent 4.1; older servers fail with
 /// `unsupported_version`.
-class QBittorrentClient implements TorrentClient {
+class QBittorrentClient
+    with UnsupportedTorrentActions
+    implements TorrentClient {
   QBittorrentClient({
     required Dio dio,
     String? username,

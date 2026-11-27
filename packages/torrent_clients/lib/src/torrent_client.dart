@@ -2,12 +2,13 @@
 
 import 'package:core/core.dart';
 import 'package:torrent_clients/src/models.dart';
+import 'package:torrent_clients/src/torrent_actions.dart';
 
 /// Common surface of the supported torrent clients.
 ///
 /// Concrete clients implement this on top of `SecureHttpClientFactory`.
 /// Server-supplied strings are plain text and must be validated before use.
-abstract interface class TorrentClient {
+abstract interface class TorrentClient implements TorrentActions {
   /// Which client this is: [ServiceKind.qbittorrent],
   /// [ServiceKind.transmission] or [ServiceKind.deluge].
   ServiceKind get kind;

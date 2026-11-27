@@ -11,15 +11,15 @@ String ageText(AppLocalizations l10n, Duration age) {
   return l10n.sonarrAgeDays(age.inDays);
 }
 
-/// Size on disk with one decimal and a unit (digits are not localized).
+/// Size on disk with one decimal and a unit. Digits and separators come from
+/// the ARB number format, so they localize (like the torrents formatter).
 String sizeText(AppLocalizations l10n, int bytes) {
   const mb = 1024 * 1024;
   const gb = 1024 * mb;
   const tb = 1024 * gb;
-  String one(double v) => v.toStringAsFixed(1);
-  if (bytes >= tb) return l10n.sonarrSizeTb(one(bytes / tb));
-  if (bytes >= gb) return l10n.sonarrSizeGb(one(bytes / gb));
-  return l10n.sonarrSizeMb(one(bytes / mb));
+  if (bytes >= tb) return l10n.sonarrSizeTb(bytes / tb);
+  if (bytes >= gb) return l10n.sonarrSizeGb(bytes / gb);
+  return l10n.sonarrSizeMb(bytes / mb);
 }
 
 /// Relative "next airing" label, or null when nothing is scheduled.

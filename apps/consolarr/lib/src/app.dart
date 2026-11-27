@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:consolarr/src/first_frame.dart';
+import 'package:consolarr/src/images/image_cache_config.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:consolarr/src/router.dart';
 import 'package:design_system/design_system.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:l10n/l10n.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Root widget. Must be wrapped in a `ProviderScope`.
 class ConsolarrApp extends ConsumerStatefulWidget {
@@ -21,9 +22,10 @@ class _ConsolarrAppState extends ConsumerState<ConsolarrApp> {
   void initState() {
     super.initState();
     // Database and network work is allowed only after the first frame.
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => ref.read(firstFrameDoneProvider.notifier).markDone(),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      configureImageCache(PaintingBinding.instance.imageCache);
+      ref.read(firstFrameDoneProvider.notifier).markDone();
+    });
   }
 
   @override

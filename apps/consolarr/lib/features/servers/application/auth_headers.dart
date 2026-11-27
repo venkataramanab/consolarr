@@ -5,37 +5,69 @@ import 'dart:convert';
 import 'package:consolarr/features/servers/domain/server_models.dart';
 import 'package:core/core.dart';
 
+/// Builds the credential headers for one service kind (the profile's custom
+/// headers are added by [buildAuthHeaders] for every kind).
+typedef AuthHeaderBuilder = Map<String, String> Function(
+  ServerProfile profile,
+  ServerCredentials credentials,
+);
+
+/// `X-Api-Key`, or `Authorization: Basic` for a reverse proxy in front of an
+/// *arr service. Never a query parameter.
+Map<String, String> arrAuthHeaders(
+  ServerProfile profile,
+  ServerCredentials credentials,
+) {
+  switch (profile.authMode) {
+    case AuthMode.none:
+      return const {};
+    case AuthMode.apiKey:
+      final key = credentials.apiKey;
+      return key != null && key.isNotEmpty && _safe(key)
+          ? {'X-Api-Key': key}
+          : const {};
+    case AuthMode.basic:
+      final user = credentials.username;
+      final pass = credentials.password;
+      return user != null && pass != null
+          ? {
+              'Authorization':
+                  'Basic ${base64.encode(utf8.encode('$user:$pass'))}',
+            }
+          : const {};
+  }
+}
+
+/// Torrent clients log in themselves (cookie, session id, RPC login) from the
+/// username and password, so they get no credential header.
+Map<String, String> noCredentialHeaders(
+  ServerProfile profile,
+  ServerCredentials credentials,
+) => const {};
+
+/// Credential headers per kind. A new service registers here; a kind that is
+/// not registered gets no credential header at all (the safe default), only
+/// its declared custom headers.
+const Map<ServiceKind, AuthHeaderBuilder> authHeaderBuilders = {
+  ServiceKind.sonarr: arrAuthHeaders,
+  ServiceKind.radarr: arrAuthHeaders,
+  ServiceKind.qbittorrent: noCredentialHeaders,
+  ServiceKind.transmission: noCredentialHeaders,
+  ServiceKind.deluge: noCredentialHeaders,
+};
+
 /// The request headers that authenticate against [profile] (SRV-04).
 ///
-/// * API key: `X-Api-Key` (never a query parameter).
-/// * Basic: an `Authorization: Basic` header for the *arr services. The
-///   qBittorrent client performs its own cookie login from the username and
-///   password, so it gets no header here.
+/// * Credentials: per kind, see [authHeaderBuilders].
 /// * Custom headers: only names the profile declares, values from the secret
 ///   store; values with line breaks are dropped (header injection).
 Map<String, String> buildAuthHeaders(
   ServerProfile profile,
   ServerCredentials credentials,
 ) {
-  final headers = <String, String>{};
-  final isArr =
-      profile.kind == ServiceKind.sonarr || profile.kind == ServiceKind.radarr;
-  switch (profile.authMode) {
-    case AuthMode.none:
-      break;
-    case AuthMode.apiKey:
-      final key = credentials.apiKey;
-      if (isArr && key != null && key.isNotEmpty && _safe(key)) {
-        headers['X-Api-Key'] = key;
-      }
-    case AuthMode.basic:
-      final user = credentials.username;
-      final pass = credentials.password;
-      if (isArr && user != null && pass != null) {
-        headers['Authorization'] =
-            'Basic ${base64.encode(utf8.encode('$user:$pass'))}';
-      }
-  }
+  final headers = <String, String>{
+    ...?authHeaderBuilders[profile.kind]?.call(profile, credentials),
+  };
   for (final name in profile.headerNames) {
     for (final h in credentials.headers) {
       if (h.name.toLowerCase() == name.toLowerCase() && _safe(h.value)) {

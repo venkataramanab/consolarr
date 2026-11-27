@@ -28,6 +28,17 @@ new_repo() { # copies the guard scripts into a fresh git repo
   git -C "$d" add -A && git -C "$d" commit -qm init
 }
 
+echo "== apk size gate"
+apk="$scratch/app.apk"
+truncate -s 10M "$apk"
+out=$(bash tools/ci/check_apk_size.sh "$apk" 20 2>&1) || fail "10 MiB must pass a 20 MiB budget"
+echo "$out" | grep -q '::warning::' && fail "10 MiB must not warn"
+truncate -s 19M "$apk"
+out=$(bash tools/ci/check_apk_size.sh "$apk" 20 2>&1) || fail "19 MiB must pass (with a warning)"
+echo "$out" | grep -q '::warning::' || fail "19 MiB must warn at 90% of the budget"
+truncate -s 21M "$apk"
+bash tools/ci/check_apk_size.sh "$apk" 20 >/dev/null 2>&1 && fail "21 MiB must fail"
+
 echo "== suppression guard"
 s="$scratch/supp"; new_repo "$s"
 bash "$s/tools/ci/check_suppressions.sh" "$s" >/dev/null || fail "clean repo should pass"

@@ -106,13 +106,17 @@ class SpeedHeader extends StatelessWidget {
             child: SizedBox(
               height: 40,
               width: double.infinity,
-              child: CustomPaint(
-                painter: SpeedGraphPainter(
-                  history: history,
-                  downColor: roles.accent,
-                  upColor: roles.success,
-                  baseline: roles.track,
-                  dimmed: offline,
+              // Its own layer: the graph repaints on every poll, the rest of
+              // the header does not.
+              child: RepaintBoundary(
+                child: CustomPaint(
+                  painter: SpeedGraphPainter(
+                    history: history,
+                    downColor: roles.accent,
+                    upColor: roles.success,
+                    baseline: roles.track,
+                    dimmed: offline,
+                  ),
                 ),
               ),
             ),

@@ -5,4 +5,5 @@ library;
 
 export 'src/models.dart';
 export 'src/qbittorrent_client.dart';
+export 'src/torrent_actions.dart';
 export 'src/torrent_client.dart';

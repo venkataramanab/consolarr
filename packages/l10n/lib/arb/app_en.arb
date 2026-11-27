@@ -1041,8 +1041,12 @@
     "description": "Size on disk in megabytes.",
     "placeholders": {
       "size": {
-        "type": "String",
-        "description": "Number with one decimal."
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPatternDigits",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
       }
     }
   },
@@ -1051,8 +1055,12 @@
     "description": "Size on disk in gigabytes.",
     "placeholders": {
       "size": {
-        "type": "String",
-        "description": "Number with one decimal."
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPatternDigits",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
       }
     }
   },
@@ -1061,8 +1069,12 @@
     "description": "Size on disk in terabytes.",
     "placeholders": {
       "size": {
-        "type": "String",
-        "description": "Number with one decimal."
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPatternDigits",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
       }
     }
   },

@@ -851,18 +851,39 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String sonarrSizeMb(String size) {
-    return '$size MB';
+  String sonarrSizeMb(double size) {
+    final intl.NumberFormat sizeNumberFormat =
+        intl.NumberFormat.decimalPatternDigits(
+          locale: localeName,
+          decimalDigits: 1,
+        );
+    final String sizeString = sizeNumberFormat.format(size);
+
+    return '$sizeString MB';
   }
 
   @override
-  String sonarrSizeGb(String size) {
-    return '$size GB';
+  String sonarrSizeGb(double size) {
+    final intl.NumberFormat sizeNumberFormat =
+        intl.NumberFormat.decimalPatternDigits(
+          locale: localeName,
+          decimalDigits: 1,
+        );
+    final String sizeString = sizeNumberFormat.format(size);
+
+    return '$sizeString GB';
   }
 
   @override
-  String sonarrSizeTb(String size) {
-    return '$size TB';
+  String sonarrSizeTb(double size) {
+    final intl.NumberFormat sizeNumberFormat =
+        intl.NumberFormat.decimalPatternDigits(
+          locale: localeName,
+          decimalDigits: 1,
+        );
+    final String sizeString = sizeNumberFormat.format(size);
+
+    return '$sizeString TB';
   }
 
   @override
@@ -1974,18 +1995,39 @@ class AppLocalizationsEnXa extends AppLocalizationsEn {
   }
 
   @override
-  String sonarrSizeMb(String size) {
-    return '[$size Ṁß~~]';
+  String sonarrSizeMb(double size) {
+    final intl.NumberFormat sizeNumberFormat =
+        intl.NumberFormat.decimalPatternDigits(
+          locale: localeName,
+          decimalDigits: 1,
+        );
+    final String sizeString = sizeNumberFormat.format(size);
+
+    return '[$sizeString Ṁß~~]';
   }
 
   @override
-  String sonarrSizeGb(String size) {
-    return '[$size Ĝß~~]';
+  String sonarrSizeGb(double size) {
+    final intl.NumberFormat sizeNumberFormat =
+        intl.NumberFormat.decimalPatternDigits(
+          locale: localeName,
+          decimalDigits: 1,
+        );
+    final String sizeString = sizeNumberFormat.format(size);
+
+    return '[$sizeString Ĝß~~]';
   }
 
   @override
-  String sonarrSizeTb(String size) {
-    return '[$size Ţß~~]';
+  String sonarrSizeTb(double size) {
+    final intl.NumberFormat sizeNumberFormat =
+        intl.NumberFormat.decimalPatternDigits(
+          locale: localeName,
+          decimalDigits: 1,
+        );
+    final String sizeString = sizeNumberFormat.format(size);
+
+    return '[$sizeString Ţß~~]';
   }
 
   @override

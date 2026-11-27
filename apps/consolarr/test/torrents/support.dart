@@ -13,7 +13,9 @@ import 'package:test_harness/test_harness.dart';
 import 'package:torrent_clients/torrent_clients.dart';
 
 /// A scriptable [TorrentClient]. Results can be swapped between polls.
-class FakeTorrentClient implements TorrentClient {
+class FakeTorrentClient
+    with UnsupportedTorrentActions
+    implements TorrentClient {
   FakeTorrentClient({
     List<Torrent> torrents = const [],
     TransferInfo? transfer = const TransferInfo(
