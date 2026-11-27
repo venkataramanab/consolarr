@@ -139,6 +139,23 @@ class DiagnosticsScrubber {
   static final _timeLike = RegExp(r'^\d{1,2}(?::\d{1,2}){1,2}$');
   static final _host = RegExp(
     r'\b[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?(?:\.[a-z0-9\-]+)*\.[a-z]{2,}\b',
+    caseSensitive: false,
+  );
+
+  /// `nas:8989`: a single-label host with a port (no dot, so [_host] misses it).
+  static final _labelPort = RegExp(
+    r'(?<![\w\-.:/])[A-Za-z][A-Za-z0-9\-]*:\d{2,5}\b(?!:)',
+  );
+
+  /// Passkeys and similar: bare hex or base32 runs of 16 or more characters.
+  static final _hexRun = RegExp(
+    r'(?<![0-9A-Za-z])[0-9a-fA-F]{16,}(?![0-9A-Za-z])',
+  );
+  static final _base32Upper = RegExp(
+    r'(?<![0-9A-Za-z])[A-Z2-7]{16,}(?![0-9A-Za-z])',
+  );
+  static final _base32Lower = RegExp(
+    r'(?<![0-9A-Za-z])(?=[a-z2-7]*[2-7])[a-z2-7]{16,}(?![0-9A-Za-z])',
   );
 
   /// Returns [line] with everything above removed. Idempotent.
@@ -166,6 +183,10 @@ class DiagnosticsScrubber {
       (m) => _timeLike.hasMatch(m[0]!) ? m[0]! : _mark,
     );
     out = out.replaceAll(_host, _mark);
+    out = out.replaceAll(_labelPort, _mark);
+    out = out.replaceAll(_hexRun, _mark);
+    out = out.replaceAll(_base32Upper, _mark);
+    out = out.replaceAll(_base32Lower, _mark);
     return out;
   }
 }

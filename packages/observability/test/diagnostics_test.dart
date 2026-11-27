@@ -73,6 +73,45 @@ void main() {
       }
     });
 
+    test('removes single-label host:port and mixed-case host names', () {
+      const cases = {
+        'connect to nas:8989 refused': 'nas:8989',
+        'connect to NAS-Box:8989 refused': 'NAS-Box:8989',
+        'host Seedbox01:443 timed out': 'Seedbox01:443',
+        'resolve Media.Home.Example failed': 'Media.Home.Example',
+        'resolve NAS.EXAMPLE.COM failed': 'NAS.EXAMPLE.COM',
+      };
+      for (final e in cases.entries) {
+        final out = scrubber.scrub(e.key);
+        expect(out, isNot(contains(e.value)), reason: e.key);
+        expect(scrubber.scrub(out), out, reason: 'idempotent: ${e.key}');
+      }
+    });
+
+    test('removes bare hex and base32 runs of 16+ characters', () {
+      const passkeys = [
+        '0123456789abcdef',
+        'DEADBEEFcafe0123',
+        '0123456789abcdef0123456789',
+        'JBSWY3DPEHPK3PXP',
+        'jbswy3dpehpk3pxp',
+        'MFRGGZDFMZTWQ2LKNNWG23TP',
+      ];
+      for (final p in passkeys) {
+        expect(scrubber.scrub('announce passkey $p ok'), isNot(contains(p)));
+      }
+    });
+
+    test('keeps short ids, times and long plain words', () {
+      for (final t in [
+        'retry 3 of 5 at 12:30:45',
+        'build 0123abcd',
+        'internationalization failed',
+      ]) {
+        expect(scrubber.scrub(t), t);
+      }
+    });
+
     test('known values are removed case-insensitively', () {
       expect(
         scrubber.scrub('user ALICE-THE-ADMIN logged'),
