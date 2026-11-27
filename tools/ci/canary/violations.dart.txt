@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+// Deliberate violations of the consolarr_lints rules. tools/ci/lint_canary.sh
+// copies this into a package, runs the analyzer and expects every rule to
+// fire; it proves the analyzer plugin is actually loaded in CI.
+import 'dart:io';
+
+import 'package:material_ui/material_ui.dart';
+
+Widget canary(HttpClient client) {
+  print('canary');
+  client.badCertificateCallback = (cert, host, port) => true;
+  return const Text('Hardcoded');
+}

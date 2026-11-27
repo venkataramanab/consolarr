@@ -1,0 +1,53 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+rules:
+  - id: consolarr-bad-certificate-callback
+    languages: [dart]
+    severity: ERROR
+    message: >-
+      badCertificateCallback is only allowed in
+      packages/security/lib/src/http/secure_http_client_factory.dart.
+    pattern-regex: badCertificateCallback
+    paths:
+      include:
+        - "apps/"
+        - "packages/"
+      exclude:
+        - packages/security/lib/src/http/secure_http_client_factory.dart
+
+  - id: consolarr-direct-http-client
+    languages: [dart]
+    severity: ERROR
+    message: >-
+      Do not construct dart:io HttpClient directly; obtain clients from
+      SecureHttpClientFactory so one trust policy applies.
+    pattern-regex: \bHttpClient\s*\(
+    paths:
+      include:
+        - "apps/*/lib/"
+        - "packages/*/lib/"
+      exclude:
+        - packages/security/lib/
+        - packages/test_harness/lib/
+
+  - id: consolarr-cleartext-url-literal
+    languages: [dart]
+    severity: ERROR
+    message: >-
+      Hard-coded http:// URL. Use https, or a reserved example host in tests.
+    pattern-regex: |-
+      ["']http://(?!192\.0\.2\.|[A-Za-z0-9.-]*\.(example|invalid|test)\b|localhost\b)
+    paths:
+      include:
+        - "apps/*/lib/"
+        - "packages/*/lib/"
+
+  - id: consolarr-credentials-in-url-literal
+    languages: [dart]
+    severity: ERROR
+    message: URL literal contains credentials (user info). Keep credentials separate.
+    pattern-regex: |-
+      ["']https?://[^/\s"'@]+:[^/\s"'@]+@
+    paths:
+      include:
+        - "apps/*/lib/"
+        - "packages/*/lib/"

@@ -1,0 +1,195 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Least privilege by default. No secrets are used anywhere in this workflow:
+# every job must work on pull requests from forks.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    name: Format, analyze, lints, SPDX, l10n
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-flutter
+
+      - name: Format check
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze (VGA lints + consolarr_lints; infos are fatal)
+        run: dart analyze --fatal-infos .
+
+      - name: Custom lint rule tests
+        working-directory: tools/consolarr_lints
+        run: |
+          dart pub get
+          dart analyze --fatal-infos
+          dart test
+
+      - name: Custom lints are loaded in the analyzer (canary)
+        run: bash tools/ci/lint_canary.sh
+
+      - name: SPDX headers
+        run: bash tools/ci/check_spdx.sh
+
+      - name: Generated l10n files are up to date
+        run: |
+          dart run packages/l10n/tool/build_l10n.dart
+          git diff --exit-code -- packages/l10n
+
+  test:
+    name: Unit, widget and golden tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-flutter
+
+      - name: l10n key check (missing keys, unused keys, descriptions, drift)
+        working-directory: packages/l10n
+        run: flutter test test/l10n_keys_test.dart
+
+      - name: Tests with coverage (all packages, goldens included)
+        run: dart run melos run test
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage-lcov
+          path: |
+            apps/*/coverage/lcov.info
+            packages/*/coverage/lcov.info
+          if-no-files-found: warn
+
+      - name: Upload golden failures
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: golden-failures
+          path: |
+            apps/*/test/failures/
+            packages/*/test/failures/
+          if-no-files-found: ignore
+
+  supply-chain:
+    name: Secrets, dependencies, licences, semgrep, repo guard
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Repo guard (credential files, clean-room terms)
+        env:
+          # Repository *variable* (not a secret). Empty/unset skips the term
+          # check. The script never prints the terms.
+          CLEANROOM_TERMS: ${{ vars.CLEANROOM_TERMS }}
+        run: bash tools/ci/repo_guard.sh
+
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version: stable
+          cache: false
+
+      - name: Install gitleaks and osv-scanner (Go module proxy, checksum-verified)
+        run: |
+          go install github.com/gitleaks/gitleaks/v8@v8.30.1
+          go install github.com/google/osv-scanner/v2/cmd/osv-scanner@v2.7.1
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: gitleaks (history)
+        run: gitleaks git --config .gitleaks.toml --redact --verbose .
+
+      - name: gitleaks (working tree)
+        run: gitleaks dir --config .gitleaks.toml --redact --verbose .
+
+      - name: osv-scanner on pubspec.lock
+        run: osv-scanner scan source --lockfile=pubspec.lock
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+
+      - name: semgrep (project Dart rules)
+        run: |
+          python -m pip install --disable-pip-version-check semgrep==1.187.0
+          semgrep scan --config tools/semgrep/consolarr.yml --error --metrics=off apps packages
+
+      - name: semgrep (registry Dart rules, advisory)
+        continue-on-error: true
+        run: semgrep scan --config r/dart --metrics=off apps packages
+
+      - uses: ./.github/actions/setup-flutter
+
+      - name: Dependency licences are GPL-3.0-or-later compatible
+        run: dart run tools/ci/check_licenses.dart pubspec.lock
+
+  workflows:
+    name: Lint workflows
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version: stable
+          cache: false
+      - name: actionlint
+        run: |
+          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+          "$(go env GOPATH)/bin/actionlint"
+
+  build:
+    name: Build ${{ matrix.app }} (debug + release size gate)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [consolarr, consolarr_play]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: ./.github/actions/setup-flutter
+
+      # No secrets: telemetry stays off and release builds fall back to the
+      # debug signing key because key.properties is absent.
+      - name: Debug APK
+        working-directory: apps/${{ matrix.app }}
+        run: flutter build apk --debug
+
+      - name: Release APK (arm64, R8, obfuscated)
+        working-directory: apps/${{ matrix.app }}
+        run: >-
+          flutter build apk --release
+          --target-platform android-arm64
+          --obfuscate --split-debug-info=build/debug-info
+
+      - name: APK size gate (20 MiB)
+        working-directory: apps/${{ matrix.app }}
+        run: bash ../../tools/ci/check_apk_size.sh build/app/outputs/flutter-apk/app-release.apk 20
