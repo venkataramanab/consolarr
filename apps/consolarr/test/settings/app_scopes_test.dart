@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:consolarr/consolarr.dart';
+import 'package:consolarr/src/providers.dart';
 import 'package:consolarr/features/settings/application/settings_providers.dart';
 import 'package:consolarr/features/settings/domain/app_settings.dart';
 import 'package:consolarr/features/settings/presentation/app_lock_gate.dart';
+import 'package:consolarr/features/shell/application/shell_providers.dart';
 import 'package:consolarr/src/database/app_database.dart';
 import 'package:design_system/design_system.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:observability/observability.dart';
@@ -15,11 +18,16 @@ import 'package:security/security.dart';
 
 import 'support.dart';
 
-Future<ProviderContainer> _pump(WidgetTester tester, SettingsHarness h) async {
+Future<ProviderContainer> _pump(
+  WidgetTester tester,
+  SettingsHarness h, {
+  List<Override> extra = const [],
+}) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         ...h.overrides,
+        ...extra,
         databaseProvider.overrideWith((ref) {
           final db = AppDatabase.memory();
           ref.onDispose(db.close);
@@ -94,9 +102,18 @@ void main() {
   });
 
   testWidgets('stored consent is applied by startup alone', (tester) async {
+    // The shell reads the server list (and through it the consent-gated
+    // analytics seam) after the first frame. Hold that list in `loading`, so
+    // nothing else creates the consent manager: only the trigger in the app
+    // root can. Removing that trigger makes this test fail.
     final h = SettingsHarness(stored: {SettingsKeys.consentCrashReports: '1'});
-    await _pump(tester, h);
+    final c = await _pump(
+      tester,
+      h,
+      extra: [uiServersProvider.overrideWithValue(const AsyncValue.loading())],
+    );
     expect(h.crash.enabledCalls, contains(true));
+    expect(c.exists(consentManagerProvider), isTrue);
     await _unmount(tester);
   });
 }
