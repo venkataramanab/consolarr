@@ -148,11 +148,9 @@ class ArrQueueRow extends StatelessWidget {
                         padding: const EdgeInsetsDirectional.only(
                           start: ConsolarrSpacing.xs,
                         ),
-                        child: StatusChip(
+                        child: _WarningToggle(
                           label: warningLabel!,
-                          icon: Icons.warning_amber,
-                          tone: StatusTone.warning,
-                          details: warningDetails,
+                          details: warningDetails!,
                         ),
                       ),
                     )
@@ -167,6 +165,78 @@ class ArrQueueRow extends StatelessWidget {
             ),
           ],
         ),
+      ],
+    );
+  }
+}
+
+/// The server's messages behind a labelled toggle: icon, text and expanded
+/// state, never colour alone. Plain text only.
+class _WarningToggle extends StatefulWidget {
+  const _WarningToggle({required this.label, required this.details});
+
+  final String label;
+  final String details;
+
+  @override
+  State<_WarningToggle> createState() => _WarningToggleState();
+}
+
+class _WarningToggleState extends State<_WarningToggle> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Semantics(
+          button: true,
+          expanded: _expanded,
+          label: widget.label,
+          excludeSemantics: true,
+          onTap: () => setState(() => _expanded = !_expanded),
+          child: InkWell(
+            borderRadius: ConsolarrRadii.chip,
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: ConsolarrSpacing.minTapTarget,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: ConsolarrSpacing.sm,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.warning_amber, size: 18),
+                    const SizedBox(width: ConsolarrSpacing.xs),
+                    Flexible(
+                      child: Text(
+                        widget.label,
+                        style: theme.textTheme.labelLarge,
+                      ),
+                    ),
+                    Icon(
+                      _expanded ? Icons.expand_less : Icons.expand_more,
+                      size: 18,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (_expanded)
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: ConsolarrSpacing.sm,
+            ),
+            child: Text(widget.details, style: theme.textTheme.bodyMedium),
+          ),
       ],
     );
   }

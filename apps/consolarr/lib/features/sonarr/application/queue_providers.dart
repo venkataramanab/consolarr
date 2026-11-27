@@ -88,8 +88,7 @@ class QueueNotifier extends AsyncNotifier<QueueState> {
   }
 
   /// The screen reports whether it is on screen; hidden queues do not poll.
-  // ignore: use_setters_to_change_properties
-  void setVisible({required bool visible}) => _visible = visible;
+  set visible(bool value) => _visible = value;
 
   bool get _foreground {
     final lifecycle = WidgetsBinding.instance.lifecycleState;

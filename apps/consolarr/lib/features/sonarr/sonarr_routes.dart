@@ -2,7 +2,7 @@
 
 import 'package:consolarr/features/sonarr/presentation/add/add_series_screen.dart';
 import 'package:consolarr/features/sonarr/presentation/detail/series_detail_screen.dart';
-import 'package:consolarr/features/sonarr/presentation/sonarr_library_screen.dart';
+import 'package:consolarr/features/sonarr/presentation/home/sonarr_home_screen.dart';
 import 'package:consolarr/src/navigation/app_destination.dart';
 import 'package:core/core.dart';
 import 'package:go_router/go_router.dart';
@@ -52,5 +52,5 @@ final sonarrDestination = AppDestination(
   kinds: const {ServiceKind.sonarr},
   screen: ScreenName.sonarrLibrary,
   switcherKind: ServiceKind.sonarr,
-  builder: (context, state) => const SonarrLibraryScreen(),
+  builder: (context, state) => const SonarrHomeScreen(),
 );

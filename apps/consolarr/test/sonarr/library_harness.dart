@@ -3,16 +3,20 @@
 import 'dart:async';
 
 import 'package:arr_api/arr_api.dart';
+import 'package:consolarr/features/sonarr/application/library_providers.dart';
 import 'package:consolarr/features/sonarr/application/sonarr_providers.dart';
-import 'package:consolarr/features/sonarr/presentation/sonarr_library_screen.dart';
+import 'package:consolarr/features/sonarr/data/sonarr_prefs_store.dart';
+import 'package:consolarr/features/sonarr/presentation/home/sonarr_home_screen.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:test_harness/test_harness.dart';
 
+import 'fakes.dart';
 import 'support.dart';
 
 /// A library notifier that serves a fixed state; `null` stays loading.
@@ -85,13 +89,21 @@ Widget libraryApp(
   LibraryViewMode mode = LibraryViewMode.grid,
   bool reduceMotion = true,
   VoidCallback? onOpenServers,
+  ScriptedSonarrApi? api,
+  SonarrPrefsStore? prefs,
+  GoRouter? router,
 }) {
   return ProviderScope(
     overrides: [
+      ...sonarrTestOverrides(
+        api ?? ScriptedSonarrApi(),
+        prefs: prefs,
+        now: fixedNow,
+      ),
+      libraryRunnerProvider.overrideWithValue(inlineRunner),
       seriesLibraryProvider.overrideWith(() => notifier),
       artworkSourceProvider.overrideWithValue(artwork),
       viewModeStoreProvider.overrideWithValue(MemoryViewModeStore(mode)),
-      clockProvider.overrideWithValue(() => fixedNow),
     ],
     child: harnessApp(
       variant,
@@ -103,8 +115,9 @@ Widget libraryApp(
             final media = MediaQuery.of(context);
             return MediaQuery(
               data: media.copyWith(padding: media.padding.copyWith(bottom: 88)),
-              child: Scaffold(
-                body: SonarrLibraryScreen(onOpenServers: onOpenServers),
+              child: _withRouter(
+                router,
+                Scaffold(body: SonarrHomeScreen(onOpenServers: onOpenServers)),
               ),
             );
           },
@@ -113,3 +126,25 @@ Widget libraryApp(
     ),
   );
 }
+
+/// Runs library queries inline (no isolate) so tests stay deterministic.
+Future<T> inlineRunner<T>(T Function() computation) async => computation();
+
+Widget _withRouter(GoRouter? router, Widget child) =>
+    router == null ? child : InheritedGoRouter(goRouter: router, child: child);
+
+/// A router that records where the screen navigated (not mounted).
+GoRouter recordingRouter() => GoRouter(
+  routes: [
+    GoRoute(path: '/', builder: (context, state) => const SizedBox()),
+    GoRoute(path: '/sonarr/add', builder: (context, state) => const SizedBox()),
+    GoRoute(
+      path: '/sonarr/series/:id',
+      builder: (context, state) => const SizedBox(),
+    ),
+  ],
+);
+
+/// The location the router is at.
+String locationOf(GoRouter router) =>
+    router.routerDelegate.currentConfiguration.uri.toString();

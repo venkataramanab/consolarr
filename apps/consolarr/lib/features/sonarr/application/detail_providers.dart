@@ -71,7 +71,10 @@ final class DetailData extends DetailState {
 /// `AsyncError` (an [AppError]); screens check `isLoading`, then `hasError`,
 /// then `value`, because Riverpod keeps the previous series through reloads.
 final seriesDetailProvider = AsyncNotifierProvider.autoDispose
-    .family<SeriesDetailNotifier, DetailState, int>(SeriesDetailNotifier.new);
+    .family<SeriesDetailNotifier, DetailState, int>(
+      SeriesDetailNotifier.new,
+      retry: (_, _) => null,
+    );
 
 class SeriesDetailNotifier extends AsyncNotifier<DetailState> {
   SeriesDetailNotifier(this.seriesId);
