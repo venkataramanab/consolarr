@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:core/core.dart';
 import 'package:torrent_clients/src/models.dart';
+import 'package:torrent_clients/src/torrent_capabilities.dart';
 
 /// The failure of an action a client does not implement (yet) or that the
 /// server version does not offer. Typed so the UI can say "not available for
@@ -22,10 +23,20 @@ class UnsupportedAction extends AppError {
 /// Options for adding a torrent. Every field is optional; a client ignores
 /// what its server cannot do.
 class AddTorrentOptions {
-  const AddTorrentOptions({this.savePath, this.category, this.paused = false});
+  const AddTorrentOptions({
+    this.savePath,
+    this.category,
+    this.tags = const [],
+    this.paused = false,
+  });
 
   final String? savePath;
+
+  /// qBittorrent category or Deluge label.
   final String? category;
+
+  /// qBittorrent tags or Transmission labels.
+  final List<String> tags;
   final bool paused;
 }
 
@@ -51,11 +62,50 @@ class TorrentDetail {
     required this.torrent,
     this.savePath,
     this.files = const [],
+    this.seeds,
+    this.seedsTotal,
+    this.peers,
+    this.peersTotal,
+    this.availability,
+    this.downloaded,
+    this.uploaded,
   });
 
   final Torrent torrent;
   final String? savePath;
   final List<TorrentFile> files;
+
+  /// Connected seeds, and seeds the trackers know about (`null` = unknown).
+  final int? seeds;
+  final int? seedsTotal;
+
+  /// Connected peers, and peers the trackers know about.
+  final int? peers;
+  final int? peersTotal;
+
+  /// Distributed copies (1.0 = one full copy among connected peers); `null`
+  /// when the client does not report it.
+  final double? availability;
+
+  /// Bytes transferred over the torrent's lifetime.
+  final int? downloaded;
+  final int? uploaded;
+}
+
+/// The global speed limits and the alternative-speed state of a client.
+///
+/// Limits are bytes per second, `0` means unlimited. [alternativeActive] is
+/// `null` when the client has no alternative-speed mode.
+class SpeedLimitsState {
+  const SpeedLimitsState({
+    required this.download,
+    required this.upload,
+    this.alternativeActive,
+  });
+
+  final int download;
+  final int upload;
+  final bool? alternativeActive;
 }
 
 /// Global speed limits in bytes per second; `null` leaves a limit unchanged,
@@ -98,6 +148,13 @@ abstract interface class TorrentActions {
 
   /// One torrent in detail.
   Future<Result<TorrentDetail>> torrentDetail(String hash);
+
+  /// The current global limits (and whether alternative limits are active).
+  Future<Result<SpeedLimitsState>> globalLimits();
+
+  /// Switches the alternative speed limits on or off (only for clients whose
+  /// `TorrentCapabilities.alternativeSpeed` is true).
+  Future<Result<void>> setAlternativeSpeed(bool enabled);
 }
 
 /// Default implementations that answer every action with [UnsupportedAction].
@@ -106,6 +163,10 @@ abstract interface class TorrentActions {
 /// supports; when an action is added to [TorrentActions] such classes keep
 /// compiling.
 mixin UnsupportedTorrentActions implements TorrentActions {
+  /// A client built on this mixin supports no optional control until it
+  /// overrides this (it satisfies `TorrentClient.capabilities`).
+  TorrentCapabilities get capabilities => const TorrentCapabilities();
+
   Result<T> _unsupported<T>(String action) =>
       Result.err(UnsupportedAction(action));
 
@@ -143,4 +204,12 @@ mixin UnsupportedTorrentActions implements TorrentActions {
   @override
   Future<Result<TorrentDetail>> torrentDetail(String hash) async =>
       _unsupported('torrentDetail');
+
+  @override
+  Future<Result<SpeedLimitsState>> globalLimits() async =>
+      _unsupported('globalLimits');
+
+  @override
+  Future<Result<void>> setAlternativeSpeed(bool enabled) async =>
+      _unsupported('setAlternativeSpeed');
 }

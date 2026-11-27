@@ -9,6 +9,7 @@ import 'package:torrent_clients/torrent_clients.dart';
 
 import 'models_test.dart' show fullTorrent;
 import 'support/fake_adapter.dart';
+import 'support/fake_servers.dart';
 
 Future<T> _inline<T>(T Function() work) async => work();
 
@@ -59,15 +60,7 @@ QBittorrentClient _client(
 );
 
 void main() {
-  test(
-    'actions that are not implemented yet fail with UnsupportedAction',
-    () async {
-      final c = _client(_server(data: {}));
-      final r = await c.pause(const ['h']);
-      expect(r.errorOrNull, isA<UnsupportedAction>());
-    },
-  );
-
+  qbittorrentActionTests();
   group('login and session', () {
     test('logs in once, then sends the cookie, Referer and Origin', () async {
       final a = _server(data: {'app/version': 'v4.6.3'});
@@ -350,6 +343,56 @@ void main() {
         (await _client(a).listTorrents()).errorOrNull?.category,
         ErrorCategory.tlsPinMismatch,
       );
+    });
+  });
+}
+
+void qbittorrentActionTests() {
+  group('actions: version dependent names', () {
+    test('v4 uses pause/resume', () async {
+      final s = FakeQBittorrent(version: 'v4.6.3');
+      final c = QBittorrentClient(
+        dio: dioWith(s.adapter),
+        username: 'test-user',
+        password: 'test-password',
+      );
+      await c.pause([exampleHash]);
+      await c.resume([exampleHash]);
+      expect(
+        s.paths,
+        containsAllInOrder(['torrents/pause', 'torrents/resume']),
+      );
+      expect(s.paths, isNot(contains('torrents/stop')));
+    });
+
+    test('v5 uses stop/start', () async {
+      final s = FakeQBittorrent(version: 'v5.0.1');
+      final c = QBittorrentClient(
+        dio: dioWith(s.adapter),
+        username: 'test-user',
+        password: 'test-password',
+      );
+      await c.pause([exampleHash]);
+      await c.resume([exampleHash]);
+      expect(s.paths, containsAllInOrder(['torrents/stop', 'torrents/start']));
+      expect(c.capabilities.distinctStop, isTrue);
+    });
+
+    test('a 404 on the chosen name falls back to the other one', () async {
+      // The server says v5 but only knows the v4 names.
+      final inner = FakeQBittorrent(version: 'v4.6.3');
+      final a = FakeAdapter((o) {
+        if (o.uri.path.endsWith('app/version'))
+          return FakeAdapter.reply('v5.0.0');
+        return inner.adapter.handler(o);
+      });
+      final c = QBittorrentClient(
+        dio: dioWith(a),
+        username: 'test-user',
+        password: 'test-password',
+      );
+      expect((await c.pause([exampleHash])).isOk, isTrue);
+      expect(inner.torrents.single.paused, isTrue);
     });
   });
 }
