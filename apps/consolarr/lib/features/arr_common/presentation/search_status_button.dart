@@ -55,8 +55,7 @@ class ArrSearchButton extends StatelessWidget {
           onPressed: onSearch,
         );
       case ArrSearchStatus.searching:
-        final reduce =
-            ConsolarrEffectsScope.maybeOf(context)?.reduceMotion ?? false;
+        final reduce = !ConsolarrEffects.of(context).animate;
         return Semantics(
           liveRegion: true,
           label: labels.searching,
