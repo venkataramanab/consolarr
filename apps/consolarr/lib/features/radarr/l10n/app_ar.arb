@@ -106,7 +106,7 @@
   "@radarrAgeJustNow": {
     "description": "Relative age used when cached data is less than a minute old."
   },
-  "radarrAgeMinutes": "{count, plural, =1{قبل دقيقة} =2{قبل دقيقتين} few{قبل {count} دقائق} other{قبل {count} دقيقة}}",
+  "radarrAgeMinutes": "{count, plural, =0{الآن} =1{قبل دقيقة} =2{قبل دقيقتين} few{قبل {count} دقائق} many{قبل {count} دقيقة} other{قبل {count} دقيقة}}",
   "@radarrAgeMinutes": {
     "description": "Relative age in minutes for the offline banner.",
     "placeholders": {
@@ -116,7 +116,7 @@
       }
     }
   },
-  "radarrAgeHours": "{count, plural, =1{قبل ساعة} =2{قبل ساعتين} few{قبل {count} ساعات} other{قبل {count} ساعة}}",
+  "radarrAgeHours": "{count, plural, =0{قبل أقل من ساعة} =1{قبل ساعة} =2{قبل ساعتين} few{قبل {count} ساعات} many{قبل {count} ساعة} other{قبل {count} ساعة}}",
   "@radarrAgeHours": {
     "description": "Relative age in hours for the offline banner.",
     "placeholders": {
@@ -126,7 +126,7 @@
       }
     }
   },
-  "radarrAgeDays": "{count, plural, =1{قبل يوم} =2{قبل يومين} few{قبل {count} أيام} other{قبل {count} يومًا}}",
+  "radarrAgeDays": "{count, plural, =0{اليوم} =1{قبل يوم} =2{قبل يومين} few{قبل {count} أيام} many{قبل {count} يومًا} other{قبل {count} يوم}}",
   "@radarrAgeDays": {
     "description": "Relative age in days for the offline banner.",
     "placeholders": {
@@ -244,7 +244,7 @@
   "@radarrFilterAction": {
     "description": "Tooltip of the filter button when no filter is active."
   },
-  "radarrFilterActive": "{count, plural, =1{تصفية، واحد مفعّل} =2{تصفية، اثنان مفعّلان} few{تصفية، {count} مفعّلة} other{تصفية، {count} مفعّلًا}}",
+  "radarrFilterActive": "{count, plural, =0{تصفية، لا شيء مفعّل} =1{تصفية، واحد مفعّل} =2{تصفية، اثنان مفعّلان} few{تصفية، {count} مفعّلة} many{تصفية، {count} مفعّلًا} other{تصفية، {count} مفعّل}}",
   "@radarrFilterActive": {
     "description": "Tooltip of the filter button when filters are active.",
     "placeholders": {
@@ -734,7 +734,7 @@
   "@radarrGrabAnyway": {
     "description": "Confirm button of the rejected-release dialog."
   },
-  "radarrSeeders": "{count, plural, =1{مصدّر واحد} =2{مصدّران} few{{count} مصدّرين} other{{count} مصدّرًا}}",
+  "radarrSeeders": "{count, plural, =0{بلا مصدّرين} =1{مصدّر واحد} =2{مصدّران} few{{count} مصدّرين} many{{count} مصدّرًا} other{{count} مصدّر}}",
   "@radarrSeeders": {
     "description": "Seeder count of a release.",
     "placeholders": {
@@ -744,7 +744,7 @@
       }
     }
   },
-  "radarrReleaseAgeHours": "{hours, plural, =1{عمره ساعة} =2{عمره ساعتان} few{عمره {hours} ساعات} other{عمره {hours} ساعة}}",
+  "radarrReleaseAgeHours": "{hours, plural, =0{عمره أقل من ساعة} =1{عمره ساعة} =2{عمره ساعتان} few{عمره {hours} ساعات} many{عمره {hours} ساعة} other{عمره {hours} ساعة}}",
   "@radarrReleaseAgeHours": {
     "description": "Age of a release in hours.",
     "placeholders": {
@@ -754,7 +754,7 @@
       }
     }
   },
-  "radarrReleaseAgeDays": "{days, plural, =1{عمره يوم} =2{عمره يومان} few{عمره {days} أيام} other{عمره {days} يومًا}}",
+  "radarrReleaseAgeDays": "{days, plural, =0{عمره أقل من يوم} =1{عمره يوم} =2{عمره يومان} few{عمره {days} أيام} many{عمره {days} يومًا} other{عمره {days} يوم}}",
   "@radarrReleaseAgeDays": {
     "description": "Age of a release in days.",
     "placeholders": {
@@ -876,7 +876,7 @@
   "@radarrQueueWarning": {
     "description": "Queue state."
   },
-  "radarrQueueMessages": "{count, plural, =1{رسالة واحدة} =2{رسالتان} few{{count} رسائل} other{{count} رسالة}}",
+  "radarrQueueMessages": "{count, plural, =0{لا رسائل} =1{رسالة واحدة} =2{رسالتان} few{{count} رسائل} many{{count} رسالة} other{{count} رسالة}}",
   "@radarrQueueMessages": {
     "description": "Chip that expands the messages of a queue item.",
     "placeholders": {
