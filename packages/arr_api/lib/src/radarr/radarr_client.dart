@@ -273,9 +273,8 @@ class RadarrClient extends ArrClientBase implements RadarrApi {
 
   @override
   Future<Result<ArrCommand>> searchMovies(List<int> movieIds) => guard(
-    () => _postCommand(
-      ArrCommandRequest('MoviesSearch', {'movieIds': movieIds}),
-    ),
+    () =>
+        _postCommand(ArrCommandRequest('MoviesSearch', {'movieIds': movieIds})),
   );
 
   @override

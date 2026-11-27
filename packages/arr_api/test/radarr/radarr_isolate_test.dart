@@ -58,9 +58,8 @@ void main() {
     });
 
     test('calendar', () async {
-      final r = await _client(
-        _big(movie),
-      ).calendar(DateTime.utc(2026), DateTime.utc(2026, 2));
+      final r = await _client(_big(movie))
+          .calendar(DateTime.utc(2026), DateTime.utc(2026, 2));
       expect(r.errorOrNull, isNull);
       expect(r.valueOrNull?.length, 1200);
     });

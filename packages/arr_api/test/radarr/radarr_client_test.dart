@@ -449,8 +449,7 @@ void main() {
       expect(sent['movieIds'], [7]);
       final all = await c.searchAllMissing();
       expect(all.isOk, isTrue);
-      final missing =
-          jsonDecode(adapter.requests.last.data as String) as Map;
+      final missing = jsonDecode(adapter.requests.last.data as String) as Map;
       expect(missing['name'], 'MissingMoviesSearch');
       expect(missing['filterKey'], 'monitored');
       expect(missing['filterValue'], 'true');
