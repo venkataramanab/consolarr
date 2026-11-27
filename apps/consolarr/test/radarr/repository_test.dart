@@ -75,14 +75,32 @@ void main() {
     expect(r.valueOrNull!.value.id, 2);
   });
 
-  test('a deleted movie is not_found and not served from cache', () async {
+  test('a deleted movie is not_found and never comes back from the cache', () async {
     api.moviesResult = Result.ok(fakeMovies(3));
     await repo.library();
+    api.movieResult = Result.ok(fakeMovie(2));
+    await repo.movie(2);
+    expect(cache.rows.keys, contains('srv1|${RadarrRepository.movieKey(2)}'));
+
     api.movieResult = const Result.err(AppError(ErrorCategory.notFound));
-    final r = await repo.movie(2);
-    // not_found is in the offline set, so the library row is offered; the
-    // notifier decides "gone" only when nothing cached exists.
-    expect(r.isOk || r.errorOrNull?.category == ErrorCategory.notFound, isTrue);
+    final gone = await repo.movie(2);
+    expect(gone.errorOrNull?.category, ErrorCategory.notFound);
+
+    // Offline later: neither its own cache entry nor its library row serve it.
+    api.movieResult = const Result.err(AppError(ErrorCategory.timeout));
+    final offline = await repo.movie(2);
+    expect(offline.isErr, isTrue);
+    expect(offline.errorOrNull?.category, ErrorCategory.timeout);
+
+    // The rest of the cached library is intact.
+    api.moviesResult = const Result.err(AppError(ErrorCategory.timeout));
+    final lib = await repo.library();
+    expect([for (final m in lib.valueOrNull!.value) m.id], [1, 3]);
+    expect(lib.valueOrNull!.isOffline, isTrue);
+  });
+
+  test('a movie that was never cached is not_found', () async {
+    api.movieResult = const Result.err(AppError(ErrorCategory.notFound));
     final missing = await repo.movie(77);
     expect(missing.errorOrNull?.category, ErrorCategory.notFound);
   });

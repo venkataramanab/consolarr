@@ -138,8 +138,12 @@ void main() {
       final capture = _Capture();
       final c = _container(api, capture: capture);
       c.listen(searchStatusProvider, (_, _) {});
+      await c.read(radarrContextProvider.future);
       final phases = <SearchPhase?>[];
-      c.listen(searchStatusProvider, (_, next) => phases.add(next[7]));
+      c.listen(
+        searchStatusProvider,
+        (_, next) => phases.add(next[('srv1', 7)]),
+      );
       await c.read(searchStatusProvider.notifier).searchMovie(7);
       expect(phases, [
         SearchPhase.starting,
@@ -147,7 +151,9 @@ void main() {
         SearchPhase.searching,
         SearchPhase.done,
       ]);
-      final e = capture.events.singleWhere((e) => e.$1 == 'radarr_search_started');
+      final e = capture.events.singleWhere(
+        (e) => e.$1 == 'radarr_search_started',
+      );
       expect(e.$2, {'kind': 'movie'});
     });
 
@@ -155,9 +161,14 @@ void main() {
       final api = FakeRadarrApi()..commandScript = [ArrCommandStatus.started];
       final c = _container(api);
       c.listen(searchStatusProvider, (_, _) {});
+      await c.read(radarrContextProvider.future);
       await c.read(searchStatusProvider.notifier).searchMovie(7);
       expect(api.commandCalls, maxCommandPolls);
-      expect(c.read(searchStatusProvider)[7], SearchPhase.failed);
+      // Not a failure: the server may still be searching.
+      expect(
+        c.read(searchStatusProvider)[('srv1', 7)],
+        SearchPhase.stillRunning,
+      );
     });
 
     test(
@@ -169,13 +180,17 @@ void main() {
           );
         final c = _container(api);
         c.listen(searchStatusProvider, (_, _) {});
+        await c.read(radarrContextProvider.future);
+        await c.read(radarrContextProvider.future);
         await c.read(searchStatusProvider.notifier).searchMovie(7);
-        expect(c.read(searchStatusProvider)[7], SearchPhase.failed);
+        expect(c.read(searchStatusProvider)[('srv1', 7)], SearchPhase.failed);
         expect(api.calls, ['search [7]']);
 
         final slow = FakeRadarrApi();
         final c2 = _container(slow);
         c2.listen(searchStatusProvider, (_, _) {});
+        await c2.read(radarrContextProvider.future);
+        await c2.read(radarrContextProvider.future);
         final n = c2.read(searchStatusProvider.notifier);
         final a = n.searchMovie(7);
         final b = n.searchMovie(7);
@@ -189,22 +204,27 @@ void main() {
       final capture = _Capture();
       final c = _container(api, capture: capture);
       c.listen(searchStatusProvider, (_, _) {});
+      await c.read(radarrContextProvider.future);
       await c.read(searchStatusProvider.notifier).searchAllMissing();
       expect(
-        c.read(searchStatusProvider)[SearchStatusNotifier.allMissingKey],
+        c.read(searchStatusProvider)[(
+          'srv1',
+          SearchStatusNotifier.allMissingKey,
+        )],
         SearchPhase.done,
       );
-      expect(capture.events.singleWhere((e) => e.$1 == 'radarr_search_started').$2, {
-        'kind': 'all_missing',
-      });
+      expect(
+        capture.events.singleWhere((e) => e.$1 == 'radarr_search_started').$2,
+        {'kind': 'all_missing'},
+      );
     });
   });
 
   group('events carry enums and bools only', () {
     test('removal, grab, add and search events contain no free text', () async {
       final api = FakeRadarrApi()
-        ..queueResult = const Result.ok([
-          RadarrQueueItem(id: 1, title: 'Secret.Release.Name', size: 10),
+        ..queueResult = Result.ok([
+          fakeQueueItem(1, title: 'Secret.Release.Name', size: 10),
         ])
         ..releasesResult = const Result.ok([]);
       final capture = _Capture();
@@ -215,19 +235,19 @@ void main() {
       await c
           .read(queueProvider.notifier)
           .remove(
-            const RadarrQueueItem(id: 1, title: 'Secret.Release.Name'),
+            fakeQueueItem(1, title: 'Secret.Release.Name'),
             removeFromClient: true,
             blocklist: ArrBlocklistChoice.blocklistOnly,
           );
       await c
           .read(grabStatusProvider.notifier)
           .grab(
-            const RadarrRelease(
-              guid: 'secret-guid',
+            fakeRelease(
+              'secret-guid',
               indexerId: 3,
               title: 'Secret.Release.Name',
               approved: false,
-              rejections: ['why'],
+              rejections: const ['why'],
             ),
           );
       for (final (name, params) in capture.events) {
@@ -240,15 +260,18 @@ void main() {
       }
       expect(
         capture.events.map((e) => e.$1),
-        containsAll(['radarr_queue_item_removed', 'release_grabbed']),
+        containsAll(['radarr_queue_item_removed', 'radarr_release_grabbed']),
       );
       expect(
-        capture.events.singleWhere((e) => e.$1 == 'radarr_queue_item_removed').$2,
+        capture.events
+            .singleWhere((e) => e.$1 == 'radarr_queue_item_removed')
+            .$2,
         {'removal': 'blocklist_only'},
       );
-      expect(capture.events.singleWhere((e) => e.$1 == 'radarr_release_grabbed').$2, {
-        'was_rejected': true,
-      });
+      expect(
+        capture.events.singleWhere((e) => e.$1 == 'radarr_release_grabbed').$2,
+        {'was_rejected': true},
+      );
     });
 
     test('no breadcrumb or log carries a title', () async {
@@ -268,9 +291,9 @@ void main() {
   group('queue notifier', () {
     test('removal drops the row; a failed removal keeps it', () async {
       final api = FakeRadarrApi()
-        ..queueResult = const Result.ok([
-          RadarrQueueItem(id: 1, size: 1),
-          RadarrQueueItem(id: 2, size: 1),
+        ..queueResult = Result.ok([
+          fakeQueueItem(1, size: 1),
+          fakeQueueItem(2, size: 1),
         ]);
       final c = _container(api);
       c.listen(queueProvider, (_, _) {});
@@ -279,26 +302,25 @@ void main() {
       final err = await c
           .read(queueProvider.notifier)
           .remove(
-            const RadarrQueueItem(id: 1),
+            fakeQueueItem(1),
             removeFromClient: false,
             blocklist: ArrBlocklistChoice.none,
           );
       expect(err?.category, ErrorCategory.timeout);
       expect(
-        (c.read(queueProvider).value as RadarrData<List<RadarrQueueItem>>)
-            .value,
+        (c.read(queueProvider).value as RadarrData<List<ArrQueueItem>>).value,
         hasLength(2),
       );
       api.removeResult = const Result.ok(null);
       await c
           .read(queueProvider.notifier)
           .remove(
-            const RadarrQueueItem(id: 1),
+            fakeQueueItem(1),
             removeFromClient: false,
             blocklist: ArrBlocklistChoice.none,
           );
       expect(
-        (c.read(queueProvider).value as RadarrData<List<RadarrQueueItem>>)
+        (c.read(queueProvider).value as RadarrData<List<ArrQueueItem>>)
             .value
             .single
             .id,

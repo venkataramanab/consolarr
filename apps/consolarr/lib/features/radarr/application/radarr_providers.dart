@@ -64,6 +64,17 @@ final radarrContextProvider = FutureProvider<RadarrContext?>(retry: _noRetry, (
   );
 });
 
+/// The active context, waiting for it when it is still resolving.
+Future<RadarrContext?> _activeContext(Ref ref) async {
+  final now = ref.read(radarrContextProvider).value;
+  if (now != null) return now;
+  try {
+    return await ref.read(radarrContextProvider.future);
+  } on Object {
+    return null;
+  }
+}
+
 /// Records an API failure as a breadcrumb (category and kind only).
 void recordApiError(Breadcrumbs breadcrumbs, AppError error) {
   final category = ErrorCategoryParam.values.where(
@@ -601,6 +612,14 @@ class QueueNotifier extends SnapshotNotifier<List<ArrQueueItem>> {
   }
 }
 
+/// Movie titles of the loaded library by id, for queue rows. Rebuilds only
+/// when the set of titles changes.
+final movieTitlesProvider = Provider<Map<int, String>>((ref) {
+  final state = ref.watch(movieLibraryProvider).value;
+  if (state is! RadarrData<List<RadarrMovie>>) return const {};
+  return {for (final m in state.value) m.id: m.title};
+});
+
 RadarrRemovalParam removalParam(bool fromClient, ArrBlocklistChoice b) =>
     switch (b) {
       ArrBlocklistChoice.blocklistAndSearch =>
@@ -704,8 +723,9 @@ class SearchStatusNotifier extends Notifier<Map<SearchKey, SearchPhase>> {
     RadarrSearchKindParam kind,
   ) async {
     final generation = _generation;
-    final context = ref.read(radarrContextProvider).value;
-    if (context == null) return;
+    final context =
+        ref.read(radarrContextProvider).value ?? await _activeContext(ref);
+    if (context == null || !ref.mounted || generation != _generation) return;
     final key = (context.serverId, movieId);
     bool stale() =>
         !ref.mounted ||
@@ -853,9 +873,11 @@ class GrabNotifier extends Notifier<Map<String, GrabPhase>> {
     final current = state[key];
     if (current == GrabPhase.grabbing || current == GrabPhase.grabbed) return;
     if (current == GrabPhase.maybeSent && !confirmedResend) return;
-    final context = ref.read(radarrContextProvider).value;
-    if (context == null) return;
     final generation = _generation;
+    final context =
+        ref.read(radarrContextProvider).value ?? await _activeContext(ref);
+    if (context == null || !ref.mounted || generation != _generation) return;
+    if (state[key] == GrabPhase.grabbing) return;
     state = {...state, key: GrabPhase.grabbing};
     final result = await context.api.grab(release);
     if (!ref.mounted || generation != _generation) return;

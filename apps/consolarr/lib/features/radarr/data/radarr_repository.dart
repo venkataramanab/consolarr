@@ -121,18 +121,22 @@ class RadarrRepository {
   /// in the cached library.
   Future<Result<Snapshot<RadarrMovie>>> movie(int id) async {
     final result = await _load<RadarrMovie>(
-      live: () => api.movie(id),
+      live: () async {
+        final live = await api.movie(id);
+        // Deleted on the server: nothing may bring it back from the cache
+        // (`not_found` is an offline-fallback category, so this has to happen
+        // before the fallback is looked up).
+        if (live.errorOrNull?.category == ErrorCategory.notFound) {
+          await _forget(id);
+        }
+        return live;
+      },
       key: movieKey(id),
       encode: (m) => m.toJson(),
       decode: (j) =>
           j is Map ? RadarrMovie.fromJson(j.cast<String, Object?>()) : null,
     );
     final error = result.errorOrNull;
-    // Deleted on the server: nothing may bring it back from the cache.
-    if (error != null && error.category == ErrorCategory.notFound) {
-      await _forget(id);
-      return result;
-    }
     if (error != null && kOfflineFallbackCategories.contains(error.category)) {
       final lib = await _cached(libraryKey, _decodeMovies);
       if (lib != null) {

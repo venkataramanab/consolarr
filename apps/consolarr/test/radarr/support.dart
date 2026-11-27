@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:arr_api/arr_api.dart';
 import 'package:consolarr/features/radarr/application/radarr_providers.dart';
 import 'package:consolarr/features/radarr/data/radarr_prefs.dart';
+import 'package:consolarr/features/settings/application/lock_controller.dart';
 import 'package:consolarr/src/cache/payload_cache.dart';
 import 'package:consolarr/features/radarr/data/radarr_repository.dart';
 import 'package:consolarr/src/providers.dart';
@@ -260,6 +261,7 @@ List<Override> radarrOverrides(
       radarrContextProvider.overrideWith((ref) async => context),
     radarrPrefsProvider.overrideWithValue(prefs ?? MemoryPrefs()),
     clockProvider.overrideWithValue(() => fixedNow),
+    appLockedProvider.overrideWithValue(false),
     commandPollIntervalProvider.overrideWithValue(Duration.zero),
   ];
 }
