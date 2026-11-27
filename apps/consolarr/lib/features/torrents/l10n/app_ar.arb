@@ -1027,9 +1027,5 @@
   "torKindDelugeDescription": "عميل تورنت بواجهة ويب (Deluge Web).",
   "@torKindDelugeDescription": {
     "description": "Description of Deluge in the server type picker."
-  },
-  "torTorrentRowMenu": "إجراءات التورنت",
-  "@torTorrentRowMenu": {
-    "description": "Accessible hint of a torrent row: long press opens actions."
   }
 }

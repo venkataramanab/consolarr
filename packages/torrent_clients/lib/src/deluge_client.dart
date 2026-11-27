@@ -34,6 +34,9 @@ class DelugeHostRequired extends AppError {
   final List<DelugeHost> hosts;
 }
 
+/// The `debugDetail` of the error for a Deluge Web without any daemon host.
+const delugeNoHostDetail = 'no daemon host configured';
+
 /// Clients whose server needs the user to choose a daemon host.
 abstract interface class DaemonHostSelection {
   /// The hosts the web UI knows.
@@ -274,7 +277,7 @@ class DelugeClient implements TorrentClient, DaemonHostSelection {
     if (hosts.isEmpty) {
       throw const AppError(
         ErrorCategory.notFound,
-        debugDetail: 'no daemon host configured',
+        debugDetail: delugeNoHostDetail,
       );
     }
     final preferred = hostId;

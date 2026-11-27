@@ -27,8 +27,13 @@ class TorrentRow extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
 
+  /// Counts builds (the rebuild-bound test reads it).
+  @visibleForTesting
+  static int buildCount = 0;
+
   @override
   Widget build(BuildContext context) {
+    buildCount++;
     final l10n = context.l10n;
     final view = torrentStateView(l10n, torrent.state);
     final percent = l10n.torProgressPercent(torrent.progress);

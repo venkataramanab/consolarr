@@ -161,21 +161,25 @@ class _SpeedLimitsSheetState extends ConsumerState<SpeedLimitsSheet> {
                 ),
               ),
               const SizedBox(width: ConsolarrSpacing.sm),
-              SegmentedButton<_Unit>(
-                segments: [
-                  ButtonSegment(
-                    value: _Unit.kb,
-                    label: Text(l10n.torLimitsUnitKB),
-                  ),
-                  ButtonSegment(
-                    value: _Unit.mb,
-                    label: Text(l10n.torLimitsUnitMB),
-                  ),
-                ],
-                selected: {d.unit},
-                onSelectionChanged: busy
-                    ? null
-                    : (s) => setState(() => d.unit = s.first),
+              Semantics(
+                container: true,
+                label: l10n.torLimitsUnit,
+                child: SegmentedButton<_Unit>(
+                  segments: [
+                    ButtonSegment(
+                      value: _Unit.kb,
+                      label: Text(l10n.torLimitsUnitKB),
+                    ),
+                    ButtonSegment(
+                      value: _Unit.mb,
+                      label: Text(l10n.torLimitsUnitMB),
+                    ),
+                  ],
+                  selected: {d.unit},
+                  onSelectionChanged: busy
+                      ? null
+                      : (s) => setState(() => d.unit = s.first),
+                ),
               ),
             ],
           ),

@@ -362,15 +362,16 @@ class _TorrentListScreenState extends ConsumerState<TorrentListScreen>
         ),
       );
     }
+    final noHost = appError.debugDetail == delugeNoHostDetail;
     final text = connectionErrorMessage(l10n, appError);
     return Padding(
       padding: EdgeInsets.only(top: padding.top, bottom: padding.bottom),
       child: RefreshIndicator(
         onRefresh: _refresh,
         child: ErrorState(
-          headline: l10n.torErrorHeadline,
-          message: text.message,
-          hint: text.hint,
+          headline: noHost ? l10n.torHostTitle : l10n.torErrorHeadline,
+          message: noHost ? l10n.torHostNone : text.message,
+          hint: noHost ? null : text.hint,
           retryLabel: l10n.torRetry,
           onRetry: _refresh,
         ),

@@ -9,6 +9,7 @@ import 'package:consolarr/src/database/app_database.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:test_harness/test_harness.dart';
@@ -40,6 +41,7 @@ class FakeTorrentClient implements TorrentClient {
 
   void setTorrents(List<Torrent> t) => _torrents = Result.ok(t);
   void failTorrents(ErrorCategory c) => _torrents = Result.err(AppError(c));
+  void failWith(AppError e) => _torrents = Result.err(e);
   void setTransfer(TransferInfo t) => _transfer = Result.ok(t);
   void failTransfer() =>
       _transfer = const Result.err(AppError(ErrorCategory.serverError));
@@ -313,3 +315,46 @@ Future<void> expectStateSurvivesMatrix(
     },
   );
 }
+
+/// A sheet (or any widget) under the harness with a [FakeTorrentClient]; the
+/// caller's [overrides] are added to the standard ones.
+Widget sheetApp(
+  HarnessVariant variant,
+  Widget child, {
+  required FakeTorrentClient client,
+  List<Override> overrides = const [],
+  bool reduceMotion = true,
+  Duration poll = const Duration(days: 1),
+  Completer<TorrentClient?>? clientGate,
+}) {
+  return ProviderScope(
+    retry: (_, _) => null,
+    overrides: [
+      testDatabaseOverride,
+      torrentClientProvider.overrideWith(
+        (ref) => clientGate != null ? clientGate.future : Future.value(client),
+      ),
+      torrentPollIntervalProvider.overrideWithValue(poll),
+      clockProvider.overrideWithValue(() => fixedNow),
+      ...overrides,
+    ],
+    child: harnessApp(
+      variant,
+      Builder(
+        builder: (context) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(disableAnimations: reduceMotion),
+          child: Scaffold(body: child),
+        ),
+      ),
+    ),
+  );
+}
+
+/// The two stress variants: smallest phone at scale 2.0 in `ar` and `en_XA`.
+final stressVariants = harnessMatrix(
+  sizes: const [Size(320, 568)],
+  textScales: const [2],
+  locales: const [Locale('ar'), Locale('en', 'XA')],
+  brightnesses: const [Brightness.dark],
+);
