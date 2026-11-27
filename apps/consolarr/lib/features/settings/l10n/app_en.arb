@@ -413,9 +413,9 @@
   "@diagPreviewIntro": {
     "description": "Introduction on the diagnostics preview screen."
   },
-  "diagShareFile": "Share as file",
+  "diagShareFile": "Share as text",
   "@diagShareFile": {
-    "description": "Button that shares the diagnostics file through the system share sheet."
+    "description": "Button that shares the diagnostics text through the system share sheet."
   },
   "diagOpenGithub": "Open a GitHub issue",
   "@diagOpenGithub": {
@@ -436,6 +436,10 @@
   "diagOpenFailed": "Could not open the browser.",
   "@diagOpenFailed": {
     "description": "Message shown when the browser could not be opened."
+  },
+  "diagShareTruncationNote": "[Shortened to fit the share limit]",
+  "@diagShareTruncationNote": {
+    "description": "Note appended to the shared diagnostics text when it was cut to fit the share size limit."
   },
   "diagShareFailed": "Could not share the file.",
   "@diagShareFailed": {

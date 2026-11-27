@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import 'dart:typed_data';
-
 import 'package:consolarr/features/about/source_link.dart';
 import 'package:consolarr/features/settings/application/diagnostics_providers.dart';
 import 'package:consolarr/features/settings/application/settings_providers.dart';
@@ -33,11 +31,10 @@ class _DiagnosticsPreviewScreenState
     final l10n = context.l10n;
     final actions = ref.read(externalActionsProvider);
     try {
-      await actions.shareFile(
-        fileName: 'consolarr-diagnostics.txt',
-        bytes: Uint8List.fromList(bundle.bytes),
-        mimeType: 'text/plain',
+      await actions.shareText(
+        text: bundle.text,
         subject: l10n.diagIssueTitle,
+        truncationNote: l10n.diagShareTruncationNote,
       );
       await ref
           .read(eventTrackerProvider)

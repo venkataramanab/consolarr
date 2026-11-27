@@ -527,7 +527,7 @@ void main() {
       );
       await tester.tap(find.text(l10n.diagShareFile));
       await tester.pumpAndSettle();
-      final shared = String.fromCharCodes(h.base.actions.shared.single.bytes);
+      final shared = h.base.actions.shared.single;
       expect(shared, preview, reason: 'preview equals the shared bytes');
       for (final canary in canaries) {
         expect(shared, isNot(contains(canary)), reason: canary);
@@ -578,7 +578,7 @@ void main() {
       await tester.tap(find.text(l10n.diagShareFile));
       await tester.pumpAndSettle();
       expect(
-        String.fromCharCodes(h.base.actions.shared.single.bytes),
+        h.base.actions.shared.single,
         c.read(diagnosticsBundleProvider).requireValue.text,
       );
     });
