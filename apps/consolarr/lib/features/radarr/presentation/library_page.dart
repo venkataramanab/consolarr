@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'dart:async';
+
 import 'package:arr_api/arr_api.dart';
+import 'package:consolarr/features/arr_common/presentation/sort_filter_chip_bar.dart';
 import 'package:consolarr/features/radarr/application/radarr_providers.dart';
 import 'package:consolarr/features/radarr/domain/library_query.dart';
 import 'package:consolarr/features/radarr/presentation/common.dart';
 import 'package:consolarr/features/radarr/presentation/movie_views.dart';
 import 'package:consolarr/features/radarr/presentation/navigation.dart';
-import 'package:consolarr/features/radarr/presentation/stand_ins/glass_sheet.dart';
-import 'package:consolarr/features/radarr/presentation/stand_ins/sort_filter_sheets.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
@@ -29,6 +30,9 @@ String sortKeyText(AppLocalizations l10n, MovieSortKey k) => switch (k) {
   MovieSortKey.genre => l10n.radarrSortGenre,
 };
 
+/// How long the library search waits after the last keystroke.
+const searchDebounce = Duration(milliseconds: 150);
+
 /// The movie library (RAD-01..05): toolbar, groups with a jump control and
 /// every state (loading, data, empty, no match, filter-empty, error, offline).
 class LibraryPage extends ConsumerStatefulWidget {
@@ -43,9 +47,26 @@ class LibraryPage extends ConsumerStatefulWidget {
 class _LibraryPageState extends ConsumerState<LibraryPage> {
   final _scroll = ScrollController();
   final _search = TextEditingController();
+  Timer? _debounce;
+
+  /// Applies the typed text after a short pause, so a big library is not
+  /// filtered on every keystroke.
+  void _onSearchChanged(String value) {
+    _debounce?.cancel();
+    _debounce = Timer(searchDebounce, () {
+      if (mounted) ref.read(libraryQueryProvider.notifier).setSearch(value);
+    });
+  }
+
+  void _clearSearch() {
+    _debounce?.cancel();
+    _search.clear();
+    ref.read(libraryQueryProvider.notifier).setSearch('');
+  }
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _scroll.dispose();
     _search.dispose();
     super.dispose();
@@ -111,10 +132,11 @@ class _LibraryPageState extends ConsumerState<LibraryPage> {
     final l10n = context.l10n;
     final padding = widget.padding;
     final query = ref.watch(libraryQueryProvider);
-    final visible = ref.watch(visibleMoviesProvider);
+    final visibleState = ref.watch(visibleMoviesProvider);
+    final visible = visibleState.movies;
     final source = ref.watch(artworkSourceProvider);
     final now = ref.watch(clockProvider)();
-    final groups = groupMovies(visible, query.sort);
+    final groups = visibleState.groups;
     final offline = snapshot.isOffline;
 
     Widget? empty;
@@ -178,6 +200,9 @@ class _LibraryPageState extends ConsumerState<LibraryPage> {
                     _Toolbar(
                       controller: _search,
                       groups: groups,
+                      computing: visibleState.computing,
+                      onSearchChanged: _onSearchChanged,
+                      onClearSearch: _clearSearch,
                       onJump: (index) => _jump(
                         groups,
                         index,
@@ -236,11 +261,17 @@ class _Toolbar extends ConsumerWidget {
   const _Toolbar({
     required this.controller,
     required this.groups,
+    required this.computing,
+    required this.onSearchChanged,
+    required this.onClearSearch,
     required this.onJump,
   });
 
   final TextEditingController controller;
   final List<MovieGroup> groups;
+  final bool computing;
+  final void Function(String value) onSearchChanged;
+  final VoidCallback onClearSearch;
   final void Function(int index) onJump;
 
   @override
@@ -248,47 +279,41 @@ class _Toolbar extends ConsumerWidget {
     final l10n = context.l10n;
     final query = ref.watch(libraryQueryProvider);
     final mode = ref.watch(viewModeProvider);
+    final profiles = ref.watch(qualityProfilesProvider);
+    final tags = ref.watch(tagsProvider);
     final isGrid = mode == LibraryViewMode.grid;
     final canJump = groups.length > 1 && groups.first.label.isNotEmpty;
+    final names = <int, String>{for (final p in profiles.value ?? const []) p.id: p.name};
+    final tagNames = <int, String>{for (final t in tags.value ?? const []) t.id: t.label};
+    final sortName = sortKeyText(l10n, query.sort);
+    final direction = query.ascending
+        ? l10n.radarrAscending
+        : l10n.radarrDescending;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        TextField(
-          controller: controller,
-          textInputAction: TextInputAction.search,
-          decoration: InputDecoration(
-            hintText: l10n.radarrSearchHint,
-            prefixIcon: const Icon(Icons.search),
-            suffixIcon: query.search.isEmpty
-                ? null
-                : IconButton(
-                    tooltip: l10n.radarrClearSearch,
-                    icon: const Icon(Icons.close),
-                    onPressed: () {
-                      controller.clear();
-                      ref.read(libraryQueryProvider.notifier).setSearch('');
-                    },
-                  ),
-          ),
-          onChanged: ref.read(libraryQueryProvider.notifier).setSearch,
-        ),
-        Wrap(
+        Row(
           children: [
-            IconButton(
-              tooltip: l10n.radarrSortAction,
-              icon: const Icon(Icons.sort),
-              onPressed: () => _showSort(context, ref, query),
-            ),
-            IconButton(
-              tooltip: query.filter.isActive
-                  ? l10n.radarrFilterActive(query.filter.activeCount)
-                  : l10n.radarrFilterAction,
-              icon: Badge(
-                isLabelVisible: query.filter.isActive,
-                label: Text('${query.filter.activeCount}'),
-                child: const Icon(Icons.filter_list),
+            Expanded(
+              child: ValueListenableBuilder<TextEditingValue>(
+                valueListenable: controller,
+                builder: (context, value, _) => TextField(
+                  controller: controller,
+                  textInputAction: TextInputAction.search,
+                  decoration: InputDecoration(
+                    hintText: l10n.radarrSearchHint,
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: value.text.isEmpty
+                        ? null
+                        : IconButton(
+                            tooltip: l10n.radarrClearSearch,
+                            icon: const Icon(Icons.close),
+                            onPressed: onClearSearch,
+                          ),
+                  ),
+                  onChanged: onSearchChanged,
+                ),
               ),
-              onPressed: () => _showFilter(context, ref, query),
             ),
             IconButton(
               tooltip: isGrid
@@ -307,6 +332,66 @@ class _Toolbar extends ConsumerWidget {
               ),
           ],
         ),
+        const SizedBox(height: ConsolarrSpacing.sm),
+        ArrSortFilterBar(
+          sortLabel: l10n.radarrSortChip(sortName),
+          sortSemanticsLabel: l10n.radarrSortChipSemantics(sortName, direction),
+          ascending: query.ascending,
+          onSort: () => _showSort(context, ref, query),
+          filterLabel: l10n.radarrFilterChip(query.filter.activeCount),
+          filterSemanticsLabel: l10n.radarrFilterChipSemantics(
+            query.filter.activeCount,
+          ),
+          onFilter: () => _showFilter(context, ref, query),
+          activeFilters: [
+            for (final id in activeFilterIds(query.filter))
+              ArrActiveFilter(
+                id: id,
+                label: filterChipText(l10n, id, names, tagNames),
+                removeLabel: l10n.radarrFilterRemoveNamed(
+                  filterChipText(l10n, id, names, tagNames),
+                ),
+              ),
+          ],
+          onRemoveFilter: (id) => ref
+              .read(libraryQueryProvider.notifier)
+              .setFilter(removeFilter(query.filter, id)),
+          clearAllLabel: l10n.radarrClearFilters,
+          onClearAll: () => ref
+              .read(libraryQueryProvider.notifier)
+              .setFilter(MovieFilter.none),
+        ),
+        if (profiles.hasError || tags.hasError)
+          Padding(
+            padding: const EdgeInsets.only(top: ConsolarrSpacing.xs),
+            child: Semantics(
+              container: true,
+              child: Row(
+                children: [
+                  const Icon(Icons.warning_amber_outlined),
+                  const SizedBox(width: ConsolarrSpacing.sm),
+                  Expanded(child: Text(l10n.radarrProfilesFailed)),
+                  TextButton(
+                    onPressed: () {
+                      ref
+                        ..invalidate(qualityProfilesProvider)
+                        ..invalidate(tagsProvider);
+                    },
+                    child: Text(l10n.radarrRetry),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        if (computing)
+          Semantics(
+            liveRegion: true,
+            label: l10n.radarrLibraryComputing,
+            child: const Padding(
+              padding: EdgeInsets.only(top: ConsolarrSpacing.xs),
+              child: LinearProgressIndicator(minHeight: 2),
+            ),
+          ),
       ],
     );
   }
@@ -317,24 +402,23 @@ class _Toolbar extends ConsumerWidget {
       context: context,
       title: l10n.radarrJumpTitle,
       closeLabel: l10n.radarrClose,
-      builder: (sheet) => ListView(
-        shrinkWrap: true,
+      detents: GlassSheetDetents.full,
+      builder: (sheet) => Padding(
         padding: const EdgeInsets.all(ConsolarrSpacing.gutter),
-        children: [
-          Wrap(
-            spacing: ConsolarrSpacing.sm,
-            children: [
-              for (var i = 0; i < groups.length; i++)
-                ActionChip(
-                  label: Text(groups[i].label),
-                  onPressed: () {
-                    Navigator.of(sheet).pop();
-                    onJump(i);
-                  },
-                ),
-            ],
-          ),
-        ],
+        child: Wrap(
+          spacing: ConsolarrSpacing.sm,
+          children: [
+            for (var i = 0; i < groups.length; i++)
+              ActionChip(
+                label: Text(groups[i].label),
+                materialTapTargetSize: MaterialTapTargetSize.padded,
+                onPressed: () {
+                  Navigator.of(sheet).pop();
+                  onJump(i);
+                },
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -345,6 +429,7 @@ class _Toolbar extends ConsumerWidget {
       context: context,
       title: l10n.radarrSortSheetTitle,
       closeLabel: l10n.radarrClose,
+      detents: GlassSheetDetents.full,
       builder: (sheet) => SortSheet<MovieSortKey>(
         title: l10n.radarrSortSheetTitle,
         options: [
@@ -382,9 +467,11 @@ class _Toolbar extends ConsumerWidget {
       context: context,
       title: l10n.radarrFilterSheetTitle,
       closeLabel: l10n.radarrClose,
+      detents: GlassSheetDetents.full,
       builder: (sheet) => FilterSheet(
         title: l10n.radarrFilterSheetTitle,
         activeCount: f.activeCount,
+        activeCountLabel: l10n.radarrFilterChip(f.activeCount),
         clearAllLabel: l10n.radarrClearFilters,
         saveAsDefaultLabel: l10n.radarrSaveAsDefault,
         applyLabel: l10n.radarrApply,
@@ -393,19 +480,16 @@ class _Toolbar extends ConsumerWidget {
             id: 'monitored',
             label: l10n.radarrFilterMonitored,
             chips: [
-              FilterChipOption(id: 'monitored', label: l10n.radarrMonitored),
-              FilterChipOption(
-                id: 'unmonitored',
-                label: l10n.radarrUnmonitored,
-              ),
+              FilterChoice(id: 'monitored', label: l10n.radarrMonitored),
+              FilterChoice(id: 'unmonitored', label: l10n.radarrUnmonitored),
             ],
           ),
           FilterSection(
             id: 'file',
             label: l10n.radarrFilterFile,
             chips: [
-              FilterChipOption(id: 'downloaded', label: l10n.radarrDownloaded),
-              FilterChipOption(id: 'missing', label: l10n.radarrMissing),
+              FilterChoice(id: 'downloaded', label: l10n.radarrDownloaded),
+              FilterChoice(id: 'missing', label: l10n.radarrMissing),
             ],
           ),
           FilterSection(
@@ -415,7 +499,7 @@ class _Toolbar extends ConsumerWidget {
             chips: [
               for (final m in MinimumAvailability.values)
                 if (m != MinimumAvailability.unknown)
-                  FilterChipOption(
+                  FilterChoice(
                     id: m.name,
                     label: minimumAvailabilityText(l10n, m),
                   ),
@@ -428,7 +512,7 @@ class _Toolbar extends ConsumerWidget {
               multiSelect: true,
               chips: [
                 for (final p in profiles)
-                  FilterChipOption(id: '${p.id}', label: p.name),
+                  FilterChoice(id: '${p.id}', label: p.name),
               ],
             ),
           if (tags.isNotEmpty)
@@ -438,7 +522,7 @@ class _Toolbar extends ConsumerWidget {
               multiSelect: true,
               chips: [
                 for (final t in tags)
-                  FilterChipOption(id: '${t.id}', label: t.label),
+                  FilterChoice(id: '${t.id}', label: t.label),
               ],
             ),
           if (collections.isNotEmpty)
@@ -447,59 +531,88 @@ class _Toolbar extends ConsumerWidget {
               label: l10n.radarrFilterCollection,
               multiSelect: true,
               chips: [
-                for (final c in collections) FilterChipOption(id: c, label: c),
+                for (final c in collections) FilterChoice(id: c, label: c),
               ],
             ),
         ],
-        initial: {
-          'monitored': {
-            if (f.monitored == MonitoredFilter.monitored) 'monitored',
-            if (f.monitored == MonitoredFilter.unmonitored) 'unmonitored',
-          },
-          'file': {
-            if (f.file == FileFilter.downloaded) 'downloaded',
-            if (f.file == FileFilter.missing) 'missing',
-          },
-          'availability': {for (final a in f.availability) a.name},
-          'profile': {for (final p in f.qualityProfiles) '$p'},
-          'tag': {for (final t in f.tags) '$t'},
-          'collection': {...f.collections},
-        },
+        selection: filterSelection(f),
         onClear: () {
           Navigator.of(sheet).pop();
           ref.read(libraryQueryProvider.notifier).setFilter(MovieFilter.none);
         },
         onApply: (sel, save) {
           Navigator.of(sheet).pop();
-          Set<String> s(String id) => sel[id] ?? const {};
           ref
               .read(libraryQueryProvider.notifier)
-              .setFilter(
-                MovieFilter(
-                  monitored: s('monitored').contains('monitored')
-                      ? MonitoredFilter.monitored
-                      : s('monitored').contains('unmonitored')
-                      ? MonitoredFilter.unmonitored
-                      : MonitoredFilter.any,
-                  file: s('file').contains('downloaded')
-                      ? FileFilter.downloaded
-                      : s('file').contains('missing')
-                      ? FileFilter.missing
-                      : FileFilter.any,
-                  availability: {
-                    for (final m in MinimumAvailability.values)
-                      if (s('availability').contains(m.name)) m,
-                  },
-                  qualityProfiles: {
-                    for (final v in s('profile')) ?int.tryParse(v),
-                  },
-                  tags: {for (final v in s('tag')) ?int.tryParse(v)},
-                  collections: {...s('collection')},
-                ),
-                saveAsDefault: save,
-              );
+              .setFilter(filterFromSelection(sel), saveAsDefault: save);
         },
       ),
     );
   }
 }
+
+/// The text of an active-filter chip ([id] as in `activeFilterIds`).
+String filterChipText(
+  AppLocalizations l10n,
+  String id,
+  Map<int, String> profileNames,
+  Map<int, String> tagNames,
+) {
+  final colon = id.indexOf(':');
+  final kind = colon < 0 ? id : id.substring(0, colon);
+  final value = colon < 0 ? '' : id.substring(colon + 1);
+  return switch (kind) {
+    'monitored' => l10n.radarrFilterMonitored,
+    'file' => l10n.radarrFilterFile,
+    'availability' => minimumAvailabilityText(
+      l10n,
+      MinimumAvailability.values.firstWhere(
+        (m) => m.name == value,
+        orElse: () => MinimumAvailability.unknown,
+      ),
+    ),
+    'profile' =>
+      profileNames[int.tryParse(value)] ??
+          l10n.radarrFilterProfileFallback(int.tryParse(value) ?? 0),
+    'tag' => tagNames[int.tryParse(value)] ?? value,
+    'collection' => value,
+    _ => '',
+  };
+}
+
+/// The chip state of the filter sheet for [f].
+FilterSelection filterSelection(MovieFilter f) => FilterSelection({
+  'monitored': {
+    if (f.monitored == MonitoredFilter.monitored) 'monitored',
+    if (f.monitored == MonitoredFilter.unmonitored) 'unmonitored',
+  },
+  'file': {
+    if (f.file == FileFilter.downloaded) 'downloaded',
+    if (f.file == FileFilter.missing) 'missing',
+  },
+  'availability': {for (final a in f.availability) a.name},
+  'profile': {for (final p in f.qualityProfiles) '$p'},
+  'tag': {for (final t in f.tags) '$t'},
+  'collection': {...f.collections},
+});
+
+/// The filter a sheet selection stands for.
+MovieFilter filterFromSelection(FilterSelection sel) => MovieFilter(
+  monitored: sel.of('monitored').contains('monitored')
+      ? MonitoredFilter.monitored
+      : sel.of('monitored').contains('unmonitored')
+      ? MonitoredFilter.unmonitored
+      : MonitoredFilter.any,
+  file: sel.of('file').contains('downloaded')
+      ? FileFilter.downloaded
+      : sel.of('file').contains('missing')
+      ? FileFilter.missing
+      : FileFilter.any,
+  availability: {
+    for (final m in MinimumAvailability.values)
+      if (sel.of('availability').contains(m.name)) m,
+  },
+  qualityProfiles: {for (final v in sel.of('profile')) ?int.tryParse(v)},
+  tags: {for (final v in sel.of('tag')) ?int.tryParse(v)},
+  collections: {...sel.of('collection')},
+);

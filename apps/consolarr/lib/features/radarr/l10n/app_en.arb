@@ -244,6 +244,78 @@
       }
     }
   },
+  "radarrSortChip": "Sort: {key}",
+  "@radarrSortChip": {
+    "description": "Label of the sort button above the library; shows the current sort key.",
+    "placeholders": {
+      "key": {
+        "type": "String",
+        "description": "Localized sort key name."
+      }
+    }
+  },
+  "radarrSortChipSemantics": "Sort by {key}, {direction}. Opens the sort options.",
+  "@radarrSortChipSemantics": {
+    "description": "Accessible name of the sort button: current key and direction.",
+    "placeholders": {
+      "key": {
+        "type": "String",
+        "description": "Localized sort key name."
+      },
+      "direction": {
+        "type": "String",
+        "description": "Localized direction."
+      }
+    }
+  },
+  "radarrFilterChip": "{count, plural, =0{Filter} other{Filter ({count})}}",
+  "@radarrFilterChip": {
+    "description": "Label of the filter button above the library; shows how many criteria are active.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of items."
+      }
+    }
+  },
+  "radarrFilterChipSemantics": "{count, plural, =0{Filter. Opens the filter options.} =1{Filter, 1 filter active. Opens the filter options.} other{Filter, {count} filters active. Opens the filter options.}}",
+  "@radarrFilterChipSemantics": {
+    "description": "Accessible name of the filter button including the number of active filters.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of items."
+      }
+    }
+  },
+  "radarrFilterRemoveNamed": "Remove filter {label}",
+  "@radarrFilterRemoveNamed": {
+    "description": "Accessible name of the remove button of an active filter chip.",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "description": "Name of the filter."
+      }
+    }
+  },
+  "radarrFilterProfileFallback": "Profile {id}",
+  "@radarrFilterProfileFallback": {
+    "description": "Chip text of an active quality profile filter when profile names could not be loaded.",
+    "placeholders": {
+      "id": {
+        "type": "int",
+        "description": "Profile number."
+      }
+    }
+  },
+  "radarrLibraryComputing": "Updating the list…",
+  "@radarrLibraryComputing": {
+    "description": "Announced while a large library is being filtered and sorted."
+  },
+  "radarrProfilesFailed": "Quality profiles could not be loaded, so their names are missing.",
+  "@radarrProfilesFailed": {
+    "description": "Notice above the library when the quality profile names failed to load; a retry button follows."
+  },
   "radarrSwitchToList": "Show as list",
   "@radarrSwitchToList": {
     "description": "Tooltip of the button that switches the library to list mode."
@@ -417,6 +489,10 @@
   "@radarrMinAnnounced": {
     "description": "Minimum availability option: as soon as announced."
   },
+  "radarrMinTba": "To be announced",
+  "@radarrMinTba": {
+    "description": "Minimum availability option: a movie that is not announced yet."
+  },
   "radarrMinInCinemas": "In cinemas",
   "@radarrMinInCinemas": {
     "description": "Minimum availability option: when in cinemas."
@@ -504,6 +580,20 @@
   "@radarrGenres": {
     "description": "Label of the genres line."
   },
+  "radarrLabelValue": "{label}: {value}",
+  "@radarrLabelValue": {
+    "description": "A detail line: a label and its value.",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "description": "Label."
+      },
+      "value": {
+        "type": "String",
+        "description": "Value."
+      }
+    }
+  },
   "radarrInCollection": "Part of the collection {collection}",
   "@radarrInCollection": {
     "description": "Plain text line naming the collection the movie belongs to.",
@@ -575,6 +665,10 @@
   "radarrSearchFailed": "Search failed",
   "@radarrSearchFailed": {
     "description": "Search progress: failed."
+  },
+  "radarrSearchStillRunning": "Still searching on the server. Check the queue.",
+  "@radarrSearchStillRunning": {
+    "description": "State of an automatic search that did not finish in time but is not a failure."
   },
   "radarrReleasesTitle": "Choose a release",
   "@radarrReleasesTitle": {
@@ -881,6 +975,26 @@
         "type": "DateTime",
         "description": "The day.",
         "format": "yMMMEd"
+      }
+    }
+  },
+  "radarrCalendarDayCount": "{count, plural, =1{1 movie} other{{count} movies}}",
+  "@radarrCalendarDayCount": {
+    "description": "Number of movies on a calendar day.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of items."
+      }
+    }
+  },
+  "radarrCalendarGroupSemantics": "Movies on {day}",
+  "@radarrCalendarGroupSemantics": {
+    "description": "Accessible name of a calendar day group header.",
+    "placeholders": {
+      "day": {
+        "type": "String",
+        "description": "The day."
       }
     }
   },

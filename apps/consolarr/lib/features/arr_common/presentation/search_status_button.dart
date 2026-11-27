@@ -4,7 +4,19 @@ import 'package:design_system/design_system.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Progress of an automatic search, as a plain view-model value.
-enum ArrSearchStatus { idle, searching, grabbed, nothingFound, failed }
+enum ArrSearchStatus {
+  idle,
+  searching,
+  grabbed,
+  nothingFound,
+  failed,
+
+  /// The command finished without telling what it found ("Search finished").
+  finished,
+
+  /// Still running on the server after the polling cap: neutral, no retry.
+  stillRunning,
+}
 
 /// Localized strings of [ArrSearchButton] (passed in; no l10n here).
 class ArrSearchLabels {
@@ -15,6 +27,8 @@ class ArrSearchLabels {
     required this.nothingFound,
     required this.failed,
     required this.retry,
+    this.finished,
+    this.stillRunning,
   });
 
   /// Tooltip / name of the idle button, for example "Search for this episode".
@@ -24,6 +38,12 @@ class ArrSearchLabels {
   final String nothingFound;
   final String failed;
   final String retry;
+
+  /// Text of [ArrSearchStatus.finished]; falls back to [grabbed].
+  final String? finished;
+
+  /// Text of [ArrSearchStatus.stillRunning]; falls back to [searching].
+  final String? stillRunning;
 }
 
 /// Inline control for an automatic search (SON-16): an icon button while idle,
@@ -36,6 +56,7 @@ class ArrSearchButton extends StatelessWidget {
     required this.status,
     required this.labels,
     required this.onSearch,
+    this.enabled = true,
     super.key,
   });
 
@@ -45,6 +66,10 @@ class ArrSearchButton extends StatelessWidget {
   /// Starts the search (also the retry action).
   final VoidCallback onSearch;
 
+  /// Whether starting a search is possible (false: offline, for example). The
+  /// idle button is then shown disabled.
+  final bool enabled;
+
   @override
   Widget build(BuildContext context) {
     switch (status) {
@@ -52,7 +77,7 @@ class ArrSearchButton extends StatelessWidget {
         return IconButton(
           tooltip: labels.search,
           icon: const Icon(Icons.search),
-          onPressed: onSearch,
+          onPressed: enabled ? onSearch : null,
         );
       case ArrSearchStatus.searching:
         final reduce = !ConsolarrEffects.of(context).animate;
@@ -93,6 +118,24 @@ class ArrSearchButton extends StatelessWidget {
             label: labels.grabbed,
             icon: Icons.download_done,
             tone: StatusTone.success,
+          ),
+        );
+      case ArrSearchStatus.finished:
+        return Semantics(
+          liveRegion: true,
+          child: StatusChip(
+            label: labels.finished ?? labels.grabbed,
+            icon: Icons.check_circle_outline,
+            tone: StatusTone.success,
+          ),
+        );
+      case ArrSearchStatus.stillRunning:
+        return Semantics(
+          liveRegion: true,
+          child: StatusChip(
+            label: labels.stillRunning ?? labels.searching,
+            icon: Icons.schedule,
+            tone: StatusTone.info,
           ),
         );
       case ArrSearchStatus.nothingFound:

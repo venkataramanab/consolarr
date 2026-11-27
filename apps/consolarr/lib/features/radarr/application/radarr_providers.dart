@@ -2,11 +2,13 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:isolate';
 
 import 'package:arr_api/arr_api.dart';
 import 'package:consolarr/features/radarr/data/radarr_prefs.dart';
 import 'package:consolarr/features/radarr/data/radarr_repository.dart';
 import 'package:consolarr/features/radarr/domain/library_query.dart';
+import 'package:consolarr/features/radarr/domain/wanted.dart';
 import 'package:consolarr/features/servers/application/server_connection.dart';
 import 'package:consolarr/features/settings/application/lock_controller.dart';
 import 'package:consolarr/src/images/secure_image_provider.dart';
@@ -340,19 +342,107 @@ class LibraryQueryNotifier extends Notifier<MovieQuery> {
   }
 }
 
+/// Runs [computation], possibly on another isolate. Tests inject an inline
+/// version.
+typedef MovieRunner = Future<T> Function<T>(T Function() computation);
+
+final movieRunnerProvider = Provider<MovieRunner>(
+  (ref) =>
+      <T>(T Function() computation) => Isolate.run(computation),
+);
+
+/// Libraries up to this size are filtered on the UI isolate (well under a
+/// frame); bigger ones go to another isolate.
+const movieSyncLimit = 1500;
+
+/// The list the library screen shows: filtered, searched, sorted and grouped.
+class VisibleMovies {
+  const VisibleMovies({
+    this.movies = const [],
+    this.groups = const [],
+    this.computing = false,
+  });
+
+  final List<RadarrMovie> movies;
+  final List<MovieGroup> groups;
+
+  /// A big list is being recomputed; [movies] is the previous result.
+  final bool computing;
+}
+
 /// Library after search, filter and sort. Empty until the library is loaded.
-final visibleMoviesProvider = Provider<List<RadarrMovie>>((ref) {
-  final library = ref.watch(movieLibraryProvider);
-  if (library.isLoading || library.hasError) return const [];
-  final state = library.value;
-  if (state is! RadarrData<List<RadarrMovie>>) return const [];
-  final profiles = ref.watch(qualityProfilesProvider).value ?? const [];
-  return applyQuery(
-    state.value,
-    ref.watch(libraryQueryProvider),
-    profileNames: {for (final p in profiles) p.id: p.name},
-  );
-});
+/// The previous result stays visible while a big list is recomputed on
+/// another isolate; a stale result is dropped.
+final visibleMoviesProvider =
+    NotifierProvider<VisibleMoviesNotifier, VisibleMovies>(
+      VisibleMoviesNotifier.new,
+    );
+
+class VisibleMoviesNotifier extends Notifier<VisibleMovies> {
+  int _generation = 0;
+  VisibleMovies _last = const VisibleMovies();
+
+  @override
+  VisibleMovies build() {
+    final library = ref.watch(movieLibraryProvider);
+    final query = ref.watch(libraryQueryProvider);
+    // A failed profile list only means no names.
+    final profiles = ref.watch(qualityProfilesProvider).value ?? const [];
+    final names = {for (final p in profiles) p.id: p.name};
+    final runner = ref.read(movieRunnerProvider);
+    final generation = ++_generation;
+    // While loading or failed the value belongs to another state or server.
+    if (library.isLoading || library.hasError) {
+      return _last = const VisibleMovies();
+    }
+    final data = library.value;
+    if (data is! RadarrData<List<RadarrMovie>>) {
+      return _last = const VisibleMovies();
+    }
+    final all = data.value;
+    if (all.length <= movieSyncLimit) {
+      return _last = _visible(all, query, names);
+    }
+    unawaited(
+      _computeVisible(runner, all, query, names).then((result) {
+        if (!ref.mounted || generation != _generation) return;
+        state = _last = result;
+      }),
+    );
+    return VisibleMovies(
+      movies: _last.movies,
+      groups: _last.groups,
+      computing: true,
+    );
+  }
+}
+
+VisibleMovies _visible(
+  List<RadarrMovie> all,
+  MovieQuery query,
+  Map<int, String> names,
+) {
+  final rows = applyQuery(all, query, profileNames: names);
+  return VisibleMovies(movies: rows, groups: groupMovies(rows, query.sort));
+}
+
+/// A function of its own so the closure sent to another isolate captures only
+/// plain data, never the notifier.
+Future<VisibleMovies> _computeVisible(
+  MovieRunner runner,
+  List<RadarrMovie> all,
+  MovieQuery query,
+  Map<int, String> names,
+) => runner(() => _visible(all, query, names));
+
+/// Wanted movies of one scope, computed once per library, clock and scope:
+/// rebuilding the list never sorts again.
+final wantedMoviesProvider = Provider.autoDispose
+    .family<List<RadarrMovie>, WantedScope>((ref, scope) {
+      final state = ref.watch(movieLibraryProvider).value;
+      if (state is! RadarrData<List<RadarrMovie>>) return const [];
+      return wantedMovies(state.value, scope, ref.watch(clockProvider)());
+    });
 
 // --- Shared lists -----------------------------------------------------------
 
