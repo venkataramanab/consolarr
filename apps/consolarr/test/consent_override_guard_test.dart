@@ -11,16 +11,20 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 final _gatedOverride = RegExp(
-  r'(?<![A-Za-z0-9_])(analyticsProvider|crashReporterProvider)\s*\.\s*'
-  r'(overrideWith\w*|override\w*)',
+  r'(?<![A-Za-z0-9_])'
+  r'(analyticsProvider|crashReporterProvider|'
+  r'consentManagerProvider|consentStoreProvider)'
+  r'\s*\.\s*(overrideWith\w*|override\w*)',
 );
 
-/// The offending lines of [source] (1-based `line: text`).
+/// The offending places in [source] (1-based `line: text`). The match runs
+/// over the whole source, so whitespace and line breaks between the provider
+/// and `.overrideWith` do not hide it.
 List<String> gatedOverrides(String source) {
-  final lines = source.split('\n');
   return [
-    for (var i = 0; i < lines.length; i++)
-      if (_gatedOverride.hasMatch(lines[i])) '${i + 1}: ${lines[i].trim()}',
+    for (final m in _gatedOverride.allMatches(source))
+      '${'\n'.allMatches(source.substring(0, m.start)).length + 1}: '
+          '${m.group(0)!.replaceAll(RegExp(r'\s+'), ' ')}',
   ];
 }
 
@@ -54,6 +58,37 @@ void main() {
       isEmpty,
     );
     expect(gatedOverrides('ref.watch(analyticsProvider)'), isEmpty);
+  });
+
+  test('the guard sees an override split across lines', () {
+    for (final src in [
+      'crashReporterProvider\n    .overrideWith((r) => c)',
+      'analyticsProvider\n\t.\n  overrideWithValue(a)',
+      'crashReporterProvider   \r\n  .overrideWithValue(c)',
+    ]) {
+      expect(gatedOverrides(src), hasLength(1), reason: src);
+    }
+    expect(
+      gatedOverrides('a\nb\ncrashReporterProvider\n.overrideWith(x)').single,
+      startsWith('3:'),
+    );
+    expect(
+      gatedOverrides('rawCrashReporterProvider\n.overrideWithValue(c)'),
+      isEmpty,
+    );
+  });
+
+  test('the guard forbids overriding the consent manager and store', () {
+    for (final src in [
+      'consentManagerProvider.overrideWith((r) => m)',
+      'consentManagerProvider\n    .overrideWithValue(m)',
+      'consentStoreProvider.overrideWithValue(s)',
+      'consentStoreProvider\n  .overrideWith((r) => s)',
+    ]) {
+      expect(gatedOverrides(src), hasLength(1), reason: src);
+    }
+    expect(gatedOverrides('ref.read(consentManagerProvider)'), isEmpty);
+    expect(gatedOverrides('myconsentStoreProvider.overrideWith(x)'), isEmpty);
   });
 
   test('no non-test code overrides the consent-gated providers', () {
