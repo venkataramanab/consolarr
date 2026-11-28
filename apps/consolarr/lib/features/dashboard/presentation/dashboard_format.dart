@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import 'package:consolarr/features/dashboard/application/dashboard_dates.dart';
+import 'package:consolarr/shared/time/calendar_days.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_models.dart';
 import 'package:design_system/design_system.dart';
 import 'package:l10n/l10n.dart';

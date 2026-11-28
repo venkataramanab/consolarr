@@ -2,11 +2,13 @@
 
 import 'dart:async';
 
-import 'package:consolarr/shared/polling/change_detection/change_event.dart';
-import 'package:consolarr/shared/polling/change_detection/change_ledger.dart';
-import 'package:consolarr/shared/polling/change_detection/diff.dart';
-import 'package:consolarr/shared/polling/change_detection/tracked_item.dart';
-import 'package:core/core.dart';
+import 'change_event.dart';
+import 'change_ledger.dart';
+import 'diff.dart';
+import 'tracked_item.dart';
+import '../app_error.dart';
+import '../result.dart';
+import '../server_profile.dart';
 
 /// What a source returns. [partial] marks a fetch that may be missing items
 /// (rows skipped, a page missing): it is never used as a snapshot.

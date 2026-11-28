@@ -2,7 +2,7 @@
 
 import 'dart:collection';
 
-import 'package:consolarr/shared/polling/change_detection/change_event.dart';
+import 'change_event.dart';
 
 /// Remembers which items have already fired. Only [InMemoryChangeStore] ships:
 /// persisting the ledger across launches is deferred (with the notifications
@@ -37,7 +37,11 @@ class InMemoryChangeStore implements ChangeStore {
   }
 }
 
-/// Lets each (server, item key) fire at most once.
+/// Lets each (server, item key) fire once while the store remembers it.
+///
+/// Delivery is at least once, never exactly once: the bounded store evicts its
+/// oldest entries, and an item whose entry was evicted can fire again if it
+/// transitions again (docs/patterns.md, section 15).
 class ChangeLedger {
   ChangeLedger(this._store);
 
