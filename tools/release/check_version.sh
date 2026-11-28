@@ -11,7 +11,7 @@ shift
 [ "$#" -ge 1 ] || { echo "No pubspec files given." >&2; exit 2; }
 
 if ! [[ "$tag" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
-  echo "::error::Tag '${tag}' is not of the form vMAJOR.MINOR.PATCH." >&2
+  echo "::error::The tag is not of the form vMAJOR.MINOR.PATCH." >&2
   exit 1
 fi
 want="${BASH_REMATCH[1]}"

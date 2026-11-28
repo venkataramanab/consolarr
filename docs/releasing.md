@@ -48,12 +48,17 @@ Where to keep things:
   and `key.properties` are git-ignored, and gitleaks and the repo guard run in
   CI.
 
-Print the certificate digest once, for later comparison with the published
-value:
+Print the certificate digest once. Every digest in the workflow, the release
+files and these docs is **lowercase hex without colons**, so convert it the
+same way:
 
 ```sh
-keytool -list -v -keystore consolarr-release.p12 -alias consolarr | grep 'SHA256:'
+keytool -list -v -keystore consolarr-release.p12 -alias consolarr \
+  | grep 'SHA256:' | sed 's/.*SHA256: //' | tr -d ':' | tr 'A-F' 'a-f'
 ```
+
+Keep the 64-character result: it is the value of the repository variable in
+step 3.
 
 ### 2. Create the `release` environment and its secrets
 
@@ -70,7 +75,22 @@ variables) add:
 
 The password values must not contain line breaks.
 
-### 3. Protect the environment
+### 3. Pin the signing certificate (repository variable)
+
+Right after creating the secrets, add the digest from step 1 as a repository
+**variable** (not a secret; the digest is public): **Settings > Secrets and
+variables > Actions > Variables > New repository variable**, named exactly
+`RELEASE_CERT_SHA256`.
+
+The build then fails unless every APK is signed with exactly that
+certificate, which protects against a swapped or wrongly generated keystore.
+While the variable is empty the build only emits a `::warning::` and
+continues, so the **first release can bootstrap**: after it, compare
+`SIGNING-CERT-SHA256.txt` with your own record and set the variable before
+the next release. The value may be given with or without colons and in any
+case; it is normalised (colons and spaces removed, lowercase) before comparing.
+
+### 4. Protect the environment
 
 On the same page:
 
@@ -86,6 +106,9 @@ Also restrict who can push tags: **Settings > Rules > Rulesets** > new tag
 ruleset targeting `v*.*.*`, restricting creation to maintainers.
 
 ## Releasing
+
+Before the first release, finish step 3 as far as you can; after it, set
+`RELEASE_CERT_SHA256`.
 
 1. Bump `version:` (`MAJOR.MINOR.PATCH+BUILD`) in **both**
    `apps/consolarr/pubspec.yaml` and `apps/consolarr_play/pubspec.yaml` and
@@ -129,14 +152,36 @@ and break upgrades.
 - Permissions: `contents: read` by default; the publish job alone has
   `contents: write`; the provenance job alone has `id-token: write` and
   `attestations: write`.
-- The keystore is decoded to a `600` file in the runner's temp directory, secrets
-  reach scripts only through environment variables, and both the keystore and
-  `key.properties` are removed in an `if: always()` step.
-- The signature is verified with `apksigner` (build-tools 35); a debug
-  certificate, or two different certificates, fail the run.
+- The keystore is decoded to a `600` file in the runner's temp directory, and
+  secrets reach scripts only through environment variables. The signing step
+  runs before the toolchain setup, so a missing secret fails in seconds.
+- Gradle reads `key.properties` through `rootProject.file`, so the workflow
+  writes one per app under `apps/*/android/` (mode `600`, git-ignored). Both it
+  and the keystore are wiped (`shred`, then removed) by an `if: always()` step
+  right after the signatures are verified, **before any artifact upload**, and
+  again by a final `if: always()` step.
+- The signature is verified with `apksigner` (build-tools 35, `--min-sdk-version
+  26`): the v2 **and** v3 schemes must both verify, a debug certificate or two
+  different certificates fail the run, and the certificate must equal the pinned
+  `RELEASE_CERT_SHA256` (step 3).
+- The publish job re-checks the artifact against the SHA-256 sums the build job
+  recorded as job outputs, and that the tag still points at the commit the
+  verify job checked, before it creates the draft.
+- The tag is validated (`vMAJOR.MINOR.PATCH`) as the first statement of the
+  first step, before it is printed anywhere.
 - Same gates as CI: hardened merged manifest and 20 MiB size budget.
 - `.github/workflows/release-dry-run.yml` runs this exact path on pull requests
-  that touch it, with a throwaway keystore generated at runtime.
+  that touch it, with a throwaway keystore generated at runtime. Each workflow
+  step is a single `bash tools/release/stage.sh <stage>` call, and the dry run
+  runs the same command lines (it fails if `release.yml` calls anything else).
+  Its negative tests cover: a wrong pinned digest, a v1-only signature, mixed
+  and debug certificates, a moved tag, files changed between jobs, invalid
+  tags and missing secrets.
+
+Threat notes that need no code change: a heap dump of the runner process could
+expose the secrets during the build (the environment's required reviewer and
+tag-only rule are the control); and `shred` on the runner's copy-on-write disk
+is best effort, the runner VM is discarded after the job.
 
 ## Verifying a release (for users)
 
@@ -146,8 +191,9 @@ apksigner verify --print-certs consolarr-vX.Y.Z-arm64-v8a.apk
 gh attestation verify consolarr-vX.Y.Z-arm64-v8a.apk --repo venkataramanab/consolarr
 ```
 
-The `SHA-256 digest` printed by `apksigner` must equal the signing certificate
-digest published in [SECURITY.md](../SECURITY.md) and the README (added after
+The `SHA-256 digest` printed by `apksigner` (lowercase hex, no colons; convert
+with `tr -d ':' | tr 'A-F' 'a-f'` if your tool prints colons) must equal the
+signing certificate digest published in [SECURITY.md](../SECURITY.md) and the README (added after
 the first release) and in `SIGNING-CERT-SHA256.txt`. Android itself refuses to
 install an update signed with a different certificate. In **Obtainium** or
 similar, pin that digest. A checksum file next to the APK only proves a download
@@ -169,11 +215,12 @@ machines.
 ## Rotation and compromise
 
 - **Routine rotation of the secrets** (a password change): re-encode the
-  keystore with the new password, update the four environment secrets, and run
-  the dry run.
+  keystore with the new password, update the four environment secrets (the
+  certificate and `RELEASE_CERT_SHA256` stay the same), and run the dry run.
 - **Suspected compromise** (a leaked secret, a leaked keystore, a hostile
   approval):
-  1. Remove the environment secrets and disable the workflow.
+  1. Remove the environment secrets and the `RELEASE_CERT_SHA256` variable
+     and disable the workflow.
   2. Delete any draft or release you did not make; revoke the tokens and
      reviewers that were involved.
   3. Generate a **new** keystore (step 1, with a new alias if you like), set

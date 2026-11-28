@@ -33,7 +33,6 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     outputs:
-      tag: ${{ env.TAG }}
       sha: ${{ steps.check.outputs.sha }}
       version: ${{ steps.check.outputs.version }}
     steps:
@@ -44,28 +43,7 @@ jobs:
 
       - name: Tag is on main and matches the pubspec versions
         id: check
-        run: |
-          set -euo pipefail
-          # The code that runs must be the code at the tag, so a manual run
-          # has to be started from the tag itself, never from a branch.
-          if [ "$GITHUB_REF" != "refs/tags/${TAG}" ]; then
-            echo "::error::Run this workflow from the tag ${TAG} (got ${GITHUB_REF})."
-            exit 1
-          fi
-          version="$(bash tools/release/check_version.sh "$TAG" apps/consolarr/pubspec.yaml apps/consolarr_play/pubspec.yaml)"
-          sha="$(git rev-parse "refs/tags/${TAG}^{commit}")"
-          if [ "$sha" != "$(git rev-parse HEAD)" ]; then
-            echo "::error::Checked-out commit is not the tag commit."
-            exit 1
-          fi
-          git fetch --no-tags origin main:refs/remotes/origin/main
-          if ! git merge-base --is-ancestor "$sha" refs/remotes/origin/main; then
-            echo "::error::Tag ${TAG} (${sha}) is not on main."
-            exit 1
-          fi
-          echo "Tag ${TAG} is on main and matches version ${version}."
-          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
-          echo "version=${version}" >> "$GITHUB_OUTPUT"
+        run: bash tools/release/stage.sh tag
 
   build:
     name: Build and sign
@@ -75,11 +53,25 @@ jobs:
     # Required reviewers on this environment give every release a manual
     # approval. The four signing secrets exist only here.
     environment: release
+    outputs:
+      sums_sha256: ${{ steps.verify.outputs.sums_sha256 }}
+      cert_sha256: ${{ steps.verify.outputs.cert_sha256 }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.verify.outputs.sha }}
           persist-credentials: false
+
+      # First, so a missing secret fails in seconds. The cleanup steps below
+      # run with always(), also when a step before them fails.
+      - name: Decode keystore and write key.properties
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: bash tools/release/stage.sh prepare
+
       - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: temurin
@@ -94,36 +86,20 @@ jobs:
           add-job-summary-as-pr-comment: never
       - uses: ./.github/actions/setup-flutter
 
-      - name: Decode keystore and write key.properties
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: >-
-          bash tools/release/prepare_signing.sh "$RUNNER_TEMP/signing"
-          apps/consolarr/android apps/consolarr_play/android
-
       - name: Build both flavours (release, obfuscated, gated)
-        run: >-
-          bash tools/release/build_release.sh "$TAG"
-          "$RUNNER_TEMP/release" "$RUNNER_TEMP/debug-info"
+        run: bash tools/release/stage.sh build
 
       - name: Verify signatures; record the certificate digest
-        run: |
-          set -euo pipefail
-          export APKSIGNER="${ANDROID_HOME}/build-tools/35.0.0/apksigner"
-          cd "$RUNNER_TEMP/release"
-          bash "$GITHUB_WORKSPACE/tools/release/verify_signature.sh" SIGNING-CERT-SHA256.txt -- ./*.apk
-          sha256sum -- ./*.apk | sed 's|  \./|  |' > SHA256SUMS.txt
-          cat SHA256SUMS.txt
-          {
-            echo "### Release ${TAG}"
-            echo "Signing certificate SHA-256: \`$(cat SIGNING-CERT-SHA256.txt)\`"
-            echo '```'
-            cat SHA256SUMS.txt
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
+        id: verify
+        env:
+          # Repository variable: the pinned release certificate digest.
+          EXPECTED_CERT_SHA256: ${{ vars.RELEASE_CERT_SHA256 }}
+        run: bash tools/release/stage.sh verify
+
+      # As soon as nothing needs the key any more, before any upload.
+      - name: Remove keystore and key.properties
+        if: always()
+        run: bash tools/release/stage.sh cleanup
 
       - name: Upload release files
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -147,11 +123,10 @@ jobs:
           retention-days: 90
           if-no-files-found: error
 
-      - name: Remove keystore and key.properties
+      # Again at the very end, in case a step in between left something.
+      - name: Remove keystore and key.properties (final)
         if: always()
-        run: >-
-          bash tools/release/cleanup_signing.sh "$RUNNER_TEMP/signing"
-          apps/consolarr/android apps/consolarr_play/android
+        run: bash tools/release/stage.sh cleanup
 
   attest:
     name: Build provenance
@@ -190,34 +165,6 @@ jobs:
       - name: Check the files, then create the draft release
         env:
           SHA: ${{ needs.verify.outputs.sha }}
-        run: |
-          set -euo pipefail
-          cd release
-          sha256sum -c SHA256SUMS.txt
-
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "::error::A release for ${TAG} already exists. Delete it (and keep the tag) before re-running."
-            exit 1
-          fi
-
-          # Previous version tag, for release notes "since the last release".
-          previous="$(gh api --paginate "repos/${GH_REPO}/git/matching-refs/tags/v" --jq '.[].ref' \
-            | sed 's|^refs/tags/||' \
-            | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
-            | { cat; echo "$TAG"; } | sort -uV \
-            | grep -B1 -x "$TAG" | head -n1 || true)"
-          notes_args=(--generate-notes)
-          if [ -n "$previous" ] && [ "$previous" != "$TAG" ]; then
-            notes_args+=(--notes-start-tag "$previous")
-          fi
-
-          gh release create "$TAG" \
-            --draft \
-            --verify-tag \
-            --title "Consolarr ${TAG}" \
-            "${notes_args[@]}" \
-            ./*.apk SHA256SUMS.txt SIGNING-CERT-SHA256.txt
-          {
-            echo "### Draft release created for ${TAG}"
-            echo "Review it on the Releases page and publish it by hand."
-          } >> "$GITHUB_STEP_SUMMARY"
+          RECORDED_SUMS_SHA256: ${{ needs.build.outputs.sums_sha256 }}
+          RECORDED_CERT_SHA256: ${{ needs.build.outputs.cert_sha256 }}
+        run: bash tools/release/stage.sh publish

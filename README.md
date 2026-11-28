@@ -86,7 +86,7 @@ flavours, `SHA256SUMS.txt` and `SIGNING-CERT-SHA256.txt`.
 - Checksums: `sha256sum -c SHA256SUMS.txt --ignore-missing` detects a corrupted
   or altered download.
 - Signing certificate: `apksigner verify --print-certs <apk>` must show the
-  SHA-256 digest published in `SECURITY.md` after the first release. Android
+  SHA-256 digest (lowercase hex, no colons) published in `SECURITY.md` after the first release. Android
   refuses updates signed with a different certificate.
 - Provenance: `gh attestation verify <apk> --repo venkataramanab/consolarr`.
 
