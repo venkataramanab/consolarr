@@ -36,38 +36,37 @@ class SpeedHeader extends StatelessWidget {
     final roles = context.roles;
     final unavailable = offline || down == null || up == null;
     final idle = !unavailable && down == 0 && up == 0;
+    final stacked = MediaQuery.textScalerOf(context).scale(14) / 14 >= 1.5;
 
     String value(int? v) {
       if (offline) return l10n.torSpeedOffline;
       if (v == null) return '–';
-      return idle ? l10n.torSpeedIdle : formatSpeed(l10n, v);
+      return idle ? l10n.torSpeedIdle : formatSpeedDisplay(l10n, v);
     }
 
     final numbers = theme.textTheme.titleMedium?.copyWith(
       fontFeatures: ConsolarrTypeScale.tabularFigures,
     );
     Widget column(IconData icon, String label, int? v, Color color) {
-      return Expanded(
-        child: Row(
-          children: [
-            Icon(icon, size: 20, color: color),
-            const SizedBox(width: ConsolarrSpacing.sm),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(label, style: theme.textTheme.bodySmall),
-                  Text(
-                    value(v),
-                    style: numbers,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
+      return Row(
+        children: [
+          Icon(icon, size: 20, color: color),
+          const SizedBox(width: ConsolarrSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: theme.textTheme.bodySmall),
+                Text(
+                  value(v),
+                  style: numbers,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       );
     }
 
@@ -108,19 +107,35 @@ class SpeedHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              column(
-                Icons.arrow_downward,
-                l10n.torSpeedDown,
-                down,
-                roles.accent,
-              ),
-              const SizedBox(width: ConsolarrSpacing.md),
-              column(Icons.arrow_upward, l10n.torSpeedUp, up, roles.success),
-            ],
-          ),
+          if (stacked) ...[
+            // Large text: each speed gets the full width, so its unit (kept
+            // unbreakable, see formatSpeedDisplay) is never cut off.
+            column(Icons.arrow_downward, l10n.torSpeedDown, down, roles.accent),
+            const SizedBox(height: ConsolarrSpacing.sm),
+            column(Icons.arrow_upward, l10n.torSpeedUp, up, roles.success),
+          ] else
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: column(
+                    Icons.arrow_downward,
+                    l10n.torSpeedDown,
+                    down,
+                    roles.accent,
+                  ),
+                ),
+                const SizedBox(width: ConsolarrSpacing.md),
+                Expanded(
+                  child: column(
+                    Icons.arrow_upward,
+                    l10n.torSpeedUp,
+                    up,
+                    roles.success,
+                  ),
+                ),
+              ],
+            ),
           const SizedBox(height: ConsolarrSpacing.sm),
           ExcludeSemantics(
             child: SizedBox(

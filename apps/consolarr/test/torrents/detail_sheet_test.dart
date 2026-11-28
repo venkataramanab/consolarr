@@ -109,6 +109,39 @@ void main() {
     expect(find.text('Share ratio'), findsOneWidget);
   });
 
+  testWidgets('T1: a failed first load recovers on the next poll tick, no '
+      'retry tap needed', (tester) async {
+    final c = FakeTorrentClient()
+      ..detailError = const AppError(ErrorCategory.timeout);
+    await _pump(tester, c, poll: const Duration(seconds: 3));
+    expect(find.byType(ErrorState), findsOneWidget);
+    final callsBefore = c.detailCalls;
+    // The server comes back; the poller (not the Retry button) reloads.
+    c.detailError = null;
+    // The first failure-free tick is after one base delay (the scheduler has
+    // not failed yet: the failed first load is not a failed tick).
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pumpAndSettle();
+    expect(c.detailCalls, greaterThan(callsBefore));
+    expect(find.byType(ErrorState), findsNothing);
+    expect(find.text('Share ratio'), findsOneWidget);
+  });
+
+  testWidgets('T1: while the first load keeps failing the poll backs off', (
+    tester,
+  ) async {
+    final c = FakeTorrentClient()
+      ..detailError = const AppError(ErrorCategory.timeout);
+    await _pump(tester, c, poll: const Duration(seconds: 3));
+    final base = c.detailCalls;
+    await tester.pump(const Duration(seconds: 3)); // tick 1 fails
+    expect(c.detailCalls, base + 1);
+    await tester.pump(const Duration(seconds: 3)); // next wait is 6 s
+    expect(c.detailCalls, base + 1);
+    await tester.pump(const Duration(seconds: 3));
+    expect(c.detailCalls, base + 2);
+  });
+
   testWidgets('copy puts the save path on the clipboard, on tap only', (
     tester,
   ) async {

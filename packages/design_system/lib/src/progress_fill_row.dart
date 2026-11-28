@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'package:design_system/src/color_roles.dart';
 import 'package:design_system/src/effects.dart';
 import 'package:design_system/src/motion.dart';
 import 'package:design_system/src/radii.dart';
@@ -26,6 +27,21 @@ enum ProgressRowState {
   /// Failed: error-toned fill.
   error,
 }
+
+/// The fill of a [ProgressFillRow] for [state] at [pulse] (0..1, only the
+/// active state pulses). The strongest fill (the pulse peak) must keep the
+/// secondary text tier at 4.5:1 over the card; a test checks every palette.
+Color progressFillColor(
+  ConsolarrColorRoles roles,
+  ProgressRowState state,
+  double pulse,
+) => switch (state) {
+  ProgressRowState.active => roles.accent.withValues(alpha: 0.2 + 0.08 * pulse),
+  ProgressRowState.error => roles.error.withValues(alpha: 0.22),
+  ProgressRowState.paused ||
+  ProgressRowState.queued => roles.textTertiary.withValues(alpha: 0.14),
+  ProgressRowState.idle => roles.accent.withValues(alpha: 0.16),
+};
 
 /// A row whose background fills from the leading edge in proportion to
 /// [progress]. State is always icon plus text; the semantics label (built by
@@ -107,18 +123,8 @@ class _ProgressFillRowState extends State<ProgressFillRow>
     super.dispose();
   }
 
-  Color _fillColor(BuildContext context, double pulse) {
-    final roles = context.roles;
-    return switch (widget.state) {
-      ProgressRowState.active => roles.accent.withValues(
-        alpha: 0.2 + 0.1 * pulse,
-      ),
-      ProgressRowState.error => roles.error.withValues(alpha: 0.22),
-      ProgressRowState.paused ||
-      ProgressRowState.queued => roles.textTertiary.withValues(alpha: 0.14),
-      ProgressRowState.idle => roles.accent.withValues(alpha: 0.16),
-    };
-  }
+  Color _fillColor(BuildContext context, double pulse) =>
+      progressFillColor(context.roles, widget.state, pulse);
 
   @override
   Widget build(BuildContext context) {

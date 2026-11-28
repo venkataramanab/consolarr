@@ -206,76 +206,98 @@ class AddTorrentController extends Notifier<AddState> {
     List<PickedTorrentFile> picked,
     AddTorrentOptions options,
   ) async {
-    if (state is AddAdding || picked.isEmpty) return;
+    if (picked.isEmpty) return;
+    if (state is AddAdding) {
+      // Another add is running: this pick is dropped, and so are its cached
+      // copies (a `.torrent` can carry a tracker passkey).
+      for (final f in picked) {
+        await _discard(f);
+      }
+      return;
+    }
     state = const AddAdding();
     final files = picked.take(maxPickedTorrentFiles).toList();
     for (final extra in picked.skip(maxPickedTorrentFiles)) {
       await _discard(extra);
     }
     final ignored = picked.length - files.length;
-    final client = await _client();
+    // Whatever happens below (the controller is disposed mid-batch, an
+    // exception), every copy that has not been released yet is discarded.
+    final pending = [...files];
+    Future<void> release(PickedTorrentFile f) async {
+      pending.remove(f);
+      await _discard(f);
+    }
+
     final results = <AddItemResult>[];
-    for (final f in files) {
-      if (client == null) {
-        results.add(
-          AddItemResult(
-            name: f.name,
-            error: const AppError(ErrorCategory.networkUnreachable),
-          ),
-        );
-        await _discard(f);
-        continue;
-      }
-      Uint8List bytes;
-      try {
-        // `length` and `readBytes` read the picker's cached copy; the platform
-        // has already read the whole file once, so this cap cannot save that
-        // memory: it keeps oversized data away from the network call.
-        if (await f.length() > maxTorrentFileBytes) {
+    try {
+      final client = await _client();
+      for (final f in files) {
+        if (client == null) {
           results.add(
-            AddItemResult(name: f.name, fileProblem: FileProblem.tooLarge),
+            AddItemResult(
+              name: f.name,
+              error: const AppError(ErrorCategory.networkUnreachable),
+            ),
           );
-          await _discard(f);
+          await release(f);
           continue;
         }
-        bytes = await f.readBytes();
-      } on Object {
+        Uint8List bytes;
+        try {
+          // `length` and `readBytes` read the picker's cached copy; the platform
+          // has already read the whole file once, so this cap cannot save that
+          // memory: it keeps oversized data away from the network call.
+          if (await f.length() > maxTorrentFileBytes) {
+            results.add(
+              AddItemResult(name: f.name, fileProblem: FileProblem.tooLarge),
+            );
+            await release(f);
+            continue;
+          }
+          bytes = await f.readBytes();
+        } on Object {
+          results.add(
+            AddItemResult(
+              name: f.name,
+              error: const AppError(ErrorCategory.parseError),
+            ),
+          );
+          await release(f);
+          continue;
+        }
+        await release(f);
+        final problem = checkTorrentBytes(bytes);
+        if (problem != null) {
+          results.add(AddItemResult(name: f.name, fileProblem: problem));
+          continue;
+        }
+        var labelWarning = false;
+        final r = await client.addFile(
+          bytes,
+          fileName: f.name,
+          options: _listening(options, (_) => labelWarning = true),
+        );
+        if (!ref.mounted) return;
+        _track(
+          TorrentSourceParam.file,
+          client,
+          r.isOk,
+          unsupported:
+              r.errorOrNull != null && UnsupportedAction.isIt(r.errorOrNull!),
+        );
         results.add(
           AddItemResult(
             name: f.name,
-            error: const AppError(ErrorCategory.parseError),
+            error: r.errorOrNull,
+            labelWarning: labelWarning,
           ),
         );
-        await _discard(f);
-        continue;
       }
-      await _discard(f);
-      final problem = checkTorrentBytes(bytes);
-      if (problem != null) {
-        results.add(AddItemResult(name: f.name, fileProblem: problem));
-        continue;
+    } finally {
+      for (final f in List.of(pending)) {
+        await release(f);
       }
-      var labelWarning = false;
-      final r = await client.addFile(
-        bytes,
-        fileName: f.name,
-        options: _listening(options, (_) => labelWarning = true),
-      );
-      if (!ref.mounted) return;
-      _track(
-        TorrentSourceParam.file,
-        client,
-        r.isOk,
-        unsupported:
-            r.errorOrNull != null && UnsupportedAction.isIt(r.errorOrNull!),
-      );
-      results.add(
-        AddItemResult(
-          name: f.name,
-          error: r.errorOrNull,
-          labelWarning: labelWarning,
-        ),
-      );
     }
     if (!ref.mounted) return;
     state = AddFinished(results, ignored: ignored);

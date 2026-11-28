@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -28,6 +29,38 @@ void main() {
       expect(await deleteCachedPickerCopy(file.path, cache.path), isTrue);
       expect(dir.existsSync(), isFalse);
       expect(cache.existsSync(), isTrue);
+    });
+
+    test(
+      'T4: only the file goes; its directory goes only when empty',
+      () async {
+        final dir = Directory(p.join(cache.path, 'uuid-2'))..createSync();
+        final file = File(p.join(dir.path, 'a.torrent'))
+          ..writeAsStringSync('x');
+        final other = File(p.join(dir.path, 'other.txt'))
+          ..writeAsStringSync('y');
+        expect(await deleteCachedPickerCopy(file.path, cache.path), isTrue);
+        expect(file.existsSync(), isFalse);
+        // Something else lives there: it is not ours to delete.
+        expect(other.existsSync(), isTrue);
+        expect(dir.existsSync(), isTrue);
+        other.deleteSync();
+        // Nothing is left: a second discard tidies the empty directory.
+        expect(await deleteCachedPickerCopy(file.path, cache.path), isTrue);
+        expect(dir.existsSync(), isFalse);
+        expect(cache.existsSync(), isTrue);
+      },
+    );
+
+    test('T4: nested content below the picker directory is kept', () async {
+      final dir = Directory(p.join(cache.path, 'uuid-3', 'sub'))
+        ..createSync(recursive: true);
+      final keep = File(p.join(dir.path, 'keep.bin'))..writeAsStringSync('z');
+      final file = File(p.join(cache.path, 'uuid-3', 'a.torrent'))
+        ..writeAsStringSync('x');
+      await deleteCachedPickerCopy(file.path, cache.path);
+      expect(file.existsSync(), isFalse);
+      expect(keep.existsSync(), isTrue);
     });
 
     test('a file directly in the cache: only the file goes', () async {
@@ -119,6 +152,49 @@ void main() {
         expect(discarded, ['ok.torrent', 'big.torrent', 'junk.torrent']);
       },
     );
+
+    test('T8: a pick that arrives while another add runs is discarded, not '
+        'leaked', () async {
+      final client = FakeTorrentClient()..actionGate = Completer<void>();
+      final c = container(client);
+      final first = c.read(addTorrentProvider.notifier).addFiles([
+        file('first.torrent'),
+      ], const AddTorrentOptions());
+      await Future<void>.delayed(Duration.zero);
+      await c.read(addTorrentProvider.notifier).addFiles([
+        file('second.torrent'),
+        file('third.torrent'),
+      ], const AddTorrentOptions());
+      expect(discarded, containsAll(['second.torrent', 'third.torrent']));
+      client.actionGate!.complete();
+      await first;
+    });
+
+    test('T3: disposing the controller mid-batch discards the rest', () async {
+      final client = FakeTorrentClient()..actionGate = Completer<void>();
+      final c = ProviderContainer(
+        retry: (_, _) => null,
+        overrides: [
+          testDatabaseOverride,
+          torrentClientProvider.overrideWith((ref) async => client),
+          clockProvider.overrideWithValue(() => fixedNow),
+        ],
+      );
+      final sub = c.listen(addTorrentProvider, (_, _) {});
+      final run = c.read(addTorrentProvider.notifier).addFiles([
+        file('a.torrent'),
+        file('b.torrent'),
+        file('c.torrent'),
+      ], const AddTorrentOptions());
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+      expect(discarded, ['a.torrent']);
+      sub.close();
+      c.dispose();
+      client.actionGate!.complete();
+      await run;
+      expect(discarded, ['a.torrent', 'b.torrent', 'c.torrent']);
+    });
 
     test(
       'a pick above the cap: the extras are discarded unread and counted',

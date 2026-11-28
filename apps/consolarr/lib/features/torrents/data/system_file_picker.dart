@@ -38,30 +38,35 @@ Future<List<PickedTorrentFile>> pickTorrentFilesFromSystem() async {
   ];
 }
 
-/// Deletes the picker's private copy of a document: the file's directory
-/// (`<cache>/<uuid>/`) when it lies strictly inside [cacheDir], or just the
-/// file when it sits directly in it. A path outside the app cache (a real
-/// user file, for example from a platform whose picker returns the original)
-/// is never touched. Returns whether anything was deleted; never throws.
+/// Deletes the picker's private copy of a document: the file itself, then
+/// its directories (`<cache>/<uuid>/`) from the inside out, each only when it
+/// is empty. Nothing else in a directory is ever deleted (no recursive
+/// delete: a directory that holds anything besides our copy stays). A path
+/// outside the app cache (a real user file, for example from a platform whose
+/// picker returns the original) is never touched. Returns whether anything
+/// was deleted; never throws.
 Future<bool> deleteCachedPickerCopy(String path, String cacheDir) async {
   try {
     if (path.isEmpty) return false;
     final cache = p.normalize(p.absolute(cacheDir));
     final file = p.normalize(p.absolute(path));
     if (!p.isWithin(cache, file)) return false;
-    final dir = p.dirname(file);
-    if (dir != cache && p.isWithin(cache, dir)) {
-      // Only the top-level directory under the cache: `<cache>/<uuid>`.
-      final top = p.join(cache, p.split(p.relative(file, from: cache)).first);
-      final topDir = Directory(top);
-      if (!topDir.existsSync()) return false;
-      await topDir.delete(recursive: true);
-      return true;
-    }
+    var deleted = false;
     final f = File(file);
-    if (!f.existsSync()) return false;
-    await f.delete();
-    return true;
+    if (f.existsSync()) {
+      await f.delete();
+      deleted = true;
+    }
+    var dir = p.dirname(file);
+    // Strictly inside the cache: the cache directory itself is never removed.
+    while (p.isWithin(cache, dir)) {
+      final d = Directory(dir);
+      if (!d.existsSync() || d.listSync().isNotEmpty) break;
+      await d.delete();
+      deleted = true;
+      dir = p.dirname(dir);
+    }
+    return deleted;
   } on Object {
     return false;
   }

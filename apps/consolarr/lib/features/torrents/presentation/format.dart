@@ -19,6 +19,19 @@ String formatBytes(AppLocalizations l10n, int bytes) {
 String formatSpeed(AppLocalizations l10n, int bytesPerSecond) =>
     l10n.torSpeedPerSecond(formatBytes(l10n, bytesPerSecond));
 
+/// [formatSpeed] for display: word joiners around the `/` so a speed never
+/// breaks inside its unit at large text scales ("512 B/" then "s"). Use it for
+/// visible text only; semantic labels and copied text use [formatSpeed].
+String formatSpeedDisplay(AppLocalizations l10n, int bytesPerSecond) =>
+    keepSpeedUnitTogether(formatSpeed(l10n, bytesPerSecond));
+
+/// U+2060 WORD JOINER: invisible, forbids a line break on either side.
+const _wordJoiner = '\u2060';
+
+/// [speed] with word joiners around every `/` (see [formatSpeedDisplay]).
+String keepSpeedUnitTogether(String speed) =>
+    speed.replaceAll('/', '$_wordJoiner/$_wordJoiner');
+
 /// Short two-unit duration: `45s`, `12m`, `3h 5m`, `2d 4h`.
 String formatDuration(AppLocalizations l10n, Duration d) {
   final s = d.inSeconds < 0 ? 0 : d.inSeconds;

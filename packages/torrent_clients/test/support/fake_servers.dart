@@ -369,6 +369,10 @@ class FakeDeluge extends FakeServer {
   /// Torrent ids the label plugin is asked to label.
   final List<String> labelled = [];
 
+  /// Methods that fail like a timeout (a transport error, not a daemon
+  /// error), each for the given number of calls (-1: always).
+  final Map<String, int> timeouts = {};
+
   /// The daemon connection dropped: `core.*` answers "Not connected".
   void dropDaemon() => connected = false;
 
@@ -415,6 +419,14 @@ class FakeDeluge extends FakeServer {
           'error': {'message': 'Not authenticated', 'code': 1},
           'id': req['id'],
         }),
+      );
+    }
+    final left = timeouts[method];
+    if (left != null && left != 0) {
+      if (left > 0) timeouts[method] = left - 1;
+      throw DioException(
+        requestOptions: o,
+        type: DioExceptionType.receiveTimeout,
       );
     }
     if (!connected && method.startsWith('core.')) {
