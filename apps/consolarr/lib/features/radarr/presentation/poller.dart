@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import 'dart:async';
-
-import 'package:consolarr/features/settings/application/lock_controller.dart';
+import 'package:consolarr/shared/polling/poll_scheduler.dart';
+import 'package:consolarr/shared/polling/poll_visibility.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -34,64 +33,47 @@ class VisiblePoller extends ConsumerStatefulWidget {
 }
 
 class _VisiblePollerState extends ConsumerState<VisiblePoller>
-    with WidgetsBindingObserver {
-  Timer? _timer;
-  bool _foreground = true;
-  bool _visible = true;
-  bool _locked = false;
-  bool _busy = false;
+    with WidgetsBindingObserver, PollVisibility<VisiblePoller> {
+  late final PollScheduler _scheduler = PollScheduler(
+    interval: widget.interval,
+    isVisible: () => widget.active && isVisible,
+    tick: () async {
+      await widget.onTick();
+      return true;
+    },
+  );
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    _locked = ref.read(appLockedProvider);
-    ref.listenManual(appLockedProvider, (_, locked) {
-      _locked = locked;
-      _sync();
-    });
+    _sync();
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _visible =
-        TickerMode.valuesOf(context).enabled &&
-        (ModalRoute.isCurrentOf(context) ?? true);
-    _sync();
-  }
+  void onVisibilityChanged({required bool visible}) => _sync();
 
   @override
   void didUpdateWidget(VisiblePoller old) {
     super.didUpdateWidget(old);
-    if (old.active != widget.active || old.interval != widget.interval) _sync();
+    if (old.active != widget.active || old.interval != widget.interval) {
+      _scheduler.setInterval(widget.interval);
+      _sync();
+    }
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    _foreground = state == AppLifecycleState.resumed;
-    _sync();
-  }
-
+  /// A hidden or inactive poller has no timer at all; becoming visible again
+  /// waits one full interval before the first tick.
   void _sync() {
-    _timer?.cancel();
-    _timer = null;
-    if (!widget.active || !_foreground || !_visible || _locked) return;
-    _timer = Timer.periodic(widget.interval, (_) async {
-      if (_busy) return;
-      _busy = true;
-      try {
-        await widget.onTick();
-      } finally {
-        _busy = false;
-      }
-    });
+    if (widget.active && isVisible) {
+      _scheduler.start();
+    } else {
+      _scheduler.dispose();
+    }
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    _timer?.cancel();
+    _scheduler.dispose();
     super.dispose();
   }
 
