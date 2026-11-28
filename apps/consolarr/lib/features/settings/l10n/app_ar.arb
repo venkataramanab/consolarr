@@ -778,5 +778,45 @@
         "format": "decimalPattern"
       }
     }
+  },
+  "resetStorageRowTitle": "إعادة تعيين التخزين الآمن",
+  "@resetStorageRowTitle": {
+    "description": "Title of the settings row that opens the confirmation for deleting every saved key, password and certificate pin."
+  },
+  "resetStorageRowSubtitle": "حذف المفاتيح وكلمات المرور وبصمات الشهادات المحفوظة",
+  "@resetStorageRowSubtitle": {
+    "description": "Subtitle of the reset secure storage row."
+  },
+  "resetStorageConfirmTitle": "إعادة تعيين التخزين الآمن؟",
+  "@resetStorageConfirmTitle": {
+    "description": "Title of the confirmation dialog for deleting all secrets."
+  },
+  "resetStorageConfirmBody": "سيحذف هذا كل مفتاح API وكلمة مرور وبصمة شهادة محفوظة على هذا الجهاز. ستبقى الخوادم في القائمة، لكن عليك إدخال بيانات الاعتماد من جديد والوثوق بشهاداتها من جديد. لا يمكن التراجع عن ذلك.",
+  "@resetStorageConfirmBody": {
+    "description": "Body of the confirmation dialog for deleting all secrets; says what is deleted and that it must be re-entered."
+  },
+  "resetStorageConfirmAction": "حذف وإعادة تعيين",
+  "@resetStorageConfirmAction": {
+    "description": "Destructive confirm button that deletes all saved secrets."
+  },
+  "resetStorageDone": "تمت إعادة تعيين التخزين الآمن. أدخل بيانات اعتماد خوادمك من جديد.",
+  "@resetStorageDone": {
+    "description": "Message shown after secure storage was reset."
+  },
+  "resetStorageFailed": "تعذرت إعادة تعيين التخزين الآمن. حاول مرة أخرى أو أعد تشغيل التطبيق.",
+  "@resetStorageFailed": {
+    "description": "Message shown when resetting secure storage failed."
+  },
+  "resetStorageBannerTitle": "تعذرت قراءة التخزين الآمن",
+  "@resetStorageBannerTitle": {
+    "description": "Headline of the notice shown when the device keystore cannot be read."
+  },
+  "resetStorageBannerMessage": "المفاتيح وكلمات المرور وبصمات الشهادات المحفوظة مقفلة وتعذر الوصول إلى الخوادم. إذا تكرر ذلك يمكنك إعادة تعيين التخزين الآمن وإدخالها من جديد.",
+  "@resetStorageBannerMessage": {
+    "description": "Explanation in the notice shown when the device keystore cannot be read."
+  },
+  "resetStorageBannerAction": "إعادة تعيين التخزين الآمن…",
+  "@resetStorageBannerAction": {
+    "description": "Button in the notice that opens the reset confirmation."
   }
 }

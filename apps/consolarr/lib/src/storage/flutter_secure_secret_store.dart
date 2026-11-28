@@ -14,9 +14,20 @@ import 'package:security/security.dart';
 /// reads fail on Android. That is reported as [SecretStoreUnavailable], never
 /// as "no secret": the pin store must fail closed, while the credential path
 /// maps it to "needs credentials" (SRV-09).
+///
+/// **No silent reset.** The plugin's `resetOnError` defaults to true: on a
+/// cipher error it deletes every key and then reads as empty, which would turn
+/// a pinned self-signed server back into a first-use trust prompt. The store
+/// is built with `resetOnError: false`, so such an error surfaces as
+/// [SecretStoreUnavailable]. The only way to clear is the user-confirmed
+/// "Reset secure storage" action (see `SecureStorageReset`).
 class FlutterSecureSecretStore implements SecretStore {
   FlutterSecureSecretStore({FlutterSecureStorage? storage})
-    : _storage = storage ?? const FlutterSecureStorage();
+    : _storage =
+          storage ?? const FlutterSecureStorage(aOptions: androidOptions);
+
+  /// The Android options of the production store.
+  static const androidOptions = AndroidOptions(resetOnError: false);
 
   final FlutterSecureStorage _storage;
 
@@ -47,7 +58,8 @@ class FlutterSecureSecretStore implements SecretStore {
     try {
       await _storage.deleteAll();
     } on PlatformException {
-      // See delete().
+      // The user asked for a reset: never report success when it failed.
+      throw const SecretStoreUnavailable('keystore clear failed');
     }
   }
 }

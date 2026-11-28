@@ -778,5 +778,45 @@
         "format": "decimalPattern"
       }
     }
+  },
+  "resetStorageRowTitle": "Reset secure storage",
+  "@resetStorageRowTitle": {
+    "description": "Title of the settings row that opens the confirmation for deleting every saved key, password and certificate pin."
+  },
+  "resetStorageRowSubtitle": "Delete saved keys, passwords and certificate pins",
+  "@resetStorageRowSubtitle": {
+    "description": "Subtitle of the reset secure storage row."
+  },
+  "resetStorageConfirmTitle": "Reset secure storage?",
+  "@resetStorageConfirmTitle": {
+    "description": "Title of the confirmation dialog for deleting all secrets."
+  },
+  "resetStorageConfirmBody": "This deletes every saved API key, password and certificate pin on this device. Your servers stay in the list, but you must enter their credentials again and trust their certificates again. This cannot be undone.",
+  "@resetStorageConfirmBody": {
+    "description": "Body of the confirmation dialog for deleting all secrets; says what is deleted and that it must be re-entered."
+  },
+  "resetStorageConfirmAction": "Delete and reset",
+  "@resetStorageConfirmAction": {
+    "description": "Destructive confirm button that deletes all saved secrets."
+  },
+  "resetStorageDone": "Secure storage was reset. Enter your servers' credentials again.",
+  "@resetStorageDone": {
+    "description": "Message shown after secure storage was reset."
+  },
+  "resetStorageFailed": "Secure storage could not be reset. Try again, or restart the app.",
+  "@resetStorageFailed": {
+    "description": "Message shown when resetting secure storage failed."
+  },
+  "resetStorageBannerTitle": "Secure storage can't be read",
+  "@resetStorageBannerTitle": {
+    "description": "Headline of the notice shown when the device keystore cannot be read."
+  },
+  "resetStorageBannerMessage": "Saved keys, passwords and certificate pins are locked and servers can't be reached. If this keeps happening you can reset secure storage and enter them again.",
+  "@resetStorageBannerMessage": {
+    "description": "Explanation in the notice shown when the device keystore cannot be read."
+  },
+  "resetStorageBannerAction": "Reset secure storage…",
+  "@resetStorageBannerAction": {
+    "description": "Button in the notice that opens the reset confirmation."
   }
 }

@@ -9,6 +9,8 @@ import 'package:consolarr/src/database/app_database.dart';
 import 'package:consolarr/src/first_frame.dart';
 import 'package:consolarr/src/platform/secure_screen.dart';
 import 'package:consolarr/src/storage/flutter_secure_secret_store.dart';
+import 'package:consolarr/src/storage/pinned_markers.dart';
+import 'package:consolarr/src/storage/secure_storage_reset.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:observability/observability.dart';
@@ -127,8 +129,40 @@ final secretStoreProvider = Provider<SecretStore>(
 
 /// Trust-on-first-use certificate pins (SRV-06), kept in the secret store.
 final pinStoreProvider = Provider<PinStore>(
-  (ref) => SecretBackedPinStore(ref.watch(secretStoreProvider)),
+  (ref) => MarkedPinStore(
+    SecretBackedPinStore(ref.watch(secretStoreProvider)),
+    ref.watch(pinnedMarkersProvider),
+  ),
 );
+
+/// Non-secret "this key was pinned" markers (drift). A marker without a pin in
+/// the secret store reads as a pin mismatch, never as first use.
+final pinnedMarkersProvider = Provider<PinnedMarkers>(
+  (ref) => DriftPinnedMarkers(ref.watch(databaseProvider)),
+);
+
+/// The user-confirmed "Reset secure storage" action.
+final secureStorageResetProvider = Provider<SecureStorageReset>(
+  (ref) => SecureStorageReset(
+    secrets: ref.watch(secretStoreProvider),
+    markers: ref.watch(pinnedMarkersProvider),
+    db: ref.watch(databaseProvider),
+  ),
+);
+
+/// Whether the secret store can be read. Probes one fixed, non-secret key, so
+/// the error state can offer the reset. `false` only for a Keystore error
+/// (a missing value is fine). Lazy: read only after the first frame.
+final secretStoreReadableProvider = FutureProvider.autoDispose<bool>((
+  ref,
+) async {
+  try {
+    await ref.watch(secretStoreProvider).read('probe/readable');
+    return true;
+  } on SecretStoreUnavailable {
+    return false;
+  }
+});
 
 /// Builds every HTTP client (API and images) so one trust policy applies.
 final secureHttpClientFactoryProvider = Provider<SecureHttpClientFactory>(
