@@ -172,6 +172,26 @@ void main() {
     });
 
     test(
+      'R-L5: leaving the screen (last listener gone) ends the polling',
+      () async {
+        final api = FakeRadarrApi()..commandScript = [ArrCommandStatus.started];
+        final c = _container(api);
+        final sub = c.listen(searchStatusProvider, (_, _) {});
+        await c.read(radarrContextProvider.future);
+        final running = c.read(searchStatusProvider.notifier).searchMovie(7);
+        await Future<void>.delayed(Duration.zero);
+        await Future<void>.delayed(Duration.zero);
+        sub.close();
+        await running;
+        // Far below the bound: the loop stopped when the provider was disposed.
+        expect(api.commandCalls, lessThan(maxCommandPolls));
+        final settled = api.commandCalls;
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        expect(api.commandCalls, settled);
+      },
+    );
+
+    test(
       'a failed start is failed, and a second tap while busy is ignored',
       () async {
         final api = FakeRadarrApi()

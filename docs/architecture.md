@@ -20,7 +20,7 @@ apps/consolarr_play ──────► consolarr   (Play entry point, only pl
 
 | Package | Kind | Depends on | Purpose |
 | --- | --- | --- | --- |
-| `core` | pure Dart | - | `ServerProfile`, `Result`/`AppError` + `ErrorCategory`, `CleartextPolicy`. |
+| `core` | pure Dart | - | `ServerProfile`, `Result`/`AppError` + `ErrorCategory`, `CleartextPolicy`, `ParsedRows`, and the one off-isolate parse helper (`ParseRunner`, `isolateRunner`, `parseOffIsolate`, 64 KB threshold; imports only `dart:isolate`). `arr_api` and `torrent_clients` keep their old names as thin delegates. |
 | `security` | pure Dart | `core`, `dio` | `SecretStore`, `PinStore` (+ `PinKey`, `UserPinConfirmation`, `decidePin`), `SecureHttpClientFactory` contracts. The only package allowed to touch TLS trust. |
 | `arr_api` | pure Dart | `core`, `security` | Sonarr client and models (`RadarrApi` interface only). |
 | `torrent_clients` | pure Dart | `core`, `security` | `TorrentClient` interface and the qBittorrent client. |

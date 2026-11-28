@@ -94,6 +94,32 @@ void main() {
       expect(find.text('Movie added'), findsOneWidget);
     });
 
+    testWidgets('typing in quick succession sends one lookup (debounce)', (
+      tester,
+    ) async {
+      final a = api();
+      await pumpMatrix(
+        tester,
+        (v) => radarrApp(v, a, const AddMovieScreen()),
+        variants: phone,
+      );
+      final lookups = () => a.calls.where((c) => c.startsWith('lookup')).length;
+      final before = lookups();
+      for (final text in ['m', 'mo', 'mov', 'movi', 'movie']) {
+        await tester.enterText(find.byType(TextField), text);
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      // Still inside the debounce window of the last keystroke.
+      expect(lookups(), before);
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pumpAndSettle();
+      expect(lookups() - before, 1);
+      expect(
+        a.calls.where((c) => c.startsWith('lookup')).last,
+        contains('movie'),
+      );
+    });
+
     testWidgets('no collection switch without a collection', (tester) async {
       final a = api();
       await pumpMatrix(

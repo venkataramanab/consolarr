@@ -8,7 +8,8 @@ patterns instead of inventing new ones.
 
 ```
 packages/core            ServerProfile, AuthMode, AppError/ErrorCategory,
-                         kOfflineFallbackCategories, Result, ParsedRows
+                         kOfflineFallbackCategories, Result, ParsedRows,
+                         off-isolate helper (ParseRunner, parseOffIsolate)
 packages/security        TLS trust, pins, secret/pin stores, secure Dio factory
 packages/arr_api         ArrClientBase (+ shared models), SonarrClient (hand written, tolerant)
 packages/torrent_clients TorrentClient (+ actions), QBittorrentClient (pure Dart)
@@ -159,6 +160,7 @@ One line per new service, in one place each:
 | Connection probe (test + health) | `servers/application/connection_tester.dart` `connectionProbes` | `ServiceKind` |
 | Torrent client factory | `torrents/application/torrent_client_registry.dart` `torrentClientFactories` | `ServiceKind` |
 | Editor picker | `servers/presentation/service_kind_info.dart` `supportedServiceKinds` | list |
+| Change-detection source (queue or torrent snapshot) | `shared/polling/snapshot_sources.dart` `snapshotSources` | `ServiceKind` |
 
 A kind without a probe is **not** reported as `unsupported_version`; the tester
 returns an explicit "no probe registered" failure (the picker only offers
@@ -183,9 +185,13 @@ in `EmptyArrLists`.
   sets `parentNavigatorKey: rootNavigatorKey`. Sheets and menus
   (`showGlassSheet`, `showNestedMenu`) open on the root navigator, above the
   bar.
-* **Polling pauses while the app is locked.** The content stays mounted
-  (hidden) behind the lock, so every timer or poll that talks to a server must
-  skip its tick while `appLockedProvider` is true (and resume after unlock).
+* **Polling pauses while the app is locked, hidden or in the background.** The
+  content stays mounted (hidden) behind the lock, so every timer or poll that
+  talks to a server must be **cancelled** (not left to tick and skip) while
+  `appLockedProvider` is true, the app is not resumed, the tab is not selected
+  (`TickerMode`) or another route is on top, and started again when that
+  changes. `lib/shared/polling/poll_visibility.dart` (`PollVisibility`) folds
+  all four into one `isVisible` flag; section 15 shows how to use it.
 * A destination with `kinds` is offered once a server of any of those kinds
   exists; the open branch is always shown, so the bar never highlights another
   tab for the screen you are on. `routeForKind(kind)` replaces switches that
@@ -194,7 +200,7 @@ in `EmptyArrLists`.
 ## 8. Observability
 
 * Events are declared in `packages/observability/events/<area>.yaml`
-  (`servers`, `sonarr`, `radarr`, `torrents`, `settings`); parameters are
+  (`servers`, `sonarr`, `radarr`, `torrents`, `settings`, `polling`); parameters are
   closed enums, ints or bools, so URLs, hosts, keys, usernames and titles
   cannot be reported by construction. Every planned `screen_name` and every
   `service_kind_param` value is declared up front.
@@ -310,3 +316,70 @@ in both flavors), which drops the ~70 translations AndroidX libraries bring.
 Sharing text uses a first-party method channel (`consolarr/share`,
 `ACTION_SEND`) instead of a plugin. `local_auth` (androidx.biometric, the app
 lock) is the one deliberate size cost; see the PR for its budget exception.
+
+## 15. Polling and change detection (notifications-ready, nothing ships)
+
+Code: `apps/consolarr/lib/shared/polling/`. **Nothing here runs in the MVP:** no
+provider of this layer exists, nothing is read before the first frame or by a
+screen, and there is no WorkManager, notification plugin, permission, service
+or receiver (a test guards the pubspecs and both manifests). It is the seam
+that SET-09 (notifications, later) plugs into.
+
+* **`PollScheduler`** (`poll_scheduler.dart`): one delay-based loop with
+  exponential back-off (cap 60 s) that cancels its timer while hidden and
+  polls at once when it becomes visible again. The torrent list and sheet use
+  it; Radarr's `VisiblePoller` is a thin widget over it.
+* **`PollVisibility`** (`poll_visibility.dart`): a state mixin that folds
+  lifecycle, `TickerMode`, `ModalRoute.isCurrentOf` and `appLockedProvider`
+  into `isVisible` and calls `onVisibilityChanged` only on a real change.
+  Mix it into a `ConsumerState` that also mixes in `WidgetsBindingObserver`.
+  *Migrate when next touched:* the Sonarr queue notifier, the torrent screens
+  and the Sonarr search-progress loop still have their own copy of the rule
+  (same behaviour, tested); move them onto `PollScheduler` + `PollVisibility`
+  the next time they change, not in a refactor of their own.
+* **`change_detection/`** (pure Dart, no Flutter imports): `TrackedItem`
+  (`arrQueue`|`torrent`, `active|completed|failed|other`), `ServiceSnapshot`
+  per server, `diffSnapshots(prev, next)`, a bounded `ChangeLedger` behind the
+  `ChangeStore` interface, and `PollCycle.run(targets)`.
+  * First snapshot of a server = baseline, no events.
+  * A failed or partial fetch (or a throwing source) keeps the previous
+    snapshot and emits nothing: an error is never "everything vanished".
+  * An item that disappears without a terminal state emits nothing; only an
+    observed transition (present and not terminal -> completed or failed)
+    counts; each `(server, item)` fires at most once.
+  * Servers are fetched independently with bounded concurrency (4); one
+    failure never touches another.
+  * `ChangeEvent.title` exists for a future notification text only: it is
+    in memory, excluded from `toString`/`toJson`, never persisted or logged.
+    The ledger is in-memory only (persistence is deferred, so an item may fire
+    once more after a restart).
+* **Sources** (`snapshot_sources.dart`): `arrQueueSource` and `torrentSource`
+  adapt the existing `queue()` / `listTorrents()`; `snapshotSources` is the
+  per-kind registry. No new endpoint.
+* **Telemetry** (`poll_telemetry.dart`, `events/polling.yaml`): `poll_cycle_finished{servers,
+  failed, changes}` and `poll_change_detected{change}`; counts and closed enums
+  only.
+* **Wiring to real servers (not shipped):** for each configured server read
+  `activeConnectionProvider(kind)` (or the repository's client for that
+  server), build `PollTarget(serverId, kind, source: snapshotSources[kind]!(clients))`,
+  and call `trackedPollCycle(tracker).run(targets)` from a visibility-aware
+  scheduler. Request the notification permission only at the point of use.
+
+## 16. Diagnostics bundle (SET-04, SET-05)
+
+* The bundle holds only closed values and scrubbed text: sections App (version,
+  build, flavor, consent switches), Platform, Locale, **Services** (per kind:
+  server count, health bucket, major version if known, cleartext opt-in),
+  Error categories, Log. A server name, host, port or id cannot be carried.
+* Building it never starts a network call. "Check services" in the preview is
+  the only thing that probes (user-initiated, with a running state); health
+  already resolved in `serverHealthProvider` counts without a new probe.
+* Every sink scrubs: `DiagnosticsLog` and `AppLogger` apply `DiagnosticsScrubber`
+  at write time; the bundle scrubs again with the known values (server names,
+  hosts, usernames, passwords, API keys, custom header **values**, path
+  prefixes). One shared corpus (`packages/observability/test/canary_corpus.dart`)
+  is asserted on every sink.
+* The text is capped at 150 KB inside the bundle (newest log entries kept), so
+  the preview is exactly what is shared; `capShareText` and the native guard in
+  `MainActivity` (`too_large`) enforce the same constant.
+
