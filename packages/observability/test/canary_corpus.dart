@@ -4,6 +4,8 @@
 // names, made-up keys). Every sink that can leave the device is asserted
 // against it. Nothing here is real.
 
+import 'fake_tokens.dart';
+
 /// One dirty line and the substrings that must not survive any sink.
 class Canary {
   const Canary(this.name, this.text, this.forbidden);
@@ -18,18 +20,6 @@ class Canary {
 
 const _hex32 = '0a1b2c3d4e5f60718293a4b5c6d7e8f9';
 const _base32 = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP';
-// JWT-shaped, but assembled at runtime from fragments so that no literal in
-// the repository (or its history) matches a secret scanner's JWT pattern.
-const _jwtPrefix =
-    'ey'
-    'J';
-const _jwtPayloadBody = 'zdWIiOiJjYW5hcnktYWxpY2UifQ';
-final _jwt = [
-  '${_jwtPrefix}hbGciOiJIUzI1NiJ9',
-  '${_jwtPrefix}$_jwtPayloadBody',
-  'c2lnbmF0dXJlY2FuYXJ5',
-].join('.');
-
 final canaryCorpus = <Canary>[
   // Addresses.
   const Canary('ipv4', 'connect to 198.51.100.23 refused', ['198.51.100.23']),
@@ -77,10 +67,7 @@ final canaryCorpus = <Canary>[
     'alicecanary',
   ]),
   // Credentials.
-  Canary('jwt', 'session $_jwt expired', [
-    _jwt,
-    '${_jwtPrefix}$_jwtPayloadBody',
-  ]),
+  Canary('jwt', 'session ${fakeJwt()} expired', [fakeJwt(), fakeJwtPayload]),
   const Canary('bearer', 'Authorization: Bearer canarybearer0123456789', [
     'canarybearer0123456789',
   ]),

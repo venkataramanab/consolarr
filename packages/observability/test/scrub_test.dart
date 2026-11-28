@@ -3,15 +3,17 @@
 import 'package:observability/observability.dart';
 import 'package:test/test.dart';
 
+import 'fake_tokens.dart';
+
 /// Values that must never reach an event, breadcrumb or log line.
-const _hostile = [
+final _hostile = [
   'https://admin:hunter2@nas.example:8989/sonarr/api?apikey=0123456789abcdef0123456789abcdef',
   'nas.private.example',
   '192.0.2.77',
   'alice-the-admin',
   'Example Show S01E01 1080p',
   '0123456789abcdef0123456789abcdef',
-  'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.c2lnbmF0dXJl',
+  fakeJwt(payload: fakeJwtPayloadShort),
   'hunter2',
 ];
 
@@ -126,7 +128,7 @@ void main() {
     for (final secret in [
       'hunter2',
       '0123456789abcdef0123456789abcdef',
-      'eyJhbGciOiJIUzI1NiJ9',
+      fakeJwtHeader,
     ]) {
       expect(text, isNot(contains(secret)));
     }

@@ -202,6 +202,18 @@ class DiagnosticsScrubber {
 
   static final _magnet = RegExp(r'magnet:\?\S+', caseSensitive: false);
   static final _url = RegExp(r'\b[a-zA-Z][a-zA-Z0-9+.\-]*://\S+');
+
+  /// `\\server\share\dir\file name.mkv` (also `\\?\UNC\...`): the host,
+  /// the share and every folder name leak, and the parts may contain spaces.
+  /// With an extension the match ends there; without one it runs to the end of
+  /// the line or the closing quote, since where a folder name ends is unknown.
+  static final _uncExt = RegExp(
+    r'\\\\[^\\\s"]+\\[^\r\n"]*?\.[A-Za-z0-9]{2,5}\b',
+  );
+  static final _unc = RegExp(r'\\\\[^\\\s"]+(?:\\[^\r\n"]*)?');
+
+  /// `//server/share/...` (an SMB URL without a scheme).
+  static final _slashUnc = RegExp(r'(?<![\w:/.])//[^/\s"]+(?:/[^\r\n"]*)?');
   static final _winPathExt = RegExp(
     r'[A-Za-z]:\\[^\r\n"]*?\.[A-Za-z0-9]{2,5}\b',
   );
@@ -261,18 +273,33 @@ class DiagnosticsScrubber {
 
   static const _maxPasses = 6;
 
+  /// Removes [knownValues] from the text *between* existing placeholders only.
+  /// A value such as "ted" or "act" is a substring of `[REDACTED]`, and
+  /// replacing inside a placeholder would corrupt it into
+  /// `[REDAC[REDACTED]]`, leak the shape of what was removed and grow on every
+  /// pass. Splitting on the placeholder first keeps it intact.
+  String _scrubKnown(String line) {
+    final values = [
+      for (final v in knownValues)
+        if (v.length >= 3) v,
+    ]..sort((a, b) => b.length.compareTo(a.length));
+    if (values.isEmpty) return line;
+    // One alternation, one scan: replacing value by value would rescan the
+    // placeholders the earlier values just inserted.
+    final any = RegExp(
+      values.map(RegExp.escape).join('|'),
+      caseSensitive: false,
+    );
+    return line.split(_mark).map((p) => p.replaceAll(any, _mark)).join(_mark);
+  }
+
   String _pass(String line) {
-    var out = line;
-    for (final v in knownValues) {
-      if (v.length < 3) continue;
-      out = out.replaceAll(
-        RegExp(RegExp.escape(v), caseSensitive: false),
-        _mark,
-      );
-    }
+    var out = _scrubKnown(line);
     out = out.replaceAll(_magnet, _mark);
     out = redactor.redactText(out);
     out = out.replaceAll(_url, _mark);
+    out = out.replaceAll(_uncExt, _mark).replaceAll(_unc, _mark);
+    out = out.replaceAll(_slashUnc, _mark);
     out = out.replaceAll(_winPathExt, _mark).replaceAll(_winPath, _mark);
     out = out.replaceAll(_unixPathExt, _mark).replaceAll(_unixPath, _mark);
     out = out.replaceAll(_email, _mark);

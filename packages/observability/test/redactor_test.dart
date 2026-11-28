@@ -6,6 +6,8 @@ import 'dart:math';
 import 'package:observability/observability.dart';
 import 'package:test/test.dart';
 
+import 'fake_tokens.dart';
+
 const r = Redactor();
 const mask = Redactor.placeholder;
 
@@ -88,7 +90,12 @@ void main() {
     test('32-char hex api keys and JWTs standing alone', () {
       const key = '0123456789abcdef0123456789abcdef';
       expect(r.redactText('key was $key.'), 'key was $mask.');
-      expect(r.redactText('t=eyJhbGciOi.eyJzdWIiOiIx.sig_-x'), 't=$mask');
+      expect(
+        r.redactText(
+          't=${fakeJwtHeader.substring(0, 10)}.${fakeJwtPayloadShort}x.sig_-x',
+        ),
+        't=$mask',
+      );
     });
 
     test('is idempotent and leaves harmless text alone', () {
@@ -656,14 +663,14 @@ void main() {
 
     test('redaction is idempotent', () {
       const redactor = Redactor();
-      const pieces = [
+      final pieces = [
         'Authorization: Bearer abcdefghijkl',
         'apikey=0123456789abcdef0123456789abcdef',
         'https://u:p@nas.example:8989/x?token=abc123def',
         'Cookie: SID=abc',
         'plain text 12:30',
         'password=hunter2',
-        'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.c2ln',
+        fakeJwt(signature: 'c2ln', payload: fakeJwtPayloadShort),
       ];
       for (var i = 0; i < 200; i++) {
         final line = [
