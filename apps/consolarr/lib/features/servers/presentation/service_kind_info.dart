@@ -16,8 +16,9 @@ const supportedServiceKinds = [
 
 /// Authentication modes a service offers, strongest first.
 List<AuthMode> authModesFor(ServiceKind kind) => switch (kind) {
-  ServiceKind.sonarr ||
-  ServiceKind.radarr => const [AuthMode.apiKey, AuthMode.basic, AuthMode.none],
+  // The arr API takes the API key only; a username and password are an
+  // optional reverse-proxy login, not a mode (see `ServiceKindAuth`).
+  ServiceKind.sonarr || ServiceKind.radarr => const [AuthMode.apiKey],
   _ => const [AuthMode.basic, AuthMode.none],
 };
 

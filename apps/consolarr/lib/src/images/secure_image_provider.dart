@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:consolarr/shared/logging/logging_interceptor.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/painting.dart';
 import 'package:security/security.dart';
@@ -41,6 +42,7 @@ class SecureNetworkImage extends ImageProvider<SecureNetworkImage> {
     required this.dio,
     required this.uri,
     this.maxBytes = defaultMaxBytes,
+    this.fallbackUris = const [],
   });
 
   /// Largest accepted artwork download (8 MiB).
@@ -49,6 +51,11 @@ class SecureNetworkImage extends ImageProvider<SecureNetworkImage> {
   final Dio dio;
   final Uri uri;
   final int maxBytes;
+
+  /// Tried in order, each only when the one before answered 404 (for example
+  /// the resized `poster-500.jpg` next to a plain `poster.jpg`, then the
+  /// cover, banner and fanart). Any other failure ends the load at once.
+  final List<Uri> fallbackUris;
 
   @override
   Future<SecureNetworkImage> obtainKey(ImageConfiguration configuration) =>
@@ -70,16 +77,41 @@ class SecureNetworkImage extends ImageProvider<SecureNetworkImage> {
     SecureNetworkImage key,
     ImageDecoderCallback decode,
   ) async {
-    final response = await key.dio.getUri<List<int>>(
-      key.uri,
+    Future<Response<List<int>>> fetch(Uri uri) => key.dio.getUri<List<int>>(
+      uri,
       options: Options(
         responseType: ResponseType.bytes,
-        extra: {maxResponseBytesKey: key.maxBytes},
+        extra: {maxResponseBytesKey: key.maxBytes, artworkChainKey: true},
       ),
     );
+    final candidates = [key.uri, ...key.fallbackUris];
+    Response<List<int>>? fetched;
+    for (var i = 0; fetched == null; i++) {
+      try {
+        fetched = await fetch(candidates[i]);
+      } on DioException catch (e) {
+        if (e.response?.statusCode != 404) rethrow;
+        if (i == candidates.length - 1) {
+          // The interceptor skips the 404 of a chained attempt: say once that
+          // the image is missing everywhere.
+          LoggingInterceptor.of(key.dio)
+              ?.artworkMissing(key.uri, tried: candidates.length);
+          rethrow;
+        }
+      }
+    }
+    final response = fetched;
     final data = response.data;
     final bytes = data == null ? Uint8List(0) : Uint8List.fromList(data);
     if (!looksLikeSupportedImage(bytes)) {
+      // Network failures are logged by the connection's request logger; this
+      // is the one failure it cannot see (a 200 that is not an image).
+      LoggingInterceptor.of(key.dio)?.artworkRejected(
+        response.requestOptions.uri,
+        status: response.statusCode,
+        contentType: response.headers.value(Headers.contentTypeHeader),
+        isEmpty: bytes.isEmpty,
+      );
       throw const FormatException('not a supported image');
     }
     final buffer = await ui.ImmutableBuffer.fromUint8List(bytes);

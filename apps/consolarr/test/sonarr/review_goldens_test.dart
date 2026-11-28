@@ -48,6 +48,7 @@ void main() {
                 context: context,
                 itemLabel: 'Example Show 1',
                 serviceName: 'Sonarr',
+                kind: ServiceKind.sonarr,
                 onConfirm: (_) async => null,
               ),
               child: const Text('open'),

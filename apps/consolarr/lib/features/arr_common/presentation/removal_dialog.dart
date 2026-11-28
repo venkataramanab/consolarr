@@ -30,6 +30,7 @@ Future<bool> showArrQueueRemovalDialog({
   required BuildContext context,
   required String itemLabel,
   required String serviceName,
+  required ServiceKind kind,
   required Future<AppError?> Function(ArrQueueRemovalChoice choice) onConfirm,
 }) async {
   final removed = await showDialog<bool>(
@@ -38,6 +39,7 @@ Future<bool> showArrQueueRemovalDialog({
     builder: (context) => _RemovalDialog(
       itemLabel: itemLabel,
       serviceName: serviceName,
+      kind: kind,
       onConfirm: onConfirm,
     ),
   );
@@ -48,11 +50,15 @@ class _RemovalDialog extends StatefulWidget {
   const _RemovalDialog({
     required this.itemLabel,
     required this.serviceName,
+    required this.kind,
     required this.onConfirm,
   });
 
   final String itemLabel;
   final String serviceName;
+
+  /// The server kind, so a 401 explains the API key.
+  final ServiceKind kind;
   final Future<AppError?> Function(ArrQueueRemovalChoice choice) onConfirm;
 
   @override
@@ -93,7 +99,9 @@ class _RemovalDialogState extends State<_RemovalDialog> {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final error = _error;
-    final message = error == null ? null : connectionErrorMessage(l10n, error);
+    final message = error == null
+        ? null
+        : connectionErrorMessage(l10n, error, kind: widget.kind);
     return AlertDialog(
       title: Text(l10n.arrCommonQueueRemoveTitle),
       scrollable: true,

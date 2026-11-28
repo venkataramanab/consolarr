@@ -9,7 +9,7 @@ import 'support.dart';
 
 void main() {
   group('availabilityOf', () {
-    final now = DateTime.utc(2026, 5, 1, 12);
+    final now = DateTime(2026, 5, 1, 12);
     final past = DateTime.utc(2026, 4, 1);
     final future = DateTime.utc(2026, 6, 1);
     final cases = <String, (RadarrMovie, Availability)>{
@@ -42,12 +42,12 @@ void main() {
         fakeMovie(1, physical: past),
         Availability.releasedPhysical,
       ),
-      'cinema exactly now': (
-        fakeMovie(1, inCinemas: now),
+      'cinema today': (
+        fakeMovie(1, inCinemas: DateTime.utc(now.year, now.month, now.day)),
         Availability.inCinemas,
       ),
-      'cinema one second ahead': (
-        fakeMovie(1, inCinemas: now.add(const Duration(seconds: 1))),
+      'cinema tomorrow': (
+        fakeMovie(1, inCinemas: now.add(const Duration(days: 1))),
         Availability.comingSoon,
       ),
     };
@@ -55,26 +55,23 @@ void main() {
       test(name, () => expect(availabilityOf(c.$1, now), c.$2));
     });
 
-    test('the same instant gives the same answer in any time zone', () {
-      final utc = DateTime.utc(2026, 5, 1, 12);
-      // 2026-05-01T12:00Z expressed with a +14 and a -12 offset.
-      final plus14 = DateTime.parse('2026-05-02T02:00:00+14:00');
-      final minus12 = DateTime.parse('2026-05-01T00:00:00-12:00');
-      expect(plus14.toUtc(), utc);
-      expect(minus12.toUtc(), utc);
-      for (final d in [utc, plus14, minus12]) {
-        expect(
-          availabilityOf(fakeMovie(1, inCinemas: d), utc),
-          Availability.inCinemas,
-        );
-        expect(
-          availabilityOf(
-            fakeMovie(1, inCinemas: d),
-            utc.subtract(const Duration(seconds: 1)),
-          ),
-          Availability.comingSoon,
-        );
-      }
+    test('a release date counts from the start of that day on the user\'s '
+        'calendar, not from an instant', () {
+      // Built from local wall-clock parts, so this holds in any host zone;
+      // the far zones are run for real in `zones_test.dart`.
+      final cinema = fakeMovie(1, inCinemas: DateTime.utc(2026, 6, 10));
+      expect(
+        availabilityOf(cinema, DateTime(2026, 6, 9, 23, 59, 59)),
+        Availability.comingSoon,
+      );
+      expect(
+        availabilityOf(cinema, DateTime(2026, 6, 10)),
+        Availability.inCinemas,
+      );
+      expect(
+        availabilityOf(cinema, DateTime(2026, 6, 10, 23, 59, 59)),
+        Availability.inCinemas,
+      );
     });
 
     test('search eligibility follows minimum availability', () {
@@ -121,9 +118,16 @@ void main() {
       for (final m in applyQuery(movies, q)) m.id,
     ];
 
+    const byTitle = MovieQuery(sort: MovieSortKey.title, ascending: true);
+
+    test('the default is date added, newest first', () {
+      expect(ids(const MovieQuery()), [4, 3, 2, 1]);
+      expect(ids(const MovieQuery(ascending: true)), [1, 2, 3, 4]);
+    });
+
     test('title ascending and descending', () {
-      expect(ids(const MovieQuery()), [2, 1, 4, 3]);
-      expect(ids(const MovieQuery(ascending: false)), [3, 4, 1, 2]);
+      expect(ids(byTitle), [2, 1, 4, 3]);
+      expect(ids(byTitle.copyWith(ascending: false)), [3, 4, 1, 2]);
     });
 
     test('missing values sort last in both directions', () {
@@ -138,7 +142,8 @@ void main() {
     });
 
     test('every filter dimension', () {
-      MovieQuery f(MovieFilter x) => MovieQuery(filter: x);
+      MovieQuery f(MovieFilter x) =>
+          MovieQuery(sort: MovieSortKey.title, ascending: true, filter: x);
       expect(
         ids(f(const MovieFilter(monitored: MonitoredFilter.unmonitored))),
         [2],
@@ -175,7 +180,7 @@ void main() {
     });
 
     test('groups by first letter and by year', () {
-      final sorted = applyQuery(movies, const MovieQuery());
+      final sorted = applyQuery(movies, byTitle);
       expect(
         [for (final g in groupMovies(sorted, MovieSortKey.title)) g.label],
         ['A', 'B', 'D', 'G'],

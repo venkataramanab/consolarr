@@ -194,7 +194,8 @@ void main() {
       ];
       expect(ids(WantedScope.released), [1]);
       expect(ids(WantedScope.upcoming), [2, 5]);
-      expect(ids(WantedScope.allMissing), [1, 2, 5]);
+      // Newest release first (2027, then April 2026), undated last.
+      expect(ids(WantedScope.allMissing), [2, 1, 5]);
     });
 
     test('release sort and filter', () {

@@ -30,7 +30,10 @@ final serversProvider = StreamProvider<List<ServerEntry>>(
 
 /// Runs the status/version query without reporting anything (health checks).
 final healthTesterProvider = Provider<ConnectionTester>(
-  (ref) => DefaultConnectionTester(ref.watch(secureHttpClientFactoryProvider)),
+  (ref) => DefaultConnectionTester(
+    ref.watch(secureHttpClientFactoryProvider),
+    logger: ref.watch(loggerProvider),
+  ),
 );
 
 /// The tester for the editor and onboarding: reports `connection_test_result`.

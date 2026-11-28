@@ -4,6 +4,8 @@ import 'package:arr_api/arr_api.dart';
 import 'package:consolarr/features/servers/application/auth_headers.dart';
 import 'package:consolarr/features/servers/domain/server_models.dart';
 import 'package:consolarr/features/servers/domain/server_repository.dart';
+import 'package:consolarr/shared/logging/log_events.dart';
+import 'package:consolarr/shared/logging/logging_interceptor.dart';
 import 'package:core/core.dart';
 import 'package:dio/dio.dart';
 import 'package:observability/observability.dart';
@@ -97,14 +99,20 @@ const _noProbe = ConnectionTestFailure(
 /// Runs the lightweight status/version query through the secure client
 /// (SRV-05, SRV-10). Typed TLS errors are passed through unchanged so the UI
 /// can answer with the trust sheet.
+///
+/// With a [logger] each test attaches the request logger (route and status
+/// only) and ends with `connection_test kind=<kind> result=<category|ok>`.
 class DefaultConnectionTester implements ConnectionTester {
   DefaultConnectionTester(
     this._factory, {
     Map<ServiceKind, ConnectionProbe>? probes,
-  }) : _probes = probes ?? connectionProbes;
+    AppLogger? logger,
+  }) : _probes = probes ?? connectionProbes,
+       _logger = logger;
 
   final SecureHttpClientFactory _factory;
   final Map<ServiceKind, ConnectionProbe> _probes;
+  final AppLogger? _logger;
 
   @override
   Future<ConnectionTestOutcome> test(
@@ -115,13 +123,28 @@ class DefaultConnectionTester implements ConnectionTester {
     if (probe == null) return _noProbe;
     final dio = _factory.create(profile);
     dio.options.headers.addAll(buildAuthHeaders(profile, credentials));
+    final logger = _logger;
+    if (logger != null) {
+      dio.interceptors.add(
+        LoggingInterceptor(logger, pathPrefix: profile.pathPrefix),
+      );
+    }
+    ConnectionTestOutcome outcome;
     try {
-      return await probe(dio, profile, credentials);
+      outcome = await probe(dio, profile, credentials);
     } on Object catch (e) {
-      return ConnectionTestFailure(appErrorFromDio(e));
+      outcome = ConnectionTestFailure(appErrorFromDio(e));
     } finally {
       dio.close(force: true);
     }
+    if (logger != null) {
+      logConnectionTest(
+        logger,
+        profile.kind,
+        outcome is ConnectionTestFailure ? outcome.error : null,
+      );
+    }
+    return outcome;
   }
 }
 

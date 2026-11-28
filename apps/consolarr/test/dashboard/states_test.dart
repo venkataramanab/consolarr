@@ -328,7 +328,11 @@ void main() {
         check: (tester, l10n) async {
           expect(find.text('Server sonarr'), findsNWidgets(3));
           // the copy of the category, not a blanket "not available"
-          final copy = connectionErrorMessage(l10n, AppError(category));
+          final copy = connectionErrorMessage(
+            l10n,
+            AppError(category),
+            kind: ServiceKind.sonarr,
+          );
           expect(find.text(copy.message), findsNWidgets(3));
           expect(find.text(l10n.dashboardRetry), findsNWidgets(3));
           final upcomingBefore = failing.calls[DashboardCard.upcoming]!;

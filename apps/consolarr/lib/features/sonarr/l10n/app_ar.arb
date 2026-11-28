@@ -60,11 +60,11 @@
   "@sonarrErrorVersionTitle": {
     "description": "Headline of the series library error state when the Sonarr version is too old."
   },
-  "sonarrErrorAuthMessage": "لم يتم قبول مفتاح API أو كلمة المرور.",
+  "sonarrErrorAuthMessage": "لم يتم قبول مفتاح API.",
   "@sonarrErrorAuthMessage": {
     "description": "Plain-language cause shown in the series library error state (Auth)."
   },
-  "sonarrErrorAuthHint": "تحقق من بيانات الاعتماد في إعدادات الخادم.",
+  "sonarrErrorAuthHint": "استخدم مفتاح API من إعدادات ⁦Sonarr⁩ ← عام ← الأمان. لا يعمل اسم المستخدم وكلمة المرور مع واجهة API.",
   "@sonarrErrorAuthHint": {
     "description": "Likely fix shown under the cause in the series library error state (Auth)."
   },
@@ -72,7 +72,7 @@
   "@sonarrErrorNeedsCredentialsMessage": {
     "description": "Plain-language cause shown in the series library error state (NeedsCredentials)."
   },
-  "sonarrErrorNeedsCredentialsHint": "أدخل مفتاح API أو كلمة المرور مرة أخرى في إعدادات الخادم.",
+  "sonarrErrorNeedsCredentialsHint": "أدخل مفتاح API مرة أخرى في إعدادات الخادم.",
   "@sonarrErrorNeedsCredentialsHint": {
     "description": "Likely fix shown under the cause in the series library error state (NeedsCredentials)."
   },

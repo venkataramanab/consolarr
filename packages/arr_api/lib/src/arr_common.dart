@@ -4,12 +4,13 @@ import 'package:arr_api/src/json_read.dart';
 import 'package:core/core.dart';
 
 /// Artwork kinds the app uses (shared by Sonarr and Radarr).
-enum ArrImageType { poster, banner, fanart, unknown }
+enum ArrImageType { poster, banner, fanart, cover, unknown }
 
 ArrImageType _imageType(String? v) => switch (v) {
   'poster' => ArrImageType.poster,
   'banner' => ArrImageType.banner,
   'fanart' => ArrImageType.fanart,
+  'cover' => ArrImageType.cover,
   _ => ArrImageType.unknown,
 };
 

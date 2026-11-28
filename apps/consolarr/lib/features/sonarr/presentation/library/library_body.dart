@@ -71,6 +71,8 @@ class _LibraryBodyState extends ConsumerState<LibraryBody> {
     final l10n = context.l10n;
     final mode = ref.watch(viewModeProvider);
     final library = ref.watch(seriesLibraryProvider);
+    // The first list frame waits for the saved sort and filter to be read.
+    final restored = ref.watch(libraryQueryProvider.select((q) => q.restored));
     ref.listen(libraryQueryProvider.select((q) => q.search), (_, text) {
       if (_search.text != text) _search.text = text;
     });
@@ -105,6 +107,10 @@ class _LibraryBodyState extends ConsumerState<LibraryBody> {
         ),
       ),
       LibraryFailure(:final error) => _statePane(_errorState(l10n, error)),
+      LibraryData() when !restored => SeriesSkeleton(
+        mode: mode,
+        padding: widget.padding,
+      ),
       LibraryData(:final isEmpty) =>
         isEmpty && !state.isOffline
             ? _statePane(

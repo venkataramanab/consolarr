@@ -4,6 +4,7 @@ import 'package:consolarr/features/servers/application/server_connection.dart';
 import 'package:consolarr/features/servers/application/servers_providers.dart';
 import 'package:consolarr/features/servers/domain/server_models.dart';
 import 'package:consolarr/features/servers/domain/server_repository.dart';
+import 'package:consolarr/shared/logging/logging_interceptor.dart';
 import 'package:consolarr/src/database/app_database.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
@@ -102,6 +103,35 @@ void main() {
     expect(c.dio.options.headers['X-Api-Key'], 'test-key-0000');
     expect(c.dio.options.baseUrl, 'https://sonarr.example');
   });
+
+  test(
+    'exactly one LoggingInterceptor is attached, also after a rebuild',
+    () async {
+      await addSonarr();
+      int loggers(Dio dio) =>
+          dio.interceptors.whereType<LoggingInterceptor>().length;
+      final first = (await container.read(
+        activeConnectionProvider(ServiceKind.sonarr).future,
+      ))!;
+      expect(loggers(first.dio), 1);
+
+      // A rebuild (the saved data changed) makes a new client with its own one.
+      container.invalidate(activeConnectionProvider(ServiceKind.sonarr));
+      final second = (await container.read(
+        activeConnectionProvider(ServiceKind.sonarr).future,
+      ))!;
+      expect(second.dio, isNot(same(first.dio)));
+      expect(loggers(second.dio), 1);
+      expect(loggers(first.dio), 1, reason: 'the old client is not touched');
+
+      await addSonarr();
+      container.invalidate(activeConnectionProvider(ServiceKind.sonarr));
+      final third = (await container.read(
+        activeConnectionProvider(ServiceKind.sonarr).future,
+      ))!;
+      expect(loggers(third.dio), 1);
+    },
+  );
 
   test(
     'Keystore loss -> auth_failed needs_credentials, never a crash',

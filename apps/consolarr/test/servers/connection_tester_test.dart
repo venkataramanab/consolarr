@@ -4,9 +4,12 @@ import 'package:consolarr/features/servers/application/auth_headers.dart';
 import 'package:consolarr/features/servers/application/connection_tester.dart';
 import 'package:consolarr/features/servers/domain/server_models.dart';
 import 'package:consolarr/features/servers/presentation/service_kind_info.dart';
+import 'package:consolarr/shared/errors/connection_error_message.dart';
 import 'package:core/core.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:l10n/l10n.dart';
+import 'package:material_ui/material_ui.dart' show Locale;
 import 'package:observability/observability.dart';
 import 'package:security/security.dart';
 import 'package:test_harness/test_harness.dart';
@@ -78,6 +81,80 @@ Future<ConnectionTestOutcome> run(
 AppError failure(ConnectionTestOutcome o) => (o as ConnectionTestFailure).error;
 
 void main() {
+  group('arr 401 and proxy login', () {
+    for (final kind in [ServiceKind.sonarr, ServiceKind.radarr]) {
+      test(
+        '$kind: a 401 gets the API-key hint, not "retry the login"',
+        () async {
+          final f = _Factory(StubAdapter((o) => json('', 401)));
+          final outcome = await run(
+            f.adapter,
+            profile(kind),
+            const ServerCredentials(username: 'user', password: 'pw'),
+            factory: f,
+          );
+          final error = failure(outcome);
+          expect(error.category, ErrorCategory.authFailed);
+          final l10n = lookupAppLocalizations(const Locale('en'));
+          final copy = connectionErrorMessage(l10n, error, kind: kind);
+          final name = kind == ServiceKind.sonarr ? 'Sonarr' : 'Radarr';
+          expect(copy.message, '$name rejected the API key.');
+          expect(copy.hint, contains('Settings → General → Security'));
+          expect(copy.hint, contains("username and password don't work"));
+          // Torrent kinds and unknown kinds keep the generic copy.
+          expect(
+            connectionErrorMessage(l10n, error, kind: ServiceKind.deluge).hint,
+            l10n.connErrorAuthFailedHint,
+          );
+          expect(
+            connectionErrorMessage(l10n, error).message,
+            l10n.connErrorAuthFailedMessage,
+          );
+        },
+      );
+    }
+
+    test('stored-secret loss keeps its own copy for arr kinds', () {
+      final l10n = lookupAppLocalizations(const Locale('en'));
+      final copy = connectionErrorMessage(
+        l10n,
+        const AppError(
+          ErrorCategory.authFailed,
+          debugDetail: needsCredentialsDetail,
+        ),
+        kind: ServiceKind.radarr,
+      );
+      expect(copy.message, l10n.connErrorNeedsCredentialsMessage);
+    });
+
+    test(
+      'the probe sends the key, plus Basic only with a proxy login',
+      () async {
+        final f = _Factory(StubAdapter((o) => json('{"version":"5.2.0"}')));
+        await run(
+          f.adapter,
+          profile(ServiceKind.radarr),
+          const ServerCredentials(
+            apiKey: 'test-key-0000',
+            username: 'user',
+            password: 'pw',
+          ),
+          factory: f,
+        );
+        await run(
+          f.adapter,
+          profile(ServiceKind.radarr),
+          sonarrKey,
+          factory: f,
+        );
+        expect(f.seen[0].headers['X-Api-Key'], 'test-key-0000');
+        expect(f.seen[0].headers['Authorization'], startsWith('Basic '));
+        expect(f.seen[1].headers['X-Api-Key'], 'test-key-0000');
+        expect(f.seen[1].headers.containsKey('Authorization'), isFalse);
+      },
+    );
+  });
+
   group('Sonarr', () {
     test(
       'success reports version and major, sends the key in a header',

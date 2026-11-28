@@ -116,7 +116,7 @@ class _EditSeriesFormState extends ConsumerState<EditSeriesForm> {
     final failure = lookups.error;
     if (failure != null) {
       final copy = failure is AppError
-          ? connectionErrorMessage(l10n, failure)
+          ? connectionErrorMessage(l10n, failure, kind: ServiceKind.sonarr)
           : null;
       return ErrorState(
         headline: l10n.sonarrDetailEditOptionsFailed,

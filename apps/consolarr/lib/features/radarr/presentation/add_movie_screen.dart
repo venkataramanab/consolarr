@@ -413,7 +413,7 @@ class _AddOptionsFormState extends ConsumerState<AddOptionsForm> {
               padding: const EdgeInsets.only(top: ConsolarrSpacing.sm),
               child: Text(
                 '${l10n.radarrAddFailed} '
-                '${connectionErrorMessage(l10n, _error!).message}',
+                '${connectionErrorMessage(l10n, _error!, kind: ServiceKind.radarr).message}',
                 style: TextStyle(color: context.roles.error),
               ),
             ),

@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:consolarr/features/servers/application/servers_providers.dart';
 import 'package:consolarr/features/servers/domain/server_models.dart';
 import 'package:consolarr/features/servers/domain/server_repository.dart';
+import 'package:consolarr/shared/errors/connection_error_message.dart';
 import 'package:core/core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -64,6 +65,24 @@ class ConnectionCheckResult {
   static ConnectionCheckResult pending() => ConnectionCheckResult([
     for (final s in CheckStep.values) StepResult(s, CheckStepState.pending),
   ]);
+
+  /// The result for a server whose saved credentials are missing: nothing is
+  /// sent, the sign-in step says so and the rest is skipped.
+  static ConnectionCheckResult needsCredentials({bool apiKey = false}) =>
+      ConnectionCheckResult([
+        const StepResult(CheckStep.dns, CheckStepState.skipped),
+        const StepResult(CheckStep.connect, CheckStepState.skipped),
+        const StepResult(CheckStep.tls, CheckStepState.skipped),
+        StepResult(
+          CheckStep.auth,
+          CheckStepState.fail,
+          error: AppError(
+            ErrorCategory.authFailed,
+            debugDetail: apiKey ? needsApiKeyDetail : needsCredentialsDetail,
+          ),
+        ),
+        const StepResult(CheckStep.version, CheckStepState.skipped),
+      ], finished: true);
 
   StepResult? get failed {
     for (final s in steps) {
@@ -298,6 +317,19 @@ class ConnectionCheckNotifier extends Notifier<ConnectionCheckState> {
       if (!ref.mounted || generation != _generation) return;
       if (entry == null) {
         state = ConnectionCheckState(serverId: id);
+        return;
+      }
+      if (entry.needsCredentials) {
+        // Lost or never entered secrets: say so, send nothing.
+        final stored = await repo.loadCredentials(entry.profile);
+        if (!ref.mounted || generation != _generation) return;
+        state = ConnectionCheckState(
+          serverId: id,
+          result: ConnectionCheckResult.needsCredentials(
+            apiKey:
+                entry.profile.kind.isArr && stored.apiKey?.isNotEmpty != true,
+          ),
+        );
         return;
       }
       final credentials = await repo.loadCredentials(entry.profile);

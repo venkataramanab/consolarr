@@ -9,6 +9,7 @@ import 'package:consolarr/features/torrents/application/speed_history.dart';
 import 'package:consolarr/features/torrents/application/torrent_client_registry.dart';
 import 'package:consolarr/features/torrents/data/torrents_prefs.dart';
 import 'package:consolarr/features/torrents/data/torrents_repository.dart';
+import 'package:consolarr/shared/logging/log_events.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -284,6 +285,7 @@ class TorrentListNotifier extends AsyncNotifier<TorrentListState> {
           consecutiveFailures < pollFailuresUntilOffline) {
         return; // keep showing the data; the scheduler backs off
       }
+      logOfflineFallback(ref.read(loggerProvider), 'torrents', error);
       state = AsyncData(previous.withOfflineError(error));
     } else {
       state = AsyncError(error, StackTrace.current);

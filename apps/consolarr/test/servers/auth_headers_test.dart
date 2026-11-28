@@ -29,15 +29,38 @@ void main() {
     expect(h, {'X-Api-Key': 'test-key-0000'});
   });
 
-  test('basic auth for Sonarr is an Authorization header', () {
+  test('basic auth for Sonarr is an Authorization header next to the key', () {
     final h = buildAuthHeaders(
       profile(ServiceKind.sonarr, AuthMode.basic),
-      const ServerCredentials(username: 'user', password: 'pw'),
+      const ServerCredentials(
+        apiKey: 'test-key-0000',
+        username: 'user',
+        password: 'pw',
+      ),
     );
     expect(
       h['Authorization'],
       'Basic ${base64.encode(utf8.encode('user:pw'))}',
     );
+    expect(h['X-Api-Key'], 'test-key-0000');
+  });
+
+  test('arr kinds send no auth header at all without an API key', () {
+    for (final kind in [ServiceKind.sonarr, ServiceKind.radarr]) {
+      for (final mode in AuthMode.values) {
+        for (final creds in const [
+          ServerCredentials(username: 'user', password: 'pw'),
+          ServerCredentials(apiKey: '', username: 'user', password: 'pw'),
+          ServerCredentials(apiKey: 'bad\nkey', username: 'u', password: 'p'),
+        ]) {
+          expect(
+            buildAuthHeaders(profile(kind, mode), creds),
+            isEmpty,
+            reason: '$kind $mode: Basic is only ever additive to a key',
+          );
+        }
+      }
+    }
   });
 
   test('basic auth for qBittorrent adds no header (client logs in)', () {
@@ -48,14 +71,68 @@ void main() {
     expect(h, isEmpty);
   });
 
-  test('none adds nothing; missing secrets add nothing', () {
-    expect(
-      buildAuthHeaders(
-        profile(ServiceKind.sonarr, AuthMode.none),
-        const ServerCredentials(apiKey: 'x'),
-      ),
-      isEmpty,
-    );
+  test('arr kinds always send X-Api-Key when a key is stored', () {
+    for (final kind in [ServiceKind.sonarr, ServiceKind.radarr]) {
+      for (final mode in AuthMode.values) {
+        expect(
+          buildAuthHeaders(
+            profile(kind, mode),
+            const ServerCredentials(apiKey: 'test-key-0000'),
+          ),
+          {'X-Api-Key': 'test-key-0000'},
+          reason: '$kind $mode',
+        );
+      }
+    }
+  });
+
+  test('arr proxy login adds Basic next to the API key, never instead', () {
+    final basic = 'Basic ${base64.encode(utf8.encode('user:pw'))}';
+    for (final kind in [ServiceKind.sonarr, ServiceKind.radarr]) {
+      expect(
+        buildAuthHeaders(
+          profile(kind, AuthMode.apiKey),
+          const ServerCredentials(
+            apiKey: 'test-key-0000',
+            username: 'user',
+            password: 'pw',
+          ),
+        ),
+        {'X-Api-Key': 'test-key-0000', 'Authorization': basic},
+      );
+    }
+  });
+
+  test('an empty or half proxy login adds no Authorization header', () {
+    for (final c in const [
+      ServerCredentials(apiKey: 'k', username: '', password: ''),
+      ServerCredentials(apiKey: 'k', username: 'user'),
+      ServerCredentials(apiKey: 'k', password: 'pw'),
+    ]) {
+      expect(
+        buildAuthHeaders(profile(ServiceKind.radarr, AuthMode.apiKey), c),
+        {'X-Api-Key': 'k'},
+      );
+    }
+  });
+
+  test('torrent kinds still add no credential header in any mode', () {
+    for (final mode in AuthMode.values) {
+      expect(
+        buildAuthHeaders(
+          profile(ServiceKind.deluge, mode),
+          const ServerCredentials(
+            apiKey: 'k',
+            username: 'user',
+            password: 'pw',
+          ),
+        ),
+        isEmpty,
+      );
+    }
+  });
+
+  test('missing secrets add nothing', () {
     expect(
       buildAuthHeaders(
         profile(ServiceKind.sonarr, AuthMode.apiKey),
