@@ -9,6 +9,7 @@ import 'package:consolarr/features/arr_common/presentation/release_row.dart'
 import 'package:consolarr/features/sonarr/application/add_series.dart';
 import 'package:consolarr/features/sonarr/sonarr_routes.dart';
 import 'package:consolarr/shared/errors/connection_error_message.dart';
+import 'package:consolarr/shared/widgets/inline_retry_row.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -142,6 +143,7 @@ class _AddOptionsBodyState extends ConsumerState<AddOptionsBody> {
       final message = connectionErrorMessage(
         l10n,
         error is AppError ? error : const AppError(ErrorCategory.parseError),
+        kind: ServiceKind.sonarr,
       );
       return ErrorState(
         headline: l10n.sonarrAddOptionsErrorHeadline,
@@ -232,6 +234,12 @@ class _AddOptionsBodyState extends ConsumerState<AddOptionsBody> {
           ),
           onCreate: _createTag,
         ),
+        if (data.tagsFailed)
+          InlineRetryRow(
+            message: l10n.sonarrAddTagsFailed,
+            retryLabel: l10n.sonarrRetry,
+            onRetry: () => ref.invalidate(addFormDataProvider),
+          ),
         if (add case AddFailed(:final error))
           _Failure(error: error, onRetry: () => _submit(search: false)),
         if (busy)
@@ -274,7 +282,11 @@ class _Failure extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final message = connectionErrorMessage(l10n, error);
+    final message = connectionErrorMessage(
+      l10n,
+      error,
+      kind: ServiceKind.sonarr,
+    );
     return Padding(
       padding: const EdgeInsets.only(bottom: ConsolarrSpacing.md),
       child: Semantics(

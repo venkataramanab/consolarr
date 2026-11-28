@@ -116,6 +116,28 @@ void main() {
     }
   });
 
+  test('S2: items are told apart by id, never by title', () async {
+    // A new queue item (new id) whose title equals one that was queued
+    // before still counts as grabbed...
+    final sameTitle = ScriptedSonarrApi()
+      ..queueSequence = [
+        Result.ok([fakeQueueItem(1, title: 'Same.Release.Title')]),
+        Result.ok([
+          fakeQueueItem(1, title: 'Same.Release.Title'),
+          fakeQueueItem(5, title: 'Same.Release.Title'),
+        ]),
+      ];
+    expect(await run(containerFor(sameTitle)), isA<SearchGrabbed>());
+    // ...and an item that keeps its id but changes its title (the server
+    // re-labelled it) is not a new grab.
+    final retitled = ScriptedSonarrApi()
+      ..queueSequence = [
+        Result.ok([fakeQueueItem(5, title: 'Old.Title')]),
+        Result.ok([fakeQueueItem(5, title: 'Completely.Different.Title')]),
+      ];
+    expect(await run(containerFor(retitled)), isA<SearchNothingFound>());
+  });
+
   test('search all missing reports both outcomes', () async {
     const missing = SearchTarget.missing();
     final found = ScriptedSonarrApi()

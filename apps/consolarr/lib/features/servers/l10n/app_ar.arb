@@ -547,5 +547,47 @@
   "onboardingTestFirst": "اختبر الاتصال قبل الإنهاء.",
   "@onboardingTestFirst": {
     "description": "Hint on the test step until the connection test succeeded."
+  },
+  "serverApiKeyHelper": "انسخه من ⁦{service}⁩ في «⁦Settings → General → Security⁩».",
+  "@serverApiKeyHelper": {
+    "description": "Helper under the API key field of a Sonarr or Radarr server. The menu path stays in English on purpose, because the Sonarr and Radarr web interface is usually in English; in Arabic it is quoted and, like the service name, wrapped in left-to-right isolates (U+2066 and U+2069).",
+    "placeholders": {
+      "service": {
+        "type": "String",
+        "description": "Name of the service, Sonarr or Radarr."
+      }
+    }
+  },
+  "serverErrorApiKeyRequired": "مفتاح API مطلوب.",
+  "@serverErrorApiKeyRequired": {
+    "description": "Error under the API key field when a Sonarr or Radarr server has none."
+  },
+  "serverProxyLoginTitle": "تسجيل دخول الوكيل العكسي (HTTP Basic)",
+  "@serverProxyLoginTitle": {
+    "description": "Title of the optional switch that sends a username and password to a reverse proxy in front of Sonarr or Radarr."
+  },
+  "serverProxyLoginHelper": "لا حاجة إليه إلا إذا كان وكيل عكسي أمام {service} يطلب اسم مستخدم وكلمة مرور. يُرسل إضافةً إلى مفتاح API الذي يبقى مطلوبًا دائمًا.",
+  "@serverProxyLoginHelper": {
+    "description": "Explanation under the reverse-proxy login switch.",
+    "placeholders": {
+      "service": {
+        "type": "String",
+        "description": "Name of the service, Sonarr or Radarr."
+      }
+    }
+  },
+  "serverErrorProxyLoginRequired": "أدخل اسم المستخدم وكلمة المرور، أو أوقف تسجيل دخول الوكيل العكسي.",
+  "@serverErrorProxyLoginRequired": {
+    "description": "Error shown when the reverse-proxy login is switched on but the username or password is empty."
+  },
+  "serverLegacyArrAuthNotice": "حُفظ هذا الخادم باسم مستخدم وكلمة مرور. لا يقبل {service} سوى مفتاح API، لذا أدخل المفتاح أدناه. يبقى اسم المستخدم وكلمة المرور المحفوظان كتسجيل دخول اختياري للوكيل العكسي.",
+  "@serverLegacyArrAuthNotice": {
+    "description": "Notice shown when editing a Sonarr or Radarr server saved by an older version in username-and-password or no-authentication mode.",
+    "placeholders": {
+      "service": {
+        "type": "String",
+        "description": "Name of the service, Sonarr or Radarr."
+      }
+    }
   }
 }

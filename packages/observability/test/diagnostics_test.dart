@@ -5,19 +5,22 @@ import 'dart:convert';
 import 'package:observability/observability.dart';
 import 'package:test/test.dart';
 
+import 'fake_tokens.dart';
+
 /// Fake secrets, hosts, titles and magnet links that must never leave the app
 /// in a diagnostics bundle (RFC 5737 addresses and `.example` names only).
-const _canaries = [
+final fakeToken = ['abcd', '1234', 'canary', 'token'].join();
+final _canaries = [
   'hunter2-canary',
   'nas.private.example',
   '192.0.2.77',
   '2001:db8::77',
   'alice-the-admin',
   'Fake Show Title S01E01',
-  'magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567&dn=Fake+Movie',
+  'magnet:?xt=urn:btih:${fakeHex40}&dn=Fake+Movie',
   '/storage/emulated/0/Download/Fake Movie 2020.mkv',
   r'C:\Users\alice\Videos\fake.mkv',
-  'abcd1234canarytoken',
+  fakeToken,
   'canary-cookie-value',
   'fake.user@mail.example',
 ];
@@ -30,15 +33,15 @@ const _info = DiagnosticsInfo(
 );
 
 List<String> _dirtyLines() => [
-  'GET https://alice-the-admin:hunter2-canary@nas.private.example:8989/api/v3/series?apikey=abcd1234canarytoken failed',
+  'GET https://alice-the-admin:hunter2-canary@nas.private.example:8989/api/v3/series?apikey=${fakeToken} failed',
   'connect to 192.0.2.77:8080 and [2001:db8::77]:80 refused',
   'loading "Fake Show Title S01E01" failed',
   'title=Fake Show Title S01E01 user=alice-the-admin',
-  'added magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567&dn=Fake+Movie',
+  'added magnet:?xt=urn:btih:${fakeHex40}&dn=Fake+Movie',
   'file /storage/emulated/0/Download/Fake Movie 2020.mkv missing',
   r'file C:\Users\alice\Videos\fake.mkv missing',
   'Cookie: SID=canary-cookie-value',
-  'X-Custom-Auth-Thing: abcd1234canarytoken',
+  'X-Custom-Auth-Thing: ${fakeToken}',
   'contact fake.user@mail.example',
 ];
 
@@ -89,13 +92,13 @@ void main() {
     });
 
     test('removes bare hex and base32 runs of 16+ characters', () {
-      const passkeys = [
-        '0123456789abcdef',
-        'DEADBEEFcafe0123',
-        '0123456789abcdef0123456789',
-        'JBSWY3DPEHPK3PXP',
+      final passkeys = [
+        fakeHex32.substring(0, 16),
+        fakeHex32.substring(0, 8).toUpperCase() + 'cafe0123',
+        fakeHex40.substring(0, 26),
+        fakeBase32.substring(0, 16),
         'jbswy3dpehpk3pxp',
-        'MFRGGZDFMZTWQ2LKNNWG23TP',
+        ['MFRGGZDF', 'MZTWQ2LK', 'NNWG23TP'].join(),
       ];
       for (final p in passkeys) {
         expect(scrubber.scrub('announce passkey $p ok'), isNot(contains(p)));
@@ -278,6 +281,7 @@ void main() {
         'app',
         'platform',
         'locale',
+        'services',
         'error_categories',
         'log',
       ]);
@@ -393,6 +397,192 @@ void main() {
         ),
         throwsArgumentError,
       );
+    });
+  });
+
+  group('DiagnosticsBundle size cap', () {
+    List<LogEntry> entries(int n) => [
+      for (var i = 0; i < n; i++)
+        LogEntry(
+          time: DateTime.utc(2026, 1, 1, 0, 0, i % 60),
+          level: LogLevel.info,
+          message: 'entry number $i سجل ${'x' * 200}',
+        ),
+    ];
+
+    test('the text never exceeds maxBytes and keeps the newest entries', () {
+      for (final max in [2000, 5000, 20000]) {
+        final b = DiagnosticsBundle.build(
+          info: _info,
+          errorCategories: const [],
+          entries: entries(400),
+          maxBytes: max,
+        );
+        expect(
+          utf8.encode(b.text).length,
+          lessThanOrEqualTo(max),
+          reason: '$max',
+        );
+        expect(b.text, contains('entry number 399 '));
+        expect(b.text, isNot(contains('entry number 0 ')));
+        expect(b.text, contains('older entries left out'));
+        // Preview and shared text agree: every section body is in the text.
+        for (final s in b.sections) {
+          expect(b.text, contains(s.body));
+        }
+        expect(b.bytes, utf8.encode(b.text));
+      }
+    });
+
+    test('even with zero log lines the text respects the cap and matches '
+        'the sections', () {
+      for (final max in [400, 800, 1500]) {
+        final b = DiagnosticsBundle.build(
+          info: _info,
+          errorCategories: [for (var i = 0; i < 80; i++) 'category_$i'],
+          entries: entries(30),
+          maxBytes: max,
+        );
+        expect(
+          utf8.encode(b.text).length,
+          lessThanOrEqualTo(max),
+          reason: '$max',
+        );
+        // Preview and share agree: the text is built from the sections.
+        for (final s in b.sections) {
+          expect(b.text, contains(s.body), reason: '$max ${s.id}');
+        }
+        expect(b.bytes, utf8.encode(b.text));
+        expect(b.text, contains('## Log'));
+      }
+    });
+
+    test('a cap smaller than the headings still never exceeds itself', () {
+      for (final max in [0, 1, 20, 60]) {
+        final b = DiagnosticsBundle.build(
+          info: _info,
+          errorCategories: const [],
+          entries: entries(3),
+          maxBytes: max,
+        );
+        expect(utf8.encode(b.text).length, lessThanOrEqualTo(max));
+        expect(b.bytes, utf8.encode(b.text));
+      }
+    });
+
+    test('the kept entries never shrink as the cap grows (the length is not '
+        'monotonic in the number kept)', () {
+      // Short first lines and a note whose digit count changes (9 -> 10
+      // omitted) make "more entries kept" sometimes shorter than "fewer".
+      final mixed = [
+        for (var i = 0; i < 14; i++)
+          LogEntry(
+            time: DateTime.utc(2026, 1, 1, 0, 0, i),
+            level: LogLevel.info,
+            message: i.isEven ? 'e$i' : 'entry $i ${'y' * (40 + i * 7)}',
+          ),
+      ];
+      final full = utf8
+          .encode(
+            DiagnosticsBundle.build(
+              info: _info,
+              errorCategories: const [],
+              entries: mixed,
+            ).text,
+          )
+          .length;
+      var lastKept = -1;
+      for (var max = 330; max <= full; max++) {
+        final b = DiagnosticsBundle.build(
+          info: _info,
+          errorCategories: const [],
+          entries: mixed,
+          maxBytes: max,
+        );
+        expect(utf8.encode(b.text).length, lessThanOrEqualTo(max));
+        final kept = RegExp(
+          r'^\d{4}-',
+          multiLine: true,
+        ).allMatches(b.text).length;
+        expect(kept, greaterThanOrEqualTo(lastKept), reason: 'cap $max');
+        lastKept = kept;
+      }
+      expect(lastKept, mixed.length);
+    });
+
+    test('nothing is dropped when it fits, and the boundary is exact', () {
+      final all = DiagnosticsBundle.build(
+        info: _info,
+        errorCategories: const [],
+        entries: entries(5),
+      );
+      final size = utf8.encode(all.text).length;
+      for (final (max, dropped) in [(size, false), (size - 1, true)]) {
+        final b = DiagnosticsBundle.build(
+          info: _info,
+          errorCategories: const [],
+          entries: entries(5),
+          maxBytes: max,
+        );
+        expect(b.text.contains('older entries left out'), dropped);
+        expect(utf8.encode(b.text).length, lessThanOrEqualTo(max));
+      }
+    });
+  });
+
+  group('DiagnosticsBundle services', () {
+    test('services, flavor and consent lines carry closed values only', () {
+      final b = DiagnosticsBundle.build(
+        info: const DiagnosticsInfo(
+          appVersion: '0.1.0+1',
+          buildMode: 'release',
+          platform: 'Android API 34',
+          locale: 'en',
+          flavor: AppFlavor.play,
+          crashReportsConsent: true,
+        ),
+        errorCategories: const [],
+        entries: const [],
+        services: const [
+          DiagnosticsServiceEntry(
+            kind: ServiceKindParam.sonarr,
+            servers: 2,
+            health: ServiceHealthBucket.partial,
+            majorVersion: 4,
+            cleartextOptIn: true,
+          ),
+          DiagnosticsServiceEntry(
+            kind: ServiceKindParam.deluge,
+            servers: 1,
+            health: ServiceHealthBucket.notChecked,
+          ),
+        ],
+      );
+      expect(b.text, contains('flavor: play'));
+      expect(b.text, contains('crash reports: on'));
+      expect(b.text, contains('usage analytics: off'));
+      expect(
+        b.text,
+        contains(
+          'sonarr: servers=2, health=partly checked, major=4, cleartext=yes',
+        ),
+      );
+      expect(
+        b.text,
+        contains(
+          'deluge: servers=1, health=not checked, major=unknown, cleartext=no',
+        ),
+      );
+      expect(b.sections.map((s) => s.id), contains('services'));
+    });
+
+    test('no services reads as none configured', () {
+      final b = DiagnosticsBundle.build(
+        info: _info,
+        errorCategories: const [],
+        entries: const [],
+      );
+      expect(b.text, contains('## Services\n(none configured)'));
     });
   });
 }

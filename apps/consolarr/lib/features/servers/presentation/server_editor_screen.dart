@@ -175,7 +175,8 @@ class _ServerEditorScreenState extends ConsumerState<ServerEditorScreen> {
                     const SizedBox(height: ConsolarrSpacing.section),
                     ConnectionTestPanel(controller: c),
                     if (c.existing != null) PinSection(entry: c.existing!),
-                    if (_saveError != null) _SaveError(error: _saveError!),
+                    if (_saveError != null)
+                      _SaveError(error: _saveError!, kind: c.kind),
                     const SizedBox(height: ConsolarrSpacing.xxl),
                   ],
                 ),
@@ -216,14 +217,15 @@ class _Banner extends StatelessWidget {
 }
 
 class _SaveError extends StatelessWidget {
-  const _SaveError({required this.error});
+  const _SaveError({required this.error, required this.kind});
 
   final AppError error;
+  final ServiceKind kind;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final message = connectionErrorMessage(l10n, error);
+    final message = connectionErrorMessage(l10n, error, kind: kind);
     return Padding(
       padding: const EdgeInsets.only(top: ConsolarrSpacing.lg),
       child: Semantics(

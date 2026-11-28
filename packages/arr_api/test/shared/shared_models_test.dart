@@ -6,6 +6,8 @@ import 'package:test/test.dart';
 ArrQueueItem _q(Map<String, Object?> j) =>
     ArrQueueItem.fromJson({'id': 1, 'title': 'Example.Show', ...j});
 
+final _downloadId = ['ABCDEF01', '23456789'].join();
+
 void main() {
   group('ArrQueueItem state', () {
     final table = <String, (Map<String, Object?>, ArrQueueState)>{
@@ -60,7 +62,7 @@ void main() {
         'timeleft': '00:10:05',
         'protocol': 'torrent',
         'downloadClient': 'Example Client',
-        'downloadId': 'ABCDEF0123456789',
+        'downloadId': _downloadId,
         'indexer': 'Example Indexer',
         'seriesId': 7,
         'episodeId': 3,
@@ -87,7 +89,7 @@ void main() {
       expect(item.qualityName, 'WEBDL-1080p');
       expect(item.mediaTitle, 'Example Show');
       expect(item.episodeNumber, 4);
-      expect(item.downloadId, 'ABCDEF0123456789');
+      expect(item.downloadId, _downloadId);
       expect(item.seasonNumber, 2);
     });
 

@@ -10,6 +10,7 @@ import 'package:consolarr/features/sonarr/presentation/library/library_filters.d
 import 'package:consolarr/features/sonarr/presentation/series_views.dart';
 import 'package:consolarr/features/sonarr/sonarr_routes.dart';
 import 'package:consolarr/src/providers.dart';
+import 'package:consolarr/shared/widgets/inline_retry_row.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -71,6 +72,8 @@ class _LibraryBodyState extends ConsumerState<LibraryBody> {
     final l10n = context.l10n;
     final mode = ref.watch(viewModeProvider);
     final library = ref.watch(seriesLibraryProvider);
+    // The first list frame waits for the saved sort and filter to be read.
+    final restored = ref.watch(libraryQueryProvider.select((q) => q.restored));
     ref.listen(libraryQueryProvider.select((q) => q.search), (_, text) {
       if (_search.text != text) _search.text = text;
     });
@@ -105,6 +108,10 @@ class _LibraryBodyState extends ConsumerState<LibraryBody> {
         ),
       ),
       LibraryFailure(:final error) => _statePane(_errorState(l10n, error)),
+      LibraryData() when !restored => SeriesSkeleton(
+        mode: mode,
+        padding: widget.padding,
+      ),
       LibraryData(:final isEmpty) =>
         isEmpty && !state.isOffline
             ? _statePane(
@@ -221,6 +228,12 @@ class _LibraryBodyState extends ConsumerState<LibraryBody> {
             clearAllLabel: l10n.sonarrLibraryFilterClearAll,
             onClearAll: ref.read(libraryQueryProvider.notifier).clearFilter,
           ),
+          if (lookups.failed)
+            InlineRetryRow(
+              message: l10n.sonarrLookupsFailed,
+              retryLabel: l10n.sonarrRetry,
+              onRetry: () => ref.invalidate(libraryLookupsProvider),
+            ),
           if (visible.computing)
             Semantics(
               liveRegion: true,

@@ -61,6 +61,7 @@ class InteractiveSearchContent extends ConsumerWidget {
       final message = connectionErrorMessage(
         l10n,
         error is AppError ? error : const AppError(ErrorCategory.parseError),
+        kind: ServiceKind.sonarr,
       );
       body = ErrorState(
         headline: l10n.sonarrReleaseErrorHeadline,

@@ -9,6 +9,7 @@ import 'package:arr_api/src/json_read.dart';
 import 'package:arr_api/src/models.dart';
 import 'package:arr_api/src/radarr/radarr_models.dart';
 import 'package:arr_api/src/shared/arr_command.dart';
+import 'package:arr_api/src/shared/arr_history.dart';
 import 'package:arr_api/src/shared/arr_page.dart';
 import 'package:arr_api/src/shared/arr_queue.dart';
 import 'package:arr_api/src/shared/arr_release.dart';
@@ -48,8 +49,13 @@ const _queuePageSize = 200;
 const _queueMaxPages = 5;
 
 /// Hand-written, tolerant Radarr v3 client.
-class RadarrClient extends ArrClientBase implements RadarrApi {
+class RadarrClient extends ArrClientBase
+    with ArrHistoryReader
+    implements RadarrApi {
   RadarrClient({required super.dio, super.parseRunner, this.onRowsSkipped});
+
+  @override
+  List<String> get historyIncludes => const ['includeMovie'];
 
   /// Called with the number of malformed rows skipped (only when > 0). A
   /// count only: never row content.

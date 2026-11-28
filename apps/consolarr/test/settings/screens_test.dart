@@ -647,8 +647,15 @@ void main() {
       await tester.tap(find.text(l10n.checkRun));
       await tester.pumpAndSettle();
       expect(find.text(l10n.checkStateFail), findsOneWidget);
-      expect(find.text(l10n.connErrorAuthFailedMessage), findsOneWidget);
-      expect(find.text(l10n.connErrorAuthFailedHint), findsOneWidget);
+      // The default test server is a Sonarr: only its API key works.
+      expect(
+        find.text(l10n.connErrorArrAuthFailedMessage(l10n.serverKindSonarr)),
+        findsOneWidget,
+      );
+      expect(
+        find.text(l10n.connErrorArrAuthFailedHint(l10n.serverKindSonarr)),
+        findsOneWidget,
+      );
       expect(find.text(l10n.checkStateSkipped), findsOneWidget);
       expect(
         find.text(l10n.checkSummaryFailed(l10n.checkStepAuth)),

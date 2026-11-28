@@ -5,6 +5,8 @@ import 'package:consolarr/features/servers/application/servers_providers.dart';
 import 'package:consolarr/features/servers/domain/server_models.dart';
 import 'package:consolarr/features/servers/presentation/service_kind_info.dart';
 import 'package:consolarr/features/shell/application/shell_providers.dart';
+import 'package:consolarr/shared/l10n/join_parts.dart';
+import 'package:consolarr/shared/logging/log_events.dart';
 import 'package:consolarr/src/database/app_database.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
@@ -193,6 +195,7 @@ class _ServerList extends ConsumerWidget {
               await ref
                   .read(serverRepositoryProvider)
                   .setActive(kind, entry.profile.id);
+              logServerSwitch(ref.read(loggerProvider), kind);
               if (multi && key != null) {
                 final db = ref.read(databaseProvider);
                 await db
@@ -237,11 +240,11 @@ class _ServerTile extends ConsumerWidget {
       leading: Icon(healthIcon(health)),
       title: Text(entry.profile.name, maxLines: 2),
       subtitle: Text(
-        [
+        joinParts(l10n, [
           if (kindLabel != null) kindLabel!,
           if (isActive) activeLabel,
           label,
-        ].join(' · '),
+        ]),
       ),
       trailing: isActive ? const Icon(Icons.check) : null,
       onTap: onTap,

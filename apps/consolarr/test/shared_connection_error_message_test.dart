@@ -117,4 +117,15 @@ void main() {
     );
     expect('${m.message}${m.hint}', isNot(contains('secret-detail')));
   });
+
+  test('the generic sign-in hint never suggests a username and password '
+      '(Sonarr and Radarr have none)', () async {
+    final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+    final m = connectionErrorMessage(
+      l10n,
+      const AppError(ErrorCategory.authFailed),
+    );
+    expect(m.hint.toLowerCase(), isNot(contains('username')));
+    expect(m.hint.toLowerCase(), isNot(contains('password')));
+  });
 }

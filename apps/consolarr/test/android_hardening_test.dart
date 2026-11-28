@@ -2,13 +2,71 @@
 
 // Guards the hardened Android configuration of both apps.
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
 String read(String path) => File(path).readAsStringSync();
 
+/// The packages that list `cross_file` as a dependency, from
+/// `dart pub deps --json` run in [root] (the resolved graph, not a guess).
+List<String> crossFileDependents(String root) {
+  final result = Process.runSync(
+    Platform.resolvedExecutable.endsWith('dart')
+        ? Platform.resolvedExecutable
+        : 'dart',
+    ['pub', 'deps', '--json'],
+    workingDirectory: root,
+  );
+  expect(result.exitCode, 0, reason: '${result.stderr}');
+  final json = jsonDecode(result.stdout as String) as Map<String, dynamic>;
+  return [
+    for (final p in json['packages'] as List<dynamic>)
+      if (((p as Map<String, dynamic>)['dependencies'] as List<dynamic>)
+          .contains('cross_file'))
+        p['name']! as String,
+  ];
+}
+
+/// The only packages that may bring in `cross_file`: exact names, so a
+/// look-alike (`file_selector_evil`, `file_selector`-prefixed) is refused.
+const crossFileAllowedDependents = {
+  'file_selector_linux',
+  'file_selector_macos',
+  'file_selector_platform_interface',
+  'file_selector_windows',
+};
+
+/// The [dependents] that are not on [crossFileAllowedDependents].
+List<String> unexpectedCrossFileDependents(Iterable<String> dependents) => [
+  for (final n in dependents)
+    if (!crossFileAllowedDependents.contains(n)) n,
+];
+
 void main() {
+  group('cross_file allowlist', () {
+    test('accepts exactly the resolved file_selector packages', () {
+      expect(
+        unexpectedCrossFileDependents(crossFileAllowedDependents),
+        isEmpty,
+      );
+    });
+
+    test('rejects a look-alike or an unrelated package', () {
+      expect(
+        unexpectedCrossFileDependents([
+          'file_selector_linux',
+          'file_selector_evil',
+          'file_selector',
+          'file_selectors',
+          'share_plus',
+        ]),
+        ['file_selector_evil', 'file_selector', 'file_selectors', 'share_plus'],
+      );
+    });
+  });
+
   final apps = {
     'consolarr': Directory.current.path,
     'consolarr_play': '${Directory.current.parent.path}/consolarr_play',
@@ -96,9 +154,11 @@ void main() {
           '${Directory.current.parent.parent.path}/pubspec.lock',
         );
         expect(lock, isNot(contains('share_plus')));
-        // `cross_file` came with share_plus. It may stay only as a transitive
-        // dependency of `file_selector` (the torrent file picker), never as a
-        // direct one.
+        // `cross_file` came with share_plus. It may stay only while it is a
+        // transitive dependency of the `file_selector` packages (the torrent
+        // file picker), never as a direct one, and only for as long as one of
+        // them actually depends on it (`dart pub deps --json` says so): the
+        // allowance expires with the dependency.
         expect(read('$root/pubspec.yaml'), isNot(contains('cross_file')));
         final entry = RegExp(
           r'^  cross_file:\n((?:    .*\n)+)',
@@ -106,6 +166,17 @@ void main() {
         ).firstMatch(lock);
         if (entry != null) {
           expect(entry.group(1), contains('dependency: transitive'));
+          final dependents = crossFileDependents(root);
+          expect(
+            dependents,
+            isNotEmpty,
+            reason: 'cross_file is locked but nothing depends on it',
+          );
+          expect(
+            unexpectedCrossFileDependents(dependents),
+            isEmpty,
+            reason: 'only the exact allowlist may bring in cross_file',
+          );
         }
       });
 

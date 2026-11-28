@@ -166,6 +166,29 @@ void main() {
     expect(find.text('Example Movie 1'), findsOneWidget);
   });
 
+  testWidgets('R3: grid tiles do not clip or overflow above 2.2x text scale', (
+    tester,
+  ) async {
+    final api = FakeRadarrApi(
+      moviesResult: Result.ok([
+        for (var i = 1; i <= 8; i++)
+          fakeMovie(i, title: 'Example Movie $i ${'Very Long Title ' * 6}'),
+      ]),
+    );
+    await pumpMatrix(
+      tester,
+      (v) => radarrApp(v, api, const RadarrScreen()),
+      variants: harnessMatrix(
+        sizes: const [Size(320, 568), Size(412, 915)],
+        textScales: const [2.2, 2.6, 3.0],
+        locales: const [Locale('en'), Locale('ar'), Locale('en', 'XA')],
+        brightnesses: const [Brightness.dark],
+      ),
+      // pumpMatrix fails on any framework exception (RenderFlex overflow).
+      verify: (v) => expectAccessible(tester),
+    );
+  });
+
   testWidgets('list mode and grid mode show the same movies', (tester) async {
     final api = FakeRadarrApi(moviesResult: Result.ok(fakeMovies(4)));
     await pumpMatrix(
@@ -191,7 +214,9 @@ void main() {
         find.byType(Image).evaluate().length +
         find.byType(Semantics).evaluate().length;
     expect(tiles, lessThan(2000));
-    expect(find.text('Example Movie 9999'), findsNothing);
+    // Newest first: the last added movie opens the list, the middle is far.
+    expect(find.text('Example Movie 10000'), findsOneWidget);
+    expect(find.text('Example Movie 5000'), findsNothing);
   });
 
   testWidgets('sheets: sort, filter and jump open with a close button', (
@@ -211,6 +236,12 @@ void main() {
       (v) => radarrApp(v, api, const RadarrScreen()),
       variants: phone,
     );
+    // The jump control belongs to the title and year sorts; the library
+    // opens on date added, so switch to title first.
+    await ProviderScope.containerOf(tester.element(find.byType(RadarrScreen)))
+        .read(libraryQueryProvider.notifier)
+        .setSort(MovieSortKey.title, ascending: true);
+    await tester.pumpAndSettle();
     for (final tap in [
       find.textContaining('Sort:'),
       find.textContaining('Filter'),

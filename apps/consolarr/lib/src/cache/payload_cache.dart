@@ -23,6 +23,14 @@ abstract interface class PayloadCache {
     DateTime fetchedAt,
   );
   Future<void> deleteForServer(String serverId);
+
+  /// Removes one row.
+  Future<void> delete(String serverId, String key);
+
+  /// Removes every row whose key starts with [keyPrefix] (a plain prefix, no
+  /// wildcards) and whose server is not in [keepServerIds] (rows left behind
+  /// by a deleted server).
+  Future<void> pruneKeys(String keyPrefix, Set<String> keepServerIds);
 }
 
 /// [PayloadCache] on the app drift database.
@@ -68,4 +76,17 @@ class DriftPayloadCache implements PayloadCache {
   Future<void> deleteForServer(String serverId) => (_db.delete(
     _db.cachedPayloadRows,
   )..where((r) => r.serverId.equals(serverId))).go();
+
+  @override
+  Future<void> delete(String serverId, String key) => (_db.delete(
+    _db.cachedPayloadRows,
+  )..where((r) => r.serverId.equals(serverId) & r.key.equals(key))).go();
+
+  @override
+  Future<void> pruneKeys(String keyPrefix, Set<String> keepServerIds) =>
+      (_db.delete(_db.cachedPayloadRows)..where(
+            (r) =>
+                r.key.like('$keyPrefix%') & r.serverId.isNotIn(keepServerIds),
+          ))
+          .go();
 }

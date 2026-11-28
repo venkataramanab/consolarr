@@ -176,7 +176,11 @@ class _Results extends StatelessWidget {
   }
 
   Widget _failed(AppLocalizations l10n, AppError error) {
-    final message = connectionErrorMessage(l10n, error);
+    final message = connectionErrorMessage(
+      l10n,
+      error,
+      kind: ServiceKind.sonarr,
+    );
     return ErrorState(
       headline: l10n.sonarrAddErrorHeadline,
       message: message.message,

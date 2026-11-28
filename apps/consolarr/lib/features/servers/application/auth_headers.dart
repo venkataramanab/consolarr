@@ -12,30 +12,29 @@ typedef AuthHeaderBuilder = Map<String, String> Function(
   ServerCredentials credentials,
 );
 
-/// `X-Api-Key`, or `Authorization: Basic` for a reverse proxy in front of an
-/// *arr service. Never a query parameter.
+/// Sonarr and Radarr: `X-Api-Key` always (their API accepts nothing else),
+/// plus `Authorization: Basic` only when a reverse-proxy login is stored **and**
+/// a key is present. The proxy login never replaces the key: without a usable
+/// key no auth header is sent at all (a profile saved by an older version with
+/// only a username and password must not send that login anywhere). Never a
+/// query parameter.
+///
+/// Profiles saved in the old `basic` or `none` mode are read the same way.
 Map<String, String> arrAuthHeaders(
   ServerProfile profile,
   ServerCredentials credentials,
 ) {
-  switch (profile.authMode) {
-    case AuthMode.none:
-      return const {};
-    case AuthMode.apiKey:
-      final key = credentials.apiKey;
-      return key != null && key.isNotEmpty && _safe(key)
-          ? {'X-Api-Key': key}
-          : const {};
-    case AuthMode.basic:
-      final user = credentials.username;
-      final pass = credentials.password;
-      return user != null && pass != null
-          ? {
-              'Authorization':
-                  'Basic ${base64.encode(utf8.encode('$user:$pass'))}',
-            }
-          : const {};
+  final headers = <String, String>{};
+  final key = credentials.apiKey;
+  if (key == null || key.isEmpty || !_safe(key)) return headers;
+  headers['X-Api-Key'] = key;
+  final user = credentials.username;
+  final pass = credentials.password;
+  if (user != null && user.isNotEmpty && pass != null && pass.isNotEmpty) {
+    headers['Authorization'] =
+        'Basic ${base64.encode(utf8.encode('$user:$pass'))}';
   }
+  return headers;
 }
 
 /// Torrent clients log in themselves (cookie, session id, RPC login) from the

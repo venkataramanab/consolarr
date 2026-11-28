@@ -117,6 +117,7 @@ class _RemovalHost extends StatelessWidget {
           context: context,
           itemLabel: 'Example Show 1',
           serviceName: 'Sonarr',
+          kind: ServiceKind.sonarr,
           onConfirm: onConfirm,
         ),
         child: const Text('open'),

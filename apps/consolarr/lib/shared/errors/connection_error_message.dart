@@ -23,13 +23,43 @@ const _invalidInputDetails = {
 /// `debugDetail` of the `auth_failed` raised when stored secrets are missing.
 const needsCredentialsDetail = 'needs_credentials';
 
+/// `debugDetail` of the `auth_failed` raised when a Sonarr or Radarr server has
+/// no API key stored (the one credential its API accepts).
+const needsApiKeyDetail = 'needs_api_key';
+
 /// Maps any [AppError] to copy (SRV-05). One pair of ARB keys per category:
 /// `connError<Category>Message` and `connError<Category>Hint`.
 ///
 /// The typed TLS errors from the security package carry their own category
 /// (`tls_untrusted`, `tls_expired`, `tls_pin_mismatch`), so they need no
 /// special case here; the UI additionally shows the trust sheet for them.
-ErrorMessage connectionErrorMessage(AppLocalizations l10n, AppError error) {
+///
+/// Pass [kind] when the failing server is known: a 401/403 from Sonarr or
+/// Radarr then says that only the API key works (their API has no username and
+/// password login), instead of inviting the user to retry the same login.
+ErrorMessage connectionErrorMessage(
+  AppLocalizations l10n,
+  AppError error, {
+  ServiceKind? kind,
+}) {
+  if (error.category == ErrorCategory.authFailed &&
+      error.debugDetail == needsApiKeyDetail) {
+    return ErrorMessage(
+      message: l10n.serverErrorApiKeyRequired,
+      hint: l10n.sonarrErrorNeedsCredentialsHint,
+    );
+  }
+  if (error.category == ErrorCategory.authFailed &&
+      error.debugDetail != needsCredentialsDetail &&
+      (kind == ServiceKind.sonarr || kind == ServiceKind.radarr)) {
+    final service = kind == ServiceKind.sonarr
+        ? l10n.serverKindSonarr
+        : l10n.serverKindRadarr;
+    return ErrorMessage(
+      message: l10n.connErrorArrAuthFailedMessage(service),
+      hint: l10n.connErrorArrAuthFailedHint(service),
+    );
+  }
   if (error.category == ErrorCategory.authFailed &&
       error.debugDetail == needsCredentialsDetail) {
     return ErrorMessage(

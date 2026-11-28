@@ -64,7 +64,9 @@ class SonarrErrorView extends StatelessWidget {
       );
     }
     final e = error;
-    final copy = e == null ? null : connectionErrorMessage(l10n, e);
+    final copy = e == null
+        ? null
+        : connectionErrorMessage(l10n, e, kind: ServiceKind.sonarr);
     final settings = e != null && _fixedInSettings(e) && onOpenServers != null;
     return ErrorState(
       headline: title,

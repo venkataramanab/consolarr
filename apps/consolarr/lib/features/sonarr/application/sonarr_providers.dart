@@ -4,6 +4,7 @@ import 'package:arr_api/arr_api.dart';
 import 'package:consolarr/features/servers/application/server_connection.dart';
 import 'package:consolarr/features/sonarr/data/sonarr_repository.dart';
 import 'package:consolarr/features/sonarr/data/view_mode_store.dart';
+import 'package:consolarr/shared/logging/log_events.dart';
 import 'package:consolarr/src/images/secure_image_provider.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
@@ -118,6 +119,7 @@ class SeriesLibraryNotifier extends AsyncNotifier<LibraryState> {
     if (error != null &&
         previous is LibraryData &&
         kOfflineFallbackCategories.contains(error.category)) {
+      logOfflineFallback(ref.read(loggerProvider), 'sonarr', error);
       state = AsyncData(LibraryData(previous.snapshot.withOfflineError(error)));
       return;
     }

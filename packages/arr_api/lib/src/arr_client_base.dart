@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'dart:convert';
-import 'dart:isolate';
 
 import 'package:arr_api/src/arr_api.dart';
 import 'package:arr_api/src/arr_common.dart';
@@ -9,29 +8,23 @@ import 'package:core/core.dart';
 import 'package:dio/dio.dart';
 import 'package:security/security.dart';
 
-/// Runs [computation], possibly on another isolate. Inject an inline version
-/// in tests.
-typedef ParseRunner = Future<T> Function<T>(T Function() computation);
+// The shared helper lives in `core`; the names below stay for call sites.
+export 'package:core/core.dart' show ParseRunner;
 
 Future<T> isolateParseRunner<T>(T Function() computation) =>
-    Isolate.run(computation);
+    isolateRunner(computation);
 
 /// Bodies larger than this are parsed off the UI isolate.
-const arrIsolateThresholdBytes = 64 * 1024;
+const arrIsolateThresholdBytes = isolateThresholdBytes;
 
-/// Runs [parse] on [body], off the UI isolate when the body is large.
-///
-/// Top level on purpose: the closure handed to [runner] captures only [body]
-/// and [parse]. A closure created inside a client method would drag the whole
-/// client (and its unsendable Dio/HttpClient) along and `Isolate.run` would
-/// throw. [parse] must itself be a top-level function or a static tear-off.
+/// Runs [parse] on [body], off the UI isolate when the body is large. A thin
+/// delegate of `parseOffIsolate` in `core` (same rules: top level, [parse] a
+/// top-level function or static tear-off).
 Future<T> decodeOffIsolate<T>(
   ParseRunner runner,
   String body,
   T Function(String body) parse,
-) => body.length > arrIsolateThresholdBytes
-    ? runner(() => parse(body))
-    : Future.value(parse(body));
+) => parseOffIsolate(runner, body, parse);
 
 /// Parses a JSON array body into rows with [parse], off the UI isolate when
 /// the body is large. Same rules as [decodeOffIsolate]: top level, [parse]
@@ -120,7 +113,27 @@ abstract class ArrClientBase implements ArrApi {
 
   /// The server-relative artwork URL of the first [images] entry of [type].
   /// Never contains credentials and never points at another host.
+  ///
+  /// A poster that is missing (or has no usable URL) falls back to the
+  /// `cover`, then the `banner`, then the `fanart` entry, so a title without a
+  /// poster still shows some artwork. Other types do not fall back.
   Uri? artworkUriFor(List<ArrImage> images, ArrImageType type) {
+    final exact = _artworkUriOfType(images, type);
+    if (exact != null || type != ArrImageType.poster) return exact;
+    for (final fallback in _posterFallbacks) {
+      final uri = _artworkUriOfType(images, fallback);
+      if (uri != null) return uri;
+    }
+    return null;
+  }
+
+  static const _posterFallbacks = [
+    ArrImageType.cover,
+    ArrImageType.banner,
+    ArrImageType.fanart,
+  ];
+
+  Uri? _artworkUriOfType(List<ArrImage> images, ArrImageType type) {
     for (final image in images) {
       if (image.type != type) continue;
       final raw = image.url;
@@ -155,4 +168,25 @@ abstract class ArrClientBase implements ArrApi {
     final n = name.toLowerCase().replaceAll(RegExp('[-_]'), '');
     return n.contains('key') || n.contains('token') || n.contains('auth');
   }
+}
+
+/// The resized variant (`poster-500.jpg`, `poster-250.jpg`) next to a plain
+/// served poster `.../MediaCover/<id>/poster.jpg`, without the query, or
+/// `null` for any other URL. Radarr writes these two heights for every poster
+/// (`MediaCoverService.EnsureResizedCovers`: 500 and 250 for posters); the
+/// loader tries one when the plain file answers 404.
+Uri? posterSizeVariantUri(Uri poster, int height) {
+  if (height != 500 && height != 250) return null;
+  final segments = poster.pathSegments;
+  if (segments.length < 3 ||
+      segments[segments.length - 1] != 'poster.jpg' ||
+      segments[segments.length - 3] != 'MediaCover') {
+    return null;
+  }
+  return Uri(
+    scheme: poster.scheme,
+    host: poster.host,
+    port: poster.hasPort ? poster.port : null,
+    pathSegments: [...segments.take(segments.length - 1), 'poster-$height.jpg'],
+  );
 }

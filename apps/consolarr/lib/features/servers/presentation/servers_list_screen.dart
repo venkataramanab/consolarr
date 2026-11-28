@@ -7,6 +7,8 @@ import 'package:consolarr/features/servers/presentation/screen_tracking.dart';
 import 'package:consolarr/features/servers/presentation/servers_routes.dart';
 import 'package:consolarr/features/servers/presentation/service_kind_info.dart';
 import 'package:consolarr/features/shell/presentation/floating_top_bar_scaffold.dart';
+import 'package:consolarr/shared/logging/log_events.dart';
+import 'package:consolarr/src/providers.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -193,6 +195,7 @@ class _ServerRow extends ConsumerWidget {
         await context.push(ServersRoutes.edit(id));
       case _RowAction.setActive:
         await repo.setActive(entry.profile.kind, id);
+        logServerSwitch(ref.read(loggerProvider), entry.profile.kind);
       case _RowAction.setStartup:
         await repo.setStartup(id);
       case _RowAction.clearStartup:

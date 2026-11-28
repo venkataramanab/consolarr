@@ -120,6 +120,10 @@ class _LibraryPageState extends ConsumerState<LibraryPage> {
       RadarrFailure(:final error) => pane(
         radarrErrorView(context, error, onRetry: _refresh),
       ),
+      // Hold the first frame until the saved sort and filter are read.
+      RadarrData()
+          when !ref.watch(libraryQueryProvider.select((q) => q.restored)) =>
+        MovieSkeleton(mode: mode, padding: padding),
       RadarrData(:final snapshot) => _content(context, snapshot, mode),
     };
   }
@@ -365,28 +369,7 @@ class _Toolbar extends ConsumerWidget {
               .read(libraryQueryProvider.notifier)
               .setFilter(MovieFilter.none),
         ),
-        if (profiles.hasError || tags.hasError)
-          Padding(
-            padding: const EdgeInsets.only(top: ConsolarrSpacing.xs),
-            child: Semantics(
-              container: true,
-              child: Row(
-                children: [
-                  const Icon(Icons.warning_amber_outlined),
-                  const SizedBox(width: ConsolarrSpacing.sm),
-                  Expanded(child: Text(l10n.radarrProfilesFailed)),
-                  TextButton(
-                    onPressed: () {
-                      ref
-                        ..invalidate(qualityProfilesProvider)
-                        ..invalidate(tagsProvider);
-                    },
-                    child: Text(l10n.radarrRetry),
-                  ),
-                ],
-              ),
-            ),
-          ),
+        if (profiles.hasError || tags.hasError) const ListsFailedRow(),
         if (computing)
           Semantics(
             liveRegion: true,

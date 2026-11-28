@@ -3,7 +3,7 @@
   "@connErrorAuthFailedMessage": {
     "description": "Plain-language message for a connection problem: wrong or missing credentials."
   },
-  "connErrorAuthFailedHint": "Check the API key or the username and password, then test again.",
+  "connErrorAuthFailedHint": "Check the credentials saved for this server, then test again.",
   "@connErrorAuthFailedHint": {
     "description": "Fix hint shown under the message for a connection problem: wrong or missing credentials."
   },
@@ -178,5 +178,29 @@
   "connErrorNonAsciiHostHint": "Enter the punycode form of the host name (it starts with xn--).",
   "@connErrorNonAsciiHostHint": {
     "description": "Fix hint shown under the message for a connection problem: the host contains non-ASCII characters; enter the punycode form."
+  },
+  "sharedPartSeparator": " · ",
+  "@sharedPartSeparator": {
+    "description": "Separator placed between the short facts of a line, for example year, size and quality. Translate only if the language uses another mark."
+  },
+  "connErrorArrAuthFailedMessage": "{service} rejected the API key.",
+  "@connErrorArrAuthFailedMessage": {
+    "description": "Plain-language message for a Sonarr or Radarr connection problem: the API key was missing or wrong (401/403).",
+    "placeholders": {
+      "service": {
+        "type": "String",
+        "description": "Name of the service, Sonarr or Radarr."
+      }
+    }
+  },
+  "connErrorArrAuthFailedHint": "Use the API key from {service} Settings → General → Security. A username and password don't work for the API.",
+  "@connErrorArrAuthFailedHint": {
+    "description": "Fix hint for a Sonarr or Radarr connection problem: only the API key authenticates the API. The menu path stays in English on purpose, because the Sonarr and Radarr web interface is usually in English; in Arabic it is quoted and, like the service name, wrapped in left-to-right isolates (U+2066 and U+2069).",
+    "placeholders": {
+      "service": {
+        "type": "String",
+        "description": "Name of the service, Sonarr or Radarr."
+      }
+    }
   }
 }

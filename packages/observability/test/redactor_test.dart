@@ -6,6 +6,8 @@ import 'dart:math';
 import 'package:observability/observability.dart';
 import 'package:test/test.dart';
 
+import 'fake_tokens.dart';
+
 const r = Redactor();
 const mask = Redactor.placeholder;
 
@@ -86,9 +88,14 @@ void main() {
     });
 
     test('32-char hex api keys and JWTs standing alone', () {
-      const key = '0123456789abcdef0123456789abcdef';
+      final key = fakeHex32;
       expect(r.redactText('key was $key.'), 'key was $mask.');
-      expect(r.redactText('t=eyJhbGciOi.eyJzdWIiOiIx.sig_-x'), 't=$mask');
+      expect(
+        r.redactText(
+          't=${fakeJwtHeader.substring(0, 10)}.${fakeJwtPayloadShort}x.sig_-x',
+        ),
+        't=$mask',
+      );
     });
 
     test('is idempotent and leaves harmless text alone', () {
@@ -516,7 +523,7 @@ void main() {
     });
 
     test('standalone 32+ hex keys and bearer tokens are masked', () {
-      const hex = '0123456789abcdef';
+      final hex = fakeHex32.substring(0, 16);
       for (var i = 0; i < runs; i++) {
         final key = List.generate(
           32 + rnd.nextInt(33),
@@ -595,7 +602,8 @@ void main() {
         ..info('GET https://u:pw1234@h.example/?apikey=test-key-0000')
         ..error('boom', error: 'password=hunter2');
       expect(lines, [
-        'info:GET https://$mask@h.example/?apikey=$mask',
+        // The stricter pass removes the whole address, not only its secrets.
+        'info:GET $mask',
         'error:boom: password=$mask',
       ]);
     });
@@ -655,14 +663,14 @@ void main() {
 
     test('redaction is idempotent', () {
       const redactor = Redactor();
-      const pieces = [
+      final pieces = [
         'Authorization: Bearer abcdefghijkl',
-        'apikey=0123456789abcdef0123456789abcdef',
+        'apikey=${fakeHex32}',
         'https://u:p@nas.example:8989/x?token=abc123def',
         'Cookie: SID=abc',
         'plain text 12:30',
         'password=hunter2',
-        'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.c2ln',
+        fakeJwt(signature: 'c2ln', payload: fakeJwtPayloadShort),
       ];
       for (var i = 0; i < 200; i++) {
         final line = [

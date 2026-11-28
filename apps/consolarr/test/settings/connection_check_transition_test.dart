@@ -138,4 +138,25 @@ void main() {
     await tester.pumpAndSettle();
     expect(rig.tester.profiles.single.id, 'a');
   });
+
+  testWidgets('a server without its credentials fails the sign-in step with '
+      'the API-key copy and sends no request', (tester) async {
+    final a = entry('a', name: 'Example A', needsCredentials: true);
+    final rig = _Rig([a]);
+    addTearDown(rig.list.close);
+    final c = await _pump(tester, rig);
+    c.read(firstFrameDoneProvider.notifier).markDone();
+    rig.list.add([a]);
+    await tester.pumpAndSettle();
+    final notifier = c.read(connectionCheckProvider.notifier);
+    notifier.select('a');
+    await notifier.run();
+    await tester.pumpAndSettle();
+    expect(rig.tester.profiles, isEmpty, reason: 'no request is sent');
+    final result = c.read(connectionCheckProvider).result!;
+    expect(result.finished, isTrue);
+    expect(result.failed?.step, CheckStep.auth);
+    expect(find.text(l10n.serverErrorApiKeyRequired), findsOneWidget);
+    expect(c.read(connectionCheckProvider).running, isFalse);
+  });
 }

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:arr_api/arr_api.dart';
+import 'package:consolarr/features/radarr/domain/dates.dart';
 
 /// Where a movie is in its release life (RAD-08 banner, RAD-05 badge).
 enum Availability {
@@ -16,12 +17,14 @@ enum Availability {
 
 /// Derives [Availability] from the three release dates and [now].
 ///
-/// Dates are instants (Radarr sends UTC), compared as instants, so the answer
-/// does not depend on the device time zone. A date counts as reached from its
-/// exact instant on. The later stage wins: physical, then digital, then
-/// cinemas; otherwise a future date means "coming soon".
+/// Release dates are date-only values (midnight UTC naming a day), compared as
+/// dates with the user's local calendar date (see `hasReleaseDayArrived`): a
+/// date counts as reached from the start of that day on the user's calendar,
+/// the same rule as the calendar and the Upcoming list. The later stage wins:
+/// physical, then digital, then cinemas; otherwise a future date means
+/// "coming soon".
 Availability availabilityOf(RadarrMovie movie, DateTime now) {
-  bool reached(DateTime? d) => d != null && !d.isAfter(now);
+  bool reached(DateTime? d) => d != null && hasReleaseDayArrived(d, now);
   if (reached(movie.physicalRelease)) return Availability.releasedPhysical;
   if (reached(movie.digitalRelease)) return Availability.releasedDigital;
   if (reached(movie.inCinemas)) return Availability.inCinemas;

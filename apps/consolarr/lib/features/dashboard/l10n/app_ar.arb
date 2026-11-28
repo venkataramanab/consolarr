@@ -1,0 +1,594 @@
+{
+  "@@locale": "ar",
+  "navDashboard": "لوحة المعلومات",
+  "@navDashboard": {
+    "description": "Label of the first tab of the bottom bar: the dashboard home screen."
+  },
+  "dashboardTitle": "لوحة المعلومات",
+  "@dashboardTitle": {
+    "description": "Title of the dashboard screen."
+  },
+  "dashboardAboutTooltip": "حول كونسولار",
+  "@dashboardAboutTooltip": {
+    "description": "Tooltip and accessible name of the about button in the dashboard top bar."
+  },
+  "dashboardEmptyHeading": "لا شيء هنا بعد",
+  "@dashboardEmptyHeading": {
+    "description": "Headline of the dashboard when no server is configured."
+  },
+  "dashboardEmptyBody": "أضف خادم وسائط أو عميل تنزيل للبدء.",
+  "@dashboardEmptyBody": {
+    "description": "Hint under the headline of the dashboard when no server is configured."
+  },
+  "dashboardSetupCta": "إعداد خادم",
+  "@dashboardSetupCta": {
+    "description": "Button that opens the server setup, on the dashboard and on cards whose service is not set up."
+  },
+  "dashboardActivityHeading": "النشاط",
+  "@dashboardActivityHeading": {
+    "description": "Heading of the activity card (current downloads)."
+  },
+  "dashboardUpcomingHeading": "القادم",
+  "@dashboardUpcomingHeading": {
+    "description": "Heading of the upcoming card (episodes and movies coming soon)."
+  },
+  "dashboardRecentHeading": "التنزيلات الأخيرة",
+  "@dashboardRecentHeading": {
+    "description": "Heading of the recent downloads card (items that were just imported)."
+  },
+  "dashboardActivityNotConfigured": "أعدّ Sonarr أو Radarr أو عميل تورنت لترى تنزيلاتك هنا.",
+  "@dashboardActivityNotConfigured": {
+    "description": "Shown in the activity card when none of its services is set up."
+  },
+  "dashboardUpcomingNotConfigured": "أعدّ Sonarr أو Radarr لترى ما سيصدر قريبًا.",
+  "@dashboardUpcomingNotConfigured": {
+    "description": "Shown in the upcoming card when neither Sonarr nor Radarr is set up."
+  },
+  "dashboardRecentNotConfigured": "أعدّ Sonarr أو Radarr لترى ما وصل للتو.",
+  "@dashboardRecentNotConfigured": {
+    "description": "Shown in the recent downloads card when neither Sonarr nor Radarr is set up."
+  },
+  "dashboardActivityEmptyHeading": "لا يوجد تنزيل جارٍ",
+  "@dashboardActivityEmptyHeading": {
+    "description": "Headline of the activity card when nothing is downloading."
+  },
+  "dashboardActivityEmptyBody": "تظهر التنزيلات هنا بمجرد أن تبدأ.",
+  "@dashboardActivityEmptyBody": {
+    "description": "Hint of the activity card when nothing is downloading."
+  },
+  "dashboardUpcomingEmptyHeading": "لا شيء قادم",
+  "@dashboardUpcomingEmptyHeading": {
+    "description": "Headline of the upcoming card when there are no episodes or movies in the window."
+  },
+  "dashboardUpcomingEmptyBody": "لا حلقات أو أفلام خلال الأسبوعين القادمين.",
+  "@dashboardUpcomingEmptyBody": {
+    "description": "Hint of the upcoming card when there is nothing in the next 14 days."
+  },
+  "dashboardRecentEmptyHeading": "لا تنزيلات حديثة",
+  "@dashboardRecentEmptyHeading": {
+    "description": "Headline of the recent downloads card when nothing was imported lately."
+  },
+  "dashboardRecentEmptyBody": "تظهر هنا الحلقات والأفلام التي تم استيرادها.",
+  "@dashboardRecentEmptyBody": {
+    "description": "Hint of the recent downloads card when nothing was imported lately."
+  },
+  "dashboardServiceName": "⁨{service}⁩ (⁨{name}⁩)",
+  "@dashboardServiceName": {
+    "description": "A service and the name the user gave the server, for example \"Sonarr (Living room)\". Both are isolated for bidirectional text.",
+    "placeholders": {
+      "service": {
+        "type": "String",
+        "description": "Service name, for example Sonarr."
+      },
+      "name": {
+        "type": "String",
+        "description": "Server name chosen by the user."
+      }
+    }
+  },
+  "dashboardRetry": "إعادة المحاولة",
+  "@dashboardRetry": {
+    "description": "Retry button of a failed server inside a dashboard card."
+  },
+  "dashboardRetryFor": "إعادة المحاولة لـ {service}",
+  "@dashboardRetryFor": {
+    "description": "Accessible name of the retry button of a failed server.",
+    "placeholders": {
+      "service": {
+        "type": "String",
+        "description": "Service and server name."
+      }
+    }
+  },
+  "dashboardDelugeHostHint": "اختر مضيف الخدمة في صفحة التورنت.",
+  "@dashboardDelugeHostHint": {
+    "description": "Hint shown instead of an error when a Deluge web interface needs its daemon host chosen first."
+  },
+  "dashboardOpenTorrents": "فتح التورنت",
+  "@dashboardOpenTorrents": {
+    "description": "Button that opens the Torrents tab from the dashboard."
+  },
+  "dashboardLoading": "جارٍ التحميل",
+  "@dashboardLoading": {
+    "description": "Accessible name of a card that is still loading (its skeleton)."
+  },
+  "dashboardCachedMessage": "نعرض بيانات محفوظة لأنه تعذّر الوصول إلى الخادم.",
+  "@dashboardCachedMessage": {
+    "description": "Banner text above cached items of a dashboard card."
+  },
+  "dashboardCachedAge": "حُفظت {age}",
+  "@dashboardCachedAge": {
+    "description": "Age line of the cached data banner, for example \"Saved 5 minutes ago\".",
+    "placeholders": {
+      "age": {
+        "type": "String",
+        "description": "Relative age such as \"5 minutes ago\"."
+      }
+    }
+  },
+  "dashboardAgeMinutes": "{count, plural, =1{قبل دقيقة} =2{قبل دقيقتين} few{قبل {count} دقائق} many{قبل {count} دقيقة} other{قبل {count} دقيقة}}",
+  "@dashboardAgeMinutes": {
+    "description": "Relative age in minutes.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "The number of items."
+      }
+    }
+  },
+  "dashboardAgeHours": "{count, plural, =1{قبل ساعة} =2{قبل ساعتين} few{قبل {count} ساعات} many{قبل {count} ساعة} other{قبل {count} ساعة}}",
+  "@dashboardAgeHours": {
+    "description": "Relative age in hours.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "The number of items."
+      }
+    }
+  },
+  "dashboardAgeDays": "{count, plural, =1{قبل يوم} =2{قبل يومين} few{قبل {count} أيام} many{قبل {count} يومًا} other{قبل {count} يوم}}",
+  "@dashboardAgeDays": {
+    "description": "Relative age in days.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "The number of items."
+      }
+    }
+  },
+  "dashboardAgeNow": "الآن",
+  "@dashboardAgeNow": {
+    "description": "Relative age under one minute."
+  },
+  "dashboardDayToday": "اليوم",
+  "@dashboardDayToday": {
+    "description": "Relative day: the current calendar day."
+  },
+  "dashboardDayTomorrow": "غدًا",
+  "@dashboardDayTomorrow": {
+    "description": "Relative day: the next calendar day."
+  },
+  "dashboardDayInDays": "{count, plural, =1{بعد يوم} =2{بعد يومين} few{بعد {count} أيام} many{بعد {count} يومًا} other{بعد {count} يوم}}",
+  "@dashboardDayInDays": {
+    "description": "Relative day: some days from now.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "The number of items."
+      }
+    }
+  },
+  "dashboardEpisodeCode": "الموسم {season}، الحلقة {episode}",
+  "@dashboardEpisodeCode": {
+    "description": "Season and episode of an item, for example \"S2E5\".",
+    "placeholders": {
+      "season": {
+        "type": "int",
+        "description": "Season number.",
+        "format": "decimalPattern"
+      },
+      "episode": {
+        "type": "int",
+        "description": "Episode number.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "dashboardMovieInCinemas": "في السينما",
+  "@dashboardMovieInCinemas": {
+    "description": "Subtitle of an upcoming movie that releases in cinemas."
+  },
+  "dashboardMovieDigital": "إصدار رقمي",
+  "@dashboardMovieDigital": {
+    "description": "Subtitle of an upcoming movie with a digital release."
+  },
+  "dashboardMovieDisc": "إصدار على قرص",
+  "@dashboardMovieDisc": {
+    "description": "Subtitle of an upcoming movie with a disc release."
+  },
+  "dashboardMovieLabel": "فيلم",
+  "@dashboardMovieLabel": {
+    "description": "Subtitle of a recently imported movie."
+  },
+  "dashboardItemSubtitle": "{first}، {second}",
+  "@dashboardItemSubtitle": {
+    "description": "Two short facts about a carousel item joined into one subtitle, for example \"S2E5, tomorrow\".",
+    "placeholders": {
+      "first": {
+        "type": "String",
+        "description": "First fact."
+      },
+      "second": {
+        "type": "String",
+        "description": "Second fact."
+      }
+    }
+  },
+  "dashboardItemSemantics": "{title}، {details}، العنصر {position} من {total}",
+  "@dashboardItemSemantics": {
+    "description": "Spoken label of a carousel item: its title, details and position in the carousel.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Series or movie title."
+      },
+      "details": {
+        "type": "String",
+        "description": "Subtitle text."
+      },
+      "position": {
+        "type": "int",
+        "description": "Position, starting at 1.",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "description": "Number of items.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "dashboardCarouselSemantics": "{heading}، {count, plural, =0{لا عناصر} =1{عنصر واحد} =2{عنصران} few{{count} عناصر} many{{count} عنصرًا} other{{count} عنصر}}",
+  "@dashboardCarouselSemantics": {
+    "description": "Spoken name of a carousel: the card heading and the number of items.",
+    "placeholders": {
+      "heading": {
+        "type": "String",
+        "description": "Card heading."
+      },
+      "count": {
+        "type": "int",
+        "description": "Number of items."
+      }
+    }
+  },
+  "dashboardActivityActive": "{count, plural, =0{لا تنزيل جارٍ} =1{تنزيل واحد جارٍ} =2{تنزيلان جاريان} few{{count} تنزيلات جارية} many{{count} تنزيلًا جاريًا} other{{count} تنزيل جارٍ}}",
+  "@dashboardActivityActive": {
+    "description": "Number of active downloads of one server.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "The number of items."
+      }
+    }
+  },
+  "dashboardActivityAttention": "{count, plural, =0{لا شيء يحتاج إلى انتباه} =1{عنصر واحد يحتاج إلى انتباه} =2{عنصران يحتاجان إلى انتباه} few{{count} عناصر تحتاج إلى انتباه} many{{count} عنصرًا يحتاج إلى انتباه} other{{count} عنصر يحتاج إلى انتباه}}",
+  "@dashboardActivityAttention": {
+    "description": "Number of queue items of one server that failed or have warnings.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "The number of items."
+      }
+    }
+  },
+  "dashboardSpeedDown": "تنزيل {speed}",
+  "@dashboardSpeedDown": {
+    "description": "Current global download speed of a torrent client.",
+    "placeholders": {
+      "speed": {
+        "type": "String",
+        "description": "Formatted speed."
+      }
+    }
+  },
+  "dashboardSpeedUp": "رفع {speed}",
+  "@dashboardSpeedUp": {
+    "description": "Current global upload speed of a torrent client.",
+    "placeholders": {
+      "speed": {
+        "type": "String",
+        "description": "Formatted speed."
+      }
+    }
+  },
+  "dashboardSpeedUnavailable": "السرعات غير متاحة",
+  "@dashboardSpeedUnavailable": {
+    "description": "Shown when the torrent client answered the list but not the speed statistics."
+  },
+  "dashboardSpeedPerSecond": "{size}/⁠ث",
+  "@dashboardSpeedPerSecond": {
+    "description": "A speed: a formatted size per second. The slash is followed by a word joiner so the unit never wraps.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Formatted size."
+      }
+    }
+  },
+  "dashboardUnitB": "{value} بايت",
+  "@dashboardUnitB": {
+    "description": "Size in bytes, with a non-breaking space.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 0
+        }
+      }
+    }
+  },
+  "dashboardUnitKB": "{value} ك.ب",
+  "@dashboardUnitKB": {
+    "description": "Size in kilobytes, with a non-breaking space.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "dashboardUnitMB": "{value} م.ب",
+  "@dashboardUnitMB": {
+    "description": "Size in megabytes, with a non-breaking space.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "dashboardUnitGB": "{value} غ.ب",
+  "@dashboardUnitGB": {
+    "description": "Size in gigabytes, with a non-breaking space.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "dashboardUnitTB": "{value} ت.ب",
+  "@dashboardUnitTB": {
+    "description": "Size in terabytes, with a non-breaking space.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "dashboardDurationMinutes": "{count} د",
+  "@dashboardDurationMinutes": {
+    "description": "A duration in minutes, short form.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Minutes.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "dashboardDurationHours": "{hours} س {minutes} د",
+  "@dashboardDurationHours": {
+    "description": "A duration in hours and minutes, short form.",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "description": "Hours.",
+        "format": "decimalPattern"
+      },
+      "minutes": {
+        "type": "int",
+        "description": "Minutes.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "dashboardDurationDays": "{days} ي {hours} س",
+  "@dashboardDurationDays": {
+    "description": "A duration in days and hours, short form.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days.",
+        "format": "decimalPattern"
+      },
+      "hours": {
+        "type": "int",
+        "description": "Hours.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "dashboardDurationLess": "أقل من دقيقة",
+  "@dashboardDurationLess": {
+    "description": "A duration under one minute."
+  },
+  "dashboardRowLeft": "المتبقي {size}",
+  "@dashboardRowLeft": {
+    "description": "Remaining size of a download row.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Formatted size."
+      }
+    }
+  },
+  "dashboardRowEta": "يتبقى نحو {time}",
+  "@dashboardRowEta": {
+    "description": "Estimated time left of a download row.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "description": "Formatted duration."
+      }
+    }
+  },
+  "dashboardProgressPercent": "{percent}",
+  "@dashboardProgressPercent": {
+    "description": "Percent label of a progress row.",
+    "placeholders": {
+      "percent": {
+        "type": "double",
+        "description": "Fraction 0 to 1.",
+        "format": "percentPattern"
+      }
+    }
+  },
+  "dashboardProgressSpoken": "اكتمل {percent}",
+  "@dashboardProgressSpoken": {
+    "description": "Spoken progress of a download row.",
+    "placeholders": {
+      "percent": {
+        "type": "double",
+        "description": "Fraction 0 to 1.",
+        "format": "percentPattern"
+      }
+    }
+  },
+  "dashboardRowSemantics": "{title}، {state}، {progress}",
+  "@dashboardRowSemantics": {
+    "description": "Spoken label of a download row: title, state and progress.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Title."
+      },
+      "state": {
+        "type": "String",
+        "description": "State label."
+      },
+      "progress": {
+        "type": "String",
+        "description": "Spoken progress."
+      }
+    }
+  },
+  "dashboardStateDownloading": "يتم التنزيل",
+  "@dashboardStateDownloading": {
+    "description": "State of a download row: downloading."
+  },
+  "dashboardStateStalled": "متوقف",
+  "@dashboardStateStalled": {
+    "description": "State of a download row: stalled."
+  },
+  "dashboardStateChecking": "قيد الفحص",
+  "@dashboardStateChecking": {
+    "description": "State of a download row: checking."
+  },
+  "dashboardStateQueued": "في الانتظار",
+  "@dashboardStateQueued": {
+    "description": "State of a download row: queued."
+  },
+  "dashboardStatePaused": "متوقف مؤقتًا",
+  "@dashboardStatePaused": {
+    "description": "State of a download row: paused."
+  },
+  "dashboardStateImporting": "قيد الاستيراد",
+  "@dashboardStateImporting": {
+    "description": "State of a download row: importing."
+  },
+  "dashboardStateCompleted": "اكتمل",
+  "@dashboardStateCompleted": {
+    "description": "State of a download row: completed."
+  },
+  "dashboardStateSeeding": "قيد الرفع",
+  "@dashboardStateSeeding": {
+    "description": "State of a download row: seeding."
+  },
+  "dashboardStateAttention": "يحتاج إلى انتباه",
+  "@dashboardStateAttention": {
+    "description": "State of a download row: needs attention."
+  },
+  "dashboardRefreshedAnnouncement": "تم تحديث لوحة المعلومات",
+  "@dashboardRefreshedAnnouncement": {
+    "description": "Spoken once after a pull to refresh finished without problems."
+  },
+  "dashboardRefreshedPartial": "تم تحديث لوحة المعلومات، {count, plural, =0{كل الخدمات متاحة} =1{خدمة واحدة غير متاحة} =2{خدمتان غير متاحتين} few{{count} خدمات غير متاحة} many{{count} خدمة غير متاحة} other{{count} خدمة غير متاحة}}",
+  "@dashboardRefreshedPartial": {
+    "description": "Spoken once after a pull to refresh when some services failed.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "The number of items."
+      }
+    }
+  },
+  "dashboardOpenHint": "فتح",
+  "dashboardActivitySemantics": "{service}، {counts}",
+  "@dashboardActivitySemantics": {
+    "description": "Spoken name of a service tile of the activity card without speeds: service and counts.",
+    "placeholders": {
+      "service": {
+        "type": "String",
+        "description": "Service and server name."
+      },
+      "counts": {
+        "type": "String",
+        "description": "Downloads and items that need attention."
+      }
+    }
+  },
+  "dashboardActivitySemanticsSpeeds": "{service}، {counts}، {speeds}",
+  "@dashboardActivitySemanticsSpeeds": {
+    "description": "Spoken name of a service tile of the activity card: service, counts and transfer speeds.",
+    "placeholders": {
+      "service": {
+        "type": "String",
+        "description": "Service and server name."
+      },
+      "counts": {
+        "type": "String",
+        "description": "Downloads and items that need attention."
+      },
+      "speeds": {
+        "type": "String",
+        "description": "Download and upload speeds."
+      }
+    }
+  },
+  "dashboardEditServer": "تعديل الخادم",
+  "dashboardSpokenJoin": "{first}، {second}",
+  "@dashboardSpokenJoin": {
+    "description": "Joins two phrases of one spoken label (for example the counts and the speeds of a service tile).",
+    "placeholders": {
+      "first": {
+        "type": "String",
+        "description": "First phrase."
+      },
+      "second": {
+        "type": "String",
+        "description": "Second phrase."
+      }
+    }
+  }
+}

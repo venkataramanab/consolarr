@@ -36,6 +36,7 @@ void main() {
       expect(c.validate().prefix, FieldIssue.prefixInvalid);
       c.pathPrefix.text = '/sonarr';
       c.name.text = 'Example';
+      c.apiKey.text = 'test-key-0000';
       expect(c.validate().isValid, isTrue);
     });
 
@@ -68,8 +69,6 @@ void main() {
       expect(c.toDraft().credentials.apiKey, isNull);
       c.apiKey.text = 'test-key-0000';
       expect(c.toDraft().credentials.apiKey, 'test-key-0000');
-      c.setAuthMode(AuthMode.none);
-      expect(c.toDraft().credentials.apiKey, isNull);
     });
 
     test('empty header values for existing names keep the stored value', () {
@@ -144,6 +143,210 @@ void main() {
           ..address.text = 'https://sonarr.example';
         expect(c.originChanged, isFalse);
         expect(c.validate().secrets, isNull);
+      });
+    });
+
+    group('Sonarr and Radarr credentials', () {
+      ServerEntry stored(
+        ServiceKind kind, {
+        AuthMode mode = AuthMode.apiKey,
+        bool needsCredentials = false,
+        bool hasApiKey = true,
+        bool proxyLogin = false,
+      }) => ServerEntry(
+        profile: ServerProfile.parse(
+          id: 's1',
+          name: 'Example',
+          kind: kind,
+          address: 'https://host.example',
+          authMode: mode,
+        ).valueOrNull!,
+        sortOrder: 0,
+        needsCredentials: needsCredentials,
+        hasApiKey: hasApiKey,
+        proxyLogin: proxyLogin,
+      );
+
+      for (final kind in [ServiceKind.sonarr, ServiceKind.radarr]) {
+        test('$kind offers the API key as its only auth mode', () {
+          expect(authModesFor(kind), [AuthMode.apiKey]);
+        });
+
+        test('$kind: the API key is required before save and test', () {
+          final f = ServerFormController(kind: kind)
+            ..name.text = 'Example'
+            ..address.text = 'https://host.example';
+          addTearDown(f.dispose);
+          expect(f.validate().apiKey, FieldIssue.apiKeyRequired);
+          expect(f.validate().isValid, isFalse);
+          f.apiKey.text = 'test-key-0000';
+          expect(f.validate().apiKey, isNull);
+          expect(f.validate().isValid, isTrue);
+        });
+      }
+
+      test('a stored key may stay untouched when editing', () {
+        final f = ServerFormController(existing: stored(ServiceKind.radarr));
+        addTearDown(f.dispose);
+        expect(f.validate().apiKey, isNull);
+        expect(f.toDraft().credentials.apiKey, isNull);
+      });
+
+      test('torrent kinds never need an API key', () {
+        final f = ServerFormController(kind: ServiceKind.qbittorrent)
+          ..name.text = 'Example'
+          ..address.text = 'https://host.example';
+        addTearDown(f.dispose);
+        expect(f.validate().apiKey, isNull);
+        expect(f.validate().isValid, isTrue);
+      });
+
+      test('proxy login is off by default and deletes any stored login', () {
+        final f = ServerFormController(kind: ServiceKind.sonarr)
+          ..apiKey.text = 'test-key-0000';
+        addTearDown(f.dispose);
+        expect(f.proxyLogin, isFalse);
+        final creds = f.toDraft().credentials;
+        expect(creds.apiKey, 'test-key-0000');
+        expect(creds.username, isEmpty);
+        expect(creds.password, isEmpty);
+      });
+
+      test('proxy login is additive: key and login are both saved', () {
+        final f = ServerFormController(kind: ServiceKind.radarr)
+          ..apiKey.text = 'test-key-0000'
+          ..setProxyLogin(true);
+        addTearDown(f.dispose);
+        expect(f.validate().proxyLogin, FieldIssue.proxyLoginRequired);
+        f
+          ..username.text = 'user'
+          ..password.text = 'pw';
+        expect(f.validate().proxyLogin, isNull);
+        final draft = f.toDraft();
+        expect(draft.authMode, AuthMode.apiKey);
+        expect(draft.credentials.apiKey, 'test-key-0000');
+        expect(draft.credentials.username, 'user');
+        expect(draft.credentials.password, 'pw');
+      });
+
+      test(
+        'a lost custom-header secret does not ask for the API key again',
+        () {
+          final f = ServerFormController(
+            existing: stored(ServiceKind.sonarr, needsCredentials: true),
+          );
+          addTearDown(f.dispose);
+          expect(
+            f.validate().apiKey,
+            isNull,
+            reason: 'the key is still stored',
+          );
+          expect(f.hasLegacyArrAuth, isFalse);
+        },
+      );
+
+      test('a lost API key asks for it even on a current profile', () {
+        final f = ServerFormController(
+          existing: stored(
+            ServiceKind.sonarr,
+            needsCredentials: true,
+            hasApiKey: false,
+          ),
+        );
+        addTearDown(f.dispose);
+        expect(f.validate().apiKey, FieldIssue.apiKeyRequired);
+      });
+
+      test('a half-typed proxy login needs both fields, new or stored', () {
+        for (final storedLogin in [false, true]) {
+          final f = ServerFormController(
+            existing: stored(ServiceKind.radarr, proxyLogin: storedLogin),
+          )..setProxyLogin(true);
+          addTearDown(f.dispose);
+          f.username.text = 'user';
+          expect(
+            f.validate().proxyLogin,
+            FieldIssue.proxyLoginRequired,
+            reason: 'username only, stored=$storedLogin',
+          );
+          f
+            ..username.clear()
+            ..password.text = 'pw';
+          expect(
+            f.validate().proxyLogin,
+            FieldIssue.proxyLoginRequired,
+            reason: 'password only, stored=$storedLogin',
+          );
+          f.username.text = 'user';
+          expect(f.validate().proxyLogin, isNull, reason: 'both');
+          f
+            ..username.clear()
+            ..password.clear();
+          expect(
+            f.validate().proxyLogin,
+            storedLogin ? isNull : FieldIssue.proxyLoginRequired,
+            reason: 'neither, stored=$storedLogin',
+          );
+        }
+      });
+
+      test('proxy login is arr only', () {
+        final f = ServerFormController(kind: ServiceKind.deluge)
+          ..setProxyLogin(true);
+        addTearDown(f.dispose);
+        expect(f.proxyLogin, isFalse);
+      });
+
+      test('an existing proxy login is kept when its fields stay empty', () {
+        final f = ServerFormController(
+          existing: stored(ServiceKind.sonarr, proxyLogin: true),
+        );
+        addTearDown(f.dispose);
+        expect(f.proxyLogin, isTrue);
+        expect(f.validate().proxyLogin, isNull);
+        final creds = f.toDraft().credentials;
+        expect(creds.username, isNull);
+        expect(creds.password, isNull);
+      });
+
+      for (final mode in [AuthMode.basic, AuthMode.none]) {
+        test('an old $mode profile opens as apiKey with the key required', () {
+          final f = ServerFormController(
+            existing: stored(
+              ServiceKind.radarr,
+              mode: mode,
+              needsCredentials: true,
+              hasApiKey: false,
+              proxyLogin: mode == AuthMode.basic,
+            ),
+          );
+          addTearDown(f.dispose);
+          expect(f.authMode, AuthMode.apiKey);
+          expect(f.hasLegacyArrAuth, isTrue);
+          expect(f.proxyLogin, mode == AuthMode.basic);
+          expect(f.validate().apiKey, FieldIssue.apiKeyRequired);
+          f.apiKey.text = 'test-key-0000';
+          expect(f.validate().isValid, isTrue);
+          final draft = f.toDraft();
+          expect(draft.authMode, AuthMode.apiKey);
+          expect(draft.credentials.apiKey, 'test-key-0000');
+        });
+      }
+
+      test('a current arr profile shows no legacy notice', () {
+        final f = ServerFormController(existing: stored(ServiceKind.sonarr));
+        addTearDown(f.dispose);
+        expect(f.hasLegacyArrAuth, isFalse);
+      });
+
+      test('a changed origin requires key and proxy login again', () {
+        final f = ServerFormController(
+          existing: stored(ServiceKind.sonarr, proxyLogin: true),
+        )..address.text = 'https://other.example';
+        addTearDown(f.dispose);
+        expect(f.validate().apiKey, FieldIssue.apiKeyRequired);
+        expect(f.validate().proxyLogin, FieldIssue.proxyLoginRequired);
+        expect(f.validate().secrets, FieldIssue.secretsReenter);
       });
     });
 

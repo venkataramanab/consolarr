@@ -41,6 +41,8 @@ ServerEntry entry(
   bool needsCredentials = false,
   bool isStartup = false,
   int sortOrder = 0,
+  AuthMode authMode = AuthMode.apiKey,
+  bool proxyLogin = false,
 }) => ServerEntry(
   profile: profile(
     id,
@@ -48,10 +50,13 @@ ServerEntry entry(
     kind: kind,
     address: address,
     allowCleartext: allowCleartext,
+    authMode: authMode,
   ),
   sortOrder: sortOrder,
   isStartup: isStartup,
   needsCredentials: needsCredentials,
+  hasApiKey: !needsCredentials,
+  proxyLogin: proxyLogin,
 );
 
 /// In-memory repository that records what the UI asked for.
@@ -64,6 +69,7 @@ class FakeServerRepository implements ServerRepository {
   final List<ServerDraft> saved = [];
   final List<String> deleted = [];
   final Map<String, ServerCredentials> credentials = {};
+  int loadCredentialsCalls = 0;
   List<String>? lastOrder;
   String? startup;
   final Map<ServiceKind, String> active = {};
@@ -153,8 +159,10 @@ class FakeServerRepository implements ServerRepository {
   }
 
   @override
-  Future<ServerCredentials> loadCredentials(ServerProfile profile) async =>
-      credentials[profile.id] ?? ServerCredentials.empty;
+  Future<ServerCredentials> loadCredentials(ServerProfile profile) async {
+    loadCredentialsCalls++;
+    return credentials[profile.id] ?? ServerCredentials.empty;
+  }
 }
 
 /// Replays queued outcomes (the last one repeats) and records every call.

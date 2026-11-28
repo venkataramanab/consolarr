@@ -35,8 +35,12 @@ class TorrentDetailNotifier extends AsyncNotifier<TorrentDetail> {
   /// Silent refresh: no loading state, failures keep the old data. Returns
   /// `false` when the read failed (the poller backs off). A result for a
   /// client that was replaced meanwhile, or after a rebuild, is dropped.
+  ///
+  /// After a failed first load (the state is an error) the next tick reloads
+  /// too: success replaces the error, failure keeps it and returns `false`,
+  /// so the poller backs off instead of hammering a dead server.
   Future<bool> refresh() async {
-    if (state.isLoading || state.hasError) return true;
+    if (state.isLoading) return true;
     final generation = _generation;
     // Captured before the await: `ref.read`, never `watch`, outside build.
     final client = ref.read(torrentClientProvider).value;

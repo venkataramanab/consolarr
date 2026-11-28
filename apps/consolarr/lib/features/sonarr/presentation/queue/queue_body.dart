@@ -120,7 +120,7 @@ class _QueueBodyState extends ConsumerState<QueueBody> {
     AppError error,
     Future<void> Function() refresh,
   ) {
-    final copy = connectionErrorMessage(l10n, error);
+    final copy = connectionErrorMessage(l10n, error, kind: ServiceKind.sonarr);
     return ErrorState(
       headline: l10n.sonarrQueueErrorTitle,
       message: copy.message,
@@ -221,6 +221,7 @@ class _QueueBodyState extends ConsumerState<QueueBody> {
       context: context,
       itemLabel: _label(l10n, item),
       serviceName: _serviceName,
+      kind: ServiceKind.sonarr,
       onConfirm: (choice) =>
           ref.read(queueProvider.notifier).remove(item.id, choice),
     );

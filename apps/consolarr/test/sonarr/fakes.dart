@@ -36,6 +36,18 @@ class MemoryPayloadCache implements PayloadCache {
   @override
   Future<void> deleteForServer(String serverId) async =>
       entries.removeWhere((k, _) => k.startsWith('$serverId/'));
+
+  @override
+  Future<void> delete(String serverId, String key) async =>
+      entries.remove('$serverId/$key');
+
+  @override
+  Future<void> pruneKeys(String keyPrefix, Set<String> keepServerIds) async =>
+      entries.removeWhere(
+        (k, _) =>
+            k.contains('/$keyPrefix') &&
+            !keepServerIds.contains(k.split('/').first),
+      );
 }
 
 /// A Sonarr API where every call returns a settable result (by default empty

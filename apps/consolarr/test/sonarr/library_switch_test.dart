@@ -5,6 +5,8 @@ import 'dart:typed_data';
 
 import 'package:consolarr/features/servers/application/server_connection.dart';
 import 'package:consolarr/features/sonarr/application/sonarr_providers.dart';
+import 'package:consolarr/features/sonarr/data/sonarr_prefs_store.dart';
+import 'package:consolarr/features/sonarr/application/sonarr_session.dart';
 import 'package:consolarr/features/sonarr/presentation/home/sonarr_home_screen.dart';
 import 'package:consolarr/src/cache/payload_cache.dart';
 import 'package:consolarr/src/database/app_database.dart';
@@ -95,6 +97,9 @@ void main() {
     clockProvider.overrideWithValue(() => fixedNow),
     viewModeStoreProvider.overrideWithValue(MemoryViewModeStore()),
     artworkSourceProvider.overrideWithValue(null),
+    // No saved defaults; the real store would wait on the database, which
+    // never answers under the widget tester's fake clock.
+    sonarrPrefsStoreProvider.overrideWithValue(MemorySonarrPrefsStore()),
   ];
 
   group('provider transitions', () {

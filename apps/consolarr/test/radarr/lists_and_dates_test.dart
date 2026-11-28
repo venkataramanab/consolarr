@@ -270,6 +270,86 @@ void main() {
       expect(find.textContaining('Mar 15, 2026'), findsOneWidget);
     });
 
+    testWidgets('R1: failing profile names show an error with a retry that '
+        'reads them again', (tester) async {
+      final api = _NoProfilesApi(
+        moviesResult: Result.ok([fakeMovie(7, hasFile: false)]),
+      );
+      await pumpMatrix(
+        tester,
+        (v) => radarrApp(v, api, const MovieDetailScreen(movieId: 7)),
+        variants: [...phone, ...stress],
+        verify: (v) async {
+          if (v.textScale == 1) {
+            expect(
+              find.textContaining('Quality profiles could not be loaded'),
+              findsOneWidget,
+            );
+          }
+          await expectAccessible(tester);
+        },
+      );
+    });
+
+    testWidgets('R1: the retry on the detail reads the profiles again', (
+      tester,
+    ) async {
+      var reads = 0;
+      final api = _NoProfilesApi(
+        moviesResult: Result.ok([fakeMovie(7, hasFile: false)]),
+        onRead: () => reads++,
+      );
+      await pumpMatrix(
+        tester,
+        (v) => radarrApp(v, api, const MovieDetailScreen(movieId: 7)),
+        variants: phone,
+      );
+      final before = reads;
+      await tester.tap(find.text('Try again'));
+      await tester.pumpAndSettle();
+      expect(reads, greaterThan(before));
+    });
+
+    testWidgets('R1: failing tags alone also show the error, accessibly', (
+      tester,
+    ) async {
+      final api = _NoTagsApi(
+        moviesResult: Result.ok([fakeMovie(7, hasFile: false)]),
+      );
+      await pumpMatrix(
+        tester,
+        (v) => radarrApp(v, api, const MovieDetailScreen(movieId: 7)),
+        variants: [...phone, ...stress],
+        verify: (v) async {
+          if (v.textScale == 1) {
+            expect(
+              find.textContaining('could not be loaded'),
+              findsOneWidget,
+              reason: v.label,
+            );
+          }
+          await expectAccessible(tester);
+        },
+      );
+    });
+
+    testWidgets('R1: the retry reads the failed tags again', (tester) async {
+      var reads = 0;
+      final api = _NoTagsApi(
+        moviesResult: Result.ok([fakeMovie(7, hasFile: false)]),
+        onRead: () => reads++,
+      );
+      await pumpMatrix(
+        tester,
+        (v) => radarrApp(v, api, const MovieDetailScreen(movieId: 7)),
+        variants: phone,
+      );
+      final before = reads;
+      await tester.tap(find.text('Try again'));
+      await tester.pumpAndSettle();
+      expect(reads, greaterThan(before));
+    });
+
     testWidgets('profile names failing is a partial state, not a crash', (
       tester,
     ) async {
@@ -288,9 +368,25 @@ void main() {
 }
 
 class _NoProfilesApi extends FakeRadarrApi {
-  _NoProfilesApi({super.moviesResult});
+  _NoProfilesApi({super.moviesResult, this.onRead});
+
+  final void Function()? onRead;
 
   @override
-  Future<Result<List<ArrQualityProfile>>> qualityProfiles() async =>
-      const Result.err(AppError(ErrorCategory.timeout));
+  Future<Result<List<ArrQualityProfile>>> qualityProfiles() async {
+    onRead?.call();
+    return const Result.err(AppError(ErrorCategory.timeout));
+  }
+}
+
+class _NoTagsApi extends FakeRadarrApi {
+  _NoTagsApi({super.moviesResult, this.onRead});
+
+  final void Function()? onRead;
+
+  @override
+  Future<Result<List<ArrTag>>> tags() async {
+    onRead?.call();
+    return const Result.err(AppError(ErrorCategory.timeout));
+  }
 }

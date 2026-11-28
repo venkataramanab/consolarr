@@ -4,10 +4,6 @@
   "@appTitle": {
     "description": "The app name, shown in the task switcher and as the accessible name of the app."
   },
-  "navHome": "الرئيسية",
-  "@navHome": {
-    "description": "Label of the Home destination in the bottom navigation bar."
-  },
   "navSonarr": "المسلسلات",
   "@navSonarr": {
     "description": "Label of the Sonarr (TV series) destination in the bottom navigation bar."
@@ -59,13 +55,5 @@
   "healthUnreachable": "غير متصل",
   "@healthUnreachable": {
     "description": "Short health status text: the server cannot be reached."
-  },
-  "homeSetupCta": "إعداد خادم",
-  "@homeSetupCta": {
-    "description": "Primary button on the Home screen that starts first-run server setup."
-  },
-  "homeServicesHeading": "خدماتك",
-  "@homeServicesHeading": {
-    "description": "Heading above the list of configured services on the Home screen."
   }
 }
