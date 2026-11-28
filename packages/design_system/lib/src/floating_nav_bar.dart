@@ -84,6 +84,9 @@ class FloatingNavBar extends StatelessWidget {
   }
 }
 
+/// Largest text scale the bar's labels follow.
+const double _maxLabelScale = 1.2;
+
 class _NavItem extends StatelessWidget {
   const _NavItem({
     required this.destination,
@@ -161,6 +164,11 @@ class _NavItem extends StatelessWidget {
                   destination.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
+                  // Four labels share a phone-wide bar; at the largest system
+                  // scale they would shrink to "S…". The semantics label
+                  // still carries the full text.
+                  textScaler: MediaQuery.textScalerOf(context)
+                      .clamp(maxScaleFactor: _maxLabelScale),
                   style: theme.textTheme.labelLarge?.copyWith(
                     color: color,
                     fontSize: 14,

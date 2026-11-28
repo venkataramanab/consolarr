@@ -111,12 +111,17 @@ class _AppScopes extends ConsumerWidget {
     final solid = ref.watch(
       settingsProvider.select((s) => s.highContrast || s.reduceTransparency),
     );
+    final l10n = context.l10n;
     return TouchTargetsScope(
       targets: targets,
       child: ConsolarrEffectsScope(
         motion: motion,
         reduceTransparency: solid,
-        child: child,
+        child: ConsolarrSeparatorsScope(
+          list: l10n.sharedListSeparator,
+          part: l10n.sharedPartSeparator,
+          child: child,
+        ),
       ),
     );
   }

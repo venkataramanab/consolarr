@@ -4,6 +4,7 @@ import 'package:arr_api/arr_api.dart';
 import 'package:consolarr/features/arr_common/presentation/release_row.dart';
 import 'package:consolarr/features/sonarr/application/release_search.dart';
 import 'package:consolarr/features/sonarr/presentation/formatters.dart';
+import 'package:consolarr/shared/l10n/join_parts.dart';
 import 'package:l10n/l10n.dart';
 
 /// Localized labels for the release rows.
@@ -68,11 +69,11 @@ ReleaseRowData releaseRowData(
     ReleaseGrabState.failed => l10n.sonarrReleaseFailed,
     ReleaseGrabState.maybeSent => l10n.sonarrReleaseMaybeSent,
   };
-  final details = [
+  final details = joinList(l10n, [
     ...facts,
     if (r.isRejected) l10n.sonarrReleaseRejected,
     ?stateText,
-  ].join(', ');
+  ]);
   return ReleaseRowData(
     title: r.title,
     facts: facts,

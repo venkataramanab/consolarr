@@ -563,7 +563,7 @@ void main() {
         await tapCheck(tester);
         await tester.pump();
         await tester.pump();
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(BusyIndicator), findsOneWidget);
         // Release the probe at the end so the test leaves nothing running.
         addTearDown(() {
           final gate = h.ui.tester.gate;

@@ -546,7 +546,7 @@
       }
     }
   },
-  "sonarrDetailRatingValue": "{value} out of 10 ({votes, plural, =1{1 vote} other{{votes} votes}})",
+  "sonarrDetailRatingValue": "{value} out of 10 ({votes, plural, =0{no votes} =1{1 vote} other{{votes} votes}})",
   "@sonarrDetailRatingValue": {
     "description": "Series rating on a ten point scale with the vote count.",
     "placeholders": {

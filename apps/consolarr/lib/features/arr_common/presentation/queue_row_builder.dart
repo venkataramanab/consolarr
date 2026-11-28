@@ -2,6 +2,7 @@
 
 import 'package:arr_api/arr_api.dart';
 import 'package:consolarr/features/arr_common/presentation/queue_row.dart';
+import 'package:consolarr/shared/l10n/join_parts.dart';
 import 'package:l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -101,7 +102,7 @@ class ArrQueueItemRow extends StatelessWidget {
         mediaLabel,
         state,
         percent,
-        details.join(', '),
+        joinList(l10n, details),
       ),
       details: details,
       warningLabel: warning == null

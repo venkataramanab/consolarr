@@ -57,7 +57,7 @@ String _monitoredText(AppLocalizations l10n, SonarrSeries s) =>
 /// What a screen reader announces for [s]: status, monitoring, episodes.
 String semanticsLabel(AppLocalizations l10n, SonarrSeries s) {
   final stats = s.statistics;
-  final details = [
+  final details = joinList(l10n, [
     ?statusText(l10n, s.status),
     _monitoredText(l10n, s),
     if (stats.totalEpisodeCount > 0)
@@ -65,7 +65,7 @@ String semanticsLabel(AppLocalizations l10n, SonarrSeries s) {
         stats.episodeFileCount,
         stats.totalEpisodeCount,
       ),
-  ].join(', ');
+  ]);
   return l10n.sonarrSeriesSemantics(s.title, details);
 }
 

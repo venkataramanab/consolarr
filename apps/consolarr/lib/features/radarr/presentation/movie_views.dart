@@ -51,12 +51,12 @@ Widget availabilityChip(AppLocalizations l10n, Availability a) {
 
 /// What a screen reader announces for [m].
 String movieSemantics(AppLocalizations l10n, RadarrMovie m, Availability a) {
-  final details = [
+  final details = joinList(l10n, [
     m.hasFile ? l10n.radarrDownloaded : l10n.radarrMissing,
     m.monitored ? l10n.radarrMonitored : l10n.radarrUnmonitored,
     availabilityText(l10n, a),
     if (m.sizeOnDisk > 0) sizeText(l10n, m.sizeOnDisk),
-  ].join(', ');
+  ]);
   return l10n.radarrMovieSemantics(m.title, details);
 }
 

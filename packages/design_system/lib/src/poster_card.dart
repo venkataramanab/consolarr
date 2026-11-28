@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'package:design_system/src/label_separators.dart';
 import 'package:design_system/src/radii.dart';
 import 'package:design_system/src/roles_context.dart';
 import 'package:design_system/src/spacing.dart';
@@ -71,7 +72,8 @@ class PosterCard extends StatelessWidget {
         button: onTap != null,
         selected: selected,
         label:
-            semanticsLabel ?? (subtitle == null ? title : '$title, $subtitle'),
+            semanticsLabel ??
+            ConsolarrSeparators.of(context).joinList([title, subtitle]),
         excludeSemantics: true,
         onTap: onTap,
         onLongPress: onLongPress,

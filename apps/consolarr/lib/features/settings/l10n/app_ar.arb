@@ -366,7 +366,7 @@
   "@diagFilterEmptyTitle": {
     "description": "Headline shown when the level filter hides every entry."
   },
-  "diagCapturing": "جارٍ التسجيل · {count, plural, =1{إدخال واحد} =2{إدخالان} few{{count} إدخالات} many{{count} إدخالًا} other{{count} إدخال}}",
+  "diagCapturing": "جارٍ التسجيل · {count, plural, =0{لا توجد إدخالات بعد} =1{إدخال واحد} =2{إدخالان} few{{count} إدخالات} many{{count} إدخالًا} other{{count} إدخال}}",
   "@diagCapturing": {
     "description": "Status of the running log with the number of entries.",
     "placeholders": {

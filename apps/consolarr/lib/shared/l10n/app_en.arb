@@ -187,6 +187,42 @@
   "@sharedPartSeparator": {
     "description": "Separator placed between the short facts of a line, for example year, size and quality. Translate only if the language uses another mark."
   },
+  "sharedListSeparator": ", ",
+  "@sharedListSeparator": {
+    "description": "Separator between the items of a list or the parts of a spoken label, for example genres or the pieces of a screen reader sentence. Arabic uses its own comma."
+  },
+  "sharedSentenceSeparator": ". ",
+  "@sharedSentenceSeparator": {
+    "description": "Separator between sentences in one spoken label read by a screen reader."
+  },
+  "sharedBulletLine": "• {text}",
+  "@sharedBulletLine": {
+    "description": "One line of a bulleted list: a bullet, then the text.",
+    "placeholders": {
+      "text": {
+        "type": "String",
+        "description": "The text of the line."
+      }
+    }
+  },
+  "sharedTitleWithYear": "{title} ({year})",
+  "@sharedTitleWithYear": {
+    "description": "A title followed by its release year in parentheses, for example a movie name and year.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "The title."
+      },
+      "year": {
+        "type": "String",
+        "description": "The year as digits."
+      }
+    }
+  },
+  "sharedValueUnknown": "–",
+  "@sharedValueUnknown": {
+    "description": "Placeholder shown where a value is not available."
+  },
   "connErrorArrAuthFailedMessage": "{service} rejected the API key.",
   "@connErrorArrAuthFailedMessage": {
     "description": "Plain-language message for a Sonarr or Radarr connection problem: the API key was missing or wrong (401/403).",

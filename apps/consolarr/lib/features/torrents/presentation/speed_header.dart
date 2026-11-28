@@ -2,6 +2,7 @@
 
 import 'package:consolarr/features/torrents/application/speed_history.dart';
 import 'package:consolarr/features/torrents/presentation/format.dart';
+import 'package:consolarr/shared/l10n/join_parts.dart';
 import 'package:design_system/design_system.dart';
 import 'package:l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
@@ -40,7 +41,7 @@ class SpeedHeader extends StatelessWidget {
 
     String value(int? v) {
       if (offline) return l10n.torSpeedOffline;
-      if (v == null) return '–';
+      if (v == null) return l10n.sharedValueUnknown;
       return idle ? l10n.torSpeedIdle : formatSpeedDisplay(l10n, v);
     }
 
@@ -89,14 +90,14 @@ class SpeedHeader extends StatelessWidget {
     // and trend), as part of one static label that does not announce itself.
     final spoken = unavailable
         ? l10n.torSpeedOffline
-        : [
+        : joinSentences(l10n, [
             l10n.torSpeedHeaderSemantics(
               formatSpeed(l10n, down ?? 0),
               formatSpeed(l10n, up ?? 0),
               torrentCount,
             ),
             if (history.length >= 2) graphSummary(),
-          ].join('. ');
+          ]);
 
     final card = Container(
       padding: const EdgeInsets.all(ConsolarrSpacing.md),

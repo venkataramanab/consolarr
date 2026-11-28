@@ -6,7 +6,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:test_harness/test_harness.dart';
 
 import 'detail_harness.dart';
-import 'fakes.dart';
 
 const _variant = HarnessVariant(
   size: Size(360, 800),
@@ -27,7 +26,7 @@ List<String> _traversal(WidgetTester tester) {
     }
   }
 
-  visit(tester.binding.pipelineOwner.semanticsOwner!.rootSemanticsNode!);
+  visit(tester.binding.rootPipelineOwner.semanticsOwner!.rootSemanticsNode!);
   return labels;
 }
 

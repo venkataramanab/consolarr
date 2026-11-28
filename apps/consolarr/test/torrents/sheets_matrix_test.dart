@@ -145,9 +145,11 @@ void main() {
         tester,
         (c) => showRemoveDialog(c, name),
         arrange: () async {
-          await tester.ensureVisible(find.byType(CheckboxListTile));
+          // The long pseudo-locale label makes the tile taller than the
+          // dialog's scroll area: bring the box itself into view.
+          await tester.ensureVisible(find.byType(Checkbox));
           await tester.pumpAndSettle();
-          await tester.tap(find.byType(CheckboxListTile));
+          await tester.tap(find.byType(Checkbox));
           await tester.pumpAndSettle();
           expect(
             tester

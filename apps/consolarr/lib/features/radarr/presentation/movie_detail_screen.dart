@@ -285,7 +285,7 @@ class _Content extends ConsumerWidget {
                         Text(
                           l10n.radarrLabelValue(
                             l10n.radarrGenres,
-                            movie.genres.join(', '),
+                            joinList(l10n, movie.genres),
                           ),
                         ),
                       if (movie.collectionTitle != null)

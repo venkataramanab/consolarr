@@ -61,6 +61,11 @@ List<File> _arabicArbs() {
   return out;
 }
 
+/// Messages whose count really can be 0 on screen (an empty log, a rating
+/// nobody has voted on): English and Arabic both need an explicit `=0` clause
+/// so zero never reads as "0 entries" or falls into the wrong plural.
+const _countCanBeZero = {'diagCapturing', 'sonarrDetailRatingValue'};
+
 void main() {
   test('the scan finds the plural keys it is meant to check', () {
     expect(_arabicArbs().length, greaterThan(5));
@@ -97,6 +102,10 @@ void main() {
           if (_has(enF, 'one', '=1')) {
             if (!_has(f, 'one', '=1')) problems.add('$where lacks one/=1');
             if (!_has(f, 'two', '=2')) problems.add('$where lacks two/=2');
+          }
+          if (_countCanBeZero.contains(e.key)) {
+            if (!_has(enF, 'zero', '=0')) problems.add('$where: en lacks =0');
+            if (!_has(f, 'zero', '=0')) problems.add('$where lacks zero/=0');
           }
           if (_has(enF, 'zero', '=0') && !_has(f, 'zero', '=0')) {
             problems.add('$where lacks zero/=0');

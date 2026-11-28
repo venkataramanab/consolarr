@@ -375,7 +375,7 @@ class _RejectedConfirm extends StatelessWidget {
             for (final reason in reasons)
               Padding(
                 padding: const EdgeInsets.only(top: ConsolarrSpacing.xxs),
-                child: Text('• $reason'),
+                child: Text(context.l10n.sharedBulletLine(reason)),
               ),
           ],
         ),

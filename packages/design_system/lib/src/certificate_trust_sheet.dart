@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'package:design_system/src/label_separators.dart';
 import 'package:design_system/src/radii.dart';
 import 'package:design_system/src/roles_context.dart';
 import 'package:design_system/src/spacing.dart';
@@ -119,7 +120,7 @@ class CertificateTrustSheet extends StatelessWidget {
     final theme = Theme.of(context);
     return Semantics(
       container: true,
-      label: '$label, $value',
+      label: ConsolarrSeparators.of(context).joinList([label, value]),
       excludeSemantics: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

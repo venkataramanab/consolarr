@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:design_system/design_system.dart';
+import 'package:l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Download state of one release row.
@@ -209,7 +210,10 @@ class _Details extends StatelessWidget {
           for (final line in lines)
             Padding(
               padding: const EdgeInsets.only(top: ConsolarrSpacing.xxs),
-              child: Text('• $line', style: theme.textTheme.bodySmall),
+              child: Text(
+                context.l10n.sharedBulletLine(line),
+                style: theme.textTheme.bodySmall,
+              ),
             ),
         ],
       ),

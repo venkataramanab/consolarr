@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:design_system/src/glass_sheet.dart';
+import 'package:design_system/src/label_separators.dart';
 import 'package:design_system/src/radii.dart';
 import 'package:design_system/src/roles_context.dart';
 import 'package:design_system/src/spacing.dart';
@@ -189,7 +190,7 @@ class SettingsRow extends StatelessWidget {
       container: true,
       button: onTap != null,
       enabled: enabled,
-      label: [title, ?subtitle, ?value].join(', '),
+      label: ConsolarrSeparators.of(context).joinList([title, subtitle, value]),
       hint: semanticsHint,
       excludeSemantics: true,
       onTap: active ? onTap : null,
@@ -237,7 +238,7 @@ class SwitchRow extends StatelessWidget {
       container: true,
       toggled: value,
       enabled: active,
-      label: [title, ?subtitle].join(', '),
+      label: ConsolarrSeparators.of(context).joinList([title, subtitle]),
       excludeSemantics: true,
       onTap: active ? () => onChanged!(!value) : null,
       child: InkWell(
@@ -406,7 +407,7 @@ class _ChoiceList<T> extends StatelessWidget {
             inMutuallyExclusiveGroup: true,
             checked: o.value == selected,
             button: true,
-            label: [o.label, ?o.hint].join(', '),
+            label: ConsolarrSeparators.of(context).joinList([o.label, o.hint]),
             excludeSemantics: true,
             onTap: () => onPick(o.value),
             child: InkWell(

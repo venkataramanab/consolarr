@@ -552,6 +552,9 @@
     }
   },
   "dashboardOpenHint": "فتح",
+  "@dashboardOpenHint": {
+    "description": "Spoken hint of a tile that opens a service tab: the action, after the name of what is read."
+  },
   "dashboardActivitySemantics": "\u2068{service}\u2069، \u2068{counts}\u2069",
   "@dashboardActivitySemantics": {
     "description": "Spoken name of a service tile of the activity card without speeds: service and counts.",
@@ -585,6 +588,9 @@
     }
   },
   "dashboardEditServer": "تعديل الخادم",
+  "@dashboardEditServer": {
+    "description": "Button of a failed server inside a dashboard card when its credentials are missing: opens the server editor."
+  },
   "dashboardSpokenJoin": "\u2068{first}\u2069، \u2068{second}\u2069",
   "@dashboardSpokenJoin": {
     "description": "Joins two phrases of one spoken label (for example the counts and the speeds of a service tile).",

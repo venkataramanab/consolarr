@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'package:design_system/src/label_separators.dart';
 import 'package:design_system/src/radii.dart';
 import 'package:design_system/src/roles_context.dart';
 import 'package:design_system/src/spacing.dart';
@@ -34,7 +35,6 @@ class MediaListTile extends StatelessWidget {
   final bool selected;
   final String? semanticsLabel;
 
-  static const _dot = ' · ';
   static const double thumbWidth = 48;
   static const double thumbHeight = 72;
 
@@ -42,12 +42,13 @@ class MediaListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final roles = context.roles;
     final theme = Theme.of(context);
-    final meta = metadata.join(_dot);
+    final separators = ConsolarrSeparators.of(context);
+    final meta = separators.joinParts(metadata);
     return Semantics(
       container: true,
       button: onTap != null,
       selected: selected,
-      label: semanticsLabel ?? (meta.isEmpty ? title : '$title, $meta'),
+      label: semanticsLabel ?? separators.joinList([title, meta]),
       excludeSemantics: true,
       onTap: onTap,
       onLongPress: onLongPress,
