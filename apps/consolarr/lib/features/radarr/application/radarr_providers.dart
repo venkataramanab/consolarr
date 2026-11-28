@@ -266,12 +266,19 @@ final libraryQueryProvider = NotifierProvider<LibraryQueryNotifier, MovieQuery>(
 class LibraryQueryNotifier extends Notifier<MovieQuery> {
   String? _serverId;
 
+  // What the person changed before the saved default was read: that wins.
+  bool _sortTouched = false;
+  bool _filterTouched = false;
+
   @override
   MovieQuery build() {
     final context = ref.watch(radarrContextProvider).value;
     final id = _serverId = context?.serverId;
-    if (id != null) Future<void>.microtask(() => _restore(id));
-    return const MovieQuery();
+    _sortTouched = _filterTouched = false;
+    if (id == null) return const MovieQuery();
+    Future<void>.microtask(() => _restore(id));
+    // The list waits for the saved default (see `MovieQuery.restored`).
+    return const MovieQuery(restored: false);
   }
 
   Future<void> _restore(String serverId) async {
@@ -281,7 +288,7 @@ class LibraryQueryNotifier extends Notifier<MovieQuery> {
       final filter = await prefs.read(RadarrPrefKeys.libraryFilter(serverId));
       if (!ref.mounted || _serverId != serverId) return;
       var q = state;
-      if (sort != null) {
+      if (sort != null && !_sortTouched) {
         final m = jsonDecode(sort);
         if (m is Map) {
           final key = MovieSortKey.values.where((k) => k.name == m['key']);
@@ -291,7 +298,7 @@ class LibraryQueryNotifier extends Notifier<MovieQuery> {
           );
         }
       }
-      if (filter != null) {
+      if (filter != null && !_filterTouched) {
         final m = jsonDecode(filter);
         if (m is Map) {
           q = q.copyWith(
@@ -299,9 +306,12 @@ class LibraryQueryNotifier extends Notifier<MovieQuery> {
           );
         }
       }
-      state = q;
+      state = q.copyWith(restored: true);
     } on Object {
-      // Defaults stay.
+      // Defaults stay, and the list is shown.
+      if (ref.mounted && _serverId == serverId) {
+        state = state.copyWith(restored: true);
+      }
     }
   }
 
@@ -312,6 +322,7 @@ class LibraryQueryNotifier extends Notifier<MovieQuery> {
     required bool ascending,
     bool saveAsDefault = false,
   }) async {
+    _sortTouched = true;
     state = state.copyWith(sort: key, ascending: ascending);
     final id = _serverId;
     if (saveAsDefault && id != null) {
@@ -326,6 +337,7 @@ class LibraryQueryNotifier extends Notifier<MovieQuery> {
     MovieFilter filter, {
     bool saveAsDefault = false,
   }) async {
+    _filterTouched = true;
     state = state.copyWith(filter: filter);
     final id = _serverId;
     if (saveAsDefault && id != null) {
@@ -394,8 +406,9 @@ class VisibleMoviesNotifier extends Notifier<VisibleMovies> {
     final names = {for (final p in profiles) p.id: p.name};
     final runner = ref.read(movieRunnerProvider);
     final generation = ++_generation;
-    // While loading or failed the value belongs to another state or server.
-    if (library.isLoading || library.hasError) {
+    // While loading or failed the value belongs to another state or server;
+    // before the saved default is read nothing is worth sorting yet.
+    if (library.isLoading || library.hasError || !query.restored) {
       return _last = const VisibleMovies();
     }
     final data = library.value;

@@ -121,12 +121,18 @@ class LibraryQuery {
     this.sortKey = SeriesSortKey.added,
     this.ascending = false,
     this.filter = const LibraryFilter(),
+    this.restored = true,
   });
 
   final String search;
   final SeriesSortKey sortKey;
   final bool ascending;
   final LibraryFilter filter;
+
+  /// The saved per-server default has been read (or there is none). Until
+  /// then the library list is held back, so it never shows in the built-in
+  /// order first and re-sorts when the saved one arrives.
+  final bool restored;
 
   bool get isDefaultView => search.trim().isEmpty && filter.isEmpty;
 
@@ -135,11 +141,13 @@ class LibraryQuery {
     SeriesSortKey? sortKey,
     bool? ascending,
     LibraryFilter? filter,
+    bool? restored,
   }) => LibraryQuery(
     search: search ?? this.search,
     sortKey: sortKey ?? this.sortKey,
     ascending: ascending ?? this.ascending,
     filter: filter ?? this.filter,
+    restored: restored ?? this.restored,
   );
 
   @override
@@ -148,10 +156,11 @@ class LibraryQuery {
       other.search == search &&
       other.sortKey == sortKey &&
       other.ascending == ascending &&
-      other.filter == filter;
+      other.filter == filter &&
+      other.restored == restored;
 
   @override
-  int get hashCode => Object.hash(search, sortKey, ascending, filter);
+  int get hashCode => Object.hash(search, sortKey, ascending, filter, restored);
 }
 
 /// Saved sort default as stored (`library.sort`).

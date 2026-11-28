@@ -139,6 +139,7 @@ class MovieQuery {
     this.ascending = false,
     this.filter = MovieFilter.none,
     this.search = '',
+    this.restored = true,
   });
 
   final MovieSortKey sort;
@@ -146,16 +147,23 @@ class MovieQuery {
   final MovieFilter filter;
   final String search;
 
+  /// The saved per-server default has been read (or there is none). Until
+  /// then the library list is held back, so it never shows in the built-in
+  /// order first and re-sorts when the saved one arrives.
+  final bool restored;
+
   MovieQuery copyWith({
     MovieSortKey? sort,
     bool? ascending,
     MovieFilter? filter,
     String? search,
+    bool? restored,
   }) => MovieQuery(
     sort: sort ?? this.sort,
     ascending: ascending ?? this.ascending,
     filter: filter ?? this.filter,
     search: search ?? this.search,
+    restored: restored ?? this.restored,
   );
 
   @override
@@ -164,10 +172,11 @@ class MovieQuery {
       other.sort == sort &&
       other.ascending == ascending &&
       other.filter == filter &&
-      other.search == search;
+      other.search == search &&
+      other.restored == restored;
 
   @override
-  int get hashCode => Object.hash(sort, ascending, filter, search);
+  int get hashCode => Object.hash(sort, ascending, filter, search, restored);
 }
 
 /// Sort/filter/search (RAD-02..04). Movies without a value for the sort key

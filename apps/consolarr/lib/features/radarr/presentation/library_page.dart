@@ -120,6 +120,10 @@ class _LibraryPageState extends ConsumerState<LibraryPage> {
       RadarrFailure(:final error) => pane(
         radarrErrorView(context, error, onRetry: _refresh),
       ),
+      // Hold the first frame until the saved sort and filter are read.
+      RadarrData()
+          when !ref.watch(libraryQueryProvider.select((q) => q.restored)) =>
+        MovieSkeleton(mode: mode, padding: padding),
       RadarrData(:final snapshot) => _content(context, snapshot, mode),
     };
   }
