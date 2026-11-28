@@ -43,7 +43,7 @@ AppDestination _stub(
 );
 
 List<AppDestination> _destinations() => [
-  _stub('home', (l) => l.navHome, Icons.home_outlined),
+  _stub('home', (l) => l.navDashboard, Icons.home_outlined),
   _stub(
     'sonarr',
     (l) => l.navSonarr,

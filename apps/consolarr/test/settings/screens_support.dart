@@ -134,7 +134,7 @@ class ScreenHarness {
           route: '/',
           icon: Icons.home_outlined,
           selectedIcon: Icons.home,
-          label: (l) => l.navHome,
+          label: (l) => l.navDashboard,
           builder: (context, state) => const SizedBox(),
         ),
         settingsDestination,

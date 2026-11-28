@@ -1,0 +1,576 @@
+{
+  "@@locale": "en",
+  "navDashboard": "Dashboard",
+  "@navDashboard": {
+    "description": "Label of the first tab of the bottom bar: the dashboard home screen."
+  },
+  "dashboardTitle": "Dashboard",
+  "@dashboardTitle": {
+    "description": "Title of the dashboard screen."
+  },
+  "dashboardAboutTooltip": "About Consolarr",
+  "@dashboardAboutTooltip": {
+    "description": "Tooltip and accessible name of the about button in the dashboard top bar."
+  },
+  "dashboardEmptyHeading": "Nothing here yet",
+  "@dashboardEmptyHeading": {
+    "description": "Headline of the dashboard when no server is configured."
+  },
+  "dashboardEmptyBody": "Add a media server or download client to get started.",
+  "@dashboardEmptyBody": {
+    "description": "Hint under the headline of the dashboard when no server is configured."
+  },
+  "dashboardSetupCta": "Set up a server",
+  "@dashboardSetupCta": {
+    "description": "Button that opens the server setup, on the dashboard and on cards whose service is not set up."
+  },
+  "dashboardActivityHeading": "Activity",
+  "@dashboardActivityHeading": {
+    "description": "Heading of the activity card (current downloads)."
+  },
+  "dashboardUpcomingHeading": "Upcoming",
+  "@dashboardUpcomingHeading": {
+    "description": "Heading of the upcoming card (episodes and movies coming soon)."
+  },
+  "dashboardRecentHeading": "Recently downloaded",
+  "@dashboardRecentHeading": {
+    "description": "Heading of the recent downloads card (items that were just imported)."
+  },
+  "dashboardActivityNotConfigured": "Set up Sonarr, Radarr or a torrent client to see your downloads here.",
+  "@dashboardActivityNotConfigured": {
+    "description": "Shown in the activity card when none of its services is set up."
+  },
+  "dashboardUpcomingNotConfigured": "Set up Sonarr or Radarr to see what is coming up.",
+  "@dashboardUpcomingNotConfigured": {
+    "description": "Shown in the upcoming card when neither Sonarr nor Radarr is set up."
+  },
+  "dashboardRecentNotConfigured": "Set up Sonarr or Radarr to see what just arrived.",
+  "@dashboardRecentNotConfigured": {
+    "description": "Shown in the recent downloads card when neither Sonarr nor Radarr is set up."
+  },
+  "dashboardActivityEmptyHeading": "Nothing downloading",
+  "@dashboardActivityEmptyHeading": {
+    "description": "Headline of the activity card when nothing is downloading."
+  },
+  "dashboardActivityEmptyBody": "Downloads show up here as soon as they start.",
+  "@dashboardActivityEmptyBody": {
+    "description": "Hint of the activity card when nothing is downloading."
+  },
+  "dashboardUpcomingEmptyHeading": "Nothing coming up",
+  "@dashboardUpcomingEmptyHeading": {
+    "description": "Headline of the upcoming card when there are no episodes or movies in the window."
+  },
+  "dashboardUpcomingEmptyBody": "No episodes or movies in the next two weeks.",
+  "@dashboardUpcomingEmptyBody": {
+    "description": "Hint of the upcoming card when there is nothing in the next 14 days."
+  },
+  "dashboardRecentEmptyHeading": "No recent downloads",
+  "@dashboardRecentEmptyHeading": {
+    "description": "Headline of the recent downloads card when nothing was imported lately."
+  },
+  "dashboardRecentEmptyBody": "Imported episodes and movies show up here.",
+  "@dashboardRecentEmptyBody": {
+    "description": "Hint of the recent downloads card when nothing was imported lately."
+  },
+  "dashboardServiceName": "{service} (⁨{name}⁩)",
+  "@dashboardServiceName": {
+    "description": "A service and the name the user gave the server, for example \"Sonarr (Living room)\". The name is isolated for bidirectional text.",
+    "placeholders": {
+      "service": {
+        "type": "String",
+        "description": "Service name, for example Sonarr."
+      },
+      "name": {
+        "type": "String",
+        "description": "Server name chosen by the user."
+      }
+    }
+  },
+  "dashboardSliceErrorTitle": "{service} is not available",
+  "@dashboardSliceErrorTitle": {
+    "description": "Headline of a failed server inside a dashboard card; names the service.",
+    "placeholders": {
+      "service": {
+        "type": "String",
+        "description": "Service and server name."
+      }
+    }
+  },
+  "dashboardRetry": "Retry",
+  "@dashboardRetry": {
+    "description": "Retry button of a failed server inside a dashboard card."
+  },
+  "dashboardRetryFor": "Retry {service}",
+  "@dashboardRetryFor": {
+    "description": "Accessible name of the retry button of a failed server.",
+    "placeholders": {
+      "service": {
+        "type": "String",
+        "description": "Service and server name."
+      }
+    }
+  },
+  "dashboardDelugeHostHint": "Choose the daemon host in Torrents.",
+  "@dashboardDelugeHostHint": {
+    "description": "Hint shown instead of an error when a Deluge web interface needs its daemon host chosen first."
+  },
+  "dashboardOpenTorrents": "Open Torrents",
+  "@dashboardOpenTorrents": {
+    "description": "Button that opens the Torrents tab from the dashboard."
+  },
+  "dashboardLoading": "Loading",
+  "@dashboardLoading": {
+    "description": "Accessible name of a card that is still loading (its skeleton)."
+  },
+  "dashboardCachedMessage": "Showing saved data because the server cannot be reached.",
+  "@dashboardCachedMessage": {
+    "description": "Banner text above cached items of a dashboard card."
+  },
+  "dashboardCachedAge": "Saved {age}",
+  "@dashboardCachedAge": {
+    "description": "Age line of the cached data banner, for example \"Saved 5 minutes ago\".",
+    "placeholders": {
+      "age": {
+        "type": "String",
+        "description": "Relative age such as \"5 minutes ago\"."
+      }
+    }
+  },
+  "dashboardAgeMinutes": "{count, plural, =1{1 minute ago} other{{count} minutes ago}}",
+  "@dashboardAgeMinutes": {
+    "description": "Relative age in minutes.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "The number of items."
+      }
+    }
+  },
+  "dashboardAgeHours": "{count, plural, =1{1 hour ago} other{{count} hours ago}}",
+  "@dashboardAgeHours": {
+    "description": "Relative age in hours.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "The number of items."
+      }
+    }
+  },
+  "dashboardAgeDays": "{count, plural, =1{1 day ago} other{{count} days ago}}",
+  "@dashboardAgeDays": {
+    "description": "Relative age in days.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "The number of items."
+      }
+    }
+  },
+  "dashboardAgeNow": "just now",
+  "@dashboardAgeNow": {
+    "description": "Relative age under one minute."
+  },
+  "dashboardDayToday": "today",
+  "@dashboardDayToday": {
+    "description": "Relative day: the current calendar day."
+  },
+  "dashboardDayTomorrow": "tomorrow",
+  "@dashboardDayTomorrow": {
+    "description": "Relative day: the next calendar day."
+  },
+  "dashboardDayInDays": "{count, plural, =1{in 1 day} other{in {count} days}}",
+  "@dashboardDayInDays": {
+    "description": "Relative day: some days from now.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "The number of items."
+      }
+    }
+  },
+  "dashboardEpisodeCode": "S{season}E{episode}",
+  "@dashboardEpisodeCode": {
+    "description": "Season and episode of an item, for example \"S2E5\".",
+    "placeholders": {
+      "season": {
+        "type": "int",
+        "description": "Season number.",
+        "format": "decimalPattern"
+      },
+      "episode": {
+        "type": "int",
+        "description": "Episode number.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "dashboardMovieInCinemas": "In cinemas",
+  "@dashboardMovieInCinemas": {
+    "description": "Subtitle of an upcoming movie that releases in cinemas."
+  },
+  "dashboardMovieDigital": "Digital release",
+  "@dashboardMovieDigital": {
+    "description": "Subtitle of an upcoming movie with a digital release."
+  },
+  "dashboardMovieDisc": "Disc release",
+  "@dashboardMovieDisc": {
+    "description": "Subtitle of an upcoming movie with a disc release."
+  },
+  "dashboardMovieLabel": "Movie",
+  "@dashboardMovieLabel": {
+    "description": "Subtitle of a recently imported movie."
+  },
+  "dashboardItemSubtitle": "{first}, {second}",
+  "@dashboardItemSubtitle": {
+    "description": "Two short facts about a carousel item joined into one subtitle, for example \"S2E5, tomorrow\".",
+    "placeholders": {
+      "first": {
+        "type": "String",
+        "description": "First fact."
+      },
+      "second": {
+        "type": "String",
+        "description": "Second fact."
+      }
+    }
+  },
+  "dashboardItemSemantics": "{title}, {details}, item {position} of {total}",
+  "@dashboardItemSemantics": {
+    "description": "Spoken label of a carousel item: its title, details and position in the carousel.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Series or movie title."
+      },
+      "details": {
+        "type": "String",
+        "description": "Subtitle text."
+      },
+      "position": {
+        "type": "int",
+        "description": "Position, starting at 1.",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "description": "Number of items.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "dashboardCarouselSemantics": "{heading}, {count, plural, =1{1 item} other{{count} items}}",
+  "@dashboardCarouselSemantics": {
+    "description": "Spoken name of a carousel: the card heading and the number of items.",
+    "placeholders": {
+      "heading": {
+        "type": "String",
+        "description": "Card heading."
+      },
+      "count": {
+        "type": "int",
+        "description": "Number of items."
+      }
+    }
+  },
+  "dashboardActivityActive": "{count, plural, =1{1 downloading} other{{count} downloading}}",
+  "@dashboardActivityActive": {
+    "description": "Number of active downloads of one server.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "The number of items."
+      }
+    }
+  },
+  "dashboardActivityAttention": "{count, plural, =1{1 needs attention} other{{count} need attention}}",
+  "@dashboardActivityAttention": {
+    "description": "Number of queue items of one server that failed or have warnings.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "The number of items."
+      }
+    }
+  },
+  "dashboardSpeedDown": "Down {speed}",
+  "@dashboardSpeedDown": {
+    "description": "Current global download speed of a torrent client.",
+    "placeholders": {
+      "speed": {
+        "type": "String",
+        "description": "Formatted speed."
+      }
+    }
+  },
+  "dashboardSpeedUp": "Up {speed}",
+  "@dashboardSpeedUp": {
+    "description": "Current global upload speed of a torrent client.",
+    "placeholders": {
+      "speed": {
+        "type": "String",
+        "description": "Formatted speed."
+      }
+    }
+  },
+  "dashboardSpeedUnavailable": "Speeds unavailable",
+  "@dashboardSpeedUnavailable": {
+    "description": "Shown when the torrent client answered the list but not the speed statistics."
+  },
+  "dashboardSpeedPerSecond": "{size}/⁠s",
+  "@dashboardSpeedPerSecond": {
+    "description": "A speed: a formatted size per second. The slash is followed by a word joiner so the unit never wraps.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Formatted size."
+      }
+    }
+  },
+  "dashboardUnitB": "{value} B",
+  "@dashboardUnitB": {
+    "description": "Size in bytes, with a non-breaking space.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 0
+        }
+      }
+    }
+  },
+  "dashboardUnitKB": "{value} KB",
+  "@dashboardUnitKB": {
+    "description": "Size in kilobytes, with a non-breaking space.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "dashboardUnitMB": "{value} MB",
+  "@dashboardUnitMB": {
+    "description": "Size in megabytes, with a non-breaking space.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "dashboardUnitGB": "{value} GB",
+  "@dashboardUnitGB": {
+    "description": "Size in gigabytes, with a non-breaking space.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "dashboardUnitTB": "{value} TB",
+  "@dashboardUnitTB": {
+    "description": "Size in terabytes, with a non-breaking space.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "description": "Amount.",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "dashboardDurationMinutes": "{count} min",
+  "@dashboardDurationMinutes": {
+    "description": "A duration in minutes, short form.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Minutes.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "dashboardDurationHours": "{hours} h {minutes} min",
+  "@dashboardDurationHours": {
+    "description": "A duration in hours and minutes, short form.",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "description": "Hours.",
+        "format": "decimalPattern"
+      },
+      "minutes": {
+        "type": "int",
+        "description": "Minutes.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "dashboardDurationDays": "{days} d {hours} h",
+  "@dashboardDurationDays": {
+    "description": "A duration in days and hours, short form.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "description": "Days.",
+        "format": "decimalPattern"
+      },
+      "hours": {
+        "type": "int",
+        "description": "Hours.",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "dashboardDurationLess": "under 1 min",
+  "@dashboardDurationLess": {
+    "description": "A duration under one minute."
+  },
+  "dashboardRowLeft": "{size} left",
+  "@dashboardRowLeft": {
+    "description": "Remaining size of a download row.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "description": "Formatted size."
+      }
+    }
+  },
+  "dashboardRowEta": "About {time} left",
+  "@dashboardRowEta": {
+    "description": "Estimated time left of a download row.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "description": "Formatted duration."
+      }
+    }
+  },
+  "dashboardRowSpeed": "{speed}",
+  "@dashboardRowSpeed": {
+    "description": "Transfer speed of a download row.",
+    "placeholders": {
+      "speed": {
+        "type": "String",
+        "description": "Formatted speed."
+      }
+    }
+  },
+  "dashboardProgressPercent": "{percent}",
+  "@dashboardProgressPercent": {
+    "description": "Percent label of a progress row.",
+    "placeholders": {
+      "percent": {
+        "type": "double",
+        "description": "Fraction 0 to 1.",
+        "format": "percentPattern"
+      }
+    }
+  },
+  "dashboardProgressSpoken": "{percent} done",
+  "@dashboardProgressSpoken": {
+    "description": "Spoken progress of a download row.",
+    "placeholders": {
+      "percent": {
+        "type": "double",
+        "description": "Fraction 0 to 1.",
+        "format": "percentPattern"
+      }
+    }
+  },
+  "dashboardRowSemantics": "{title}, {state}, {progress}",
+  "@dashboardRowSemantics": {
+    "description": "Spoken label of a download row: title, state and progress.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "description": "Title."
+      },
+      "state": {
+        "type": "String",
+        "description": "State label."
+      },
+      "progress": {
+        "type": "String",
+        "description": "Spoken progress."
+      }
+    }
+  },
+  "dashboardStateDownloading": "Downloading",
+  "@dashboardStateDownloading": {
+    "description": "State of a download row: downloading."
+  },
+  "dashboardStateStalled": "Stalled",
+  "@dashboardStateStalled": {
+    "description": "State of a download row: stalled."
+  },
+  "dashboardStateChecking": "Checking",
+  "@dashboardStateChecking": {
+    "description": "State of a download row: checking."
+  },
+  "dashboardStateQueued": "Queued",
+  "@dashboardStateQueued": {
+    "description": "State of a download row: queued."
+  },
+  "dashboardStatePaused": "Paused",
+  "@dashboardStatePaused": {
+    "description": "State of a download row: paused."
+  },
+  "dashboardStateImporting": "Importing",
+  "@dashboardStateImporting": {
+    "description": "State of a download row: importing."
+  },
+  "dashboardStateCompleted": "Completed",
+  "@dashboardStateCompleted": {
+    "description": "State of a download row: completed."
+  },
+  "dashboardStateSeeding": "Seeding",
+  "@dashboardStateSeeding": {
+    "description": "State of a download row: seeding."
+  },
+  "dashboardStateAttention": "Needs attention",
+  "@dashboardStateAttention": {
+    "description": "State of a download row: needs attention."
+  },
+  "dashboardRefreshedAnnouncement": "Dashboard updated",
+  "@dashboardRefreshedAnnouncement": {
+    "description": "Spoken once after a pull to refresh finished without problems."
+  },
+  "dashboardRefreshedPartial": "Dashboard updated, {count, plural, =1{1 service is not available} other{{count} services are not available}}",
+  "@dashboardRefreshedPartial": {
+    "description": "Spoken once after a pull to refresh when some services failed.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "The number of items."
+      }
+    }
+  },
+  "dashboardOpenActivity": "Open {service}",
+  "@dashboardOpenActivity": {
+    "description": "Accessible name of a tap target that opens a service tab from the activity card.",
+    "placeholders": {
+      "service": {
+        "type": "String",
+        "description": "Service name."
+      }
+    }
+  }
+}
