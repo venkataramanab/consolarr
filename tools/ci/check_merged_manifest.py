@@ -14,13 +14,19 @@ extra entries into the final manifest, so the merged result is what counts:
 * the only exported component is the launcher activity;
 * no component with an intent filter relies on the implicit default for
   `android:exported`;
-* backups are off and platform cleartext traffic is denied;
+* backups are off, the extraction/backup rules and the network security
+  config are present and point at the expected resources, and platform
+  cleartext traffic is denied;
+* no advertising or analytics identifiers: no `AD_ID` permission and no
+  ads/analytics `<meta-data>` (for example an ads `APPLICATION_ID`);
+* deep links stay off (`flutter_deeplinking_enabled` is "false");
 * release manifests are not debuggable.
 
 Usage:
   check_merged_manifest.py [--release] <merged AndroidManifest.xml>...
   check_merged_manifest.py --self-test
 """
+import re
 import sys
 import xml.etree.ElementTree as ET
 
@@ -33,6 +39,34 @@ ALLOWED_PERMISSIONS = {
     "android.permission.USE_BIOMETRIC",
     "android.permission.USE_FINGERPRINT",
 }
+
+# Attribute -> the resource the source manifest points it at.
+REQUIRED_RESOURCES = {
+    "dataExtractionRules": "@xml/data_extraction_rules",
+    "fullBackupContent": "@xml/backup_rules",
+    "networkSecurityConfig": "@xml/network_security_config",
+}
+AD_ID_PERMISSION = "com.google.android.gms.permission.AD_ID"
+# Words (split on non-alphanumerics) that mark an ads or analytics SDK entry.
+BANNED_META_WORDS = {
+    "ads", "ad", "admob", "analytics", "adid", "firebase", "appmetrica",
+    "crashlytics", "sentry", "bugsnag", "flurry", "mixpanel", "amplitude",
+}
+
+
+def meta_data_problems(root: ET.Element) -> list[str]:
+    problems = []
+    deeplinks = []
+    for el in root.iter("meta-data"):
+        name = el.get(ANDROID + "name", "")
+        words = set(re.split(r"[^a-z0-9]+", name.lower()))
+        if words & BANNED_META_WORDS or "APPLICATION_ID" in name.upper():
+            problems.append(f"advertising/analytics <meta-data>: {name}")
+        if name == "flutter_deeplinking_enabled":
+            deeplinks.append(el.get(ANDROID + "value"))
+    if deeplinks != ["false"]:
+        problems.append('flutter_deeplinking_enabled must be set to "false"')
+    return problems
 
 
 def check(xml_text: str, release: bool = False) -> list[str]:
@@ -47,7 +81,9 @@ def check(xml_text: str, release: bool = False) -> list[str]:
     for tag in ("uses-permission", "uses-permission-sdk-23"):
         for el in root.iter(tag):
             name = el.get(ANDROID + "name", "")
-            if name not in allowed:
+            if name == AD_ID_PERMISSION:
+                problems.append(f"advertising id permission requested: {name}")
+            elif name not in allowed:
                 problems.append(f"unexpected permission requested: {name}")
 
     app = root.find("application")
@@ -58,6 +94,13 @@ def check(xml_text: str, release: bool = False) -> list[str]:
         problems.append('android:allowBackup is not "false"')
     if app.get(ANDROID + "usesCleartextTraffic") != "false":
         problems.append('android:usesCleartextTraffic is not "false"')
+    for attr, resource in REQUIRED_RESOURCES.items():
+        value = app.get(ANDROID + attr)
+        if value is None:
+            problems.append(f"android:{attr} is missing")
+        elif value != resource:
+            problems.append(f'android:{attr} is "{value}", expected "{resource}"')
+    problems += meta_data_problems(root)
     if release and app.get(ANDROID + "debuggable") == "true":
         problems.append("release manifest is debuggable")
 
@@ -95,7 +138,12 @@ _GOOD = """<manifest xmlns:android="http://schemas.android.com/apk/res/android" 
   <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
   <uses-permission android:name="android.permission.USE_FINGERPRINT"/>
   <uses-permission android:name="x.y.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"/>
-  <application android:allowBackup="false" android:usesCleartextTraffic="false">
+  <application android:allowBackup="false" android:usesCleartextTraffic="false"
+      android:dataExtractionRules="@xml/data_extraction_rules"
+      android:fullBackupContent="@xml/backup_rules"
+      android:networkSecurityConfig="@xml/network_security_config">
+    <meta-data android:name="flutterEmbedding" android:value="2"/>
+    <meta-data android:name="flutter_deeplinking_enabled" android:value="false"/>
     <activity android:name="x.y.MainActivity" android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
@@ -136,6 +184,42 @@ def self_test() -> None:
             '<activity android:name="o.O" android:exported="true"/></application>',
         ),
         "no launcher": _GOOD.replace("LAUNCHER", "DEFAULT"),
+        "no data extraction rules": _GOOD.replace(
+            ' android:dataExtractionRules="@xml/data_extraction_rules"', ""
+        ),
+        "no full backup content": _GOOD.replace(
+            ' android:fullBackupContent="@xml/backup_rules"', ""
+        ),
+        "no network security config": _GOOD.replace(
+            ' android:networkSecurityConfig="@xml/network_security_config"', ""
+        ),
+        "extraction rules point elsewhere": _GOOD.replace(
+            "@xml/data_extraction_rules", "@xml/other"
+        ),
+        "backup content points elsewhere": _GOOD.replace(
+            "@xml/backup_rules", "@xml/other"
+        ),
+        "network config points elsewhere": _GOOD.replace(
+            "@xml/network_security_config", "@xml/other"
+        ),
+        "ad id permission": _GOOD.replace(
+            "<application",
+            '<uses-permission android:name="com.google.android.gms.permission.AD_ID"/><application',
+        ),
+        "ads application id": _GOOD.replace(
+            "</application>",
+            '<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="x"/></application>',
+        ),
+        "analytics meta-data": _GOOD.replace(
+            "</application>",
+            '<meta-data android:name="google_analytics_adid_collection_enabled" android:value="true"/></application>',
+        ),
+        "deep links not disabled": _GOOD.replace(
+            '<meta-data android:name="flutter_deeplinking_enabled" android:value="false"/>', ""
+        ),
+        "deep links enabled": _GOOD.replace(
+            'flutter_deeplinking_enabled" android:value="false"', 'flutter_deeplinking_enabled" android:value="true"'
+        ),
     }
     for label, xml in cases.items():
         assert check(xml), f"{label}: expected a problem"
