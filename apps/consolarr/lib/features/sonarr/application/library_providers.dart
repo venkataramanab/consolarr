@@ -22,6 +22,9 @@ final libraryRunnerProvider = Provider<LibraryRunner>(
 /// bigger ones go to another isolate.
 const librarySyncLimit = 1500;
 
+/// Longest the library list waits for the saved sort and filter.
+const prefsReadTimeout = Duration(seconds: 2);
+
 const _sortPref = 'library.sort';
 const _filterPref = 'library.filter';
 
@@ -56,8 +59,14 @@ class LibraryQueryNotifier extends Notifier<LibraryQuery> {
     if (id == null) return;
     try {
       final store = ref.read(sonarrPrefsStoreProvider);
-      final sort = decodeSort(await store.read(id, _sortPref));
-      final rawFilter = await store.read(id, _filterPref);
+      // A stuck read must not hold the list forever: after the timeout the
+      // built-in defaults apply (the catch below shows the list).
+      final sort = decodeSort(
+        await store.read(id, _sortPref).timeout(prefsReadTimeout),
+      );
+      final rawFilter = await store
+          .read(id, _filterPref)
+          .timeout(prefsReadTimeout);
       if (!ref.mounted || id != _serverId) return;
       var next = state;
       if (sort != null && !_sortTouched) {

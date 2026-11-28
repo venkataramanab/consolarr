@@ -263,6 +263,9 @@ final libraryQueryProvider = NotifierProvider<LibraryQueryNotifier, MovieQuery>(
   LibraryQueryNotifier.new,
 );
 
+/// Longest the library list waits for the saved sort and filter.
+const _prefsReadTimeout = Duration(seconds: 2);
+
 class LibraryQueryNotifier extends Notifier<MovieQuery> {
   String? _serverId;
 
@@ -284,8 +287,14 @@ class LibraryQueryNotifier extends Notifier<MovieQuery> {
   Future<void> _restore(String serverId) async {
     try {
       final prefs = ref.read(radarrPrefsProvider);
-      final sort = await prefs.read(RadarrPrefKeys.librarySort(serverId));
-      final filter = await prefs.read(RadarrPrefKeys.libraryFilter(serverId));
+      // A stuck read must not hold the list forever: after the timeout the
+      // built-in defaults apply (the catch below shows the list).
+      final sort = await prefs
+          .read(RadarrPrefKeys.librarySort(serverId))
+          .timeout(_prefsReadTimeout);
+      final filter = await prefs
+          .read(RadarrPrefKeys.libraryFilter(serverId))
+          .timeout(_prefsReadTimeout);
       if (!ref.mounted || _serverId != serverId) return;
       var q = state;
       if (sort != null && !_sortTouched) {
