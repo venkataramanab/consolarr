@@ -96,8 +96,14 @@ List<String> errorCategoriesFrom(Breadcrumbs crumbs) {
 /// The redacted bundle shown in the preview and shared byte for byte. Built
 /// on demand; known values (server names, hosts, user names) are scrubbed on
 /// top of the pattern rules.
-final diagnosticsBundleProvider = FutureProvider.autoDispose<DiagnosticsBundle>(
-  (ref) async {
+///
+/// A services-check result changes only the Services section: [build] does not
+/// watch the check, it listens to it and swaps that one section
+/// ([DiagnosticsBundle.withServices]), so the credentials, the platform
+/// description and the log lines are not read or scrubbed again.
+class DiagnosticsBundleNotifier extends AsyncNotifier<DiagnosticsBundle> {
+  @override
+  Future<DiagnosticsBundle> build() async {
     final settings = ref.watch(settingsProvider);
     // The known values (server names, hosts, user names) are scrubbed on top
     // of the pattern rules, so the bundle is never built without them: while
@@ -122,17 +128,16 @@ final diagnosticsBundleProvider = FutureProvider.autoDispose<DiagnosticsBundle>(
     }
     // Health that is already resolved (the server list) counts; nothing is
     // started here: a check runs only on the user's tap.
-    final known0 = <String, ServerHealth>{};
+    final resolved = <String, ServerHealth>{};
     for (final s in servers) {
       final provider = serverHealthProvider(s.profile.id);
       if (ref.read(provider.exists)) {
         final h = ref.read(provider).asData?.value;
         if (h != null && h != ServerHealth.checking) {
-          known0[s.profile.id] = h;
+          resolved[s.profile.id] = h;
         }
       }
     }
-    final check = ref.watch(servicesCheckProvider);
     final consent = ref.watch(consentProvider);
     final flavor = ref.watch(telemetryAvailableProvider)
         ? AppFlavor.play
@@ -155,14 +160,32 @@ final diagnosticsBundleProvider = FutureProvider.autoDispose<DiagnosticsBundle>(
       crashReportsConsent: consent.crashReports,
       analyticsConsent: consent.analytics,
     );
-    return DiagnosticsBundle.build(
+    List<DiagnosticsServiceEntry> servicesFor(ServicesCheckState check) =>
+        serviceEntries(servers, check, known: resolved);
+
+    final bundle = DiagnosticsBundle.build(
       info: info,
       errorCategories: errorCategoriesFrom(ref.read(breadcrumbsProvider)),
       entries: ref.read(diagnosticsLogProvider).entries,
-      services: serviceEntries(servers, check, known: known0),
+      services: servicesFor(ref.read(servicesCheckProvider)),
       // Preview == shared text: the bundle itself stays within the share cap.
       maxBytes: shareTextMaxBytes,
       scrubber: DiagnosticsScrubber(knownValues: known),
     );
-  },
-);
+    // Only the Services section follows the check (and only after the first
+    // value exists; until then `build` has read the latest state anyway).
+    ref.listen(servicesCheckProvider, (_, check) {
+      final current = state.value;
+      if (current != null) {
+        state = AsyncData(current.withServices(servicesFor(check)));
+      }
+    });
+    return bundle;
+  }
+}
+
+final diagnosticsBundleProvider =
+    AsyncNotifierProvider.autoDispose<
+      DiagnosticsBundleNotifier,
+      DiagnosticsBundle
+    >(DiagnosticsBundleNotifier.new);

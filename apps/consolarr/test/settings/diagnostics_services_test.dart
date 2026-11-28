@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:consolarr/features/servers/application/servers_providers.dart';
 import 'package:consolarr/features/servers/domain/server_models.dart';
@@ -194,6 +195,88 @@ void main() {
         expect(bundle.text, contains('health=healthy'));
       },
     );
+  });
+
+  group('a check result updates only the Services section', () {
+    test(
+      'no credentials or platform are reloaded, the rest is identical',
+      () async {
+        final h = ScreenHarness(
+          stored: {SettingsKeys.diagnosticsEnabled: '1'},
+          servers: [entry('a'), entry('b')],
+        );
+        final c = ProviderContainer(overrides: h.overrides);
+        addTearDown(c.dispose);
+        c.read(diagnosticsLogProvider).add(LogLevel.error, 'something failed');
+        await _bundle(c);
+        // Let the settings load and any rebuild it causes finish first.
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        final first = await c.read(diagnosticsBundleProvider.future);
+        final credentialsAfterBuild = h.ui.repo.loadCredentialsCalls;
+        final platformAfterBuild = h.base.actions.platformCalls;
+        expect(credentialsAfterBuild, greaterThanOrEqualTo(2));
+        expect(platformAfterBuild, greaterThanOrEqualTo(1));
+        final seen = <DiagnosticsBundle>[];
+        final sub = c.listen(diagnosticsBundleProvider, (_, next) {
+          final v = next.value;
+          if (v != null) seen.add(v);
+        });
+        addTearDown(sub.close);
+
+        await c.read(servicesCheckProvider.notifier).check();
+        await Future<void>.delayed(Duration.zero);
+
+        // The check read the credentials once per server (its own probe); the
+        // bundle read none and asked for no platform description.
+        expect(h.ui.repo.loadCredentialsCalls, credentialsAfterBuild + 2);
+        expect(h.base.actions.platformCalls, platformAfterBuild);
+        expect(seen, isNotEmpty);
+        final last = c.read(diagnosticsBundleProvider).requireValue;
+        expect(last.text, contains('health=healthy'));
+        expect(first.text, contains('health=not checked'));
+        String section(DiagnosticsBundle b, String id) =>
+            b.sections.firstWhere((s) => s.id == id).body;
+        for (final id in ['app', 'platform', 'locale', 'error_categories']) {
+          expect(section(last, id), section(first, id), reason: id);
+        }
+        expect(section(last, 'log'), section(first, 'log'));
+        expect(section(last, 'services'), isNot(section(first, 'services')));
+        expect(last.bytes, utf8.encode(last.text));
+      },
+    );
+
+    test('withServices keeps the size cap', () {
+      final entries = [
+        for (var i = 0; i < 300; i++)
+          LogEntry(
+            time: DateTime.utc(2026),
+            level: LogLevel.info,
+            message: 'line $i ${'x' * 300}',
+          ),
+      ];
+      final base = DiagnosticsBundle.build(
+        info: const DiagnosticsInfo(
+          appVersion: '1',
+          buildMode: 'debug',
+          platform: 'p',
+          locale: 'en',
+        ),
+        errorCategories: const [],
+        entries: entries,
+        maxBytes: 20000,
+      );
+      final updated = base.withServices([
+        for (final k in ServiceKindParam.values)
+          DiagnosticsServiceEntry(
+            kind: k,
+            servers: 1,
+            health: ServiceHealthBucket.healthy,
+          ),
+      ]);
+      expect(updated.bytes.length, lessThanOrEqualTo(20000));
+      expect(updated.text, contains('health=healthy'));
+      expect(updated.text, contains('line 299 '));
+    });
   });
 
   group('preview states', () {

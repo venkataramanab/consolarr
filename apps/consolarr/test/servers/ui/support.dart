@@ -64,6 +64,7 @@ class FakeServerRepository implements ServerRepository {
   final List<ServerDraft> saved = [];
   final List<String> deleted = [];
   final Map<String, ServerCredentials> credentials = {};
+  int loadCredentialsCalls = 0;
   List<String>? lastOrder;
   String? startup;
   final Map<ServiceKind, String> active = {};
@@ -153,8 +154,10 @@ class FakeServerRepository implements ServerRepository {
   }
 
   @override
-  Future<ServerCredentials> loadCredentials(ServerProfile profile) async =>
-      credentials[profile.id] ?? ServerCredentials.empty;
+  Future<ServerCredentials> loadCredentials(ServerProfile profile) async {
+    loadCredentialsCalls++;
+    return credentials[profile.id] ?? ServerCredentials.empty;
+  }
 }
 
 /// Replays queued outcomes (the last one repeats) and records every call.

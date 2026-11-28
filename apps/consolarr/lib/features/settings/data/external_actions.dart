@@ -161,6 +161,11 @@ class RecordingExternalActions implements ExternalActions {
     return capped.truncated;
   }
 
+  int platformCalls = 0;
+
   @override
-  Future<String> platformDescription() async => 'Android API 34';
+  Future<String> platformDescription() async {
+    platformCalls++;
+    return 'Android API 34';
+  }
 }
