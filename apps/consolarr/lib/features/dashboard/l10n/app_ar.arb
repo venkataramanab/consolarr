@@ -545,7 +545,50 @@
   },
   "dashboardOpenHint": "فتح",
   "dashboardActivitySemantics": "{service}، {counts}",
+  "@dashboardActivitySemantics": {
+    "description": "Spoken name of a service tile of the activity card without speeds: service and counts.",
+    "placeholders": {
+      "service": {
+        "type": "String",
+        "description": "Service and server name."
+      },
+      "counts": {
+        "type": "String",
+        "description": "Downloads and items that need attention."
+      }
+    }
+  },
   "dashboardActivitySemanticsSpeeds": "{service}، {counts}، {speeds}",
+  "@dashboardActivitySemanticsSpeeds": {
+    "description": "Spoken name of a service tile of the activity card: service, counts and transfer speeds.",
+    "placeholders": {
+      "service": {
+        "type": "String",
+        "description": "Service and server name."
+      },
+      "counts": {
+        "type": "String",
+        "description": "Downloads and items that need attention."
+      },
+      "speeds": {
+        "type": "String",
+        "description": "Download and upload speeds."
+      }
+    }
+  },
   "dashboardEditServer": "تعديل الخادم",
-  "dashboardSpokenJoin": "{first}، {second}"
+  "dashboardSpokenJoin": "{first}، {second}",
+  "@dashboardSpokenJoin": {
+    "description": "Joins two phrases of one spoken label (for example the counts and the speeds of a service tile).",
+    "placeholders": {
+      "first": {
+        "type": "String",
+        "description": "First phrase."
+      },
+      "second": {
+        "type": "String",
+        "description": "Second phrase."
+      }
+    }
+  }
 }
