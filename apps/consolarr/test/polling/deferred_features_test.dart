@@ -215,6 +215,57 @@ void main() {
       );
     });
 
+    test('flags a conditional import or export and a part directive', () {
+      for (final planted in [
+        // The first URI is harmless; the layer hides behind a condition.
+        "import 'a.dart' if (dart.library.io) "
+            "'../../shared/polling/change_detection/diff.dart';",
+        "import 'a.dart' if (dart.library.html) 'b.dart' "
+            "if (dart.library.io) '../../shared/polling/snapshot_sources.dart';",
+        "export 'a.dart'\n    if (dart.library.io)\n    "
+            "'package:core/change_detection.dart';",
+        "import 'a.dart' if (dart.library.io == 'true') "
+            "'package:core/src/change_detection/diff.dart';",
+        // A part file is part of the library that declares it.
+        "part '../../shared/polling/change_detection/diff.dart';",
+        "part '../../shared/polling/snapshot_sources.dart';",
+        'part "package:consolarr/shared/polling/poll_telemetry.dart";',
+      ]) {
+        expect(
+          offenders(planted),
+          contains('lib/features/x/y.dart'),
+          reason: planted,
+        );
+      }
+      // A part is followed to what it imports, like any other file.
+      final viaPart = filesReachingChangeDetection({
+        ...wiring,
+        'lib/features/a.dart': "part 'b.dart';",
+        'lib/features/b.dart':
+            "import '../shared/polling/snapshot_sources.dart';",
+      }).keys;
+      expect(viaPart, contains('lib/features/a.dart'));
+    });
+
+    test('conditional alternatives that are harmless stay harmless', () {
+      for (final planted in [
+        "import 'a.dart' if (dart.library.io) 'b.dart';",
+        "import 'package:core/core.dart' if (dart.library.io) 'c.dart';",
+        "part 'other.dart';",
+        "part of 'a.dart';",
+        "// import 'a.dart' if (dart.library.io) 'package:core/change_detection.dart';",
+      ]) {
+        expect(offenders(planted), isEmpty, reason: planted);
+      }
+      expect(
+        directiveUris(
+          "import 'a.dart' if (dart.library.io) 'b.dart' "
+          "if (dart.library.html) 'c.dart';",
+        ),
+        ['a.dart', 'b.dart', 'c.dart'],
+      );
+    });
+
     test('lets the rest of the polling layer and unrelated code through', () {
       for (final planted in [
         "import 'package:consolarr/shared/polling/poll_scheduler.dart';",
@@ -263,17 +314,27 @@ const _appLayer = 'lib/shared/polling/change_detection/';
 const _coreLibrary = 'package:core/change_detection.dart';
 const _coreSources = 'package:core/src/change_detection/';
 
-/// The import and export targets of [source] (comments ignored), as written.
+/// Every URI an import, export or part directive of [source] can load
+/// (comments ignored), as written: the first URI and each
+/// `if (...) '<uri>'` alternative of a conditional one.
 List<String> directiveUris(String source) {
   final code = source
       .replaceAll(RegExp(r'/\*[\s\S]*?\*/'), '')
       .replaceAll(RegExp(r'//[^\n]*'), '');
-  return [
+  final uris = <String>[];
+  for (final d in RegExp(
+    r'''\b(?:import|export|part)\s+(['"][^;]*);''',
+  ).allMatches(code)) {
+    final body = d.group(1)!;
+    final first = RegExp(r'''^['"]([^'"]+)['"]''').firstMatch(body);
+    if (first != null) uris.add(first.group(1)!);
     for (final m in RegExp(
-      r'''\b(?:import|export)\s+['"]([^'"]+)['"]''',
-    ).allMatches(code))
-      m.group(1)!,
-  ];
+      r'''\bif\s*\([^)]*\)\s*['"]([^'"]+)['"]''',
+    ).allMatches(body)) {
+      uris.add(m.group(1)!);
+    }
+  }
+  return uris;
 }
 
 /// The canonical name of the file that [uri], written in the file [from]
