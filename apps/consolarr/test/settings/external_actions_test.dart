@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:consolarr/features/settings/data/external_actions.dart';
+import 'package:core/core.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
@@ -268,12 +269,33 @@ void main() {
       tearDown(() => UrlLauncherPlatform.instance = previous);
 
       test('opens https addresses', () async {
-        expect(await actions.openHttps(Uri.parse('https://example.com')), true);
-        expect(launcher.launched, ['https://example.com']);
+        expect(
+          await actions.openHttps(
+            Uri.parse('https://${ExternalHosts.github}/x'),
+          ),
+          true,
+        );
+        expect(launcher.launched, ['https://${ExternalHosts.github}/x']);
+      });
+
+      test('refuses an https host that is not on the list', () async {
+        for (final u in [
+          'https://example.com',
+          'https://${ExternalHosts.github}.evil.example/',
+          'https://u:p@${ExternalHosts.github}/',
+          'https://${ExternalHosts.github}:8443/',
+        ]) {
+          expect(await actions.openHttps(Uri.parse(u)), isFalse, reason: u);
+        }
+        expect(launcher.launched, isEmpty);
       });
 
       test('refuses every other scheme without launching', () async {
-        for (final u in ['http://example.com', 'intent://x', 'file:///x']) {
+        for (final u in [
+          'http://${ExternalHosts.github}',
+          'intent://x',
+          'file:///x',
+        ]) {
           expect(await actions.openHttps(Uri.parse(u)), isFalse);
         }
         expect(launcher.launched, isEmpty);
@@ -284,12 +306,16 @@ void main() {
         () async {
           launcher.result = false;
           expect(
-            await actions.openHttps(Uri.parse('https://example.com')),
+            await actions.openHttps(
+              Uri.parse('https://${ExternalHosts.github}'),
+            ),
             false,
           );
           launcher.error = PlatformException(code: 'ACTIVITY_NOT_FOUND');
           expect(
-            await actions.openHttps(Uri.parse('https://example.com')),
+            await actions.openHttps(
+              Uri.parse('https://${ExternalHosts.github}'),
+            ),
             false,
           );
         },

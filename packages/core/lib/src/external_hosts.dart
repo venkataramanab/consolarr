@@ -21,4 +21,13 @@ abstract final class ExternalHosts {
 
   /// All of them; the privacy statement must name each one.
   static const all = <String>[github, youtube, imdb, tvdb, tmdb, tvMaze];
+
+  /// Whether [uri] may be handed to another app: `https`, one of [all], no
+  /// credentials in it and no custom port. Both launchers check this at
+  /// runtime, so a link built from server data can never open another host.
+  static bool allows(Uri uri) =>
+      uri.scheme == 'https' &&
+      all.contains(uri.host) &&
+      uri.userInfo.isEmpty &&
+      (!uri.hasPort || uri.port == 443);
 }

@@ -395,11 +395,8 @@ abstract interface class ExternalLinkLauncher {
   Future<bool> open(Uri uri);
 }
 
-/// Whether [uri] may be opened (scheme and host check).
-bool isOpenableExternalUri(Uri uri) =>
-    (uri.scheme == 'https' || uri.scheme == 'http') &&
-    uri.host.isNotEmpty &&
-    uri.userInfo.isEmpty;
+/// Whether [uri] may be opened: https and one of [ExternalHosts.all].
+bool isOpenableExternalUri(Uri uri) => ExternalHosts.allows(uri);
 
 class UrlLauncherExternalLinkLauncher implements ExternalLinkLauncher {
   const UrlLauncherExternalLinkLauncher();
