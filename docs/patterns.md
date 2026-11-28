@@ -202,6 +202,11 @@ in `EmptyArrLists`.
   (`TickerMode`) or another route is on top, and started again when that
   changes. `lib/shared/polling/poll_visibility.dart` (`PollVisibility`) folds
   all four into one `isVisible` flag; section 15 shows how to use it.
+* **"Today" rolls over at midnight.** A screen that labels days as today or
+  tomorrow watches `currentDayProvider` (`lib/shared/time/current_day.dart`)
+  and reports its visibility with `setVisible(visible, owner: this)`; the
+  midnight timer runs only while some owner is visible (Dashboard, Radarr
+  calendar). Do not write another day timer.
 * A destination with `kinds` is offered once a server of any of those kinds
   exists; the open branch is always shown, so the bar never highlights another
   tab for the screen you are on. `routeForKind(kind)` replaces switches that

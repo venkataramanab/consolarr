@@ -7,9 +7,12 @@ import 'package:consolarr/features/radarr/domain/dates.dart';
 import 'package:consolarr/features/radarr/presentation/common.dart';
 import 'package:consolarr/features/radarr/presentation/navigation.dart';
 import 'package:consolarr/features/radarr/presentation/screen_view.dart';
+import 'package:consolarr/shared/polling/poll_visibility.dart';
+import 'package:consolarr/shared/time/current_day.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
@@ -42,9 +45,37 @@ final class _EntryRow extends _Row {
   final CalendarEntry entry;
 }
 
-class _CalendarPageState extends ConsumerState<CalendarPage> {
+class _CalendarPageState extends ConsumerState<CalendarPage>
+    with WidgetsBindingObserver, PollVisibility<CalendarPage> {
   /// Days the user folded away.
   final Set<DateTime> _collapsed = {};
+
+  late final CurrentDay _day;
+
+  @override
+  void initState() {
+    super.initState();
+    _day = ref.read(currentDayProvider.notifier);
+    _syncDay();
+  }
+
+  /// The midnight timer runs only while this page is visible (the same rule
+  /// as every poll). Deferred: a provider cannot change while widgets build,
+  /// and visibility is first known during the build.
+  void _syncDay() {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _day.setVisible(isVisible, owner: this);
+    });
+  }
+
+  @override
+  void onVisibilityChanged({required bool visible}) => _syncDay();
+
+  @override
+  void dispose() {
+    _day.setVisible(false, owner: this);
+    super.dispose();
+  }
 
   /// The sliver the scroll view opens on (today and the days after it).
   static const _openingKey = ValueKey<String>('calendar-opening');
@@ -55,6 +86,9 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   Widget build(BuildContext context) {
     final async = ref.watch(calendarProvider);
     final types = ref.watch(calendarTypesProvider);
+    // "Today" follows the local day: this page rebuilds when it changes at
+    // midnight, and `now` is read from the clock again then.
+    ref.watch(currentDayProvider);
     final now = ref.watch(clockProvider)();
     Future<void> refresh() => ref.read(calendarProvider.notifier).refresh();
 

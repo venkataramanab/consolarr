@@ -10,7 +10,7 @@ import 'package:arr_api/arr_api.dart'
         RadarrMovie,
         SonarrClient,
         SonarrEpisode;
-import 'package:consolarr/features/dashboard/application/dashboard_dates.dart';
+import 'package:consolarr/shared/time/calendar_days.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_models.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_source.dart';
 import 'package:consolarr/features/radarr/radarr_routes.dart' show radarrRoute;

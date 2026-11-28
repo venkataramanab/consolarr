@@ -267,13 +267,14 @@ List<Override> radarrOverrides(
   MemoryPrefs? prefs,
   bool includeContext = true,
   MovieRunner? movieRunner,
+  DateTime Function()? clock,
 }) {
   final context = contextFor(api, cache: cache);
   return [
     if (includeContext)
       radarrContextProvider.overrideWith((ref) async => context),
     radarrPrefsProvider.overrideWithValue(prefs ?? MemoryPrefs()),
-    clockProvider.overrideWithValue(() => fixedNow),
+    clockProvider.overrideWithValue(clock ?? () => fixedNow),
     appLockedProvider.overrideWithValue(false),
     commandPollIntervalProvider.overrideWithValue(Duration.zero),
     // Big libraries are filtered inline: a real isolate never completes under
