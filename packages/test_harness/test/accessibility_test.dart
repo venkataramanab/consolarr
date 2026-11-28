@@ -19,19 +19,6 @@ Future<void> _pump(WidgetTester tester, Widget child) async {
   await tester.pumpAndSettle();
 }
 
-/// Like [_pump] for a screen with a running spinner (it never settles).
-Future<void> _pumpUnsettled(WidgetTester tester, Widget child) async {
-  const v = HarnessVariant(
-    size: Size(320, 568),
-    textScale: 2,
-    locale: Locale('en'),
-    brightness: Brightness.light,
-  );
-  applyVariantView(tester, v);
-  await tester.pumpWidget(harnessApp(v, Scaffold(body: child)));
-  await tester.pump(const Duration(milliseconds: 100));
-}
-
 void main() {
   testWidgets('accepts a 48dp, labelled button with readable text', (
     tester,
