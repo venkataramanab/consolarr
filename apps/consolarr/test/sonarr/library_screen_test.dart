@@ -33,6 +33,12 @@ List<SonarrSeries> _named() => [
   fakeSeries(4, title: 'Charlie', status: SeriesStatus.ended),
 ];
 
+/// A saved "save as default" of title A to Z: it beats the built-in view
+/// (date added, newest first), so title-ordered expectations stay valid.
+MemorySonarrPrefsStore _titlePrefs() =>
+    MemorySonarrPrefsStore()
+      ..values['sonarr.srv1.library.sort'] = '{"key":"title","asc":true}';
+
 Future<RouteRecorder> _pump(
   WidgetTester tester, {
   required LibraryData data,
@@ -70,7 +76,7 @@ void main() {
   testWidgets('series are grouped under pinned section headers', (
     tester,
   ) async {
-    await _pump(tester, data: dataState(_named()));
+    await _pump(tester, data: dataState(_named()), prefs: _titlePrefs());
     expect(find.bySemanticsLabel('Section A'), findsOneWidget);
     expect(find.bySemanticsLabel('Section B'), findsOneWidget);
     expect(find.bySemanticsLabel('Section C'), findsOneWidget);
@@ -115,8 +121,9 @@ void main() {
     tester,
   ) async {
     await _pump(tester, data: dataState(_named()));
-    expect(find.text('Sort: Title'), findsOneWidget);
-    await tester.tap(find.text('Sort: Title'));
+    // The built-in view: newest additions first.
+    expect(find.text('Sort: Date added'), findsOneWidget);
+    await tester.tap(find.text('Sort: Date added'));
     await tester.pumpAndSettle();
     await _tap(tester, find.text('Rating'));
     await _tap(tester, find.text('Descending'));
@@ -128,7 +135,7 @@ void main() {
   testWidgets('sort saved as default is stored per server', (tester) async {
     final prefs = MemorySonarrPrefsStore();
     await _pump(tester, data: dataState(_named()), prefs: prefs);
-    await tester.tap(find.text('Sort: Title'));
+    await tester.tap(find.text('Sort: Date added'));
     await tester.pumpAndSettle();
     await _tap(tester, find.text('Year'));
     await _tap(tester, find.text('Save as default'));
@@ -173,7 +180,7 @@ void main() {
         fakeSeries(i + 1, title: 'A show ${i.toString().padLeft(2, '0')}'),
       fakeSeries(100, title: 'Zulu'),
     ];
-    await _pump(tester, data: dataState(many));
+    await _pump(tester, data: dataState(many), prefs: _titlePrefs());
     expect(find.text('Zulu'), findsNothing);
     await tester.tap(find.byTooltip('Jump to section'));
     await tester.pumpAndSettle();
@@ -255,9 +262,9 @@ void main() {
       );
       final visible = artwork.requests.length;
       artwork.requests.clear();
-      await tester.tap(find.text('Sort: Title'));
+      await tester.tap(find.text('Sort: Date added'));
       await tester.pumpAndSettle();
-      await _tap(tester, find.text('Descending'));
+      await _tap(tester, find.text('Ascending'));
       await _tap(tester, find.text('Apply'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'show 1');

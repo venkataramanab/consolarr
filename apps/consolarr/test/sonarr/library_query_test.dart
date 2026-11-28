@@ -122,22 +122,17 @@ void main() {
   group('sort', () {
     test('title ascending and descending', () {
       final all = [_s(1, title: 'B'), _s(2, title: 'A'), _s(3, title: 'C')];
-      expect(_ids(applyLibraryQuery(all, const LibraryQuery(), names)), [
-        2,
-        1,
-        3,
-      ]);
+      const asc = LibraryQuery(sortKey: SeriesSortKey.title, ascending: true);
+      expect(_ids(applyLibraryQuery(all, asc, names)), [2, 1, 3]);
       expect(
-        _ids(
-          applyLibraryQuery(all, const LibraryQuery(ascending: false), names),
-        ),
+        _ids(applyLibraryQuery(all, asc.copyWith(ascending: false), names)),
         [3, 1, 2],
       );
     });
 
     test('missing values stay last in both directions', () {
       final all = [_s(1, year: 2010), _s(2), _s(3, year: 2001)];
-      const asc = LibraryQuery(sortKey: SeriesSortKey.year);
+      const asc = LibraryQuery(sortKey: SeriesSortKey.year, ascending: true);
       expect(_ids(applyLibraryQuery(all, asc, names)), [3, 1, 2]);
       expect(
         _ids(applyLibraryQuery(all, asc.copyWith(ascending: false), names)),

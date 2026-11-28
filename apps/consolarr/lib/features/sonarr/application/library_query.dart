@@ -116,8 +116,10 @@ bool _setEq<T>(Set<T> a, Set<T> b) => a.length == b.length && a.containsAll(b);
 class LibraryQuery {
   const LibraryQuery({
     this.search = '',
-    this.sortKey = SeriesSortKey.title,
-    this.ascending = true,
+    // Newest additions first: the built-in view shows what was just added. A
+    // saved "save as default" replaces it (see `LibraryQueryNotifier`).
+    this.sortKey = SeriesSortKey.added,
+    this.ascending = false,
     this.filter = const LibraryFilter(),
   });
 

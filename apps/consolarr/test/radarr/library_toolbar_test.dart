@@ -202,6 +202,12 @@ void main() {
         (v) => radarrApp(v, api, const RadarrScreen()),
         variants: phone,
       );
+      // The jump control belongs to the title and year sorts; the library
+      // opens on date added, so switch to title first.
+      await _container(tester)
+          .read(libraryQueryProvider.notifier)
+          .setSort(MovieSortKey.title, ascending: true);
+      await tester.pumpAndSettle();
       for (final opener in [
         find.textContaining('Sort:'),
         find.textContaining('Filter'),
@@ -329,7 +335,11 @@ void main() {
       gate.complete();
       await tester.pumpAndSettle();
       expect(find.bySemanticsLabel('Updating the list…'), findsNothing);
-      expect(find.text('Example Movie 1'), findsOneWidget);
+      // Newest first: the last movie added opens the list.
+      expect(
+        find.text('Example Movie ${movieSyncLimit + 100}'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('a small library is filtered inline', (tester) async {
@@ -349,7 +359,7 @@ void main() {
         variants: phone,
       );
       expect(ran, 0);
-      expect(find.text('Example Movie 1'), findsOneWidget);
+      expect(find.text('Example Movie 50'), findsOneWidget);
     });
 
     testWidgets('scrolling 10,000 movies builds only what is shown', (

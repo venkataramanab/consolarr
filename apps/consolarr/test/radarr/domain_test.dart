@@ -121,9 +121,16 @@ void main() {
       for (final m in applyQuery(movies, q)) m.id,
     ];
 
+    const byTitle = MovieQuery(sort: MovieSortKey.title, ascending: true);
+
+    test('the default is date added, newest first', () {
+      expect(ids(const MovieQuery()), [4, 3, 2, 1]);
+      expect(ids(const MovieQuery(ascending: true)), [1, 2, 3, 4]);
+    });
+
     test('title ascending and descending', () {
-      expect(ids(const MovieQuery()), [2, 1, 4, 3]);
-      expect(ids(const MovieQuery(ascending: false)), [3, 4, 1, 2]);
+      expect(ids(byTitle), [2, 1, 4, 3]);
+      expect(ids(byTitle.copyWith(ascending: false)), [3, 4, 1, 2]);
     });
 
     test('missing values sort last in both directions', () {
@@ -138,7 +145,8 @@ void main() {
     });
 
     test('every filter dimension', () {
-      MovieQuery f(MovieFilter x) => MovieQuery(filter: x);
+      MovieQuery f(MovieFilter x) =>
+          MovieQuery(sort: MovieSortKey.title, ascending: true, filter: x);
       expect(
         ids(f(const MovieFilter(monitored: MonitoredFilter.unmonitored))),
         [2],
@@ -175,7 +183,7 @@ void main() {
     });
 
     test('groups by first letter and by year', () {
-      final sorted = applyQuery(movies, const MovieQuery());
+      final sorted = applyQuery(movies, byTitle);
       expect(
         [for (final g in groupMovies(sorted, MovieSortKey.title)) g.label],
         ['A', 'B', 'D', 'G'],
