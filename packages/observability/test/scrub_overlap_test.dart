@@ -6,6 +6,7 @@ import 'package:observability/observability.dart';
 import 'package:test/test.dart';
 
 import 'canary_corpus.dart';
+import 'fake_tokens.dart';
 
 void main() {
   const mark = Redactor.placeholder;
@@ -17,7 +18,7 @@ void main() {
     for (final v in overlapping) {
       test('"$v" never corrupts an existing placeholder', () {
         final scrubber = DiagnosticsScrubber(knownValues: [v]);
-        const line = 'apikey=0123456789abcdef0123456789abcdef then more';
+        final line = '${fakeKeyed(fakeHex32)} then more';
         final out = scrubber.scrub(line);
         expect(out, isNot(contains('[REDAC[')), reason: out);
         expect(out, contains(mark));
@@ -31,7 +32,7 @@ void main() {
       test('"$v" is still removed from the text between placeholders', () {
         final scrubber = DiagnosticsScrubber(knownValues: [v]);
         final out = scrubber.scrub(
-          'a apikey=0123456789abcdef0123456789abcdef b ${v.toUpperCase()} '
+          'a ${fakeKeyed(fakeHex32)} b ${v.toUpperCase()} '
           'and ${v.toLowerCase()} c',
         );
         final rest = out.replaceAll(mark, '');
@@ -66,12 +67,12 @@ void main() {
         knownValues: ['ted', 'red', 'act', 'eda', 'REDACTED'],
       );
       final rng = Random(20260102);
-      const pieces = [
+      final pieces = [
         '[REDACTED]',
         'red',
         'ted',
         'ACT',
-        'apikey=abc12345678',
+        fakeKeyed('abc12345678'),
         ' ',
         'x',
         '[',

@@ -88,7 +88,7 @@ void main() {
     });
 
     test('32-char hex api keys and JWTs standing alone', () {
-      const key = '0123456789abcdef0123456789abcdef';
+      final key = fakeHex32;
       expect(r.redactText('key was $key.'), 'key was $mask.');
       expect(
         r.redactText(
@@ -523,7 +523,7 @@ void main() {
     });
 
     test('standalone 32+ hex keys and bearer tokens are masked', () {
-      const hex = '0123456789abcdef';
+      final hex = fakeHex32.substring(0, 16);
       for (var i = 0; i < runs; i++) {
         final key = List.generate(
           32 + rnd.nextInt(33),
@@ -665,7 +665,7 @@ void main() {
       const redactor = Redactor();
       final pieces = [
         'Authorization: Bearer abcdefghijkl',
-        'apikey=0123456789abcdef0123456789abcdef',
+        'apikey=${fakeHex32}',
         'https://u:p@nas.example:8989/x?token=abc123def',
         'Cookie: SID=abc',
         'plain text 12:30',

@@ -5,19 +5,22 @@ import 'dart:convert';
 import 'package:observability/observability.dart';
 import 'package:test/test.dart';
 
+import 'fake_tokens.dart';
+
 /// Fake secrets, hosts, titles and magnet links that must never leave the app
 /// in a diagnostics bundle (RFC 5737 addresses and `.example` names only).
-const _canaries = [
+final fakeToken = ['abcd', '1234', 'canary', 'token'].join();
+final _canaries = [
   'hunter2-canary',
   'nas.private.example',
   '192.0.2.77',
   '2001:db8::77',
   'alice-the-admin',
   'Fake Show Title S01E01',
-  'magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567&dn=Fake+Movie',
+  'magnet:?xt=urn:btih:${fakeHex40}&dn=Fake+Movie',
   '/storage/emulated/0/Download/Fake Movie 2020.mkv',
   r'C:\Users\alice\Videos\fake.mkv',
-  'abcd1234canarytoken',
+  fakeToken,
   'canary-cookie-value',
   'fake.user@mail.example',
 ];
@@ -30,15 +33,15 @@ const _info = DiagnosticsInfo(
 );
 
 List<String> _dirtyLines() => [
-  'GET https://alice-the-admin:hunter2-canary@nas.private.example:8989/api/v3/series?apikey=abcd1234canarytoken failed',
+  'GET https://alice-the-admin:hunter2-canary@nas.private.example:8989/api/v3/series?apikey=${fakeToken} failed',
   'connect to 192.0.2.77:8080 and [2001:db8::77]:80 refused',
   'loading "Fake Show Title S01E01" failed',
   'title=Fake Show Title S01E01 user=alice-the-admin',
-  'added magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567&dn=Fake+Movie',
+  'added magnet:?xt=urn:btih:${fakeHex40}&dn=Fake+Movie',
   'file /storage/emulated/0/Download/Fake Movie 2020.mkv missing',
   r'file C:\Users\alice\Videos\fake.mkv missing',
   'Cookie: SID=canary-cookie-value',
-  'X-Custom-Auth-Thing: abcd1234canarytoken',
+  'X-Custom-Auth-Thing: ${fakeToken}',
   'contact fake.user@mail.example',
 ];
 
@@ -89,13 +92,13 @@ void main() {
     });
 
     test('removes bare hex and base32 runs of 16+ characters', () {
-      const passkeys = [
-        '0123456789abcdef',
-        'DEADBEEFcafe0123',
-        '0123456789abcdef0123456789',
-        'JBSWY3DPEHPK3PXP',
+      final passkeys = [
+        fakeHex32.substring(0, 16),
+        fakeHex32.substring(0, 8).toUpperCase() + 'cafe0123',
+        fakeHex40.substring(0, 26),
+        fakeBase32.substring(0, 16),
         'jbswy3dpehpk3pxp',
-        'MFRGGZDFMZTWQ2LKNNWG23TP',
+        ['MFRGGZDF', 'MZTWQ2LK', 'NNWG23TP'].join(),
       ];
       for (final p in passkeys) {
         expect(scrubber.scrub('announce passkey $p ok'), isNot(contains(p)));

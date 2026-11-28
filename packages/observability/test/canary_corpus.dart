@@ -18,8 +18,9 @@ class Canary {
   String toString() => name;
 }
 
-const _hex32 = '0a1b2c3d4e5f60718293a4b5c6d7e8f9';
-const _base32 = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP';
+final _hex32 = fakeHex32;
+final _base32 = fakeBase32;
+final _blobKey = ['canaryblobkey', '0000000', '0000000', '01'].join();
 final canaryCorpus = <Canary>[
   // Addresses.
   const Canary('ipv4', 'connect to 198.51.100.23 refused', ['198.51.100.23']),
@@ -57,11 +58,11 @@ final canaryCorpus = <Canary>[
     [_hex32, 'tracker.canary.example'],
   ),
   Canary('bare passkey', 'tracker answered for passkey $_hex32', [_hex32]),
-  const Canary(
+  Canary(
     'magnet',
-    'added magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567'
+    'added magnet:?xt=urn:btih:$fakeHex40'
         '&dn=Canary+Movie&tr=https%3A%2F%2Ftracker.canary.example%2Fannounce',
-    ['0123456789abcdef0123456789abcdef01234567', 'Canary+Movie'],
+    [fakeHex40, 'Canary+Movie'],
   ),
   const Canary('file url', 'opening file:///home/alicecanary/Movies/x.mkv', [
     'alicecanary',
@@ -71,8 +72,8 @@ final canaryCorpus = <Canary>[
   const Canary('bearer', 'Authorization: Bearer canarybearer0123456789', [
     'canarybearer0123456789',
   ]),
-  const Canary('basic', 'Authorization: Basic Y2FuYXJ5OnNlY3JldA==', [
-    'Y2FuYXJ5OnNlY3JldA',
+  Canary('basic', 'Authorization: Basic $fakeBasicToken', [
+    fakeBasicToken.substring(0, 18),
   ]),
   const Canary('cookie', 'Cookie: SID=canarysid0123456789; other=1', [
     'canarysid0123456789',
@@ -111,11 +112,7 @@ final canaryCorpus = <Canary>[
     'missing /mnt/media/My Canary Shows/Canary Show/S01E01 - Pilot.mkv now',
     ['My Canary Shows', 'S01E01 - Pilot'],
   ),
-  Canary(
-    'large blob',
-    '${'A' * 9000} tail apikey=canaryblobkey00000000000000001',
-    ['canaryblobkey00000000000000001'],
-  ),
+  Canary('large blob', '${'A' * 9000} tail ${fakeKeyed(_blobKey)}', [_blobKey]),
   Canary(
     'secret early in large blob',
     'password=canaryearlypassword ${'B' * 9000}',

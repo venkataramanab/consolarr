@@ -7,12 +7,12 @@ import 'fake_tokens.dart';
 
 /// Values that must never reach an event, breadcrumb or log line.
 final _hostile = [
-  'https://admin:hunter2@nas.example:8989/sonarr/api?apikey=0123456789abcdef0123456789abcdef',
+  'https://admin:hunter2@nas.example:8989/sonarr/api?apikey=${fakeHex32}',
   'nas.private.example',
   '192.0.2.77',
   'alice-the-admin',
   'Example Show S01E01 1080p',
-  '0123456789abcdef0123456789abcdef',
+  fakeHex32,
   fakeJwt(payload: fakeJwtPayloadShort),
   'hunter2',
 ];
@@ -125,11 +125,7 @@ void main() {
     log.info('Authorization: Bearer ${_hostile[5]}');
     log.info('token=${_hostile[6]} password=${_hostile.last}');
     final text = out.join('\n');
-    for (final secret in [
-      'hunter2',
-      '0123456789abcdef0123456789abcdef',
-      fakeJwtHeader,
-    ]) {
+    for (final secret in ['hunter2', fakeHex32, fakeJwtHeader]) {
       expect(text, isNot(contains(secret)));
     }
   });
