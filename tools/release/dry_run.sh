@@ -48,6 +48,36 @@ expect_fail() {
   echo "ok: refused: ${what}"
 }
 
+echo "== every release.yml job that runs tools/release/ checks out the repository first"
+bash tools/release/check_workflow_checkout.sh .github/workflows/release.yml
+echo "ok: each such job has an actions/checkout step before the first call"
+# Self-test: the same workflow with every checkout step's "uses" line removed
+# must fail the check. (A copy only; release.yml itself is never modified.)
+sed -E 's|uses: actions/checkout@.*|run: "true"|' .github/workflows/release.yml > "$work/no-checkout.yml"
+expect_fail "release.yml without its checkout steps" bash tools/release/check_workflow_checkout.sh "$work/no-checkout.yml"
+grep -q "job 'publish'" "$work/neg.log" && echo "ok: message names the job"
+# And with only the publish job's checkout removed (the bug this guards against).
+python3 -I - .github/workflows/release.yml "$work/no-publish-checkout.yml" <<'PY'
+import sys
+src, dst = sys.argv[1:3]
+text = open(src, encoding="utf-8").read()
+head, publish = text.split("\n  publish:\n", 1)
+lines = publish.split("\n")
+out, skip = [], False
+for line in lines:
+    if "uses: actions/checkout@" in line:
+        skip = True
+        continue
+    if skip and line.startswith("        ") :
+        continue
+    skip = False
+    out.append(line)
+open(dst, "w", encoding="utf-8").write(head + "\n  publish:\n" + "\n".join(out))
+PY
+expect_fail "publish job without its checkout step" bash tools/release/check_workflow_checkout.sh "$work/no-publish-checkout.yml"
+grep -q "job 'publish'" "$work/neg.log" && ! grep -q "job 'build'" "$work/neg.log" && echo "ok: only the publish job is reported"
+rm -f "$work/no-checkout.yml" "$work/no-publish-checkout.yml"
+
 echo "== negative tests"
 expect_fail "tag that is not vX.Y.Z" bash tools/release/check_version.sh v1.2.3-rc1 apps/consolarr/pubspec.yaml
 for bad in 'v1.2.3-rc1' 'v1.2.3 ::notice::x' 'v1.2.3%0A::error::y' ''; do
