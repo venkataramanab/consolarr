@@ -3,6 +3,7 @@
 import 'package:observability/src/analytics.dart';
 import 'package:observability/src/breadcrumbs.dart';
 import 'package:observability/src/consent_store.dart';
+import 'package:observability/src/crash_payload.dart';
 import 'package:observability/src/crash_reporter.dart';
 import 'package:observability/src/events/catalog.dart';
 
@@ -47,12 +48,16 @@ class ConsentGatedAnalytics implements Analytics {
 }
 
 /// A [CrashReporter] that forwards to [inner] only while crash-report consent
-/// is given.
+/// is given, and then only a [CrashPayload]: the raw error object, its message
+/// and its raw stack trace never reach the sink.
 class ConsentGatedCrashReporter implements CrashReporter {
-  ConsentGatedCrashReporter(this.inner, this._isAllowed);
+  ConsentGatedCrashReporter(this.inner, this._isAllowed, {this.categorize});
 
   final CrashReporter inner;
   final bool Function() _isAllowed;
+
+  /// Maps the app's own typed errors to a closed category (optional).
+  final ErrorCategoryParam? Function(Object error)? categorize;
 
   /// Enabling is forwarded only while consent is on. Disabling is never
   /// forwarded from here: the owning [ConsentManager] tells the sink once, on
@@ -71,7 +76,12 @@ class ConsentGatedCrashReporter implements CrashReporter {
     bool fatal = false,
   }) async {
     if (!_isAllowed()) return;
-    await inner.recordError(error, stackTrace, fatal: fatal);
+    final payload = CrashPayload.from(
+      error,
+      stackTrace,
+      categorize: categorize,
+    );
+    await inner.recordError(payload, payload.stackTrace, fatal: fatal);
   }
 }
 
@@ -85,13 +95,18 @@ class ConsentManager {
     required Analytics analytics,
     required CrashReporter crashReporter,
     required this.breadcrumbs,
+    ErrorCategoryParam? Function(Object error)? categorize,
   }) : _rawAnalytics = analytics,
        _rawCrash = crashReporter {
     this.analytics = ConsentGatedAnalytics(analytics, () => _state.analytics);
     this.crashReporter = ConsentGatedCrashReporter(
       crashReporter,
       () => _state.crashReports,
+      categorize: categorize,
     );
+    // Breadcrumbs are crash-report context: kept only while that consent is
+    // on (and cleared when it is withdrawn, see [_apply]).
+    breadcrumbs.recordingAllowed = () => _state.crashReports;
   }
 
   final ConsentStore store;

@@ -34,8 +34,9 @@ void main() {
           .recordError('boom', null, fatal: true);
       expect(h.analytics.events, isEmpty);
       expect(h.crash.errors, isEmpty);
-      // Breadcrumbs stay local and are still written.
-      expect(c.read(breadcrumbsProvider).entries, isNotEmpty);
+      // Breadcrumbs are crash-report context: not even kept in memory while
+      // crash consent is off.
+      expect(c.read(breadcrumbsProvider).entries, isEmpty);
     },
   );
 
@@ -97,7 +98,7 @@ void main() {
     expect(c2.read(consentProvider).crashReports, isTrue);
     expect(c2.read(consentProvider).analytics, isFalse);
     await c2.read(crashReporterProvider).recordError('after restart', null);
-    expect(h.crash.errors, contains('after restart'));
+    expect(h.crash.errors.single, isA<CrashPayload>());
   });
 
   test('stored consent applies after the first frame without the Settings '
@@ -117,7 +118,7 @@ void main() {
     await h.settle(c);
     // Only the gated sink is read: consentProvider is never touched.
     await c.read(crashReporterProvider).recordError('after start', null);
-    expect(h.crash.errors, ['after start']);
+    expect(h.crash.errors.single, isA<CrashPayload>());
     expect(h.crash.enabledCalls, contains(true));
     expect(h.analytics.enabledCalls, isNot(contains(true)));
   });

@@ -11,6 +11,7 @@ import 'package:consolarr/src/platform/secure_screen.dart';
 import 'package:consolarr/src/storage/flutter_secure_secret_store.dart';
 import 'package:consolarr/src/storage/pinned_markers.dart';
 import 'package:consolarr/src/storage/secure_storage_reset.dart';
+import 'package:core/core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:observability/observability.dart';
@@ -52,6 +53,9 @@ final consentManagerProvider = Provider<ConsentManager>((ref) {
     analytics: ref.watch(rawAnalyticsProvider),
     crashReporter: ref.watch(rawCrashReporterProvider),
     breadcrumbs: ref.watch(breadcrumbsProvider),
+    categorize: (error) => error is AppError
+        ? ErrorCategoryParam.fromCode(error.category.code)
+        : null,
   );
   // An unreadable store leaves every consent off, which is the safe state.
   void load() => unawaited(manager.load().catchError((Object _) {}));

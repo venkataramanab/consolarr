@@ -95,7 +95,8 @@ void main() {
     await tracker.track(const ScreenViewedEvent(screen: ScreenName.settings));
     await manager.crashReporter.recordError('x', null);
     expect(analytics.events, isEmpty);
-    expect(crash.errors, ['x']);
+    expect(crash.errors.single, isA<CrashPayload>());
+    expect((crash.errors.single as CrashPayload).typeName, 'String');
   });
 
   test(
