@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import 'dart:developer' as developer;
-
-import 'package:observability/src/diagnostics.dart';
-import 'package:observability/src/redactor.dart';
+part of 'diagnostics.dart';
 
 enum LogLevel {
   debug(500),
@@ -60,7 +57,7 @@ class AppLogger {
     if (error != null) buffer.write(': $error');
     final text = scrubber.scrub(redactor.redactText(buffer.toString()));
     // One scrub, whichever sinks the line reaches.
-    diagnostics?.addScrubbed(level, text);
+    diagnostics?._addScrubbed(level, text);
     if (level.index >= minLevel.index) _sink(level, text);
   }
 }
