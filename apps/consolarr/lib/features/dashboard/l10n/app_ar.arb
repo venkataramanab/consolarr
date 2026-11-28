@@ -90,7 +90,7 @@
   "@dashboardRetry": {
     "description": "Retry button of a failed server inside a dashboard card."
   },
-  "dashboardRetryFor": "إعادة المحاولة لـ {service}",
+  "dashboardRetryFor": "إعادة المحاولة لـ \u2068{service}\u2069",
   "@dashboardRetryFor": {
     "description": "Accessible name of the retry button of a failed server.",
     "placeholders": {
@@ -116,7 +116,7 @@
   "@dashboardCachedMessage": {
     "description": "Banner text above cached items of a dashboard card."
   },
-  "dashboardCachedAge": "حُفظت {age}",
+  "dashboardCachedAge": "حُفظت \u2068{age}\u2069",
   "@dashboardCachedAge": {
     "description": "Age line of the cached data banner, for example \"Saved 5 minutes ago\".",
     "placeholders": {
@@ -210,7 +210,7 @@
   "@dashboardMovieLabel": {
     "description": "Subtitle of a recently imported movie."
   },
-  "dashboardItemSubtitle": "{first}، {second}",
+  "dashboardItemSubtitle": "\u2068{first}\u2069، \u2068{second}\u2069",
   "@dashboardItemSubtitle": {
     "description": "Two short facts about a carousel item joined into one subtitle, for example \"S2E5, tomorrow\".",
     "placeholders": {
@@ -224,7 +224,7 @@
       }
     }
   },
-  "dashboardItemSemantics": "{title}، {details}، العنصر {position} من {total}",
+  "dashboardItemSemantics": "\u2068{title}\u2069، \u2068{details}\u2069، العنصر {position} من {total}",
   "@dashboardItemSemantics": {
     "description": "Spoken label of a carousel item: its title, details and position in the carousel.",
     "placeholders": {
@@ -248,7 +248,7 @@
       }
     }
   },
-  "dashboardCarouselSemantics": "{heading}، {count, plural, =0{لا عناصر} =1{عنصر واحد} =2{عنصران} few{{count} عناصر} many{{count} عنصرًا} other{{count} عنصر}}",
+  "dashboardCarouselSemantics": "\u2068{heading}\u2069، {count, plural, =0{لا عناصر} =1{عنصر واحد} =2{عنصران} few{{count} عناصر} many{{count} عنصرًا} other{{count} عنصر}}",
   "@dashboardCarouselSemantics": {
     "description": "Spoken name of a carousel: the card heading and the number of items.",
     "placeholders": {
@@ -282,7 +282,7 @@
       }
     }
   },
-  "dashboardSpeedDown": "تنزيل {speed}",
+  "dashboardSpeedDown": "تنزيل \u2068{speed}\u2069",
   "@dashboardSpeedDown": {
     "description": "Current global download speed of a torrent client.",
     "placeholders": {
@@ -292,7 +292,7 @@
       }
     }
   },
-  "dashboardSpeedUp": "رفع {speed}",
+  "dashboardSpeedUp": "رفع \u2068{speed}\u2069",
   "@dashboardSpeedUp": {
     "description": "Current global upload speed of a torrent client.",
     "placeholders": {
@@ -306,7 +306,7 @@
   "@dashboardSpeedUnavailable": {
     "description": "Shown when the torrent client answered the list but not the speed statistics."
   },
-  "dashboardSpeedPerSecond": "{size}/⁠ث",
+  "dashboardSpeedPerSecond": "\u2068{size}\u2069/⁠ث",
   "@dashboardSpeedPerSecond": {
     "description": "A speed: a formatted size per second. The slash is followed by a word joiner so the unit never wraps.",
     "placeholders": {
@@ -433,7 +433,7 @@
   "@dashboardDurationLess": {
     "description": "A duration under one minute."
   },
-  "dashboardRowLeft": "المتبقي {size}",
+  "dashboardRowLeft": "المتبقي \u2068{size}\u2069",
   "@dashboardRowLeft": {
     "description": "Remaining size of a download row.",
     "placeholders": {
@@ -443,7 +443,7 @@
       }
     }
   },
-  "dashboardRowEta": "يتبقى نحو {time}",
+  "dashboardRowEta": "يتبقى نحو \u2068{time}\u2069",
   "@dashboardRowEta": {
     "description": "Estimated time left of a download row.",
     "placeholders": {
@@ -475,7 +475,7 @@
       }
     }
   },
-  "dashboardRowSemantics": "{title}، {state}، {progress}",
+  "dashboardRowSemantics": "\u2068{title}\u2069، \u2068{state}\u2069، \u2068{progress}\u2069",
   "@dashboardRowSemantics": {
     "description": "Spoken label of a download row: title, state and progress.",
     "placeholders": {
@@ -544,7 +544,7 @@
     }
   },
   "dashboardOpenHint": "فتح",
-  "dashboardActivitySemantics": "{service}، {counts}",
+  "dashboardActivitySemantics": "\u2068{service}\u2069، \u2068{counts}\u2069",
   "@dashboardActivitySemantics": {
     "description": "Spoken name of a service tile of the activity card without speeds: service and counts.",
     "placeholders": {
@@ -558,7 +558,7 @@
       }
     }
   },
-  "dashboardActivitySemanticsSpeeds": "{service}، {counts}، {speeds}",
+  "dashboardActivitySemanticsSpeeds": "\u2068{service}\u2069، \u2068{counts}\u2069، \u2068{speeds}\u2069",
   "@dashboardActivitySemanticsSpeeds": {
     "description": "Spoken name of a service tile of the activity card: service, counts and transfer speeds.",
     "placeholders": {
@@ -577,7 +577,7 @@
     }
   },
   "dashboardEditServer": "تعديل الخادم",
-  "dashboardSpokenJoin": "{first}، {second}",
+  "dashboardSpokenJoin": "\u2068{first}\u2069، \u2068{second}\u2069",
   "@dashboardSpokenJoin": {
     "description": "Joins two phrases of one spoken label (for example the counts and the speeds of a service tile).",
     "placeholders": {

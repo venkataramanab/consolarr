@@ -108,7 +108,7 @@
       }
     }
   },
-  "arrCommonQueueSizeProgress": "{done} من {total}",
+  "arrCommonQueueSizeProgress": "\u2068{done}\u2069 من \u2068{total}\u2069",
   "@arrCommonQueueSizeProgress": {
     "description": "Downloaded amount out of the total size of a queue item.",
     "placeholders": {
@@ -169,7 +169,7 @@
       }
     }
   },
-  "arrCommonQueueRowSemantics": "{title}، {state}، {percent}، {details}",
+  "arrCommonQueueRowSemantics": "\u2068{title}\u2069، \u2068{state}\u2069، \u2068{percent}\u2069، \u2068{details}\u2069",
   "@arrCommonQueueRowSemantics": {
     "description": "Screen reader description of a queue row: title, state, percentage and details.",
     "placeholders": {
@@ -218,7 +218,7 @@
   "@arrCommonQueueRemoveFromClientOn": {
     "description": "Consequence shown when the delete-from-client switch is on."
   },
-  "arrCommonQueueRemoveFromClientOff": "يبقى التنزيل في عميل التنزيل؛ ويتوقف {service} فقط عن تتبعه.",
+  "arrCommonQueueRemoveFromClientOff": "يبقى التنزيل في عميل التنزيل؛ ويتوقف \u2068{service}\u2069 فقط عن تتبعه.",
   "@arrCommonQueueRemoveFromClientOff": {
     "description": "Consequence shown when the delete-from-client switch is off.",
     "placeholders": {
@@ -244,7 +244,7 @@
   "@arrCommonQueueBlocklistSearch": {
     "description": "Blocklist choice: blocklist the release and search for another one."
   },
-  "arrCommonQueueBlocklistSearchDetail": "لن يُجلب هذا الإصدار مرة أخرى، ويبحث {service} فورًا في المفهرسات عن إصدار آخر. هذا يزيد الحمل على المفهرسات.",
+  "arrCommonQueueBlocklistSearchDetail": "لن يُجلب هذا الإصدار مرة أخرى، ويبحث \u2068{service}\u2069 فورًا في المفهرسات عن إصدار آخر. هذا يزيد الحمل على المفهرسات.",
   "@arrCommonQueueBlocklistSearchDetail": {
     "description": "Consequence of blocklisting and searching again.",
     "placeholders": {

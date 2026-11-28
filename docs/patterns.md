@@ -239,6 +239,15 @@ in `EmptyArrLists`.
 * Strings: per-feature ARB files with `@description`; ICU plurals; numbers
   through ARB number-format placeholders (`decimalPattern` /
   `decimalPatternDigits`) so digits localize.
+* **Bidi isolation (ar).** A `String` placeholder in `app_ar.arb` (a title,
+  server name, host, version, file name, unit) is written
+  `\u2068{name}\u2069` (FSI ... PDI), so translators keep control of where the
+  isolate sits and the surrounding punctuation and digits do not reorder. A
+  placeholder inside an already-open LRI/FSI pair needs no second wrap.
+  `bidi_isolation_test` checks every String placeholder from the English
+  metadata. For text composed in Dart use `isolate()` from `package:l10n`.
+  Isolates are display-only: never put them in analytics or log payloads.
+  (`about*` and `privacy*` keys are checked once their owner finishes.)
 * Shared strings (connection errors, common actions) live in
   `lib/shared/l10n`. `reserved_keys.txt` lists keys declared ahead of use: the
   key test tolerates them unused and fails once one is used (remove its line).

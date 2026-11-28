@@ -533,7 +533,7 @@
   "@checkAllPassed": {
     "description": "Summary when every connection check step passed."
   },
-  "checkServerVersion": "إصدار الخادم {version}",
+  "checkServerVersion": "إصدار الخادم \u2068{version}\u2069",
   "@checkServerVersion": {
     "description": "Server version reported by a passing connection check.",
     "placeholders": {
@@ -543,7 +543,7 @@
       }
     }
   },
-  "checkSummaryFailed": "توقف الفحص عند «{step}».",
+  "checkSummaryFailed": "توقف الفحص عند «\u2068{step}\u2069».",
   "@checkSummaryFailed": {
     "description": "Summary naming the step where the connection check failed.",
     "placeholders": {

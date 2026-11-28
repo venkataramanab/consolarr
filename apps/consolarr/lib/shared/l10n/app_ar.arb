@@ -183,7 +183,7 @@
   "@sharedPartSeparator": {
     "description": "Separator placed between the short facts of a line, for example year, size and quality. Translate only if the language uses another mark."
   },
-  "connErrorArrAuthFailedMessage": "رفض {service} مفتاح API.",
+  "connErrorArrAuthFailedMessage": "رفض \u2068{service}\u2069 مفتاح API.",
   "@connErrorArrAuthFailedMessage": {
     "description": "Plain-language message for a Sonarr or Radarr connection problem: the API key was missing or wrong (401/403).",
     "placeholders": {

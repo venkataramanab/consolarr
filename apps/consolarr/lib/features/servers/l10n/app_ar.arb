@@ -104,7 +104,7 @@
   "@serverBadgeStartup": {
     "description": "Badge on the server opened when the app starts."
   },
-  "serverMenuTooltip": "المزيد من الإجراءات لـ {name}",
+  "serverMenuTooltip": "المزيد من الإجراءات لـ \u2068{name}\u2069",
   "@serverMenuTooltip": {
     "description": "Tooltip and accessible label of the per-server actions menu.",
     "placeholders": {
@@ -114,7 +114,7 @@
       }
     }
   },
-  "serverDragHandleLabel": "إعادة ترتيب {name}",
+  "serverDragHandleLabel": "إعادة ترتيب \u2068{name}\u2069",
   "@serverDragHandleLabel": {
     "description": "Accessible label of the drag handle that reorders a server.",
     "placeholders": {
@@ -152,7 +152,7 @@
   "@serverActionDelete": {
     "description": "Menu action: delete a server."
   },
-  "serverDeleteTitle": "هل تريد حذف {name}؟",
+  "serverDeleteTitle": "هل تريد حذف \u2068{name}\u2069؟",
   "@serverDeleteTitle": {
     "description": "Title of the delete-server confirmation.",
     "placeholders": {
@@ -346,7 +346,7 @@
   "@serverTestTesting": {
     "description": "Shown while the connection test runs."
   },
-  "serverTestSuccess": "تم الاتصال. إصدار الخادم {version}.",
+  "serverTestSuccess": "تم الاتصال. إصدار الخادم \u2068{version}\u2069.",
   "@serverTestSuccess": {
     "description": "Connection test success message.",
     "placeholders": {
@@ -456,7 +456,7 @@
   "@certSheetValidity": {
     "description": "Label of the certificate validity period."
   },
-  "certSheetValidityRange": "من {from} إلى {until}",
+  "certSheetValidityRange": "من \u2068{from}\u2069 إلى \u2068{until}\u2069",
   "@certSheetValidityRange": {
     "description": "Certificate validity range text.",
     "placeholders": {
@@ -566,7 +566,7 @@
   "@serverProxyLoginTitle": {
     "description": "Title of the optional switch that sends a username and password to a reverse proxy in front of Sonarr or Radarr."
   },
-  "serverProxyLoginHelper": "لا حاجة إليه إلا إذا كان وكيل عكسي أمام {service} يطلب اسم مستخدم وكلمة مرور. يُرسل إضافةً إلى مفتاح API الذي يبقى مطلوبًا دائمًا.",
+  "serverProxyLoginHelper": "لا حاجة إليه إلا إذا كان وكيل عكسي أمام \u2068{service}\u2069 يطلب اسم مستخدم وكلمة مرور. يُرسل إضافةً إلى مفتاح API الذي يبقى مطلوبًا دائمًا.",
   "@serverProxyLoginHelper": {
     "description": "Explanation under the reverse-proxy login switch.",
     "placeholders": {
@@ -580,7 +580,7 @@
   "@serverErrorProxyLoginRequired": {
     "description": "Error shown when the reverse-proxy login is switched on but the username or password is empty."
   },
-  "serverLegacyArrAuthNotice": "حُفظ هذا الخادم باسم مستخدم وكلمة مرور. لا يقبل {service} سوى مفتاح API، لذا أدخل المفتاح أدناه. يبقى اسم المستخدم وكلمة المرور المحفوظان كتسجيل دخول اختياري للوكيل العكسي.",
+  "serverLegacyArrAuthNotice": "حُفظ هذا الخادم باسم مستخدم وكلمة مرور. لا يقبل \u2068{service}\u2069 سوى مفتاح API، لذا أدخل المفتاح أدناه. يبقى اسم المستخدم وكلمة المرور المحفوظان كتسجيل دخول اختياري للوكيل العكسي.",
   "@serverLegacyArrAuthNotice": {
     "description": "Notice shown when editing a Sonarr or Radarr server saved by an older version in username-and-password or no-authentication mode.",
     "placeholders": {
