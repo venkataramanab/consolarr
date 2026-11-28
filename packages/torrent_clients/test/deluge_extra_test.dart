@@ -182,6 +182,73 @@ void main() {
       expect(s.labelled, ['e' * 40]);
     });
 
+    test('T2: a failed before-snapshot reports the label as not applied, '
+        'the add still succeeds', () async {
+      final s = FakeDeluge();
+      final c = _client(s);
+      await c.listTorrents();
+      // The snapshot taken before the upload fails once (a transport error).
+      s.timeouts['core.get_torrents_status'] = 1;
+      final warnings = <AddWarning>[];
+      final r = await c.addFile(
+        Uint8List.fromList(utf8.encode('d4:infod4:name3:abcee')),
+        fileName: 'a.torrent',
+        options: AddTorrentOptions(
+          category: 'example',
+          onWarning: warnings.add,
+        ),
+      );
+      expect(r.isOk, isTrue);
+      expect(s.uploads, 1);
+      expect(s.labelled, isEmpty);
+      expect(warnings, [AddWarning.labelNotApplied]);
+    });
+
+    test(
+      'T7: a timeout while labelling is a warning, not an add error',
+      () async {
+        for (final method in ['label.get_labels', 'label.set_torrent']) {
+          final s = FakeDeluge();
+          final c = _client(s);
+          await c.listTorrents();
+          s.timeouts[method] = -1;
+          final warnings = <AddWarning>[];
+          final r = await c.addMagnetOrUrl(
+            exampleMagnet,
+            options: AddTorrentOptions(
+              category: 'example',
+              onWarning: warnings.add,
+            ),
+          );
+          expect(r.isOk, isTrue, reason: method);
+          expect(s.addCalls, 1, reason: method);
+          expect(warnings, [AddWarning.labelNotApplied], reason: method);
+        }
+      },
+    );
+
+    test(
+      'T7: the same for a file add (the new torrent cannot be labelled)',
+      () async {
+        final s = FakeDeluge();
+        final c = _client(s);
+        await c.listTorrents();
+        s.timeouts['label.set_torrent'] = -1;
+        final warnings = <AddWarning>[];
+        final r = await c.addFile(
+          Uint8List.fromList(utf8.encode('d4:infod4:name3:abcee')),
+          fileName: 'b.torrent',
+          options: AddTorrentOptions(
+            category: 'example',
+            onWarning: warnings.add,
+          ),
+        );
+        expect(r.isOk, isTrue);
+        expect(s.uploads, 1);
+        expect(warnings, [AddWarning.labelNotApplied]);
+      },
+    );
+
     test('valid label names', () {
       expect(isValidDelugeLabel('example'), isTrue);
       expect(isValidDelugeLabel('tv_shows-2.1'), isTrue);

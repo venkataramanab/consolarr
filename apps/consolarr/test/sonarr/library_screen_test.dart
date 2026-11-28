@@ -83,6 +83,34 @@ void main() {
     expect(find.text('Alpha'), findsOneWidget);
   });
 
+  testWidgets('R1: unreadable profiles or tags are shown with a retry, '
+      'not silently hidden', (tester) async {
+    final api = ScriptedSonarrApi()
+      ..profilesResult = const Result.err(AppError(ErrorCategory.timeout));
+    await _pump(tester, data: dataState(_named()), api: api);
+    expect(
+      find.textContaining('Quality profiles or tags could not be loaded'),
+      findsOneWidget,
+    );
+    final before = api.count('qualityProfiles');
+    api.profilesResult = const Result.ok([]);
+    await tester.tap(find.text('Try again'));
+    await tester.pumpAndSettle();
+    expect(api.count('qualityProfiles'), greaterThan(before));
+    expect(
+      find.textContaining('Quality profiles or tags could not be loaded'),
+      findsNothing,
+    );
+  });
+
+  testWidgets('R1: no notice while the lists load fine', (tester) async {
+    await _pump(tester, data: dataState(_named()), api: ScriptedSonarrApi());
+    expect(
+      find.textContaining('Quality profiles or tags could not be loaded'),
+      findsNothing,
+    );
+  });
+
   testWidgets('typing filters the list locally', (tester) async {
     await _pump(tester, data: dataState(_named()));
     await tester.enterText(find.byType(TextField), 'brav');

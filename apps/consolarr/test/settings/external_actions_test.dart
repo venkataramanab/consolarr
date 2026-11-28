@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:consolarr/features/settings/data/external_actions.dart';
 import 'package:flutter/services.dart';
@@ -93,6 +94,87 @@ void main() {
     test('the default cap is 150 KB of UTF-8', () {
       expect(shareTextMaxBytes, 150 * 1024);
     });
+
+    group('at the real 150 KB cap', () {
+      const cap = shareTextMaxBytes;
+      const note = '[older lines left out]';
+      int bytes(String s) => utf8.encode(s).length;
+      String lines(int n) => [
+        'Consolarr diagnostics',
+        '## Log',
+        for (var i = 0; i < n; i++) 'line $i ${'ع' * 20}',
+      ].join('\n');
+
+      test('cap-1, cap and cap+1 bytes', () {
+        for (final (size, cut) in [
+          (cap - 1, false),
+          (cap, false),
+          (cap + 1, true),
+        ]) {
+          final text = 'a' * size;
+          final r = capShareText(text, note);
+          expect(r.truncated, cut, reason: '$size');
+          expect(bytes(r.text), lessThanOrEqualTo(cap), reason: '$size');
+          if (!cut) expect(r.text, text);
+        }
+      });
+
+      test('the result with its note is at most the cap, for many sizes', () {
+        for (final n in [10000, 12000, 50000]) {
+          final r = capShareText(lines(n), note);
+          expect(r.truncated, isTrue, reason: '$n');
+          expect(bytes(r.text), lessThanOrEqualTo(cap), reason: '$n');
+          expect(r.text, contains(note));
+        }
+      });
+
+      test('keeps the head and the newest tail', () {
+        final r = capShareText(lines(20000), note);
+        expect(r.text, startsWith('Consolarr diagnostics\n## Log'));
+        expect(r.text, endsWith('line 19999 ${'ع' * 20}'));
+        expect(r.text, isNot(contains('line 100 ')));
+      });
+
+      test('a 4-byte emoji and Arabic at the cut are never split', () {
+        for (final unit in ['😀', 'ع', 'x😀', 'عx']) {
+          for (var pad = 0; pad < 8; pad++) {
+            final text = '${'a' * pad}${unit * (cap ~/ 2 + 50)}';
+            final r = capShareText(text, note);
+            expect(r.truncated, isTrue);
+            expect(bytes(r.text), lessThanOrEqualTo(cap));
+            expect(r.text, isNot(contains('\uFFFD')), reason: '$unit $pad');
+            // Every character is whole: encoding and decoding round-trips.
+            expect(utf8.decode(utf8.encode(r.text)), r.text);
+          }
+        }
+      });
+
+      test('is idempotent on its own output', () {
+        final once = capShareText(lines(20000), note);
+        final twice = capShareText(once.text, note);
+        expect(twice.truncated, isFalse);
+        expect(twice.text, once.text);
+      });
+    });
+
+    test('the native guard has the same cap in both flavors', () {
+      for (final app in ['consolarr', 'consolarr_play']) {
+        final kotlin = File(
+          '../$app/android/app/src/main/kotlin/org/consolarr/app/MainActivity.kt',
+        ).readAsStringSync();
+        final m = RegExp(r'const val MAX_SHARE_TEXT_BYTES = (\d+) \* 1024')
+            .firstMatch(kotlin);
+        expect(m, isNotNull, reason: app);
+        expect(int.parse(m!.group(1)!) * 1024, shareTextMaxBytes, reason: app);
+        expect(kotlin, contains('"too_large"'));
+        expect(kotlin, contains('toByteArray(Charsets.UTF_8).size'));
+        // The guard runs before the intent is built.
+        expect(
+          kotlin.indexOf('too_large'),
+          lessThan(kotlin.indexOf('Intent(Intent.ACTION_SEND)')),
+        );
+      }
+    });
   });
 
   group('PlatformExternalActions', () {
@@ -141,6 +223,16 @@ void main() {
       final sent = (calls.single.arguments as Map)['text'] as String;
       expect(utf8.encode(sent).length, lessThanOrEqualTo(shareTextMaxBytes));
       expect(sent, contains('[short]'));
+    });
+
+    test('a native too_large refusal is a typed error', () async {
+      mock('consolarr/share', (_) async {
+        throw PlatformException(code: 'too_large');
+      });
+      await expectLater(
+        actions.shareText(text: 't', subject: 's', truncationNote: 'n'),
+        throwsA(isA<ShareTextTooLarge>()),
+      );
     });
 
     test('a failing share sheet surfaces as an error', () async {

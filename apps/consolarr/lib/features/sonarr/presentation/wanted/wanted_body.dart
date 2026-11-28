@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:arr_api/arr_api.dart';
+import 'package:consolarr/shared/l10n/join_parts.dart';
 import 'package:consolarr/features/arr_common/presentation/group_header_row.dart';
 import 'package:consolarr/features/sonarr/application/sonarr_providers.dart';
 import 'package:consolarr/features/sonarr/application/wanted_providers.dart';
@@ -347,7 +348,7 @@ class _EpisodeRow extends StatelessWidget {
     final theme = Theme.of(context);
     final airs = episode.airs?.toLocal();
     final code = episodeCode(l10n, episode);
-    final heading = [code, ?episode.title].join(' · ');
+    final heading = joinParts(l10n, [code, ?episode.title]);
     final airText = airs == null
         ? l10n.sonarrWantedNoAirDate
         : (airs.isAfter(now)

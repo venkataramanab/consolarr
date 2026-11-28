@@ -21,6 +21,7 @@ const _labels = ReleaseRowLabels(
   rejectionsHeading: 'Reasons',
   customFormatsHeading: 'Formats',
   languagesHeading: 'Languages',
+  partSeparator: ' ~ ',
 );
 
 ReleaseRowData _data({
@@ -47,6 +48,20 @@ Widget _host(HarnessVariant v, Widget child) => harnessApp(
 );
 
 void main() {
+  testWidgets('the facts are joined with the separator the labels carry', (
+    tester,
+  ) async {
+    await pumpMatrix(
+      tester,
+      (v) => _host(
+        v,
+        ReleaseRow(data: _data(), labels: _labels, onDownload: () {}),
+      ),
+      variants: [harnessMatrix().first],
+    );
+    expect(find.text('WEBDL-1080p ~ 1.0 GB'), findsOneWidget);
+  });
+
   for (final grab in ReleaseGrabState.values) {
     testWidgets('row in state ${grab.name} across the matrix', (tester) async {
       await pumpMatrix(

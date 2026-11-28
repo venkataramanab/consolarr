@@ -12,6 +12,12 @@ import io.flutter.plugin.common.MethodChannel
 // FlutterFragmentActivity: the platform authenticator (app lock) needs a
 // FragmentActivity host.
 class MainActivity : FlutterFragmentActivity() {
+    companion object {
+        // Must equal `shareTextMaxBytes` in Dart (a test compares them). The
+        // text travels in a Binder transaction (about 1 MB for the process).
+        const val MAX_SHARE_TEXT_BYTES = 150 * 1024
+    }
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         // Lets Dart mark the window secure (no screenshots, blanked in the
@@ -48,6 +54,12 @@ class MainActivity : FlutterFragmentActivity() {
                     val text = call.argument<String>("text")
                     if (text == null) {
                         result.error("bad_args", "text is required", null)
+                        return@setMethodCallHandler
+                    }
+                    // Native guard: Dart caps the text first; this refuses
+                    // anything above the same cap instead of building the intent.
+                    if (text.toByteArray(Charsets.UTF_8).size > MAX_SHARE_TEXT_BYTES) {
+                        result.error("too_large", "text exceeds the share cap", null)
                         return@setMethodCallHandler
                     }
                     val send = Intent(Intent.ACTION_SEND).apply {

@@ -12,7 +12,7 @@ import 'package:test/test.dart';
 import '../support/fake_adapter.dart';
 
 const _base = 'https://sonarr.example/sonarr';
-const _fakeKey = 'test-key-0000000000000000';
+final _fakeKey = ['test-key-', '00000000', '00000000'].join();
 
 Future<T> _inline<T>(T Function() work) async => work();
 

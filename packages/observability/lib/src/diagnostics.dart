@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:observability/src/events/catalog.dart';
 import 'package:observability/src/logger.dart';
 import 'package:observability/src/redactor.dart';
 
@@ -20,8 +21,10 @@ class LogEntry {
 
 /// The opt-in in-app log (SET-04): off by default, memory only, a circular
 /// buffer with a cap, cleared on request, when turned off and when the
-/// process ends. Messages are redacted at write time and capped at
-/// [maxMessageLength]; the bundle redacts them again.
+/// process ends. Messages are redacted and scrubbed once at write time (by
+/// [add], or by [AppLogger] before [addScrubbed]) and capped at
+/// [maxMessageLength]; the bundle scrubs them again with the known server
+/// values.
 ///
 /// Reading does not copy: [length], [entryAt] and [view] look straight into the
 /// buffer, and [version] changes on every change so a listener can tell
@@ -31,8 +34,10 @@ class DiagnosticsLog {
   DiagnosticsLog({
     this.capacity = 500,
     this.redactor = const Redactor(),
+    DiagnosticsScrubber? scrubber,
     DateTime Function()? clock,
-  }) : assert(capacity > 0, 'capacity > 0'),
+  }) : scrubber = scrubber ?? const DiagnosticsScrubber(),
+       assert(capacity > 0, 'capacity > 0'),
        _clock = clock ?? DateTime.now;
 
   /// Largest stored message, marker included (about 1 KB).
@@ -43,6 +48,11 @@ class DiagnosticsLog {
 
   final int capacity;
   final Redactor redactor;
+
+  /// The stricter pass applied to every line at write time (hosts, addresses,
+  /// paths, quoted titles, passkeys), so the log view only ever shows
+  /// scrubbed text. The bundle scrubs again, with the known server values.
+  final DiagnosticsScrubber scrubber;
   final DateTime Function() _clock;
 
   final List<LogEntry?> _ring = [];
@@ -90,12 +100,20 @@ class DiagnosticsLog {
 
   /// Records [message] (redacted, capped) when the log is on and [level]
   /// passes the selected level. Never throws.
-  void add(LogLevel level, String message) {
+  void add(LogLevel level, String message) =>
+      _store(level, scrubber.scrub(redactor.redactText(message)));
+
+  /// Records a line that has **already** been through the redactor and the
+  /// scrubber (it is [AppLogger]'s output, which scrubs once for every sink
+  /// it feeds). Anything else must use [add].
+  void addScrubbed(LogLevel level, String scrubbed) => _store(level, scrubbed);
+
+  void _store(LogLevel level, String text) {
     if (!_enabled || level.index < _level.index) return;
     final entry = LogEntry(
       time: _clock().toUtc(),
       level: level,
-      message: _cap(redactor.redactText(message)),
+      message: _cap(text),
     );
     if (_ring.length < capacity) {
       _ring.add(entry);
@@ -194,6 +212,18 @@ class DiagnosticsScrubber {
 
   static final _magnet = RegExp(r'magnet:\?\S+', caseSensitive: false);
   static final _url = RegExp(r'\b[a-zA-Z][a-zA-Z0-9+.\-]*://\S+');
+
+  /// `\\server\share\dir\file name.mkv` (also `\\?\UNC\...`): the host,
+  /// the share and every folder name leak, and the parts may contain spaces.
+  /// With an extension the match ends there; without one it runs to the end of
+  /// the line or the closing quote, since where a folder name ends is unknown.
+  static final _uncExt = RegExp(
+    r'\\\\[^\\\s"]+\\[^\r\n"]*?\.[A-Za-z0-9]{2,5}\b',
+  );
+  static final _unc = RegExp(r'\\\\[^\\\s"]+(?:\\[^\r\n"]*)?');
+
+  /// `//server/share/...` (an SMB URL without a scheme).
+  static final _slashUnc = RegExp(r'(?<![\w:/.])//[^/\s"]+(?:/[^\r\n"]*)?');
   static final _winPathExt = RegExp(
     r'[A-Za-z]:\\[^\r\n"]*?\.[A-Za-z0-9]{2,5}\b',
   );
@@ -237,19 +267,49 @@ class DiagnosticsScrubber {
     r'(?<![0-9A-Za-z])(?=[a-z2-7]*[2-7])[a-z2-7]{16,}(?![0-9A-Za-z])',
   );
 
-  /// Returns [line] with everything above removed. Idempotent.
+  /// Returns [line] with everything above removed. Idempotent: the passes
+  /// repeat until the text stops changing (a replacement can change how
+  /// quotes pair up, so one pass is not always enough), at most
+  /// [_maxPasses] times.
   String scrub(String line) {
     var out = line;
-    for (final v in knownValues) {
-      if (v.length < 3) continue;
-      out = out.replaceAll(
-        RegExp(RegExp.escape(v), caseSensitive: false),
-        _mark,
-      );
+    for (var i = 0; i < _maxPasses; i++) {
+      final next = _pass(out);
+      if (next == out) break;
+      out = next;
     }
+    return out;
+  }
+
+  static const _maxPasses = 6;
+
+  /// Removes [knownValues] from the text *between* existing placeholders only.
+  /// A value such as "ted" or "act" is a substring of `[REDACTED]`, and
+  /// replacing inside a placeholder would corrupt it into
+  /// `[REDAC[REDACTED]]`, leak the shape of what was removed and grow on every
+  /// pass. Splitting on the placeholder first keeps it intact.
+  String _scrubKnown(String line) {
+    final values = [
+      for (final v in knownValues)
+        if (v.length >= 3) v,
+    ]..sort((a, b) => b.length.compareTo(a.length));
+    if (values.isEmpty) return line;
+    // One alternation, one scan: replacing value by value would rescan the
+    // placeholders the earlier values just inserted.
+    final any = RegExp(
+      values.map(RegExp.escape).join('|'),
+      caseSensitive: false,
+    );
+    return line.split(_mark).map((p) => p.replaceAll(any, _mark)).join(_mark);
+  }
+
+  String _pass(String line) {
+    var out = _scrubKnown(line);
     out = out.replaceAll(_magnet, _mark);
     out = redactor.redactText(out);
     out = out.replaceAll(_url, _mark);
+    out = out.replaceAll(_uncExt, _mark).replaceAll(_unc, _mark);
+    out = out.replaceAll(_slashUnc, _mark);
     out = out.replaceAll(_winPathExt, _mark).replaceAll(_winPath, _mark);
     out = out.replaceAll(_unixPathExt, _mark).replaceAll(_unixPath, _mark);
     out = out.replaceAll(_email, _mark);
@@ -270,6 +330,64 @@ class DiagnosticsScrubber {
   }
 }
 
+/// Which build this is (closed set, so nothing else can be reported).
+enum AppFlavor { foss, play }
+
+/// How the services of one kind are doing, as shown in the bundle. A closed
+/// set: the bundle can say nothing else about a server's state.
+enum ServiceHealthBucket {
+  /// No check has run (the bundle never starts one).
+  notChecked,
+  checking,
+
+  /// Some servers of the kind were checked, others were not.
+  partial,
+  healthy,
+  degraded,
+  unauthorized,
+  unreachable;
+
+  /// The English words used in the bundle.
+  String get label => switch (this) {
+    notChecked => 'not checked',
+    checking => 'checking',
+    partial => 'partly checked',
+    healthy => 'healthy',
+    degraded => 'degraded',
+    unauthorized => 'unauthorized',
+    unreachable => 'unreachable',
+  };
+}
+
+/// The connection health of every server of one [kind]. Only closed values
+/// and counts: a server name, host, port or id cannot be carried.
+class DiagnosticsServiceEntry {
+  const DiagnosticsServiceEntry({
+    required this.kind,
+    required this.servers,
+    required this.health,
+    this.majorVersion,
+    this.cleartextOptIn = false,
+  });
+
+  final ServiceKindParam kind;
+
+  /// Number of configured servers of this kind.
+  final int servers;
+  final ServiceHealthBucket health;
+
+  /// The server's major version when a check reported it.
+  final int? majorVersion;
+
+  /// At least one server of this kind has plain http opted in.
+  final bool cleartextOptIn;
+
+  String get line =>
+      '${kind.code}: servers=$servers, health=${health.label}, '
+      'major=${majorVersion ?? 'unknown'}, '
+      'cleartext=${cleartextOptIn ? 'yes' : 'no'}';
+}
+
 /// Facts about the install that go in the bundle. No identity.
 class DiagnosticsInfo {
   const DiagnosticsInfo({
@@ -277,7 +395,16 @@ class DiagnosticsInfo {
     required this.buildMode,
     required this.platform,
     required this.locale,
+    this.flavor = AppFlavor.foss,
+    this.crashReportsConsent = false,
+    this.analyticsConsent = false,
   });
+
+  final AppFlavor flavor;
+
+  /// The state of the two consent switches.
+  final bool crashReportsConsent;
+  final bool analyticsConsent;
 
   final String appVersion;
 
@@ -304,62 +431,199 @@ class DiagnosticsSection {
   final String body;
 }
 
+/// Marks a section body that was cut to fit the size cap.
+const _cutMarker = ' [cut]';
+
+/// [text] cut to at most [maxBytes] UTF-8 bytes, on a character boundary.
+String _cutBytes(String text, int maxBytes) {
+  if (maxBytes <= 0) return '';
+  var bytes = 0;
+  final out = StringBuffer();
+  for (final rune in text.runes) {
+    final w = rune < 0x80 ? 1 : (rune < 0x800 ? 2 : (rune < 0x10000 ? 3 : 4));
+    if (bytes + w > maxBytes) break;
+    bytes += w;
+    out.writeCharCode(rune);
+  }
+  return out.toString();
+}
+
+/// Cuts the longest section bodies (never a heading) until the text fits.
+List<DiagnosticsSection> _shrinkToFit(
+  List<DiagnosticsSection> sections,
+  String Function(List<DiagnosticsSection>) textOf,
+  int maxBytes,
+) {
+  var current = sections;
+  final marker = utf8.encode(_cutMarker).length;
+  while (true) {
+    final over = utf8.encode(textOf(current)).length - maxBytes;
+    if (over <= 0) return current;
+    var index = -1;
+    var longest = marker;
+    for (var i = 0; i < current.length; i++) {
+      final n = utf8.encode(current[i].body).length;
+      if (n > longest) {
+        longest = n;
+        index = i;
+      }
+    }
+    if (index < 0) return current; // nothing left to cut
+    final cut = _cutBytes(current[index].body, longest - over - marker);
+    final s = current[index];
+    current = [
+      for (var i = 0; i < current.length; i++)
+        if (i == index)
+          DiagnosticsSection(id: s.id, title: s.title, body: '$cut$_cutMarker')
+        else
+          current[i],
+    ];
+  }
+}
+
 /// The redacted diagnostics bundle (SET-04). [text] is what the preview shows,
 /// what the shared file contains byte for byte ([bytes]) and what the GitHub
 /// issue body is built from. Nothing outside the sections is included.
 class DiagnosticsBundle {
-  const DiagnosticsBundle._(this.sections, this.text, this.logIsEmpty);
+  const DiagnosticsBundle._(
+    this.sections,
+    this.text,
+    this.logIsEmpty,
+    this._remake,
+  );
+
+  final DiagnosticsBundle Function(List<DiagnosticsServiceEntry>) _remake;
+
+  /// The same bundle with a different Services section. Nothing else is read
+  /// or scrubbed again (the log lines were scrubbed once, by [build]), and
+  /// the size cap is applied afresh, so the result is exactly what [build]
+  /// would give for those services.
+  DiagnosticsBundle withServices(List<DiagnosticsServiceEntry> services) =>
+      _remake(services);
 
   /// Section titles are English: the bundle is read by maintainers.
+  ///
+  /// With [maxBytes] the log section keeps only the newest entries that fit,
+  /// so [text] (what the preview shows and what is shared) never exceeds it
+  /// in UTF-8 bytes and needs no further cutting.
   factory DiagnosticsBundle.build({
     required DiagnosticsInfo info,
     required List<String> errorCategories,
     required List<LogEntry> entries,
+    List<DiagnosticsServiceEntry> services = const [],
+    int? maxBytes,
     DiagnosticsScrubber scrubber = const DiagnosticsScrubber(),
   }) {
     String s(String v) => scrubber.scrub(v);
-    final sections = [
-      DiagnosticsSection(
-        id: 'app',
-        title: 'App',
-        body: 'version: ${s(info.appVersion)}\nbuild: ${s(info.buildMode)}',
-      ),
-      DiagnosticsSection(
-        id: 'platform',
-        title: 'Platform',
-        body: s(info.platform),
-      ),
-      DiagnosticsSection(id: 'locale', title: 'Locale', body: s(info.locale)),
-      DiagnosticsSection(
-        id: 'error_categories',
-        title: 'Error categories',
-        body: errorCategories.isEmpty
-            ? '(none)'
-            : errorCategories.map(s).join('\n'),
-      ),
-      DiagnosticsSection(
-        id: 'log',
-        title: 'Log',
-        body: entries.isEmpty
-            ? '(empty)'
-            : entries
-                  .map(
-                    (e) =>
-                        '${e.time.toIso8601String()} '
-                        '${e.level.name.toUpperCase()} ${s(e.message)}',
-                  )
-                  .join('\n'),
-      ),
+    // Every line is scrubbed once; trimming only joins fewer of them.
+    final lines = [
+      for (final e in entries)
+        '${e.time.toIso8601String()} '
+            '${e.level.name.toUpperCase()} ${s(e.message)}',
     ];
-    final text = [
-      'Consolarr diagnostics',
-      for (final section in sections) '## ${section.title}\n${section.body}',
-    ].join('\n\n');
-    return DiagnosticsBundle._(
-      List.unmodifiable(sections),
-      text,
-      entries.isEmpty,
-    );
+
+    DiagnosticsBundle make(List<DiagnosticsServiceEntry> services) {
+      int bytesOf(String v) => utf8.encode(v).length;
+
+      String noteFor(int omitted) =>
+          '($omitted older entries left out to keep the text '
+          'within the size limit)';
+
+      String logBody(int keep) {
+        if (lines.isEmpty) return '(empty)';
+        final omitted = lines.length - keep;
+        return [
+          if (omitted > 0) noteFor(omitted),
+          ...lines.skip(omitted),
+        ].join('\n');
+      }
+
+      List<DiagnosticsSection> sectionsWith(String log) => [
+        DiagnosticsSection(
+          id: 'app',
+          title: 'App',
+          body:
+              'version: ${s(info.appVersion)}\nbuild: ${s(info.buildMode)}\n'
+              'flavor: ${info.flavor.name}\n'
+              'crash reports: ${info.crashReportsConsent ? 'on' : 'off'}\n'
+              'usage analytics: ${info.analyticsConsent ? 'on' : 'off'}',
+        ),
+        DiagnosticsSection(
+          id: 'platform',
+          title: 'Platform',
+          body: s(info.platform),
+        ),
+        DiagnosticsSection(id: 'locale', title: 'Locale', body: s(info.locale)),
+        DiagnosticsSection(
+          id: 'services',
+          title: 'Services',
+          body: services.isEmpty
+              ? '(none configured)'
+              : services.map((e) => e.line).join('\n'),
+        ),
+        DiagnosticsSection(
+          id: 'error_categories',
+          title: 'Error categories',
+          body: errorCategories.isEmpty
+              ? '(none)'
+              : errorCategories.map(s).join('\n'),
+        ),
+        DiagnosticsSection(id: 'log', title: 'Log', body: log),
+      ];
+
+      String textOf(List<DiagnosticsSection> sections) => [
+        'Consolarr diagnostics',
+        for (final section in sections) '## ${section.title}\n${section.body}',
+      ].join('\n\n');
+
+      var sections = sectionsWith(logBody(lines.length));
+      var text = textOf(sections);
+      if (maxBytes != null && bytesOf(text) > maxBytes) {
+        // The log is the last section, so the text is the same fixed part plus
+        // the log body, and the size of the body for any number of kept lines
+        // is plain arithmetic. It is NOT monotonic in that number (the note of
+        // omitted entries changes width, and a short line can weigh less than
+        // the note), so the largest suffix that fits is found by scanning, not
+        // by bisection.
+        final fixed = bytesOf(textOf(sectionsWith('')));
+        final lineBytes = [for (final l in lines) bytesOf(l)];
+        var suffix = 0; // bytes of the newest `keep` lines
+        var keep = -1;
+        final noteWidth = <int>[];
+        for (var k = 0; k <= lines.length; k++) {
+          noteWidth.add(
+            k == lines.length ? 0 : bytesOf(noteFor(lines.length - k)),
+          );
+        }
+        for (var k = 0; k < lines.length; k++) {
+          // k = how many of the newest lines are kept (0..n-1).
+          if (k > 0) suffix += lineBytes[lines.length - k];
+          final items = k + 1; // the note counts as one item
+          final body = suffix + noteWidth[k] + (items - 1);
+          if (fixed + body <= maxBytes) keep = k;
+        }
+        if (keep >= 0) {
+          sections = sectionsWith(logBody(keep));
+          text = textOf(sections);
+        } else {
+          sections = _shrinkToFit(sectionsWith(logBody(0)), textOf, maxBytes);
+          text = textOf(sections);
+        }
+        if (bytesOf(text) > maxBytes) {
+          // The headings alone are over the cap: cut the text itself, so what
+          // is shown and what is shared still cannot exceed it.
+          text = _cutBytes(text, maxBytes);
+        }
+      }
+      return DiagnosticsBundle._(
+        List.unmodifiable(sections),
+        text,
+        entries.isEmpty,
+        make,
+      );
+    }
+
+    return make(services);
   }
 
   final List<DiagnosticsSection> sections;

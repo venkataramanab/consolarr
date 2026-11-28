@@ -1179,7 +1179,7 @@
       }
     }
   },
-  "sonarrLibraryFilterChip": "{count, plural, =0{تصفية} many{تصفية ({count})} other{تصفية ({count})}}",
+  "sonarrLibraryFilterChip": "{count, plural, =0{تصفية} few{تصفية ({count})} many{تصفية ({count})} other{تصفية ({count})}}",
   "@sonarrLibraryFilterChip": {
     "description": "Label of the filter button above the library; shows how many criteria are active.",
     "placeholders": {
@@ -1537,7 +1537,7 @@
   "@sonarrReleaseReverseSort": {
     "description": "Tooltip of the button that reverses the sort direction."
   },
-  "sonarrReleaseFilters": "{count, plural, =0{عوامل التصفية} many{عوامل التصفية ({count})} other{عوامل التصفية ({count})}}",
+  "sonarrReleaseFilters": "{count, plural, =0{عوامل التصفية} few{عوامل التصفية ({count})} many{عوامل التصفية ({count})} other{عوامل التصفية ({count})}}",
   "@sonarrReleaseFilters": {
     "description": "Filter panel toggle; shows how many filters are active.",
     "placeholders": {
@@ -1887,5 +1887,13 @@
         "description": "Day of month."
       }
     }
+  },
+  "sonarrLookupsFailed": "تعذّر تحميل ملفات الجودة أو الوسوم، لذا أسماؤها غير متوفرة.",
+  "@sonarrLookupsFailed": {
+    "description": "Notice inside the library when the quality profile or tag lists could not be read; names are missing. A retry button follows."
+  },
+  "sonarrAddTagsFailed": "تعذّر تحميل الوسوم، لذا لا تُعرض أي وسوم.",
+  "@sonarrAddTagsFailed": {
+    "description": "Notice in the add-series options when the tag list could not be read. A retry button follows."
   }
 }

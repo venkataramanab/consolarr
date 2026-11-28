@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:arr_api/arr_api.dart';
+import 'package:consolarr/shared/l10n/join_parts.dart';
 import 'package:consolarr/features/radarr/application/radarr_providers.dart';
 import 'package:consolarr/features/radarr/domain/availability.dart';
 import 'package:consolarr/features/radarr/domain/library_query.dart';
@@ -79,10 +80,10 @@ class MoviePosterTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final a = availabilityOf(movie, now);
-    final subtitle = [
+    final subtitle = joinParts(l10n, [
       if (movie.year != null) '${movie.year}',
       if (movie.sizeOnDisk > 0) sizeText(l10n, movie.sizeOnDisk),
-    ].join(dot);
+    ]);
     return PosterCard(
       title: movie.title,
       subtitle: subtitle.isEmpty ? null : subtitle,

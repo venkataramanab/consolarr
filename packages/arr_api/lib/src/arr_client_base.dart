@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'dart:convert';
-import 'dart:isolate';
 
 import 'package:arr_api/src/arr_api.dart';
 import 'package:arr_api/src/arr_common.dart';
@@ -9,29 +8,23 @@ import 'package:core/core.dart';
 import 'package:dio/dio.dart';
 import 'package:security/security.dart';
 
-/// Runs [computation], possibly on another isolate. Inject an inline version
-/// in tests.
-typedef ParseRunner = Future<T> Function<T>(T Function() computation);
+// The shared helper lives in `core`; the names below stay for call sites.
+export 'package:core/core.dart' show ParseRunner;
 
 Future<T> isolateParseRunner<T>(T Function() computation) =>
-    Isolate.run(computation);
+    isolateRunner(computation);
 
 /// Bodies larger than this are parsed off the UI isolate.
-const arrIsolateThresholdBytes = 64 * 1024;
+const arrIsolateThresholdBytes = isolateThresholdBytes;
 
-/// Runs [parse] on [body], off the UI isolate when the body is large.
-///
-/// Top level on purpose: the closure handed to [runner] captures only [body]
-/// and [parse]. A closure created inside a client method would drag the whole
-/// client (and its unsendable Dio/HttpClient) along and `Isolate.run` would
-/// throw. [parse] must itself be a top-level function or a static tear-off.
+/// Runs [parse] on [body], off the UI isolate when the body is large. A thin
+/// delegate of `parseOffIsolate` in `core` (same rules: top level, [parse] a
+/// top-level function or static tear-off).
 Future<T> decodeOffIsolate<T>(
   ParseRunner runner,
   String body,
   T Function(String body) parse,
-) => body.length > arrIsolateThresholdBytes
-    ? runner(() => parse(body))
-    : Future.value(parse(body));
+) => parseOffIsolate(runner, body, parse);
 
 /// Parses a JSON array body into rows with [parse], off the UI isolate when
 /// the body is large. Same rules as [decodeOffIsolate]: top level, [parse]

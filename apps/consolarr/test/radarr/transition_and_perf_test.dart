@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:arr_api/arr_api.dart';
 import 'package:consolarr/features/radarr/application/radarr_providers.dart';
+import 'package:consolarr/features/radarr/presentation/missing_page.dart';
 import 'package:consolarr/features/radarr/domain/library_query.dart';
 import 'package:consolarr/features/radarr/domain/release_query.dart';
 import 'package:consolarr/features/radarr/domain/wanted.dart';
@@ -170,6 +171,45 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(builds - before, lessThan(5));
+    });
+
+    testWidgets('R3: scrolling the missing list builds a bounded number of '
+        'rows and never recomputes the list', (tester) async {
+      final api = FakeRadarrApi(
+        moviesResult: Result.ok([
+          for (var i = 1; i <= 10000; i++)
+            fakeMovie(i, hasFile: false, digital: DateTime.utc(2020)),
+        ]),
+      );
+      await pumpMatrix(
+        tester,
+        (v) => radarrApp(
+          v,
+          api,
+          const MissingPage(padding: EdgeInsets.fromLTRB(16, 16, 16, 88)),
+        ),
+        variants: phone,
+      );
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(MissingPage)),
+      );
+      var recomputed = 0;
+      final sub = container.listen(
+        wantedMoviesProvider(WantedScope.released),
+        (_, _) => recomputed++,
+      );
+      addTearDown(sub.close);
+      expect(sub.read(), hasLength(10000));
+      var peak = 0;
+      for (var i = 0; i < 40; i++) {
+        await tester.drag(find.byType(ListView), const Offset(0, -400));
+        await tester.pump();
+        final built = find.byType(Text).evaluate().length;
+        if (built > peak) peak = built;
+      }
+      // A screenful plus the cache extent, never the whole list.
+      expect(peak, lessThan(400));
+      expect(recomputed, 0, reason: 'scrolling must not sort or filter again');
     });
 
     test('big library and release payloads are parsed through the runner', () {

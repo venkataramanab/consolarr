@@ -2,7 +2,6 @@
 
 import 'dart:async';
 
-import 'package:arr_api/arr_api.dart' show ParseRunner;
 import 'package:consolarr/features/dashboard/application/dashboard_cancel.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_dates.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_models.dart';

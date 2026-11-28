@@ -166,6 +166,29 @@ void main() {
     expect(find.text('Example Movie 1'), findsOneWidget);
   });
 
+  testWidgets('R3: grid tiles do not clip or overflow above 2.2x text scale', (
+    tester,
+  ) async {
+    final api = FakeRadarrApi(
+      moviesResult: Result.ok([
+        for (var i = 1; i <= 8; i++)
+          fakeMovie(i, title: 'Example Movie $i ${'Very Long Title ' * 6}'),
+      ]),
+    );
+    await pumpMatrix(
+      tester,
+      (v) => radarrApp(v, api, const RadarrScreen()),
+      variants: harnessMatrix(
+        sizes: const [Size(320, 568), Size(412, 915)],
+        textScales: const [2.2, 2.6, 3.0],
+        locales: const [Locale('en'), Locale('ar'), Locale('en', 'XA')],
+        brightnesses: const [Brightness.dark],
+      ),
+      // pumpMatrix fails on any framework exception (RenderFlex overflow).
+      verify: (v) => expectAccessible(tester),
+    );
+  });
+
   testWidgets('list mode and grid mode show the same movies', (tester) async {
     final api = FakeRadarrApi(moviesResult: Result.ok(fakeMovies(4)));
     await pumpMatrix(

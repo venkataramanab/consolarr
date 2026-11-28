@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:arr_api/arr_api.dart';
+import 'package:consolarr/shared/l10n/join_parts.dart';
 import 'package:consolarr/features/arr_common/presentation/search_status_button.dart';
 import 'package:consolarr/features/sonarr/application/detail_providers.dart';
 import 'package:consolarr/features/sonarr/application/search_progress.dart';
@@ -380,11 +381,11 @@ class EpisodeRow extends ConsumerWidget {
         : l10n.sonarrDetailEpisodeTitle(episode.episodeNumber, episode.title!);
     final airs = episode.airs;
     final file = episode.file;
-    final details = [
+    final details = joinParts(l10n, [
       if (airs != null) l10n.sonarrDetailAirDate(airs.toLocal()),
       if (file != null && file.size > 0) sizeText(l10n, file.size),
       ?file?.qualityName,
-    ].join(' · ');
+    ]);
     final writes = !data.isOffline;
     final pending = data.pendingEpisodes.contains(episode.id);
     final failedValue = data.failedEpisodes[episode.id];

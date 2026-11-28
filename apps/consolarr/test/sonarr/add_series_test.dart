@@ -362,6 +362,23 @@ void main() {
       expect(find.text('Add series').evaluate().length, 1); // title only
     });
 
+    testWidgets('R1: tags that cannot load are reported with a retry, not '
+        'shown as "no tags"', (tester) async {
+      final api = addApi(results: [fakeLookup(1)])
+        ..tagsResult = const Result.err(AppError(ErrorCategory.timeout));
+      await openSheet(tester, api);
+      final notice = find.text('Tags could not be loaded, so none are listed.');
+      await tester.ensureVisible(notice);
+      expect(notice, findsOneWidget);
+      // The rest of the form still works.
+      expect(find.text('Quality profile'), findsOneWidget);
+      api.tagsResult = const Result.ok([ArrTag(id: 1, label: 'kids')]);
+      await tester.tap(find.text('Try again'));
+      await tester.pumpAndSettle();
+      expect(notice, findsNothing);
+      expect(find.text('kids'), findsWidgets);
+    });
+
     testWidgets('options that cannot load show the error with retry', (
       tester,
     ) async {

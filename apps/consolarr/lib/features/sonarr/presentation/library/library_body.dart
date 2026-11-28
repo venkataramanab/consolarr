@@ -10,6 +10,7 @@ import 'package:consolarr/features/sonarr/presentation/library/library_filters.d
 import 'package:consolarr/features/sonarr/presentation/series_views.dart';
 import 'package:consolarr/features/sonarr/sonarr_routes.dart';
 import 'package:consolarr/src/providers.dart';
+import 'package:consolarr/shared/widgets/inline_retry_row.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -227,6 +228,12 @@ class _LibraryBodyState extends ConsumerState<LibraryBody> {
             clearAllLabel: l10n.sonarrLibraryFilterClearAll,
             onClearAll: ref.read(libraryQueryProvider.notifier).clearFilter,
           ),
+          if (lookups.failed)
+            InlineRetryRow(
+              message: l10n.sonarrLookupsFailed,
+              retryLabel: l10n.sonarrRetry,
+              onRetry: () => ref.invalidate(libraryLookupsProvider),
+            ),
           if (visible.computing)
             Semantics(
               liveRegion: true,

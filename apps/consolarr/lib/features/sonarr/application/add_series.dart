@@ -20,11 +20,16 @@ class AddFormData {
     required this.rootFolders,
     required this.tags,
     this.rememberedRootFolder,
+    this.tagsFailed = false,
   });
 
   final List<ArrQualityProfile> profiles;
   final List<ArrRootFolder> rootFolders;
   final List<ArrTag> tags;
+
+  /// The tag list could not be read (tags are optional, so the form still
+  /// works; it says so and offers a retry instead of showing "no tags").
+  final bool tagsFailed;
 
   /// Root folder path used last time on this server, when it still exists.
   final String? rememberedRootFolder;
@@ -67,6 +72,7 @@ final addFormDataProvider = FutureProvider.autoDispose<AddFormData>(
       profiles: profiles,
       rootFolders: folders,
       tags: results.$3.valueOrNull ?? const [],
+      tagsFailed: results.$3.isErr,
       rememberedRootFolder: remembered,
     );
   },

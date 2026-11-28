@@ -7,7 +7,6 @@ import 'package:core/core.dart';
 import 'package:dio/dio.dart';
 import 'package:torrent_clients/src/client_support.dart';
 import 'package:torrent_clients/src/models.dart';
-import 'package:torrent_clients/src/parse_runner.dart';
 import 'package:torrent_clients/src/torrent_actions.dart';
 import 'package:torrent_clients/src/torrent_capabilities.dart';
 import 'package:torrent_clients/src/torrent_client.dart';
@@ -555,7 +554,9 @@ class DelugeClient implements TorrentClient, DaemonHostSelection {
         await _result('label.add', [label]);
       }
       await _result('label.set_torrent', [hash, label]);
-    } on AppError {
+    } on Object {
+      // Best effort by contract: whatever went wrong (a daemon error, a
+      // timeout, a dropped connection), the torrent is already added.
       o.onWarning?.call(AddWarning.labelNotApplied);
     }
   }
@@ -613,9 +614,13 @@ class DelugeClient implements TorrentClient, DaemonHostSelection {
         ],
       ]);
       // The web call does not return the hash: the new torrent is the one
-      // that was not in the list before.
-      if (before != null) {
-        await _applyLabel(await _newHash(before), options);
+      // that was not in the list before. Without that snapshot the torrent
+      // cannot be identified, which is reported, never silently skipped.
+      if (wantsLabel) {
+        await _applyLabel(
+          before == null ? null : await _newHash(before),
+          options,
+        );
       }
     }),
   );
@@ -631,7 +636,7 @@ class DelugeClient implements TorrentClient, DaemonHostSelection {
         for (final k in r.keys)
           if (k is String) k,
       };
-    } on AppError {
+    } on Object {
       return null;
     }
   }

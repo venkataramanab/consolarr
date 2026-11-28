@@ -60,6 +60,7 @@ ReleaseRowLabels releaseRowLabels(AppLocalizations l10n) => ReleaseRowLabels(
   rejectionsHeading: l10n.radarrRejectionReasons,
   customFormatsHeading: l10n.radarrCustomFormats,
   languagesHeading: l10n.radarrReleaseLanguages,
+  partSeparator: l10n.sharedPartSeparator,
 );
 
 ReleaseGrabState grabStateOf(GrabPhase? phase) => switch (phase) {
