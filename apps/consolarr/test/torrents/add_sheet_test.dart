@@ -318,7 +318,9 @@ void main() {
         variants: stressVariants,
         verify: (v) async {
           await tester.enterText(_link, _magnet);
-          await tester.pump();
+          // Settle: the button's disabled -> enabled colour transition must be
+          // over, or the pixels read are a half-faded label.
+          await tester.pumpAndSettle();
           await expectAccessible(tester);
           await tester.ensureVisible(find.byType(FilledButton).first);
           await tester.tap(find.byType(FilledButton).first);
