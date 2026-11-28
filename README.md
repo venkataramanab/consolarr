@@ -76,6 +76,22 @@ user-facing strings.
 
 See [docs/architecture.md](docs/architecture.md) for the dependency rules.
 
+## Releases
+
+Signed APKs are published on the
+[GitHub Releases](https://github.com/venkataramanab/consolarr/releases) page
+only (there has been no release yet). Each release has per-ABI APKs for both
+flavours, `SHA256SUMS.txt` and `SIGNING-CERT-SHA256.txt`.
+
+- Checksums: `sha256sum -c SHA256SUMS.txt --ignore-missing` detects a corrupted
+  or altered download.
+- Signing certificate: `apksigner verify --print-certs <apk>` must show the
+  SHA-256 digest published in `SECURITY.md` after the first release. Android
+  refuses updates signed with a different certificate.
+- Provenance: `gh attestation verify <apk> --repo venkataramanab/consolarr`.
+
+Maintainers: see [docs/releasing.md](docs/releasing.md).
+
 ## Building from source
 
 Prerequisites: the Flutter version pinned in [`.fvmrc`](.fvmrc)
