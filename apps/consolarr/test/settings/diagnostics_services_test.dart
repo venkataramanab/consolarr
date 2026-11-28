@@ -11,7 +11,6 @@ import 'package:consolarr/features/settings/application/settings_providers.dart'
 import 'package:consolarr/features/settings/domain/app_settings.dart';
 import 'package:consolarr/features/settings/presentation/diagnostics_preview_screen.dart';
 import 'package:core/core.dart';
-import 'package:design_system/design_system.dart';
 import 'package:flutter/rendering.dart' show SemanticsNode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -459,19 +458,18 @@ void main() {
     // state of the services check, with the tap-target, label and contrast
     // guidelines.
     //
-    // I-4: the contrast guideline misreads two nodes at text scale 1.0: the
-    // "log is empty" line and the GitHub note, both 12 px `textPrimary` text
-    // directly on the page. It is a sampler artifact, not a layout or
-    // semantics bug. The semantics rect of the empty-log line, once every
-    // ancestor transform is applied, is 797..825 at 412x915 (the line plus
-    // its 12 px of padding) and the text paints at 797..813, so focus
-    // highlights land where the text is (the `SemanticsNode.toString` rect is
-    // about 56 px higher only because it leaves out the app bar's offset).
-    // Measured at the pixels, the text is #eceff4 on #181b21 (14.96:1); the
-    // guideline takes the two most frequent colours in the text's box, and
-    // for thin 12 px glyphs an anti-aliasing grey outnumbers the glyph colour.
-    // Only these two nodes are exempt, only at scale 1.0 (at 2.0 they are
-    // judged), and their declared colours are checked analytically instead.
+    // I-4 (resolved): Flutter's contrast guideline used to misread three
+    // nodes here (the empty-log line and the GitHub note at scale 1.0, and the
+    // "checking" status), mostly in the light theme. None was a contrast bug:
+    // it took the commonest light and dark colours of the text's box plus
+    // 4 px, so a colour that no token paints (a blend of the page with a
+    // border or with anti-aliasing, 1.6:1 against the page) stood in for the
+    // text colour, and it matched elements by text alone (the disabled
+    // button's greyed label, which repeats the status text, was judged as the
+    // status line). The harness `TextContrastGuideline` reads the glyph colour
+    // in the text's own box and attributes each element to its own node, so
+    // every label is judged at every size, scale, locale and theme, with no
+    // exemption.
     Future<void> verifyState(
       WidgetTester tester,
       HarnessVariant v,
@@ -479,35 +477,10 @@ void main() {
     ) async {
       await expectTapTargets(tester);
       await expectLabeledTapTargets(tester);
-      final exempt = <String>{
-        if (v.textScale == 1.0) ...{
-          l10n.diagPreviewEmptyLog,
-          l10n.diagGithubNote,
-        },
-        // The "checking" status line: the gap to the button above it (4 px)
-        // is as small as the guideline's own sampling margin, so the sample
-        // takes in the button's teal spinner (1.1..4.3 measured, against a
-        // declared ratio far above 7).
-        l10n.diagServicesChecking,
-      };
       try {
-        await expectTextContrastWhileScrolling(tester, skipLabels: exempt);
+        await expectTextContrastWhileScrolling(tester);
       } on TestFailure catch (e) {
         fail('${v.label}: ${e.message}');
-      }
-      if (exempt.isNotEmpty) {
-        // always: the checking label
-        final context = tester.element(find.byType(Scaffold).first);
-        final page = Theme.of(context).scaffoldBackgroundColor;
-        final body = Theme.of(context).textTheme.bodyMedium?.color;
-        for (final color in [context.roles.textPrimary, ?body]) {
-          expect(
-            wcagContrast(color, page),
-            greaterThanOrEqualTo(7),
-            reason:
-                'the exempt nodes use these colours on the page: ${v.label}',
-          );
-        }
       }
     }
 

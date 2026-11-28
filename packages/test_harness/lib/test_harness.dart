@@ -8,3 +8,4 @@ export 'src/accessibility.dart';
 export 'src/fault_adapter.dart';
 export 'src/fonts.dart';
 export 'src/matrix.dart';
+export 'src/text_contrast.dart';

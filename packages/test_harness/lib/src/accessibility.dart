@@ -4,6 +4,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'text_contrast.dart';
+
 /// Android tap targets are at least 48x48 dp.
 Future<void> expectTapTargets(WidgetTester tester) async {
   final handle = tester.ensureSemantics();
@@ -30,21 +32,7 @@ Future<void> expectLabeledTapTargets(WidgetTester tester) async {
   }
 }
 
-/// The contrast guideline, except for nodes whose label is in [skipLabels].
-// The guideline is annotated as test-only; this package is test-only too.
-// ignore: invalid_use_of_visible_for_testing_member
-class _ContrastExceptLabels extends MinimumTextContrastGuideline {
-  const _ContrastExceptLabels(this.skipLabels);
-
-  final Set<String> skipLabels;
-
-  @override
-  bool shouldSkipNode(SemanticsData data) =>
-      skipLabels.contains(data.label) || super.shouldSkipNode(data);
-}
-
-/// The labels of text that the viewport (or the screen) clips, or that the
-/// guideline's sample (the text's box plus 4 px) would reach past: only part
+/// The labels of text that the viewport (or the screen) clips: only part
 /// of it is painted there, so the contrast guideline, which reads pixels,
 /// cannot judge it at this scroll position. Such text is judged once it is
 /// scrolled fully into view (see [expectTextContrastWhileScrolling]).
@@ -76,7 +64,7 @@ Set<String> clippedLabels(WidgetTester tester) {
         if (box is! RenderBox) continue;
         final sample = MatrixUtils.transformRect(
           box.getTransformTo(null),
-          box.paintBounds.inflate(4),
+          box.paintBounds,
         );
         if (!_containsRect(visible, sample)) out.add(node.label);
       }
@@ -140,10 +128,10 @@ Future<void> expectTextContrastWhileScrolling(
 /// Text meets the WCAG contrast guideline against what is rendered behind it.
 ///
 /// [skipLabels] exempts individual nodes by their exact semantics label. It
-/// exists for a sampler artifact of the guideline itself (it picks the two
-/// most frequent colours in the text's box, and for tiny text an
-/// anti-aliasing grey can outnumber the glyph colour); name the one node, say
-/// why at the call site, and never skip a whole size or screen.
+/// exists for a node the guideline cannot judge (text over an image, say);
+/// name the one node, say why at the call site, and never skip a whole size or
+/// screen. Prefer fixing the screen: [TextContrastGuideline] reads the glyph
+/// colour, not the anti-aliasing blends, and samples only the text's own box.
 Future<void> expectTextContrast(
   WidgetTester tester, {
   Set<String> skipLabels = const {},
@@ -155,11 +143,7 @@ Future<void> expectTextContrast(
     await tester.pump();
     await expectLater(
       tester,
-      meetsGuideline(
-        skipLabels.isEmpty
-            ? textContrastGuideline
-            : _ContrastExceptLabels(skipLabels),
-      ),
+      meetsGuideline(TextContrastGuideline(skipLabels: skipLabels)),
     );
   } finally {
     handle.dispose();
