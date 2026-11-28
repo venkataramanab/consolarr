@@ -148,8 +148,6 @@ void main() {
   });
 
   group('posterSizeVariantUri', () {
-    final c = _client('https://radarr.example');
-
     test('swaps the file for the 500 pixel variant and drops the query', () {
       final u = Uri.parse(
         'https://radarr.example/p/MediaCover/7/poster.jpg?h=abc',

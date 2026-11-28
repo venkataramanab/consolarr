@@ -194,9 +194,6 @@ Uri? posterSizeVariantUri(Uri poster, int height) {
     scheme: poster.scheme,
     host: poster.host,
     port: poster.hasPort ? poster.port : null,
-    pathSegments: [
-      ...segments.take(segments.length - 1),
-      'poster-$height.jpg',
-    ],
+    pathSegments: [...segments.take(segments.length - 1), 'poster-$height.jpg'],
   );
 }
