@@ -87,14 +87,15 @@ YAML or a drift table. Write the failing test first.
 ## Dart and Flutter AI tooling
 
 - **MCP:** `.mcp.json` starts the SDK's `dart mcp-server` with `pub_dev_search`,
-  `pub`, `dart_tooling_daemon`, `flutter_app_lifecycle` and `flutter_driver`
-  disabled, and analytics suppressed, so nothing leaves the machine and an
-  agent cannot change dependencies. The tools that remain (checked with an MCP
-  `tools/list` handshake on Dart 3.14.0, server 1.2.2): `analyze_files`,
-  `lsp`, `read_package_uris`, `rip_grep_packages`, `roots`, `hot_reload`,
-  `hot_restart` and `widget_inspector`. There is no test or format tool: use
-  the melos scripts and `dart format`. The last three need a running app, which
-  the rules above forbid. Do not add hosted MCP servers.
+  `pub`, `dart_tooling_daemon`, `flutter_app_lifecycle`, `flutter_driver`,
+  `hot_reload`, `hot_restart` and `widget_inspector` disabled by tool name, and
+  analytics suppressed, so nothing leaves the machine, an agent cannot change
+  dependencies and it cannot hot reload or attach to a running app. The only
+  tools exposed (checked with an MCP `initialize`, `roots/list` and
+  `tools/list` handshake on Dart 3.14.0, server 1.2.2): `analyze_files`, `lsp`,
+  `read_package_uris`, `rip_grep_packages` and `roots`. There is no test or
+  format tool: use the melos scripts and `dart format`. Do not add hosted MCP
+  servers.
 - **Skills:** `.agents/skills/` is the canonical location of reviewed,
   vendored official skills (`flutter-fix-layout-issues`,
   `dart-write-documentation`); see its [README](.agents/skills/README.md).
