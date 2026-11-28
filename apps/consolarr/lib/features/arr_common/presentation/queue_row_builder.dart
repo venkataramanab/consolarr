@@ -20,6 +20,7 @@ String queueStateText(AppLocalizations l10n, ArrQueueState state) =>
         l10n.arrCommonQueueStateClientUnavailable,
       ArrQueueState.warning => l10n.arrCommonQueueStateWarning,
       ArrQueueState.completed => l10n.arrCommonQueueStateCompleted,
+      ArrQueueState.ignored => l10n.arrCommonQueueStateIgnored,
       ArrQueueState.unknown => l10n.arrCommonQueueStateUnknown,
     };
 

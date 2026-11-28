@@ -101,7 +101,12 @@ class _RemovalDialogState extends State<_RemovalDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(widget.itemLabel, style: theme.textTheme.titleSmall),
+          Text(
+            widget.itemLabel,
+            style: theme.textTheme.titleSmall?.copyWith(
+              color: context.roles.textPrimary,
+            ),
+          ),
           const SizedBox(height: ConsolarrSpacing.md),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
@@ -119,7 +124,10 @@ class _RemovalDialogState extends State<_RemovalDialog> {
             header: true,
             child: Text(
               l10n.arrCommonQueueBlocklistHeading,
-              style: theme.textTheme.titleSmall,
+              style: theme.textTheme.titleSmall?.copyWith(
+                color: context.roles.textPrimary,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
           _ChoiceTile(

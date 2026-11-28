@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 /// extend the picker; nothing else in the form changes.
 const supportedServiceKinds = [
   ServiceKind.sonarr,
+  ServiceKind.radarr,
   ServiceKind.qbittorrent,
   ServiceKind.transmission,
   ServiceKind.deluge,
@@ -41,10 +42,10 @@ String serviceKindLabel(AppLocalizations l10n, ServiceKind kind) =>
 String serviceKindDescription(AppLocalizations l10n, ServiceKind kind) =>
     switch (kind) {
       ServiceKind.sonarr => l10n.serverKindSonarrDescription,
+      ServiceKind.radarr => l10n.radarrKindDescription,
       ServiceKind.qbittorrent => l10n.serverKindQbittorrentDescription,
       ServiceKind.transmission => l10n.torKindTransmissionDescription,
       ServiceKind.deluge => l10n.torKindDelugeDescription,
-      _ => l10n.serverKindOtherDescription,
     };
 
 String authModeLabel(AppLocalizations l10n, AuthMode mode) => switch (mode) {

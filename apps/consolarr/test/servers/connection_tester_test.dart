@@ -225,9 +225,9 @@ void main() {
     test('a kind without a probe is not reported as an old version, and no '
         'request is made', () async {
       final factory = _Factory(StubAdapter((o) => json('{}')));
-      // An injected, empty registry: the test must not depend on which kinds
-      // have a probe today (every service branch registers its own).
-      for (final kind in [ServiceKind.radarr, ServiceKind.sonarr]) {
+      // An injected, empty registry: the test does not depend on which kinds
+      // happen to have a probe today (more are added as services land).
+      for (final kind in ServiceKind.values) {
         final r = await DefaultConnectionTester(
           factory,
           probes: const {},

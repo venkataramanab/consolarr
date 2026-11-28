@@ -2,6 +2,7 @@
 
 import 'package:arr_api/src/arr_common.dart';
 import 'package:arr_api/src/models.dart';
+import 'package:arr_api/src/radarr/radarr_models.dart';
 import 'package:arr_api/src/shared/arr_command.dart';
 import 'package:arr_api/src/shared/arr_page.dart';
 import 'package:arr_api/src/shared/arr_queue.dart';
@@ -189,7 +190,61 @@ mixin UnsupportedSonarrCalls implements SonarrApi {
 }
 
 /// Radarr (movies) API.
-abstract interface class RadarrApi implements ArrApi {}
+abstract interface class RadarrApi implements ArrApi {
+  /// All movies (`GET api/v3/movie`).
+  Future<Result<List<RadarrMovie>>> movies();
+
+  /// One movie (`GET api/v3/movie/{id}`).
+  Future<Result<RadarrMovie>> movie(int id);
+
+  /// Movies with a release date in [start]..[end] (`GET api/v3/calendar`).
+  Future<Result<List<RadarrMovie>>> calendar(DateTime start, DateTime end);
+
+  /// Changes monitored, quality profile, minimum availability and tags of a
+  /// movie. Reads the full object first and writes it back, so fields this
+  /// app does not know survive. Never moves the movie.
+  Future<Result<RadarrMovie>> updateMovie(
+    int id, {
+    bool? monitored,
+    int? qualityProfileId,
+    MinimumAvailability? minimumAvailability,
+    List<int>? tags,
+  });
+
+  /// Title or external id lookup (`tmdb:123`, `imdb:tt123`, or free text).
+  Future<Result<List<RadarrMovie>>> lookup(String term);
+
+  /// Adds a movie (`POST api/v3/movie`).
+  Future<Result<RadarrMovie>> addMovie(AddMovieRequest request);
+
+  /// The download queue (`GET api/v3/queue`).
+  Future<Result<List<ArrQueueItem>>> queue();
+
+  /// Removes a queue item (`DELETE api/v3/queue/{id}`).
+  Future<Result<void>> removeQueueItem(
+    int id, {
+    required bool removeFromClient,
+    required ArrBlocklistChoice blocklist,
+  });
+
+  /// Starts an automatic search for [movieIds] (`MoviesSearch`).
+  Future<Result<ArrCommand>> searchMovies(List<int> movieIds);
+
+  /// Starts a search for every missing movie (`MissingMoviesSearch`).
+  Future<Result<ArrCommand>> searchAllMissing();
+
+  /// A command's progress (`GET api/v3/command/{id}`).
+  Future<Result<ArrCommand>> command(int id);
+
+  /// Releases found by the indexers for [movieId] (`GET api/v3/release`).
+  Future<Result<List<ArrRelease>>> releases(int movieId);
+
+  /// Sends a release to the download client (`POST api/v3/release`).
+  Future<Result<void>> grab(ArrRelease release);
+
+  /// The artwork URL of [movie], or null. Never contains credentials.
+  Uri? artworkUri(RadarrMovie movie, ArrImageType type);
+}
 
 /// Answers the shared lists with empty successes. For test fakes (and stubs):
 /// mix it in and override only what the test needs, so fakes keep compiling

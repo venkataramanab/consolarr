@@ -15,3 +15,5 @@ export 'src/sonarr/sonarr_episode.dart';
 export 'src/sonarr/sonarr_lookup.dart';
 export 'src/sonarr/sonarr_series_detail.dart';
 export 'src/sonarr_client.dart';
+export 'src/radarr/radarr_client.dart';
+export 'src/radarr/radarr_models.dart';
