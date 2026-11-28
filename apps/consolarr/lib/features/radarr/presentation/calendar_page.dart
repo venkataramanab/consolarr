@@ -125,13 +125,18 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
       // Release dates are date-only (midnight UTC): group by that day.
       days.putIfAbsent(calendarDayOf(e.date), () => []).add(e);
     }
-    final today = DateTime(now.year, now.month, now.day);
+    // "Today" is the user's local calendar date; release dates are date-only
+    // values (see `isReleaseDayBefore`), the same rule as the Upcoming list.
+    final localNow = now.toLocal();
+    final today = DateTime(localNow.year, localNow.month, localNow.day);
     // Days before today scroll above the opening position; today and later
     // days are what the calendar opens on, soonest first.
     final earlier = <_Row>[];
     final ahead = <_Row>[];
     for (final day in days.keys) {
-      final into = day.isBefore(today) ? earlier : ahead;
+      final into = isReleaseDayBefore(days[day]!.first.date, now)
+          ? earlier
+          : ahead;
       into.add(_DayRow(day, days[day]!.length));
       if (!_collapsed.contains(day)) {
         into.addAll([for (final e in days[day]!) _EntryRow(e)]);

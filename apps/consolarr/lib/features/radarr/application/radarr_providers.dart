@@ -7,6 +7,7 @@ import 'dart:isolate';
 import 'package:arr_api/arr_api.dart';
 import 'package:consolarr/features/radarr/data/radarr_prefs.dart';
 import 'package:consolarr/features/radarr/data/radarr_repository.dart';
+import 'package:consolarr/features/radarr/domain/dates.dart';
 import 'package:consolarr/features/radarr/domain/library_query.dart';
 import 'package:consolarr/features/radarr/domain/wanted.dart';
 import 'package:consolarr/features/servers/application/server_connection.dart';
@@ -645,7 +646,7 @@ List<CalendarEntry> calendarEntries(
 
 /// The window the calendar loads, around [now].
 (DateTime, DateTime) calendarRange(DateTime now) {
-  final day = DateTime.utc(now.year, now.month, now.day);
+  final day = localDateOf(now);
   return (
     day.subtract(const Duration(days: 14)),
     day.add(const Duration(days: 120)),

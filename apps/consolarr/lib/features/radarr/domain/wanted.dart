@@ -2,6 +2,7 @@
 
 import 'package:arr_api/arr_api.dart';
 import 'package:consolarr/features/radarr/domain/availability.dart';
+import 'package:consolarr/features/radarr/domain/dates.dart';
 
 /// Scopes of the wanted list (RAD-15). "Cutoff unmet" is a later feature.
 enum WantedScope { released, upcoming, allMissing }
@@ -23,12 +24,12 @@ List<RadarrMovie> wantedMovies(
         })
           m,
   ];
-  final utcToday = _utcDay(now);
+  final today = localDateOf(now);
   // Sort keys once per movie, not once per comparison.
   final keys = {
     for (final m in rows)
       m.id: scope == WantedScope.upcoming
-          ? soonestUpcomingRelease(m, utcToday)
+          ? soonestUpcomingRelease(m, today)
           : latestRelease(m),
   };
   int byTitle(RadarrMovie a, RadarrMovie b) {
@@ -58,23 +59,17 @@ DateTime? latestRelease(RadarrMovie m) {
   return latest;
 }
 
-/// The earliest release date that is not behind [utcToday], or null when none
-/// is ahead (or none is known). Upcoming lists soonest first by this date.
+/// The earliest release date that is not behind [today] (the user's local
+/// date, see `localDateOf`), or null when none is ahead (or none is known).
+/// Upcoming lists soonest first by this date.
 ///
-/// Release dates are date-only values at midnight UTC, so "ahead" is decided
-/// on UTC calendar days, never on the device time zone: the same list in the
-/// same order at UTC-12 and at UTC+14.
-DateTime? soonestUpcomingRelease(RadarrMovie m, DateTime utcToday) {
+/// Release dates are date-only values (midnight UTC), compared with [today] as
+/// dates: the same rule as the calendar, whatever zone the device is in.
+DateTime? soonestUpcomingRelease(RadarrMovie m, DateTime today) {
   DateTime? soonest;
   for (final d in [m.inCinemas, m.digitalRelease, m.physicalRelease]) {
-    if (d == null || _utcDay(d).isBefore(utcToday)) continue;
+    if (d == null || releaseDateOf(d).isBefore(today)) continue;
     if (soonest == null || d.isBefore(soonest)) soonest = d;
   }
   return soonest;
-}
-
-/// The UTC calendar day of [instant] (its UTC components, midnight UTC).
-DateTime _utcDay(DateTime instant) {
-  final u = instant.toUtc();
-  return DateTime.utc(u.year, u.month, u.day);
 }

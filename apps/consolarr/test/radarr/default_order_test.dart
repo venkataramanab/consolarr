@@ -192,30 +192,48 @@ void main() {
       expect(_ids(rows), [6, 2, 4, 1, 3, 5]);
     });
 
-    // Release dates are date-only UTC values. The order must be the same for
-    // a clock in any zone. These are the same instants a person at UTC-12
-    // (still the evening before) and at UTC+14 (already the next morning)
-    // sees; neither the UTC day nor the order may depend on the device zone.
-    for (final (label, now) in [
-      // 2026-06-09 23:30 at UTC-12.
-      ('UTC-12 evening', DateTime.utc(2026, 6, 10, 11, 30)),
-      // 2026-06-10 01:00 at UTC+14 (it is still 2026-06-09 in UTC).
-      ('UTC+14 morning', DateTime.utc(2026, 6, 9, 11)),
-    ]) {
-      test('$label: same order whatever the device zone', () {
-        // 'Soon' and 'Alpha tie' release on 2026-06-10: not before that day.
-        final expected = _ids(
-          wantedMovies(library(), WantedScope.upcoming, now),
-        );
-        expect(
-          _ids(wantedMovies(library(), WantedScope.upcoming, now.toLocal())),
-          expected,
-        );
-        if (now.isBefore(DateTime.utc(2026, 6, 10))) {
-          expect(expected, [6, 2, 4, 1, 3, 5]);
-        }
-      });
-    }
+    // Release dates are date-only values; "ahead" is decided against the
+    // user's local calendar date. `now` is built from local wall-clock
+    // components, so these hold whatever zone the host runs in. The far zones
+    // (UTC-12, UTC+14) are run for real in `zones_test.dart`.
+    test('the evening before a release date it is still ahead', () {
+      final eve = DateTime(2026, 6, 9, 23, 30);
+      // 'Soon' and 'Alpha tie' release on the 10th: ahead, ties by title.
+      expect(_ids(wantedMovies(library(), WantedScope.upcoming, eve)), [
+        6,
+        2,
+        4,
+        1,
+        3,
+        5,
+      ]);
+    });
+
+    test('on the release date that day is today: not behind', () {
+      final morning = DateTime(2026, 6, 10, 0, 30);
+      // 'Alpha tie' (digital on the 10th) has arrived, so it left the list;
+      // 'Soon' (cinemas only, the 10th) is today and still keys the movie.
+      expect(_ids(wantedMovies(library(), WantedScope.upcoming, morning)), [
+        2,
+        4,
+        1,
+        3,
+        5,
+      ]);
+    });
+
+    test('the day after it, that date no longer keys the movie', () {
+      final next = DateTime(2026, 6, 11, 0, 30);
+      // 'Soon' has nothing ahead any more: it goes after the dated ones, with
+      // the other undated ones, by title.
+      expect(_ids(wantedMovies(library(), WantedScope.upcoming, next)), [
+        4,
+        1,
+        3,
+        5,
+        2,
+      ]);
+    });
 
     test('a date that is already behind does not key the movie', () {
       final lib = [
