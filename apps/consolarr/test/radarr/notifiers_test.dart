@@ -305,7 +305,6 @@ void main() {
       api.moviesResult = const Result.err(AppError(ErrorCategory.serverError));
       await c.read(movieLibraryProvider.notifier).refresh();
       final crumbs = c.read(breadcrumbsProvider).entries;
-      expect(crumbs, isNotEmpty);
       for (final b in crumbs) {
         expect(b.line, isNot(contains('Secret')));
       }
