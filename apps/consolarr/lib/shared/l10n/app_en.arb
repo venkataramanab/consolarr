@@ -178,5 +178,25 @@
   "connErrorNonAsciiHostHint": "Enter the punycode form of the host name (it starts with xn--).",
   "@connErrorNonAsciiHostHint": {
     "description": "Fix hint shown under the message for a connection problem: the host contains non-ASCII characters; enter the punycode form."
+  },
+  "connErrorArrAuthFailedMessage": "{service} rejected the API key.",
+  "@connErrorArrAuthFailedMessage": {
+    "description": "Plain-language message for a Sonarr or Radarr connection problem: the API key was missing or wrong (401/403).",
+    "placeholders": {
+      "service": {
+        "type": "String",
+        "description": "Name of the service, Sonarr or Radarr."
+      }
+    }
+  },
+  "connErrorArrAuthFailedHint": "Use the API key from {service} Settings → General → Security. A username and password don't work for the API.",
+  "@connErrorArrAuthFailedHint": {
+    "description": "Fix hint for a Sonarr or Radarr connection problem: only the API key authenticates the API.",
+    "placeholders": {
+      "service": {
+        "type": "String",
+        "description": "Name of the service, Sonarr or Radarr."
+      }
+    }
   }
 }

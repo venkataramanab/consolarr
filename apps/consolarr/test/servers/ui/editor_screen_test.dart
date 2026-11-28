@@ -60,6 +60,7 @@ Future<void> _tapTest(WidgetTester tester) async {
 Future<void> _fillValid(WidgetTester tester) async {
   await tester.enterText(_field('Display name'), 'Example Sonarr');
   await tester.enterText(_field('Address'), 'https://sonarr.example');
+  await tester.enterText(_field('API key'), 'test-key-0000');
   await tester.pumpAndSettle();
 }
 
@@ -139,9 +140,13 @@ void main() {
       final h = UiHarness();
       await _pump(tester, h);
       await tester.enterText(_field('Address'), 'http://192.0.2.10:8989');
+      await tester.enterText(_field('API key'), 'test-key-0000');
       await tester.pumpAndSettle();
       expect(find.textContaining('uses http'), findsOneWidget);
-      await _tap(tester, find.byType(Switch));
+      await _tap(
+        tester,
+        find.widgetWithText(SwitchListTile, 'Allow plain http'),
+      );
       expect(find.textContaining('without encryption'), findsOneWidget);
       await tester.enterText(_field('Display name'), 'Example');
       await _tap(tester, find.text('Save'));
@@ -349,7 +354,11 @@ void main() {
           final l10n = AppLocalizations.of(
             tester.element(find.byType(ServerEditorScreen)),
           );
-          final m = connectionErrorMessage(l10n, error);
+          final m = connectionErrorMessage(
+            l10n,
+            error,
+            kind: ServiceKind.sonarr,
+          );
           expect(find.text('Failed'), findsOneWidget);
           expect(find.text(m.message), findsOneWidget);
           expect(find.text(m.hint), findsOneWidget);
@@ -567,6 +576,153 @@ void main() {
       expect(
         h.analytics.events.where((e) => e == 'screen_viewed'),
         hasLength(1),
+      );
+    });
+  });
+
+  group('Sonarr and Radarr credentials', () {
+    testWidgets('the API key is required: error, nothing saved or tested', (
+      tester,
+    ) async {
+      final h = UiHarness();
+      await _pump(tester, h);
+      await tester.enterText(_field('Display name'), 'Example Sonarr');
+      await tester.enterText(_field('Address'), 'https://sonarr.example');
+      await tester.pumpAndSettle();
+      await _tap(tester, find.text('Save'));
+      expect(find.text('The API key is required.'), findsOneWidget);
+      expect(h.repo.saved, isEmpty);
+      await _tap(tester, find.text('Test connection'));
+      expect(h.tester.profiles, isEmpty);
+    });
+
+    testWidgets('no auth-mode chips; helper names where the key lives', (
+      tester,
+    ) async {
+      await _pump(tester, UiHarness());
+      expect(find.byType(ChoiceChip), findsNWidgets(5)); // service picker only
+      expect(find.text('Username and password'), findsNothing);
+      expect(find.text('None'), findsNothing);
+      expect(
+        find.textContaining('Settings → General → Security'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('torrent kinds keep their username and password modes', (
+      tester,
+    ) async {
+      await _pump(tester, UiHarness());
+      await _tap(tester, find.text('qBittorrent'));
+      expect(find.text('Username and password'), findsOneWidget);
+      expect(find.text('None'), findsOneWidget);
+      expect(find.text('Reverse-proxy login (HTTP Basic)'), findsNothing);
+    });
+
+    testWidgets('proxy login is off by default and additive when on', (
+      tester,
+    ) async {
+      final h = UiHarness();
+      await _pump(tester, h);
+      expect(_field('Username'), findsNothing);
+      await _fillValid(tester);
+      await _tap(tester, find.text('Reverse-proxy login (HTTP Basic)'));
+      expect(_field('Username'), findsOneWidget);
+      await _tap(tester, find.text('Save'));
+      expect(
+        find.text(
+          'Enter the username and password, or turn the '
+          'reverse-proxy login off.',
+        ),
+        findsOneWidget,
+      );
+      expect(h.repo.saved, isEmpty);
+      await tester.enterText(_field('Username'), 'user');
+      await tester.enterText(_field('Password'), 'pw');
+      await _tap(tester, find.text('Save'));
+      final d = h.repo.saved.single;
+      expect(d.authMode, AuthMode.apiKey);
+      expect(d.credentials.apiKey, 'test-key-0000');
+      expect(d.credentials.username, 'user');
+      expect(d.credentials.password, 'pw');
+    });
+
+    testWidgets('a 401 from Sonarr says the API key is what counts', (
+      tester,
+    ) async {
+      final h = UiHarness(
+        tester: FakeTester([_fail(const AppError(ErrorCategory.authFailed))]),
+      );
+      await _pump(tester, h);
+      await _fillValid(tester);
+      await _tap(tester, find.text('Test connection'));
+      expect(find.text('Sonarr rejected the API key.'), findsOneWidget);
+      expect(
+        find.textContaining("A username and password don't work"),
+        findsOneWidget,
+      );
+    });
+
+    group('an old profile saved with username and password', () {
+      UiHarness old() {
+        final h = UiHarness(
+          servers: [
+            entry(
+              'a',
+              name: 'Example Radarr',
+              kind: ServiceKind.radarr,
+              authMode: AuthMode.basic,
+              needsCredentials: true,
+              proxyLogin: true,
+            ),
+          ],
+        );
+        return h;
+      }
+
+      testWidgets('opens without crashing, explains, requires the key', (
+        tester,
+      ) async {
+        final h = old();
+        await _pump(tester, h, screen: const ServerEditorScreen(serverId: 'a'));
+        expect(find.textContaining('only accepts its API key'), findsOneWidget);
+        expect(find.text('Example Radarr'), findsOneWidget);
+        // The stored login stays visible as the optional proxy login.
+        expect(_field('Username'), findsOneWidget);
+        await _tap(tester, find.text('Save'));
+        expect(find.text('The API key is required.'), findsOneWidget);
+        expect(h.repo.saved, isEmpty);
+        await tester.enterText(_field('API key'), 'test-key-0000');
+        await _tap(tester, find.text('Save'));
+        final d = h.repo.saved.single;
+        expect(d.authMode, AuthMode.apiKey);
+        expect(d.credentials.apiKey, 'test-key-0000');
+        // Empty fields keep the stored proxy login.
+        expect(d.credentials.username, isNull);
+      });
+    });
+
+    testWidgets('passes the accessibility matrix, switch on and notice shown', (
+      tester,
+    ) async {
+      await pumpMatrix(
+        tester,
+        (v) => UiHarness(
+          servers: [
+            entry(
+              'a',
+              kind: ServiceKind.radarr,
+              authMode: AuthMode.basic,
+              needsCredentials: true,
+              proxyLogin: true,
+            ),
+          ],
+        ).app(v, const ServerEditorScreen(serverId: 'a')),
+        variants: harnessMatrix(
+          textScales: [2],
+          locales: const [Locale('ar'), Locale('en', 'XA'), Locale('en')],
+        ),
+        verify: (_) => expectAccessible(tester),
       );
     });
   });

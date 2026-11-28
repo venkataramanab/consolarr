@@ -116,9 +116,23 @@ void main() {
   });
 
   test('changing the auth mode deletes secrets of the old mode', () async {
-    final id = (await repo.save(sonarr())).valueOrNull!.profile.id;
+    ServerDraft qbit({
+      String? id,
+      AuthMode authMode = AuthMode.apiKey,
+      ServerCredentials credentials = ServerCredentials.empty,
+    }) => ServerDraft(
+      id: id,
+      name: 'Example qBittorrent',
+      kind: ServiceKind.qbittorrent,
+      address: 'https://qbit.example',
+      authMode: authMode,
+      credentials: credentials,
+    );
+    final id = (await repo.save(
+      qbit(credentials: const ServerCredentials(apiKey: 'test-key-0000')),
+    )).valueOrNull!.profile.id;
     await repo.save(
-      sonarr(
+      qbit(
         id: id,
         authMode: AuthMode.basic,
         credentials: const ServerCredentials(username: 'u', password: 'p'),
@@ -126,13 +140,7 @@ void main() {
     );
     expect(await secrets.read(ServerSecretKeys.apiKey(id)), isNull);
     expect(await secrets.read(ServerSecretKeys.username(id)), 'u');
-    await repo.save(
-      sonarr(
-        id: id,
-        authMode: AuthMode.none,
-        credentials: ServerCredentials.empty,
-      ),
-    );
+    await repo.save(qbit(id: id, authMode: AuthMode.none));
     expect(await secrets.read(ServerSecretKeys.username(id)), isNull);
     expect(await secrets.read(ServerSecretKeys.password(id)), isNull);
     expect((await repo.find(id))!.needsCredentials, isFalse);
@@ -458,6 +466,159 @@ void main() {
       await settle();
       expect(keys.length, count);
       await sub.cancel();
+    });
+  });
+
+  group('Sonarr and Radarr credentials', () {
+    test('the key and a proxy login are stored side by side', () async {
+      final entry = (await repo.save(
+        sonarr(
+          credentials: const ServerCredentials(
+            apiKey: 'test-key-0000',
+            username: 'user',
+            password: 'pw',
+          ),
+        ),
+      )).valueOrNull!;
+      final id = entry.profile.id;
+      expect(entry.profile.authMode, AuthMode.apiKey);
+      expect(entry.proxyLogin, isTrue);
+      expect(entry.needsCredentials, isFalse);
+      expect(await secrets.read(ServerSecretKeys.apiKey(id)), 'test-key-0000');
+      expect(await secrets.read(ServerSecretKeys.username(id)), 'user');
+      expect(await secrets.read(ServerSecretKeys.password(id)), 'pw');
+      final c = await repo.loadCredentials(entry.profile);
+      expect(c.apiKey, 'test-key-0000');
+      expect(c.username, 'user');
+    });
+
+    test(
+      'no proxy login by default; empty strings delete a stored one',
+      () async {
+        final id = (await repo.save(
+          sonarr(
+            credentials: const ServerCredentials(
+              apiKey: 'test-key-0000',
+              username: 'user',
+              password: 'pw',
+            ),
+          ),
+        )).valueOrNull!.profile.id;
+        // Keeping (null) leaves it alone.
+        var e = (await repo.save(
+          sonarr(id: id, credentials: ServerCredentials.empty),
+        )).valueOrNull!;
+        expect(e.proxyLogin, isTrue);
+        e = (await repo.save(
+          sonarr(
+            id: id,
+            credentials: const ServerCredentials(username: '', password: ''),
+          ),
+        )).valueOrNull!;
+        expect(e.proxyLogin, isFalse);
+        expect(await secrets.read(ServerSecretKeys.username(id)), isNull);
+        expect(
+          await secrets.read(ServerSecretKeys.apiKey(id)),
+          'test-key-0000',
+        );
+      },
+    );
+
+    test('an arr server without a key needs credentials in any mode', () async {
+      for (final mode in AuthMode.values) {
+        final e = (await repo.save(
+          sonarr(
+            name: 'S ${mode.name}',
+            authMode: mode,
+            credentials: ServerCredentials.empty,
+          ),
+        )).valueOrNull!;
+        expect(e.needsCredentials, isTrue, reason: mode.name);
+      }
+    });
+
+    group('migration of profiles saved in the old basic mode', () {
+      Future<String> seedOldBasic({
+        ServiceKind kind = ServiceKind.radarr,
+        bool withLogin = true,
+      }) async {
+        await db
+            .into(db.serverRows)
+            .insert(
+              ServerRowsCompanion.insert(
+                id: 'old1',
+                name: 'Example Radarr',
+                kind: kind.name,
+                address: 'https://radarr.example',
+                authMode: AuthMode.basic.name,
+              ),
+            );
+        if (withLogin) {
+          await secrets.write(ServerSecretKeys.username('old1'), 'user');
+          await secrets.write(ServerSecretKeys.password('old1'), 'pw');
+        }
+        return 'old1';
+      }
+
+      test(
+        'loads, needs the API key, keeps the login as proxy login',
+        () async {
+          final id = await seedOldBasic();
+          final e = (await repo.find(id))!;
+          expect(e.profile.authMode, AuthMode.basic);
+          expect(e.isLegacyArrAuth, isTrue);
+          expect(e.needsCredentials, isTrue);
+          expect(e.proxyLogin, isTrue);
+          final c = await repo.loadCredentials(e.profile);
+          expect(c.username, 'user');
+          expect(c.password, 'pw');
+        },
+      );
+
+      test('saving the key upgrades the profile and loses nothing', () async {
+        final id = await seedOldBasic();
+        final saved = (await repo.save(
+          ServerDraft(
+            id: id,
+            name: 'Example Radarr',
+            kind: ServiceKind.radarr,
+            address: 'https://radarr.example',
+            credentials: const ServerCredentials(apiKey: 'test-key-0000'),
+          ),
+        )).valueOrNull!;
+        expect(saved.profile.authMode, AuthMode.apiKey);
+        expect(saved.isLegacyArrAuth, isFalse);
+        expect(saved.needsCredentials, isFalse);
+        expect(saved.proxyLogin, isTrue);
+        expect(await secrets.read(ServerSecretKeys.username(id)), 'user');
+        expect(await secrets.read(ServerSecretKeys.password(id)), 'pw');
+      });
+
+      test('an old none profile needs the key but does not break', () async {
+        await db
+            .into(db.serverRows)
+            .insert(
+              ServerRowsCompanion.insert(
+                id: 'old2',
+                name: 'Example Sonarr',
+                kind: ServiceKind.sonarr.name,
+                address: 'https://sonarr.example',
+                authMode: AuthMode.none.name,
+              ),
+            );
+        final e = (await repo.find('old2'))!;
+        expect(e.isLegacyArrAuth, isTrue);
+        expect(e.needsCredentials, isTrue);
+        expect(e.proxyLogin, isFalse);
+      });
+
+      test('torrent profiles in basic mode are unchanged', () async {
+        final id = await seedOldBasic(kind: ServiceKind.qbittorrent);
+        final e = (await repo.find(id))!;
+        expect(e.isLegacyArrAuth, isFalse);
+        expect(e.needsCredentials, isFalse);
+        expect(e.proxyLogin, isFalse);
+      });
     });
   });
 }

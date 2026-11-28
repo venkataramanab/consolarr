@@ -60,7 +60,7 @@
   "@sonarrErrorVersionTitle": {
     "description": "Headline of the series library error state when the Sonarr version is too old."
   },
-  "sonarrErrorAuthMessage": "The API key or password was not accepted.",
+  "sonarrErrorAuthMessage": "The API key was not accepted.",
   "@sonarrErrorAuthMessage": {
     "description": "Plain-language cause shown in the series library error state (Auth)."
   },
@@ -72,7 +72,7 @@
   "@sonarrErrorNeedsCredentialsMessage": {
     "description": "Plain-language cause shown in the series library error state (NeedsCredentials)."
   },
-  "sonarrErrorNeedsCredentialsHint": "Enter the API key or password again in the server settings.",
+  "sonarrErrorNeedsCredentialsHint": "Enter the API key again in the server settings.",
   "@sonarrErrorNeedsCredentialsHint": {
     "description": "Likely fix shown under the cause in the series library error state (NeedsCredentials)."
   },

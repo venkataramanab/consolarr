@@ -2,6 +2,13 @@
 
 import 'package:core/core.dart';
 
+/// Sonarr and Radarr authenticate their API with the API key only. A username
+/// and password can only matter to a reverse proxy in front of them, so these
+/// kinds always need the key and treat the login as an optional extra.
+extension ServiceKindAuth on ServiceKind {
+  bool get isArr => this == ServiceKind.sonarr || this == ServiceKind.radarr;
+}
+
 /// A stored server plus facts the list needs. Holds no secret values.
 class ServerEntry {
   const ServerEntry({
@@ -9,6 +16,7 @@ class ServerEntry {
     required this.sortOrder,
     this.isStartup = false,
     this.needsCredentials = false,
+    this.proxyLogin = false,
   });
 
   final ServerProfile profile;
@@ -20,6 +28,17 @@ class ServerEntry {
   /// A required secret is missing (Keystore loss, SRV-09): the UI prompts for
   /// re-entry instead of failing.
   final bool needsCredentials;
+
+  /// A reverse-proxy login (HTTP Basic, sent in addition to the API key) is
+  /// stored for this Sonarr or Radarr server. Derived from the secret store,
+  /// so no profile column is needed; profiles saved in the old arr `basic`
+  /// mode count when their username and password are still stored.
+  final bool proxyLogin;
+
+  /// A Sonarr or Radarr profile saved before the API key became mandatory
+  /// (auth mode `basic` or `none`). The editor opens it with the key required.
+  bool get isLegacyArrAuth =>
+      profile.kind.isArr && profile.authMode != AuthMode.apiKey;
 }
 
 /// What a live connection is built from: the active server of a kind and a

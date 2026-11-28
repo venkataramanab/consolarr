@@ -92,6 +92,12 @@ class DriftServerRepository implements ServerRepository {
       sortOrder: row.sortOrder,
       isStartup: row.isStartup,
       needsCredentials: await _needsCredentials(profile),
+      proxyLogin:
+          profile.kind.isArr &&
+          !await _missingAny([
+            ServerSecretKeys.username(profile.id),
+            ServerSecretKeys.password(profile.id),
+          ]),
     );
   }
 
@@ -108,9 +114,21 @@ class DriftServerRepository implements ServerRepository {
     }
   }
 
+  Future<bool> _missingAny(List<String> keys) async {
+    for (final key in keys) {
+      if ((await _read(key))?.isNotEmpty != true) return true;
+    }
+    return false;
+  }
+
   Future<bool> _needsCredentials(ServerProfile p) async {
     Future<bool> missing(String key) async =>
         (await _read(key))?.isNotEmpty != true;
+    // Sonarr and Radarr always need their API key, whatever mode an older
+    // version saved them in.
+    if (p.kind.isArr && await missing(ServerSecretKeys.apiKey(p.id))) {
+      return true;
+    }
     switch (p.authMode) {
       case AuthMode.none:
         break;
@@ -283,13 +301,14 @@ class DriftServerRepository implements ServerRepository {
     ServerProfile? previous,
   ) async {
     final id = p.id;
-    // Secrets of an auth mode that is no longer used must not linger.
-    if (p.authMode != AuthMode.apiKey) {
+    // Secrets of an auth mode that is no longer used must not linger. An arr
+    // server keeps its API key in every mode and may carry a proxy login.
+    if (p.authMode != AuthMode.apiKey && !p.kind.isArr) {
       await _secrets.delete(ServerSecretKeys.apiKey(id));
     } else {
       await _put(ServerSecretKeys.apiKey(id), c.apiKey);
     }
-    if (p.authMode != AuthMode.basic) {
+    if (p.authMode != AuthMode.basic && !p.kind.isArr) {
       await _secrets.delete(ServerSecretKeys.username(id));
       await _secrets.delete(ServerSecretKeys.password(id));
     } else {

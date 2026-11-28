@@ -193,7 +193,10 @@ class _ConnectionTestPanelState extends ConsumerState<ConnectionTestPanel> {
                 ],
               ),
             ),
-            _Failure(:final error) => _FailureView(error: error),
+            _Failure(:final error) => _FailureView(
+              error: error,
+              kind: widget.controller.kind,
+            ),
             _ => const SizedBox.shrink(),
           },
         ),
@@ -203,15 +206,16 @@ class _ConnectionTestPanelState extends ConsumerState<ConnectionTestPanel> {
 }
 
 class _FailureView extends StatelessWidget {
-  const _FailureView({required this.error});
+  const _FailureView({required this.error, required this.kind});
 
   final AppError error;
+  final ServiceKind kind;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
-    final message = connectionErrorMessage(l10n, error);
+    final message = connectionErrorMessage(l10n, error, kind: kind);
     return Padding(
       padding: const EdgeInsets.only(top: ConsolarrSpacing.md),
       child: Column(

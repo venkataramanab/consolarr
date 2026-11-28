@@ -547,5 +547,47 @@
   "onboardingTestFirst": "Test the connection before finishing.",
   "@onboardingTestFirst": {
     "description": "Hint on the test step until the connection test succeeded."
+  },
+  "serverApiKeyHelper": "Copy it from {service}: Settings → General → Security.",
+  "@serverApiKeyHelper": {
+    "description": "Helper under the API key field of a Sonarr or Radarr server.",
+    "placeholders": {
+      "service": {
+        "type": "String",
+        "description": "Name of the service, Sonarr or Radarr."
+      }
+    }
+  },
+  "serverErrorApiKeyRequired": "The API key is required.",
+  "@serverErrorApiKeyRequired": {
+    "description": "Error under the API key field when a Sonarr or Radarr server has none."
+  },
+  "serverProxyLoginTitle": "Reverse-proxy login (HTTP Basic)",
+  "@serverProxyLoginTitle": {
+    "description": "Title of the optional switch that sends a username and password to a reverse proxy in front of Sonarr or Radarr."
+  },
+  "serverProxyLoginHelper": "Only needed if a reverse proxy in front of {service} asks for a username and password. It is sent in addition to the API key, which is always required.",
+  "@serverProxyLoginHelper": {
+    "description": "Explanation under the reverse-proxy login switch.",
+    "placeholders": {
+      "service": {
+        "type": "String",
+        "description": "Name of the service, Sonarr or Radarr."
+      }
+    }
+  },
+  "serverErrorProxyLoginRequired": "Enter the username and password, or turn the reverse-proxy login off.",
+  "@serverErrorProxyLoginRequired": {
+    "description": "Error shown when the reverse-proxy login is switched on but the username or password is empty."
+  },
+  "serverLegacyArrAuthNotice": "This server was saved with a username and password. {service} only accepts its API key, so enter the key below. A saved username and password is kept as the optional reverse-proxy login.",
+  "@serverLegacyArrAuthNotice": {
+    "description": "Notice shown when editing a Sonarr or Radarr server saved by an older version in username-and-password or no-authentication mode.",
+    "placeholders": {
+      "service": {
+        "type": "String",
+        "description": "Name of the service, Sonarr or Radarr."
+      }
+    }
   }
 }

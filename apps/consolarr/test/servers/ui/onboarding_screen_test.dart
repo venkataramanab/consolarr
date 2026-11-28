@@ -49,6 +49,7 @@ Future<void> _toDetails(WidgetTester tester) async {
 Future<void> _fill(WidgetTester tester) async {
   await tester.enterText(_field('Display name'), 'Example Sonarr');
   await tester.enterText(_field('Address'), 'https://sonarr.example');
+  await tester.enterText(_field('API key'), 'test-key-0000');
   await tester.pumpAndSettle();
 }
 

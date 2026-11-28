@@ -41,6 +41,8 @@ ServerEntry entry(
   bool needsCredentials = false,
   bool isStartup = false,
   int sortOrder = 0,
+  AuthMode authMode = AuthMode.apiKey,
+  bool proxyLogin = false,
 }) => ServerEntry(
   profile: profile(
     id,
@@ -48,10 +50,12 @@ ServerEntry entry(
     kind: kind,
     address: address,
     allowCleartext: allowCleartext,
+    authMode: authMode,
   ),
   sortOrder: sortOrder,
   isStartup: isStartup,
   needsCredentials: needsCredentials,
+  proxyLogin: proxyLogin,
 );
 
 /// In-memory repository that records what the UI asked for.

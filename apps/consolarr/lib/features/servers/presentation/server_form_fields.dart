@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'package:consolarr/features/servers/domain/server_models.dart';
 import 'package:consolarr/features/servers/presentation/server_form_controller.dart';
 import 'package:consolarr/features/servers/presentation/service_kind_info.dart';
 import 'package:core/core.dart';
@@ -19,6 +20,8 @@ String? _issueText(AppLocalizations l10n, FieldIssue? issue) => switch (issue) {
   FieldIssue.prefixInvalid => l10n.serverErrorPrefixInvalid,
   FieldIssue.headerInvalid => l10n.serverErrorHeaderInvalid,
   FieldIssue.secretsReenter => l10n.serverErrorSecretsReenter,
+  FieldIssue.apiKeyRequired => l10n.serverErrorApiKeyRequired,
+  FieldIssue.proxyLoginRequired => l10n.serverErrorProxyLoginRequired,
 };
 
 // 12px helper/error text fails the contrast guideline on the card tones, so
@@ -148,18 +151,41 @@ class ServerFormFields extends StatelessWidget {
               ),
             ),
             _SectionHeading(l10n.serverSectionAuth),
-            Wrap(
-              spacing: ConsolarrSpacing.sm,
-              runSpacing: ConsolarrSpacing.sm,
-              children: [
-                for (final mode in authModesFor(c.kind))
-                  ChoiceChip(
-                    label: Text(authModeLabel(l10n, mode)),
-                    selected: c.authMode == mode,
-                    onSelected: (_) => c.setAuthMode(mode),
-                  ),
-              ],
-            ),
+            // Sonarr and Radarr have one mode (the API key): no chips to pick.
+            if (authModesFor(c.kind).length > 1)
+              Wrap(
+                spacing: ConsolarrSpacing.sm,
+                runSpacing: ConsolarrSpacing.sm,
+                children: [
+                  for (final mode in authModesFor(c.kind))
+                    ChoiceChip(
+                      label: Text(authModeLabel(l10n, mode)),
+                      selected: c.authMode == mode,
+                      onSelected: (_) => c.setAuthMode(mode),
+                    ),
+                ],
+              ),
+            if (c.hasLegacyArrAuth)
+              Padding(
+                padding: const EdgeInsets.only(bottom: ConsolarrSpacing.sm),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const ExcludeSemantics(
+                      child: Icon(Icons.info_outline, size: 20),
+                    ),
+                    const SizedBox(width: ConsolarrSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        l10n.serverLegacyArrAuthNotice(
+                          serviceKindLabel(l10n, c.kind),
+                        ),
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             if (c.originChanged)
               Padding(
                 padding: const EdgeInsets.only(bottom: ConsolarrSpacing.sm),
@@ -179,15 +205,39 @@ class ServerFormFields extends StatelessWidget {
                 showTooltip: l10n.serverSecretShow,
                 hideTooltip: l10n.serverSecretHide,
                 controller: c.apiKey,
-                helperText: keepHint,
+                helperText:
+                    keepHint ??
+                    (c.kind.isArr
+                        ? l10n.serverApiKeyHelper(
+                            serviceKindLabel(l10n, c.kind),
+                          )
+                        : null),
+                errorText: c.kind.isArr && c.shows('apiKey')
+                    ? _issueText(l10n, issues.apiKey)
+                    : null,
+                onChanged: (_) => c.touch('apiKey'),
                 onRevealChanged: (v) => onRevealChanged(c.apiKey, v),
               ),
-            if (c.authMode == AuthMode.basic) ...[
+            if (c.kind.isArr) ...[
+              const SizedBox(height: ConsolarrSpacing.sm),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(l10n.serverProxyLoginTitle),
+                subtitle: Text(
+                  l10n.serverProxyLoginHelper(serviceKindLabel(l10n, c.kind)),
+                  style: _helperStyle(context),
+                ),
+                value: c.proxyLogin,
+                onChanged: c.setProxyLogin,
+              ),
+            ],
+            if (c.authMode == AuthMode.basic || c.proxyLogin) ...[
               TextField(
                 controller: c.username,
                 autocorrect: false,
                 enableSuggestions: false,
                 textInputAction: TextInputAction.next,
+                onChanged: (_) => c.touch('proxy'),
                 decoration: InputDecoration(
                   helperStyle: _helperStyle(context),
                   errorStyle: _errorStyle(context),
@@ -203,6 +253,10 @@ class ServerFormFields extends StatelessWidget {
                 hideTooltip: l10n.serverSecretHide,
                 controller: c.password,
                 helperText: keepHint,
+                errorText: c.proxyLogin && c.shows('proxy')
+                    ? _issueText(l10n, issues.proxyLogin)
+                    : null,
+                onChanged: (_) => c.touch('proxy'),
                 onRevealChanged: (v) => onRevealChanged(c.password, v),
               ),
             ],

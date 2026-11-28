@@ -19,6 +19,12 @@ enum FieldIssue {
   prefixInvalid,
   headerInvalid,
   secretsReenter,
+
+  /// Sonarr and Radarr need their API key.
+  apiKeyRequired,
+
+  /// The reverse-proxy login is on but incomplete.
+  proxyLoginRequired,
 }
 
 /// All current problems of the form (empty map = valid).
@@ -29,6 +35,8 @@ class FormIssues {
     this.prefix,
     this.headers,
     this.secrets,
+    this.apiKey,
+    this.proxyLogin,
   });
 
   final FieldIssue? name;
@@ -39,12 +47,20 @@ class FormIssues {
   /// The origin changed but the secrets were not entered again.
   final FieldIssue? secrets;
 
+  /// Sonarr or Radarr without an API key (typed or stored).
+  final FieldIssue? apiKey;
+
+  /// Reverse-proxy login switched on without a username or password.
+  final FieldIssue? proxyLogin;
+
   bool get isValid =>
       name == null &&
       address == null &&
       prefix == null &&
       headers == null &&
-      secrets == null;
+      secrets == null &&
+      apiKey == null &&
+      proxyLogin == null;
 }
 
 /// One custom header row.
@@ -71,9 +87,8 @@ class ServerFormController extends ChangeNotifier {
     : _existing = existing,
       draftId = existing?.profile.id ?? _newDraftId(),
       kind = existing?.profile.kind ?? kind ?? supportedServiceKinds.first,
-      authMode =
-          existing?.profile.authMode ??
-          defaultAuthModeFor(kind ?? supportedServiceKinds.first),
+      authMode = _initialAuthMode(existing, kind),
+      proxyLogin = existing?.proxyLogin ?? false,
       allowCleartext = existing?.profile.allowCleartext ?? false,
       name = TextEditingController(text: existing?.profile.name),
       address = TextEditingController(
@@ -87,6 +102,18 @@ class ServerFormController extends ChangeNotifier {
       c.addListener(_changed);
     }
     _baseline = _fingerprint();
+  }
+
+  /// Sonarr and Radarr profiles saved in the old `basic` or `none` mode open
+  /// as `apiKey` (the only arr mode); [hasLegacyArrAuth] explains why.
+  static AuthMode _initialAuthMode(ServerEntry? existing, ServiceKind? kind) {
+    final stored = existing?.profile;
+    if (stored == null) {
+      return defaultAuthModeFor(kind ?? supportedServiceKinds.first);
+    }
+    return authModesFor(stored.kind).contains(stored.authMode)
+        ? stored.authMode
+        : defaultAuthModeFor(stored.kind);
   }
 
   static String _newDraftId() {
@@ -111,6 +138,14 @@ class ServerFormController extends ChangeNotifier {
   AuthMode authMode;
   bool allowCleartext;
 
+  /// Sonarr/Radarr only: send the typed username and password as HTTP Basic
+  /// to a reverse proxy, in addition to the API key.
+  bool proxyLogin;
+
+  /// The server was saved by an older version in a mode the API cannot use
+  /// (username and password, or none): the editor says the key is required.
+  bool get hasLegacyArrAuth => _existing?.isLegacyArrAuth ?? false;
+
   final TextEditingController name;
   final TextEditingController address;
   final TextEditingController pathPrefix;
@@ -130,6 +165,7 @@ class ServerFormController extends ChangeNotifier {
   String _fingerprint() => [
     kind.name,
     authMode.name,
+    proxyLogin,
     allowCleartext,
     name.text,
     address.text,
@@ -150,6 +186,12 @@ class ServerFormController extends ChangeNotifier {
     if (!authModesFor(value).contains(authMode)) {
       authMode = defaultAuthModeFor(value);
     }
+    if (!value.isArr) proxyLogin = false;
+    notifyListeners();
+  }
+
+  void setProxyLogin(bool value) {
+    proxyLogin = value && kind.isArr;
     notifyListeners();
   }
 
@@ -245,16 +287,38 @@ class ServerFormController extends ChangeNotifier {
       secrets: addressIssue == null && _missingSecretsAfterOriginChange
           ? FieldIssue.secretsReenter
           : null,
+      apiKey: _apiKeyMissing ? FieldIssue.apiKeyRequired : null,
+      proxyLogin: _proxyLoginIncomplete ? FieldIssue.proxyLoginRequired : null,
     );
   }
 
+  /// The stored secrets stay usable (no origin change).
+  ServerEntry? get _usableStored => originChanged ? null : _existing;
+
+  /// Whether Sonarr/Radarr would be saved or tested without any API key. A
+  /// stored key counts; a legacy `basic`/`none` profile has none stored.
+  bool get _apiKeyMissing =>
+      kind.isArr &&
+      apiKey.text.isEmpty &&
+      (_usableStored?.needsCredentials ?? true);
+
+  bool get _proxyLoginIncomplete =>
+      kind.isArr &&
+      proxyLogin &&
+      !(_usableStored?.proxyLogin ?? false) &&
+      (username.text.isEmpty || password.text.isEmpty);
+
   bool get _missingSecretsAfterOriginChange {
     if (!originChanged) return false;
-    final missing = switch (authMode) {
-      AuthMode.none => false,
-      AuthMode.apiKey => apiKey.text.isEmpty,
-      AuthMode.basic => username.text.isEmpty || password.text.isEmpty,
-    };
+    final missing =
+        switch (authMode) {
+          AuthMode.none => false,
+          AuthMode.apiKey => apiKey.text.isEmpty,
+          AuthMode.basic => username.text.isEmpty || password.text.isEmpty,
+        } ||
+        (kind.isArr &&
+            proxyLogin &&
+            (username.text.isEmpty || password.text.isEmpty));
     return missing ||
         headers.any(
           (h) => h.name.text.trim().isNotEmpty && h.value.text.isEmpty,
@@ -281,8 +345,17 @@ class ServerFormController extends ChangeNotifier {
       allowCleartext: allowCleartext,
       credentials: ServerCredentials(
         apiKey: authMode == AuthMode.apiKey ? _secret(apiKey) : null,
-        username: authMode == AuthMode.basic ? _secret(username) : null,
-        password: authMode == AuthMode.basic ? _secret(password) : null,
+        // Arr: the proxy login is optional; switching it off deletes it ('').
+        username: kind.isArr
+            ? (proxyLogin ? _secret(username) : '')
+            : authMode == AuthMode.basic
+            ? _secret(username)
+            : null,
+        password: kind.isArr
+            ? (proxyLogin ? _secret(password) : '')
+            : authMode == AuthMode.basic
+            ? _secret(password)
+            : null,
         headers: [
           for (final h in headers)
             if (h.name.text.trim().isNotEmpty)

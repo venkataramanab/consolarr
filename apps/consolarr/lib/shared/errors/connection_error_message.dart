@@ -29,7 +29,26 @@ const needsCredentialsDetail = 'needs_credentials';
 /// The typed TLS errors from the security package carry their own category
 /// (`tls_untrusted`, `tls_expired`, `tls_pin_mismatch`), so they need no
 /// special case here; the UI additionally shows the trust sheet for them.
-ErrorMessage connectionErrorMessage(AppLocalizations l10n, AppError error) {
+///
+/// Pass [kind] when the failing server is known: a 401/403 from Sonarr or
+/// Radarr then says that only the API key works (their API has no username and
+/// password login), instead of inviting the user to retry the same login.
+ErrorMessage connectionErrorMessage(
+  AppLocalizations l10n,
+  AppError error, {
+  ServiceKind? kind,
+}) {
+  if (error.category == ErrorCategory.authFailed &&
+      error.debugDetail != needsCredentialsDetail &&
+      (kind == ServiceKind.sonarr || kind == ServiceKind.radarr)) {
+    final service = kind == ServiceKind.sonarr
+        ? l10n.serverKindSonarr
+        : l10n.serverKindRadarr;
+    return ErrorMessage(
+      message: l10n.connErrorArrAuthFailedMessage(service),
+      hint: l10n.connErrorArrAuthFailedHint(service),
+    );
+  }
   if (error.category == ErrorCategory.authFailed &&
       error.debugDetail == needsCredentialsDetail) {
     return ErrorMessage(
