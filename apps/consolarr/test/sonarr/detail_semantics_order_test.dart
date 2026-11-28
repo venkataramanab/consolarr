@@ -26,7 +26,9 @@ List<String> _traversal(WidgetTester tester) {
     }
   }
 
-  visit(tester.binding.rootPipelineOwner.semanticsOwner!.rootSemanticsNode!);
+  visit(
+    tester.getSemantics(find.byType(Scaffold).first).owner!.rootSemanticsNode!,
+  );
   return labels;
 }
 
