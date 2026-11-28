@@ -29,14 +29,17 @@ void main() {
     },
   );
 
-  test('R2: no hardcoded separator or bullet in the Sonarr, Radarr and '
-      'torrent screens', () {
-    final bad = RegExp(r"""['"] [·•–—|/] ['"]|const (_?dot) = """);
+  test('R2: no hardcoded separator or bullet in any feature screen', () {
+    // A separator or bullet character in code (a string or a join) must come
+    // from the ARB (`sharedPartSeparator`). `home` is excluded: PR #10 deletes
+    // that screen.
+    final bad = RegExp(r"""['"] [·•–—|/] ['"]|const (_?dot) = |·""");
     final hits = <String>[];
-    for (final feature in ['sonarr', 'radarr', 'torrents']) {
-      for (final f in Directory(
-        'lib/features/$feature',
-      ).listSync(recursive: true)) {
+    for (final dir in Directory('lib/features').listSync()) {
+      if (dir is! Directory) continue;
+      final name = dir.path.split(Platform.pathSeparator).last;
+      if (name == 'home') continue;
+      for (final f in dir.listSync(recursive: true)) {
         if (f is! File || !f.path.endsWith('.dart')) continue;
         final lines = f.readAsLinesSync();
         for (var i = 0; i < lines.length; i++) {
@@ -46,5 +49,16 @@ void main() {
       }
     }
     expect(hits, isEmpty, reason: hits.join('\n'));
+  });
+
+  test('the guard itself flags the separators it is meant to', () {
+    final bad = RegExp(r"""['"] [·•–—|/] ['"]|const (_?dot) = |·""");
+    for (final planted in [
+      ".join(' · ')",
+      "'\${a} · \${b}'",
+      "const _dot = '.';",
+    ]) {
+      expect(bad.hasMatch(planted), isTrue, reason: planted);
+    }
   });
 }

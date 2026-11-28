@@ -12,6 +12,7 @@ import 'package:consolarr/features/torrents/presentation/format.dart';
 import 'package:consolarr/features/torrents/presentation/remove_dialog.dart';
 import 'package:consolarr/features/torrents/presentation/screen_view.dart';
 import 'package:consolarr/features/torrents/presentation/torrent_state_view.dart';
+import 'package:consolarr/shared/l10n/join_parts.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter/services.dart';
@@ -249,7 +250,10 @@ class _TorrentDetailSheetState extends ConsumerState<TorrentDetailSheet>
               const SizedBox(width: ConsolarrSpacing.sm),
               Expanded(
                 child: Text(
-                  '${view.label} · ${l10n.torProgressPercent(t.progress)}',
+                  joinParts(l10n, [
+                    view.label,
+                    l10n.torProgressPercent(t.progress),
+                  ]),
                 ),
               ),
             ],

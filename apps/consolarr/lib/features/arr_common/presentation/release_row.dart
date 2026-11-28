@@ -31,6 +31,7 @@ class ReleaseRowLabels {
     required this.rejectionsHeading,
     required this.customFormatsHeading,
     required this.languagesHeading,
+    required this.partSeparator,
   });
 
   final String download;
@@ -45,6 +46,9 @@ class ReleaseRowLabels {
   final String rejectionsHeading;
   final String customFormatsHeading;
   final String languagesHeading;
+
+  /// Between the facts of one row (localized: `sharedPartSeparator`).
+  final String partSeparator;
 }
 
 /// What a release row shows. All text is plain text from the server or
@@ -152,7 +156,7 @@ class _ReleaseRowState extends State<ReleaseRow> {
               const SizedBox(height: ConsolarrSpacing.xs),
               ExcludeSemantics(
                 child: Text(
-                  data.facts.join(' · '),
+                  data.facts.join(labels.partSeparator),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: roles.textSecondary,
                   ),

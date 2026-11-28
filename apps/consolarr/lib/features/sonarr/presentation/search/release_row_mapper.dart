@@ -20,6 +20,7 @@ ReleaseRowLabels releaseRowLabels(AppLocalizations l10n) => ReleaseRowLabels(
   rejectionsHeading: l10n.sonarrReleaseRejectionsHeading,
   customFormatsHeading: l10n.sonarrReleaseCustomFormatsHeading,
   languagesHeading: l10n.sonarrReleaseLanguagesHeading,
+  partSeparator: l10n.sharedPartSeparator,
 );
 
 /// "5 minutes ago" style age of a release.

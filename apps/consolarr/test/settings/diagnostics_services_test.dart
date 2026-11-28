@@ -48,7 +48,9 @@ List<String> liveRegionLabels(WidgetTester tester) {
     });
   }
 
-  visit(tester.binding.pipelineOwner.semanticsOwner!.rootSemanticsNode!);
+  visit(
+    tester.binding.renderViews.first.owner!.semanticsOwner!.rootSemanticsNode!,
+  );
   return out;
 }
 

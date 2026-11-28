@@ -4,6 +4,7 @@ import 'package:arr_api/arr_api.dart';
 import 'package:consolarr/features/radarr/application/radarr_providers.dart';
 import 'package:consolarr/features/radarr/domain/availability.dart';
 import 'package:consolarr/shared/errors/connection_error_message.dart';
+import 'package:consolarr/shared/widgets/inline_retry_row.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,26 +21,14 @@ class ListsFailedRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    return Padding(
-      padding: const EdgeInsets.only(top: ConsolarrSpacing.xs),
-      child: Semantics(
-        container: true,
-        child: Row(
-          children: [
-            const Icon(Icons.warning_amber_outlined),
-            const SizedBox(width: ConsolarrSpacing.sm),
-            Expanded(child: Text(l10n.radarrProfilesFailed)),
-            TextButton(
-              onPressed: () {
-                ref
-                  ..invalidate(qualityProfilesProvider)
-                  ..invalidate(tagsProvider);
-              },
-              child: Text(l10n.radarrRetry),
-            ),
-          ],
-        ),
-      ),
+    return InlineRetryRow(
+      message: l10n.radarrProfilesFailed,
+      retryLabel: l10n.radarrRetry,
+      onRetry: () {
+        ref
+          ..invalidate(qualityProfilesProvider)
+          ..invalidate(tagsProvider);
+      },
     );
   }
 }

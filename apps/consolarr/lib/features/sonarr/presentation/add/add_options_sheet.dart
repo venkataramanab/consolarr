@@ -9,6 +9,7 @@ import 'package:consolarr/features/arr_common/presentation/release_row.dart'
 import 'package:consolarr/features/sonarr/application/add_series.dart';
 import 'package:consolarr/features/sonarr/sonarr_routes.dart';
 import 'package:consolarr/shared/errors/connection_error_message.dart';
+import 'package:consolarr/shared/widgets/inline_retry_row.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -233,22 +234,10 @@ class _AddOptionsBodyState extends ConsumerState<AddOptionsBody> {
           onCreate: _createTag,
         ),
         if (data.tagsFailed)
-          Padding(
-            padding: const EdgeInsets.only(top: ConsolarrSpacing.xs),
-            child: Semantics(
-              container: true,
-              child: Row(
-                children: [
-                  const Icon(Icons.warning_amber_outlined),
-                  const SizedBox(width: ConsolarrSpacing.sm),
-                  Expanded(child: Text(l10n.sonarrAddTagsFailed)),
-                  TextButton(
-                    onPressed: () => ref.invalidate(addFormDataProvider),
-                    child: Text(l10n.sonarrRetry),
-                  ),
-                ],
-              ),
-            ),
+          InlineRetryRow(
+            message: l10n.sonarrAddTagsFailed,
+            retryLabel: l10n.sonarrRetry,
+            onRetry: () => ref.invalidate(addFormDataProvider),
           ),
         if (add case AddFailed(:final error))
           _Failure(error: error, onRetry: () => _submit(search: false)),

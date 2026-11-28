@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:arr_api/arr_api.dart';
-import 'package:consolarr/shared/l10n/join_parts.dart';
 import 'package:consolarr/features/radarr/application/radarr_providers.dart';
 import 'package:consolarr/features/radarr/domain/availability.dart';
 import 'package:consolarr/features/radarr/domain/dates.dart';
@@ -10,6 +9,7 @@ import 'package:consolarr/features/radarr/presentation/edit_sheet.dart';
 import 'package:consolarr/features/radarr/presentation/movie_views.dart';
 import 'package:consolarr/features/radarr/presentation/release_sheet.dart';
 import 'package:consolarr/features/radarr/presentation/screen_view.dart';
+import 'package:consolarr/shared/l10n/join_parts.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
@@ -125,6 +125,9 @@ class _Content extends ConsumerWidget {
     final availability = availabilityOf(movie, now);
     final offline = snapshot.isOffline;
     final profilesAsync = ref.watch(qualityProfilesProvider);
+    // Tag names are read here too (not shown on this screen): a failed read
+    // is reported the same way as the profiles, and its retry reads both.
+    final tagsAsync = ref.watch(tagsProvider);
     final profiles = profilesAsync.value ?? const [];
     final profileName = profiles
         .where((p) => p.id == movie.qualityProfileId)
@@ -141,7 +144,7 @@ class _Content extends ConsumerWidget {
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
-          if (profilesAsync.hasError)
+          if (profilesAsync.hasError || tagsAsync.hasError)
             const Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: ConsolarrSpacing.gutter,
