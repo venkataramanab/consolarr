@@ -317,6 +317,6 @@ jobs:
             ${{ runner.temp }}/test-apk/${{ matrix.app }}-release-arm64-debugsigned-${{ steps.stage.outputs.short }}.apk
             ${{ runner.temp }}/test-apk/SHA256SUMS.txt
             ${{ runner.temp }}/test-apk/README-TEST-BUILD.txt
-          retention-days: 14
+          retention-days: 1
           if-no-files-found: error
           compression-level: 0
