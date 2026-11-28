@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:consolarr/features/dashboard/application/dashboard_day.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_models.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_providers.dart';
 import 'package:consolarr/features/dashboard/presentation/activity_card.dart';
@@ -24,8 +25,10 @@ import 'package:material_ui/material_ui.dart';
 /// in that order. Read-only; never writes to a server.
 ///
 /// One scheduler ticks about every 15 seconds while the screen is visible
-/// (resumed, in the selected tab, on top, unlocked) and cancels its timer
-/// otherwise.
+/// (resumed, in the selected tab, on top, unlocked). Every change that can hide
+/// the screen (lifecycle, lock, tab, route) calls `pollNow()`, which cancels the
+/// timer at once when hidden, so no timer is left waiting to notice it; the
+/// midnight timer of the day labels follows the same visibility.
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
@@ -36,12 +39,14 @@ class DashboardScreen extends ConsumerStatefulWidget {
 class _DashboardScreenState extends ConsumerState<DashboardScreen>
     with WidgetsBindingObserver {
   late final PollScheduler _scheduler;
+  late final DashboardDay _day;
   bool _resumed = true;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _day = ref.read(dashboardDayProvider.notifier);
     _scheduler = PollScheduler(
       interval: ref.read(dashboardPollIntervalProvider),
       isVisible: () =>
@@ -54,11 +59,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
           ? ref.read(dashboardProvider.notifier).refresh(DashboardTrigger.poll)
           : Future.value(true),
     )..start();
-    // Unlocking resumes polling; locking is picked up by the next tick.
-    ref.listenManual(
-      appLockedProvider,
-      (_, _) => _scheduler.visibilityChanged(),
-    );
+    // Locking cancels the timer now; unlocking polls again.
+    ref.listenManual(appLockedProvider, (_, _) => _syncVisibility());
+  }
+
+  /// Hidden: `pollNow()` cancels the timer and notes it (nothing polls).
+  /// Visible again: the scheduler polls once and restarts its wait. The poll is
+  /// not repeated while the screen stays visible.
+  void _syncVisibility() {
+    if (!mounted) return;
+    final visible = _scheduler.isVisible();
+    _day.setVisible(visible);
+    if (visible) {
+      _scheduler.visibilityChanged();
+    } else {
+      unawaited(_scheduler.pollNow());
+    }
   }
 
   @override
@@ -68,15 +84,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
     // (ModalRoute) changes visibility.
     TickerMode.valuesOf(context);
     ModalRoute.isCurrentOf(context);
-    if (mounted) _scheduler.visibilityChanged();
+    _syncVisibility();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _resumed = state == AppLifecycleState.resumed;
-    if (_resumed && ref.read(firstFrameDoneProvider)) {
+    if (!_resumed) {
+      _syncVisibility();
+      return;
+    }
+    if (ref.read(firstFrameDoneProvider)) {
       // Coming back refreshes everything (pollNow checks visibility itself).
-      if (_scheduler.isVisible()) {
+      final visible = _scheduler.isVisible();
+      _day.setVisible(visible);
+      if (visible) {
         unawaited(
           ref.read(dashboardProvider.notifier).refresh(DashboardTrigger.resume),
         );
@@ -88,6 +110,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
   @override
   void dispose() {
     _scheduler.dispose();
+    _day.setVisible(false);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

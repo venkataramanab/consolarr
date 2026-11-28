@@ -56,6 +56,10 @@ GoRouter _router() => GoRouter(
     GoRoute(path: '/torrents', builder: (_, _) => const Text('Torrents tab')),
     GoRoute(path: '/onboarding', builder: (_, _) => const Text('Onboarding')),
     GoRoute(path: '/about', builder: (_, _) => const Text('About')),
+    GoRoute(
+      path: '/servers/:id',
+      builder: (_, state) => Text('editor ${state.pathParameters['id']}'),
+    ),
   ],
 );
 
@@ -243,5 +247,26 @@ void main() {
     // detail tests).
     expect(parseSeriesId('0'), isNull);
     expect(parseMovieId('abc'), isNull);
+  });
+
+  testWidgets('missing credentials: "Edit server" opens that server\'s editor, '
+      'there is no Retry', (tester) async {
+    await pump(
+      tester,
+      connections: {
+        ServiceKind.sonarr: const AppError(
+          ErrorCategory.authFailed,
+          debugDetail: 'needs_credentials',
+        ),
+      },
+      sources: {ServiceKind.sonarr: CountingSource()},
+    );
+    expect(find.text('Retry'), findsNothing);
+    final edit = find.text('Edit server').first;
+    await tester.ensureVisible(edit);
+    await tester.tap(edit);
+    await tester.pumpAndSettle();
+    // The id comes with the server list the dashboard reads for the failure.
+    expect(find.text('editor failed-sonarr'), findsOneWidget);
   });
 }

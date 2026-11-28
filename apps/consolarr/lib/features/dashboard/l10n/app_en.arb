@@ -86,16 +86,6 @@
       }
     }
   },
-  "dashboardSliceErrorTitle": "{service} is not available",
-  "@dashboardSliceErrorTitle": {
-    "description": "Headline of a failed server inside a dashboard card; names the service.",
-    "placeholders": {
-      "service": {
-        "type": "String",
-        "description": "Service and server name."
-      }
-    }
-  },
   "dashboardRetry": "Retry",
   "@dashboardRetry": {
     "description": "Retry button of a failed server inside a dashboard card."
@@ -142,7 +132,8 @@
     "placeholders": {
       "count": {
         "type": "int",
-        "description": "The number of items."
+        "description": "The number of items.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -152,7 +143,8 @@
     "placeholders": {
       "count": {
         "type": "int",
-        "description": "The number of items."
+        "description": "The number of items.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -162,7 +154,8 @@
     "placeholders": {
       "count": {
         "type": "int",
-        "description": "The number of items."
+        "description": "The number of items.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -184,7 +177,8 @@
     "placeholders": {
       "count": {
         "type": "int",
-        "description": "The number of items."
+        "description": "The number of items.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -268,7 +262,8 @@
       },
       "count": {
         "type": "int",
-        "description": "Number of items."
+        "description": "Number of items.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -278,7 +273,8 @@
     "placeholders": {
       "count": {
         "type": "int",
-        "description": "The number of items."
+        "description": "The number of items.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -288,7 +284,8 @@
     "placeholders": {
       "count": {
         "type": "int",
-        "description": "The number of items."
+        "description": "The number of items.",
+        "format": "decimalPattern"
       }
     }
   },
@@ -407,7 +404,7 @@
       }
     }
   },
-  "dashboardDurationHours": "{hours} h {minutes} min",
+  "dashboardDurationHours": "{hours} h {minutes} min",
   "@dashboardDurationHours": {
     "description": "A duration in hours and minutes, short form.",
     "placeholders": {
@@ -423,7 +420,7 @@
       }
     }
   },
-  "dashboardDurationDays": "{days} d {hours} h",
+  "dashboardDurationDays": "{days} d {hours} h",
   "@dashboardDurationDays": {
     "description": "A duration in days and hours, short form.",
     "placeholders": {
@@ -460,16 +457,6 @@
       "time": {
         "type": "String",
         "description": "Formatted duration."
-      }
-    }
-  },
-  "dashboardRowSpeed": "{speed}",
-  "@dashboardRowSpeed": {
-    "description": "Transfer speed of a download row.",
-    "placeholders": {
-      "speed": {
-        "type": "String",
-        "description": "Formatted speed."
       }
     }
   },
@@ -559,17 +546,62 @@
     "placeholders": {
       "count": {
         "type": "int",
-        "description": "The number of items."
+        "description": "The number of items.",
+        "format": "decimalPattern"
       }
     }
   },
-  "dashboardOpenActivity": "Open {service}",
-  "@dashboardOpenActivity": {
-    "description": "Accessible name of a tap target that opens a service tab from the activity card.",
+  "dashboardOpenHint": "Open",
+  "@dashboardOpenHint": {
+    "description": "Spoken hint of a tile that opens a service tab: the action, after the name of what is read."
+  },
+  "dashboardActivitySemantics": "{service}, {counts}",
+  "@dashboardActivitySemantics": {
+    "description": "Spoken name of a service tile of the activity card without speeds: service and counts.",
     "placeholders": {
       "service": {
         "type": "String",
-        "description": "Service name."
+        "description": "Service and server name."
+      },
+      "counts": {
+        "type": "String",
+        "description": "Downloads and items that need attention."
+      }
+    }
+  },
+  "dashboardActivitySemanticsSpeeds": "{service}, {counts}, {speeds}",
+  "@dashboardActivitySemanticsSpeeds": {
+    "description": "Spoken name of a service tile of the activity card: service, counts and transfer speeds.",
+    "placeholders": {
+      "service": {
+        "type": "String",
+        "description": "Service and server name."
+      },
+      "counts": {
+        "type": "String",
+        "description": "Downloads and items that need attention."
+      },
+      "speeds": {
+        "type": "String",
+        "description": "Download and upload speeds."
+      }
+    }
+  },
+  "dashboardEditServer": "Edit server",
+  "@dashboardEditServer": {
+    "description": "Button of a failed server inside a dashboard card when its credentials are missing: opens the server editor."
+  },
+  "dashboardSpokenJoin": "{first}, {second}",
+  "@dashboardSpokenJoin": {
+    "description": "Joins two phrases of one spoken label (for example the counts and the speeds of a service tile).",
+    "placeholders": {
+      "first": {
+        "type": "String",
+        "description": "First phrase."
+      },
+      "second": {
+        "type": "String",
+        "description": "Second phrase."
       }
     }
   }

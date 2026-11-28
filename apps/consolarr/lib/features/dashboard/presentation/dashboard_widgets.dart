@@ -23,6 +23,30 @@ String serviceTitle(AppLocalizations l10n, ServiceKind kind, String name) {
   return name.isEmpty ? service : l10n.dashboardServiceName(service, name);
 }
 
+/// The service on one line and the server's own name below it, so a long or
+/// right-to-left name wraps by itself instead of inside one joined string.
+class ServiceHeading extends StatelessWidget {
+  const ServiceHeading({required this.kind, required this.name, super.key});
+
+  final ServiceKind kind;
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          serviceKindLabel(context.l10n, kind),
+          style: theme.textTheme.titleSmall,
+        ),
+        if (name.isNotEmpty) Text(name, style: theme.textTheme.bodySmall),
+      ],
+    );
+  }
+}
+
 /// Opens [link] and reports it (the card and the kind of destination only).
 void openDashboardLink(
   BuildContext context,
@@ -147,8 +171,10 @@ class DashboardCardMessage extends StatelessWidget {
   }
 }
 
-/// A failed server inside a card: names the service, says what went wrong and
-/// offers retry. The other servers of the card stay as they are.
+/// A failed server inside a card: names the service, says what went wrong (the
+/// copy of its category) and offers what helps: retry, the Torrents tab for a
+/// Deluge host, the server editor for missing credentials. The other servers
+/// of the card stay as they are.
 class DashboardSliceError extends ConsumerWidget {
   const DashboardSliceError({
     required this.slice,
@@ -167,6 +193,9 @@ class DashboardSliceError extends ConsumerWidget {
     final service = serviceTitle(l10n, slice.kind, slice.serverName);
     final copy = connectionErrorMessage(l10n, slice.error);
     final hostChoice = slice.needsHostChoice;
+    final needsCredentials =
+        slice.error.category == ErrorCategory.authFailed &&
+        slice.error.debugDetail == needsCredentialsDetail;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: roles.card,
@@ -186,9 +215,9 @@ class DashboardSliceError extends ConsumerWidget {
                 ),
                 const SizedBox(width: ConsolarrSpacing.sm),
                 Expanded(
-                  child: Text(
-                    l10n.dashboardSliceErrorTitle(service),
-                    style: theme.textTheme.titleSmall,
+                  child: ServiceHeading(
+                    kind: slice.kind,
+                    name: slice.serverName,
                   ),
                 ),
               ],
@@ -212,6 +241,21 @@ class DashboardSliceError extends ConsumerWidget {
                           GoRouter.maybeOf(context)?.go(torrentsRoute),
                       child: Text(l10n.dashboardOpenTorrents),
                     )
+                  : needsCredentials
+                  ? TextButton(
+                      style: _tapTarget,
+                      onPressed: () =>
+                          GoRouter.maybeOf(context)
+                              ?.push(_editServerLocation(slice)),
+                      child: Semantics(
+                        label: l10n.dashboardSpokenJoin(
+                          l10n.dashboardEditServer,
+                          service,
+                        ),
+                        excludeSemantics: true,
+                        child: Text(l10n.dashboardEditServer),
+                      ),
+                    )
                   : TextButton(
                       style: _tapTarget,
                       onPressed: () =>
@@ -229,6 +273,13 @@ class DashboardSliceError extends ConsumerWidget {
     );
   }
 }
+
+/// The editor of the failed server; the server list while the server is not
+/// known yet (its id arrives with the server list).
+String _editServerLocation(SliceFailed<Object?> slice) =>
+    slice.serverName.isEmpty
+    ? AppRoutes.servers
+    : AppRoutes.serverEdit(slice.serverId);
 
 final ButtonStyle _tapTarget = TextButton.styleFrom(
   minimumSize: const Size(

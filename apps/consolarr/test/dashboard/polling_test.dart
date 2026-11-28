@@ -30,6 +30,60 @@ final _variant = HarnessVariant(
   brightness: Brightness.dark,
 );
 
+/// Counts the timers of 10 seconds or more that are alive: the poll timer and
+/// the one to midnight. Everything shorter (animations, fakes) is ignored.
+class _Timers {
+  int live = 0;
+
+  ZoneSpecification get spec => ZoneSpecification(
+    createTimer: (self, parent, zone, duration, f) {
+      if (duration < const Duration(seconds: 10)) {
+        return parent.createTimer(zone, duration, f);
+      }
+      var counted = true;
+      void done() {
+        if (counted) live--;
+        counted = false;
+      }
+
+      live++;
+      final inner = parent.createTimer(zone, duration, () {
+        done();
+        f();
+      });
+      return _CountedTimer(inner, done);
+    },
+  );
+}
+
+class _CountedTimer implements Timer {
+  _CountedTimer(this._inner, this._done);
+
+  final Timer _inner;
+  final void Function() _done;
+
+  @override
+  void cancel() {
+    _inner.cancel();
+    _done();
+  }
+
+  @override
+  bool get isActive => _inner.isActive;
+
+  @override
+  int get tick => _inner.tick;
+}
+
+/// A widget test whose body runs where the long timers are counted.
+void testTimers(
+  String name,
+  Future<void> Function(WidgetTester tester, _Timers timers) body,
+) => testWidgets(name, (tester) {
+  final timers = _Timers();
+  return runZoned(() => body(tester, timers), zoneSpecification: timers.spec);
+});
+
 void main() {
   final server = FakeServer();
   final sonarr = connection(ServiceKind.sonarr, 's', server);
@@ -95,18 +149,17 @@ void main() {
     },
   );
 
-  testWidgets('locked: the timer is cancelled, not ticking and skipping; '
-      'unlocking polls again', (tester) async {
+  testTimers('locked: the timer is cancelled at once, not after one more tick; '
+      'unlocking polls again', (tester, timers) async {
     await pumpApp(tester);
+    expect(timers.live, greaterThan(0), reason: 'visible: the timers run');
     final container = ProviderScope.containerOf(
       tester.element(find.byType(Scaffold).first),
     );
     container.read(_locked.notifier).set(true);
     await tester.pump();
+    expect(timers.live, 0, reason: 'no timer is pending right after locking');
     final before = calls(DashboardCard.activity);
-    await tester.pump(const Duration(seconds: 15)); // the one tick that notices
-    // After that no timer is left: ten minutes later nothing happened and no
-    // wake-up is scheduled.
     await tester.pump(const Duration(minutes: 10));
     expect(calls(DashboardCard.activity), before);
     expect(tester.binding.transientCallbackCount, 0);
@@ -114,10 +167,25 @@ void main() {
     await tester.pump();
     await tester.pump();
     expect(calls(DashboardCard.activity), before + 1);
+    expect(timers.live, greaterThan(0));
   });
 
-  testWidgets('another tab selected (TickerMode off): hidden, then visible '
-      'again polls', (tester) async {
+  testTimers('paused: no timer is pending right after the app goes to the '
+      'background; resuming refreshes and restarts it', (tester, timers) async {
+    await pumpApp(tester);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    expect(timers.live, 0, reason: 'cancelled in the lifecycle callback');
+    final before = calls(DashboardCard.activity);
+    await tester.pump(const Duration(minutes: 10));
+    expect(calls(DashboardCard.activity), before);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pump();
+    await tester.pump();
+    expect(timers.live, greaterThan(0));
+  });
+
+  testTimers('another tab selected (TickerMode off): no timer is pending, '
+      'then visible again polls', (tester, timers) async {
     final enabled = ValueNotifier(true);
     addTearDown(enabled.dispose);
     applyVariantView(tester, _variant);
@@ -133,6 +201,7 @@ void main() {
     final before = calls(DashboardCard.activity);
     enabled.value = false;
     await tester.pump();
+    expect(timers.live, 0, reason: 'cancelled when the tab is left');
     await tester.pump(const Duration(seconds: 15));
     await tester.pump(const Duration(minutes: 5));
     expect(calls(DashboardCard.activity), before);
@@ -142,9 +211,9 @@ void main() {
     expect(calls(DashboardCard.activity), before + 1);
   });
 
-  testWidgets(
+  testTimers(
     'a route pushed over the dashboard pauses it; popping resumes it',
-    (tester) async {
+    (tester, timers) async {
       await pumpApp(tester);
       final before = calls(DashboardCard.activity);
       final navigator = tester.state<NavigatorState>(find.byType(Navigator));
@@ -154,6 +223,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      expect(timers.live, 0, reason: 'no timer under another route');
       await tester.pump(const Duration(seconds: 15));
       await tester.pump(const Duration(minutes: 5));
       expect(calls(DashboardCard.activity), before, reason: 'hidden: no poll');

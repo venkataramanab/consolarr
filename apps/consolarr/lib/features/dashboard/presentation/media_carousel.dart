@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'package:consolarr/features/dashboard/application/dashboard_day.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_models.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_providers.dart';
 import 'package:consolarr/features/dashboard/presentation/dashboard_format.dart';
@@ -154,6 +155,8 @@ class _MediaSlice extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final items = slice.value;
+    // Rebuilds at local midnight: "tomorrow" becomes "today".
+    ref.watch(dashboardDayProvider);
     final now = ref.read(clockProvider)();
     final offset = now.timeZoneOffset;
     final width = posterWidth(context);

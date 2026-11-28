@@ -86,16 +86,6 @@
       }
     }
   },
-  "dashboardSliceErrorTitle": "{service} غير متاح",
-  "@dashboardSliceErrorTitle": {
-    "description": "Headline of a failed server inside a dashboard card; names the service.",
-    "placeholders": {
-      "service": {
-        "type": "String",
-        "description": "Service and server name."
-      }
-    }
-  },
   "dashboardRetry": "إعادة المحاولة",
   "@dashboardRetry": {
     "description": "Retry button of a failed server inside a dashboard card."
@@ -136,7 +126,7 @@
       }
     }
   },
-  "dashboardAgeMinutes": "{count, plural, =0{} =1{قبل دقيقة} =2{قبل دقيقتين} few{قبل {count} دقائق} many{قبل {count} دقيقة} other{قبل {count} دقيقة}}",
+  "dashboardAgeMinutes": "{count, plural, =1{قبل دقيقة} =2{قبل دقيقتين} few{قبل {count} دقائق} many{قبل {count} دقيقة} other{قبل {count} دقيقة}}",
   "@dashboardAgeMinutes": {
     "description": "Relative age in minutes.",
     "placeholders": {
@@ -146,7 +136,7 @@
       }
     }
   },
-  "dashboardAgeHours": "{count, plural, =0{} =1{قبل ساعة} =2{قبل ساعتين} few{قبل {count} ساعات} many{قبل {count} ساعة} other{قبل {count} ساعة}}",
+  "dashboardAgeHours": "{count, plural, =1{قبل ساعة} =2{قبل ساعتين} few{قبل {count} ساعات} many{قبل {count} ساعة} other{قبل {count} ساعة}}",
   "@dashboardAgeHours": {
     "description": "Relative age in hours.",
     "placeholders": {
@@ -156,7 +146,7 @@
       }
     }
   },
-  "dashboardAgeDays": "{count, plural, =0{} =1{قبل يوم} =2{قبل يومين} few{قبل {count} أيام} many{قبل {count} يومًا} other{قبل {count} يوم}}",
+  "dashboardAgeDays": "{count, plural, =1{قبل يوم} =2{قبل يومين} few{قبل {count} أيام} many{قبل {count} يومًا} other{قبل {count} يوم}}",
   "@dashboardAgeDays": {
     "description": "Relative age in days.",
     "placeholders": {
@@ -178,7 +168,7 @@
   "@dashboardDayTomorrow": {
     "description": "Relative day: the next calendar day."
   },
-  "dashboardDayInDays": "{count, plural, =0{} =1{بعد يوم} =2{بعد يومين} few{بعد {count} أيام} many{بعد {count} يومًا} other{بعد {count} يوم}}",
+  "dashboardDayInDays": "{count, plural, =1{بعد يوم} =2{بعد يومين} few{بعد {count} أيام} many{بعد {count} يومًا} other{بعد {count} يوم}}",
   "@dashboardDayInDays": {
     "description": "Relative day: some days from now.",
     "placeholders": {
@@ -407,7 +397,7 @@
       }
     }
   },
-  "dashboardDurationHours": "{hours} س {minutes} د",
+  "dashboardDurationHours": "{hours} س {minutes} د",
   "@dashboardDurationHours": {
     "description": "A duration in hours and minutes, short form.",
     "placeholders": {
@@ -423,7 +413,7 @@
       }
     }
   },
-  "dashboardDurationDays": "{days} ي {hours} س",
+  "dashboardDurationDays": "{days} ي {hours} س",
   "@dashboardDurationDays": {
     "description": "A duration in days and hours, short form.",
     "placeholders": {
@@ -460,16 +450,6 @@
       "time": {
         "type": "String",
         "description": "Formatted duration."
-      }
-    }
-  },
-  "dashboardRowSpeed": "{speed}",
-  "@dashboardRowSpeed": {
-    "description": "Transfer speed of a download row.",
-    "placeholders": {
-      "speed": {
-        "type": "String",
-        "description": "Formatted speed."
       }
     }
   },
@@ -563,14 +543,9 @@
       }
     }
   },
-  "dashboardOpenActivity": "فتح {service}",
-  "@dashboardOpenActivity": {
-    "description": "Accessible name of a tap target that opens a service tab from the activity card.",
-    "placeholders": {
-      "service": {
-        "type": "String",
-        "description": "Service name."
-      }
-    }
-  }
+  "dashboardOpenHint": "فتح",
+  "dashboardActivitySemantics": "{service}، {counts}",
+  "dashboardActivitySemanticsSpeeds": "{service}، {counts}، {speeds}",
+  "dashboardEditServer": "تعديل الخادم",
+  "dashboardSpokenJoin": "{first}، {second}"
 }

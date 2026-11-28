@@ -10,11 +10,9 @@ import 'package:consolarr/features/dashboard/application/dashboard_models.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_providers.dart';
 import 'package:consolarr/features/dashboard/data/arr_sources.dart';
 import 'package:consolarr/features/servers/application/servers_providers.dart';
-import 'package:consolarr/features/servers/domain/server_models.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:security/security.dart';
 

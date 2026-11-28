@@ -228,7 +228,8 @@ class MemoryPayloadCache implements PayloadCache {
   Future<void> pruneKeys(String keyPrefix, Set<String> keepServerIds) async =>
       rows.removeWhere(
         (k, _) =>
-            k.contains('|$keyPrefix') && !keepServerIds.contains(k.split('|').first),
+            k.contains('|$keyPrefix') &&
+            !keepServerIds.contains(k.split('|').first),
       );
 }
 

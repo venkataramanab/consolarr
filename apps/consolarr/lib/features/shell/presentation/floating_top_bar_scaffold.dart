@@ -55,87 +55,72 @@ class _FloatingTopBarScaffoldState extends State<FloatingTopBarScaffold> {
     final roles = context.roles;
     return Stack(
       children: [
-        Positioned.fill(
-          // The bar is painted last (it floats above the content) but is read
-          // first: sort keys put the traversal order in visual order.
-          child: Semantics(
-            container: true,
-            explicitChildNodes: true,
-            sortKey: const OrdinalSortKey(1),
-            child: ValueListenableBuilder<double>(
-              valueListenable: _barHeight,
-              builder: (context, height, _) {
-                final top = media.padding.top + height + ConsolarrSpacing.sm;
-                final padding = EdgeInsets.only(
-                  top: top,
-                  bottom: media.padding.bottom + ConsolarrSpacing.lg,
-                  left: ConsolarrSpacing.gutter,
-                  right: ConsolarrSpacing.gutter,
-                );
-                return widget.bodyBuilder(context, padding);
-              },
-            ),
+        _BodySlot(
+          child: ValueListenableBuilder<double>(
+            valueListenable: _barHeight,
+            builder: (context, height, _) {
+              final top = media.padding.top + height + ConsolarrSpacing.sm;
+              final padding = EdgeInsets.only(
+                top: top,
+                bottom: media.padding.bottom + ConsolarrSpacing.lg,
+                left: ConsolarrSpacing.gutter,
+                right: ConsolarrSpacing.gutter,
+              );
+              return widget.bodyBuilder(context, padding);
+            },
           ),
         ),
-        PositionedDirectional(
-          top: 0,
-          start: 0,
-          end: 0,
-          child: Semantics(
-            container: true,
-            explicitChildNodes: true,
-            sortKey: const OrdinalSortKey(0),
-            child: SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  ConsolarrSpacing.md,
-                  ConsolarrSpacing.sm,
-                  ConsolarrSpacing.md,
-                  0,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    MeasuredBarHeight(
-                      height: _barHeight,
-                      child: GlassBar(
-                        padding: const EdgeInsetsDirectional.only(
-                          start: ConsolarrSpacing.lg,
-                          end: ConsolarrSpacing.xs,
+        _BarSlot(
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                ConsolarrSpacing.md,
+                ConsolarrSpacing.sm,
+                ConsolarrSpacing.md,
+                0,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  MeasuredBarHeight(
+                    height: _barHeight,
+                    child: GlassBar(
+                      padding: const EdgeInsetsDirectional.only(
+                        start: ConsolarrSpacing.lg,
+                        end: ConsolarrSpacing.xs,
+                      ),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          minHeight: ConsolarrSpacing.minTapTarget,
                         ),
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            minHeight: ConsolarrSpacing.minTapTarget,
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Semantics(
-                                  header: true,
-                                  child: Text(
-                                    widget.title,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: theme.textTheme.titleMedium,
-                                  ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Semantics(
+                                header: true,
+                                child: Text(
+                                  widget.title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.titleMedium,
                                 ),
                               ),
-                              if (ShellChrome.maybeOf(context)?.switcher
-                                  case final switcher?)
-                                switcher,
-                              ...widget.actions,
-                            ],
-                          ),
+                            ),
+                            if (ShellChrome.maybeOf(context)?.switcher
+                                case final switcher?)
+                              switcher,
+                            ...widget.actions,
+                          ],
                         ),
                       ),
                     ),
-                    if (widget.banner != null) ...[
-                      const SizedBox(height: ConsolarrSpacing.sm),
-                      widget.banner!,
-                    ],
+                  ),
+                  if (widget.banner != null) ...[
+                    const SizedBox(height: ConsolarrSpacing.sm),
+                    widget.banner!,
                   ],
-                ),
+                ],
               ),
             ),
           ),
@@ -161,4 +146,43 @@ class _FloatingTopBarScaffoldState extends State<FloatingTopBarScaffold> {
       ],
     );
   }
+}
+
+/// The scrolling body, filling the stack. It is read after the bar: the bar is
+/// painted last (it floats above the content) but comes first for a screen
+/// reader, and the sort keys put the traversal in visual order.
+class _BodySlot extends StatelessWidget {
+  const _BodySlot({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Positioned.fill(
+    child: Semantics(
+      container: true,
+      explicitChildNodes: true,
+      sortKey: const OrdinalSortKey(1),
+      child: child,
+    ),
+  );
+}
+
+/// The floating bar at the top of the stack, read first.
+class _BarSlot extends StatelessWidget {
+  const _BarSlot({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => PositionedDirectional(
+    top: 0,
+    start: 0,
+    end: 0,
+    child: Semantics(
+      container: true,
+      explicitChildNodes: true,
+      sortKey: const OrdinalSortKey(0),
+      child: child,
+    ),
+  );
 }

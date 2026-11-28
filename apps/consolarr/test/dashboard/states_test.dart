@@ -4,7 +4,10 @@ import 'dart:async';
 
 import 'package:consolarr/features/dashboard/application/dashboard_models.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_source.dart';
+import 'package:consolarr/features/dashboard/presentation/dashboard_screen.dart';
+import 'package:consolarr/features/dashboard/presentation/media_carousel.dart';
 import 'package:consolarr/features/servers/application/server_connection.dart';
+import 'package:consolarr/shared/errors/connection_error_message.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter/widgets.dart';
@@ -114,6 +117,30 @@ void main() {
       verify: (v) async {
         try {
           await expectAccessible(tester);
+          if (!s.noServers) {
+            // The list is lazy: on a small display the last card is not built
+            // until it is scrolled to. Bring the Recent card fully into view
+            // and check the structure of what is there (tap targets, labels).
+            // The contrast guideline is not repeated here: with cards under
+            // the translucent top bar it reads the bar, not the text, and the
+            // first run above has already read every card that was built.
+            final recent = find.byType(RecentCard);
+            await tester.scrollUntilVisible(
+              recent,
+              300,
+              scrollable: find
+                  .descendant(
+                    of: find.byType(DashboardScreen),
+                    matching: find.byType(Scrollable),
+                  )
+                  .first,
+            );
+            await tester.ensureVisible(recent);
+            await tester.pump();
+            expect(recent, findsOneWidget, reason: 'the Recent card is built');
+            await expectTapTargets(tester);
+            await expectLabeledTapTargets(tester);
+          }
         } on TestFailure catch (e) {
           fail('${s.name} @ ${v.label}: $e');
         }
@@ -270,14 +297,8 @@ void main() {
           ).source,
         },
         check: (tester, l10n) async {
-          expect(
-            find.text(
-              l10n.dashboardSliceErrorTitle(
-                l10n.dashboardServiceName('Radarr', 'Server radarr'),
-              ),
-            ),
-            findsNWidgets(2),
-          );
+          // the service and the server's name, each on its own line
+          expect(find.text('Server radarr'), findsNWidgets(2));
           expect(find.text(l10n.dashboardRetry), findsNWidgets(2));
           // the healthy services are still there
           expect(find.textContaining('Sonarr'), findsWidgets);
@@ -305,14 +326,10 @@ void main() {
         connections: {ServiceKind.sonarr: sonarr},
         sources: {ServiceKind.sonarr: failing.source},
         check: (tester, l10n) async {
-          expect(
-            find.text(
-              l10n.dashboardSliceErrorTitle(
-                l10n.dashboardServiceName('Sonarr', 'Server sonarr'),
-              ),
-            ),
-            findsNWidgets(3),
-          );
+          expect(find.text('Server sonarr'), findsNWidgets(3));
+          // the copy of the category, not a blanket "not available"
+          final copy = connectionErrorMessage(l10n, AppError(category));
+          expect(find.text(copy.message), findsNWidgets(3));
           expect(find.text(l10n.dashboardRetry), findsNWidgets(3));
           final upcomingBefore = failing.calls[DashboardCard.upcoming]!;
           final activityBefore = failing.calls[DashboardCard.activity]!;
@@ -346,7 +363,9 @@ void main() {
         },
         check: (tester, l10n) async {
           await tester.pumpAndSettle();
-          expect(find.text(l10n.dashboardRetry), findsWidgets);
+          // Retrying cannot supply the missing secrets: the editor can.
+          expect(find.text(l10n.dashboardEditServer), findsWidgets);
+          expect(find.text(l10n.dashboardRetry), findsNothing);
           expect(find.byType(PosterCard), findsWidgets);
         },
       ),

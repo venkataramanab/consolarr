@@ -93,13 +93,27 @@ class _ActivitySlice extends ConsumerWidget {
         l10n.dashboardActivityAttention(summary.attention),
     ];
     final hasSpeed = summary.downSpeed != null || summary.upSpeed != null;
+    final speeds = [
+      if (summary.downSpeed != null)
+        l10n.dashboardSpeedDown(formatSpeed(l10n, summary.downSpeed!)),
+      if (summary.upSpeed != null)
+        l10n.dashboardSpeedUp(formatSpeed(l10n, summary.upSpeed!)),
+    ];
+    String join(List<String> parts) => parts.reduce(l10n.dashboardSpokenJoin);
+    final counts = join(lines);
+    // The whole tile is one button: the service, the counts and the speeds are
+    // what is read; "Open" is its hint.
+    final spoken = hasSpeed
+        ? l10n.dashboardActivitySemanticsSpeeds(service, counts, join(speeds))
+        : l10n.dashboardActivitySemantics(service, counts);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Semantics(
           container: true,
           button: true,
-          label: l10n.dashboardOpenActivity(service),
+          label: spoken,
+          hint: l10n.dashboardOpenHint,
           excludeSemantics: true,
           onTap: open,
           child: Material(
@@ -117,27 +131,15 @@ class _ActivitySlice extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(service, style: theme.textTheme.titleSmall),
+                      ServiceHeading(kind: slice.kind, name: slice.serverName),
                       for (final line in lines)
                         Text(line, style: theme.textTheme.bodyMedium),
                       if (hasSpeed)
                         Wrap(
                           spacing: ConsolarrSpacing.md,
                           children: [
-                            if (summary.downSpeed != null)
-                              Text(
-                                l10n.dashboardSpeedDown(
-                                  formatSpeed(l10n, summary.downSpeed!),
-                                ),
-                                style: theme.textTheme.bodyMedium,
-                              ),
-                            if (summary.upSpeed != null)
-                              Text(
-                                l10n.dashboardSpeedUp(
-                                  formatSpeed(l10n, summary.upSpeed!),
-                                ),
-                                style: theme.textTheme.bodyMedium,
-                              ),
+                            for (final text in speeds)
+                              Text(text, style: theme.textTheme.bodyMedium),
                           ],
                         )
                       else if (summary.speedUnavailable)
@@ -184,8 +186,7 @@ class _ActivityRowView extends StatelessWidget {
         l10n.dashboardProgressSpoken(row.progress),
       ),
       details: [
-        if (row.speed != null && row.speed! > 0)
-          l10n.dashboardRowSpeed(formatSpeed(l10n, row.speed!)),
+        if (row.speed != null && row.speed! > 0) formatSpeed(l10n, row.speed!),
         if (row.sizeLeft != null && row.sizeLeft! > 0)
           l10n.dashboardRowLeft(formatBytes(l10n, row.sizeLeft!)),
         if (row.eta != null)
