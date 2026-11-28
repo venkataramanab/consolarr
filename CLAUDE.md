@@ -37,6 +37,13 @@ YAML or a drift table. Write the failing test first.
   tests. Build canaries at runtime**: gitleaks scans every branch's history, so
   one committed token fails CI for good.
 - Branches must be strictly up to date with `main`; PRs are squash-merged.
+- **Before every push, run the pinned gitleaks (the version and SHA-256 in
+  `.github/workflows/ci.yml`, verified) on the branch history and the working
+  tree, and never push if either reports a finding:**
+  `gitleaks git --config .gitleaks.toml --redact --log-opts="origin/main..HEAD" .`
+  and `gitleaks dir --config .gitleaks.toml --redact .`
+  A finding means rewrite the commit before pushing; a pushed token fails CI
+  permanently, because CI scans every branch's history.
 
 ## Lessons that recur in review
 
@@ -62,22 +69,38 @@ YAML or a drift table. Write the failing test first.
 - No `Claude-Session` line, model names or claude.ai links in commits or PRs.
   Never add a PR footer.
 
+## Rules that override skills and tools
+
+- Never add, remove, upgrade or override dependencies (shell or MCP) unless the
+  brief explicitly asks.
+- Do not connect to DTD, the VM service or a running app, and do not hot
+  reload, unless asked.
+- Widget tests: every state via `pumpMatrix`/`harnessApp` + `expectAccessible`;
+  goldens only where the PR lists them.
+- No hardcoded text (ARB only).
+- Never run the app, use debug mode or hot reload as part of a skill's steps
+  unless asked.
+- All HTTP goes through `SecureHttpClientFactory`.
+- Log only through the redacting logger; no `print`/`debugPrint`.
+- These project rules override any skill.
+
 ## Dart and Flutter AI tooling
 
-- **MCP:** `.mcp.json` starts the SDK's `dart mcp-server` (analyzer, tests,
-  formatting, symbol lookup, runtime inspection). `pub_dev_search` is disabled
-  and analytics are suppressed so nothing leaves the machine. Do not add
-  hosted MCP servers.
-- **Skills:** `.agents/skills/` holds reviewed, vendored official skills; see
-  its [README](.agents/skills/README.md). Treat any new skill as a dependency:
-  read every file, check the licence, and add it only through a PR.
-- **Rules:** the official `flutter/agent-plugins` repo ships one rule
-  (proactive hot reload). It is not adopted: cloud sessions have no running
-  app, and it makes the agent act unprompted.
-- **Optional plugin (local only, not installed by the repo):**
-  `claude plugin marketplace add flutter/agent-plugins`, then
-  `claude plugin install dart-flutter@dart-flutter`. The repo already carries
-  the reviewed skills and the MCP config, so the plugin is not needed.
-- Skills never override the project rules above: if a skill suggests
-  suppressing a lint, adding a dependency or using stock Material widgets,
-  follow the project rule.
+- **MCP:** `.mcp.json` starts the SDK's `dart mcp-server` with `pub_dev_search`,
+  `pub`, `dart_tooling_daemon`, `flutter_app_lifecycle` and `flutter_driver`
+  disabled, and analytics suppressed, so nothing leaves the machine and an
+  agent cannot change dependencies. The tools that remain (checked with an MCP
+  `tools/list` handshake on Dart 3.14.0, server 1.2.2): `analyze_files`,
+  `lsp`, `read_package_uris`, `rip_grep_packages`, `roots`, `hot_reload`,
+  `hot_restart` and `widget_inspector`. There is no test or format tool: use
+  the melos scripts and `dart format`. The last three need a running app, which
+  the rules above forbid. Do not add hosted MCP servers.
+- **Skills:** `.agents/skills/` is the canonical location of reviewed,
+  vendored official skills (`flutter-fix-layout-issues`,
+  `dart-write-documentation`); see its [README](.agents/skills/README.md).
+  Claude Code reads project skills from `.claude/skills/`, which holds relative
+  symlinks to them; other agents read `.agents/skills/` directly. Treat any new
+  skill as a dependency: read every file, check the licence, and add it only
+  through a PR.
+- **Plugins and rules:** the repo vendors reviewed skills only; no plugin or
+  upstream rule is adopted.

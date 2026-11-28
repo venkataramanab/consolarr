@@ -2,7 +2,14 @@
   "mcpServers": {
     "dart": {
       "command": "dart",
-      "args": ["mcp-server", "--disable", "pub_dev_search"],
+      "args": [
+        "mcp-server",
+        "--disable", "pub_dev_search",
+        "--disable", "pub",
+        "--disable", "dart_tooling_daemon",
+        "--disable", "flutter_app_lifecycle",
+        "--disable", "flutter_driver"
+      ],
       "env": {
         "DART_SUPPRESS_ANALYTICS": "true",
         "FLUTTER_SUPPRESS_ANALYTICS": "true"
