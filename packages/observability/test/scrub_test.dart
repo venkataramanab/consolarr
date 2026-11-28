@@ -44,7 +44,7 @@ void main() {
     'every event/breadcrumb combination is free of hostile values',
     () async {
       final a = _Recording();
-      final crumbs = Breadcrumbs();
+      final crumbs = Breadcrumbs()..recordingAllowed = () => true;
       final t = EventTracker(analytics: a, breadcrumbs: crumbs);
       for (final s in ScreenName.values) {
         await t.track(ServersScreenViewedEvent(screen: s));
@@ -72,7 +72,7 @@ void main() {
   );
 
   test('tracker records navigation and API error breadcrumbs', () async {
-    final crumbs = Breadcrumbs();
+    final crumbs = Breadcrumbs()..recordingAllowed = () => true;
     final t = EventTracker(analytics: _Recording(), breadcrumbs: crumbs);
     await t.track(
       const ServersScreenViewedEvent(screen: ScreenName.serverEditor),
@@ -94,8 +94,17 @@ void main() {
     ]);
   });
 
+  test('a fresh trail records nothing until consent allows it', () {
+    final crumbs = Breadcrumbs();
+    crumbs.add(Breadcrumb.navigation(ScreenName.shell));
+    expect(crumbs.entries, isEmpty);
+    crumbs.recordingAllowed = () => true;
+    crumbs.add(Breadcrumb.navigation(ScreenName.shell));
+    expect(crumbs.entries, hasLength(1));
+  });
+
   test('breadcrumbs are a bounded ring buffer', () {
-    final crumbs = Breadcrumbs(capacity: 3);
+    final crumbs = Breadcrumbs(capacity: 3)..recordingAllowed = () => true;
     for (var i = 0; i < 10; i++) {
       crumbs.add(Breadcrumb.navigation(ScreenName.values[i % 3]));
     }

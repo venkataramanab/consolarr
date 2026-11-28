@@ -32,7 +32,7 @@ void main() {
       torrents: [sampleTorrent(1, name: 'Secret Title')],
     );
     analytics = RecordingAnalytics();
-    crumbs = Breadcrumbs();
+    crumbs = Breadcrumbs()..recordingAllowed = () => true;
     c = ProviderContainer(
       retry: (_, _) => null,
       overrides: [
