@@ -12,6 +12,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 const _root = '../..';
 
+// First strong isolate and pop directional isolate, built from code points.
+final _fsi = String.fromCharCode(0x2068);
+final _pdi = String.fromCharCode(0x2069);
+
 String _arb(String locale) {
   final json = jsonDecode(
     File('$_root/apps/consolarr/lib/features/settings/l10n/app_$locale.arb')
@@ -75,7 +79,7 @@ void main() {
   test('the Arabic statement isolates Latin hosts (FSI..PDI)', () {
     final ar = _arb('ar');
     for (final host in ExternalHosts.all) {
-      expect(ar, contains('⁨$host⁩'), reason: host);
+      expect(ar, contains('$_fsi$host$_pdi'), reason: host);
     }
   });
 

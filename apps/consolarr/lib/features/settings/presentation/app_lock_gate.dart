@@ -53,7 +53,7 @@ class _AppLockGateState extends ConsumerState<AppLockGate>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     // The one-second tick runs only while a cool-down lasts.
-    ref.listenManual<DateTime?>(
+    ref.listenManual<Duration?>(
       appLockStateProvider.select((s) => s.coolDownUntil),
       (_, _) => _syncTick(),
       fireImmediately: true,
@@ -103,13 +103,13 @@ class _AppLockGateState extends ConsumerState<AppLockGate>
   /// when unlocking is possible again.
   void _syncTick() {
     final lock = ref.read(appLockStateProvider);
-    final cooling = lock.coolingDown(ref.read(clockProvider)());
+    final cooling = lock.coolingDown(ref.read(monotonicClockProvider)());
     if (cooling && _tick == null) {
       _tick = Timer.periodic(const Duration(seconds: 1), (_) {
         if (!mounted) return;
         final still = ref
             .read(appLockStateProvider)
-            .coolingDown(ref.read(clockProvider)());
+            .coolingDown(ref.read(monotonicClockProvider)());
         if (!still) {
           _tick?.cancel();
           _tick = null;
@@ -146,7 +146,7 @@ class _AppLockGateState extends ConsumerState<AppLockGate>
     _hidden = hidden;
     _lockShown = lock.locked && !_lifecycleCover;
 
-    final cooling = lock.coolingDown(ref.read(clockProvider)());
+    final cooling = lock.coolingDown(ref.read(monotonicClockProvider)());
 
     final Widget cover;
     if (_lifecycleCover) {
@@ -261,8 +261,7 @@ class _LockScreenState extends ConsumerState<_LockScreen> {
     final removed = s.problem == LockProblem.secureLockRemoved;
     final remaining = s.coolDownUntil == null
         ? 0
-        : ((s.coolDownUntil!
-                          .difference(ref.read(clockProvider)())
+        : (((s.coolDownUntil! - ref.read(monotonicClockProvider)())
                           .inMilliseconds +
                       999) ~/
                   1000)
