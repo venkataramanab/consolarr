@@ -51,7 +51,17 @@ AD_ID_PERMISSION = "com.google.android.gms.permission.AD_ID"
 BANNED_META_WORDS = {
     "ads", "ad", "admob", "analytics", "adid", "firebase", "appmetrica",
     "crashlytics", "sentry", "bugsnag", "flurry", "mixpanel", "amplitude",
+    "facebook", "appsflyer", "adjust", "onesignal", "branch",
 }
+# Distinctive names also matched as lowercase substrings, so camelCase and
+# dotted names (`com.facebook.sdk.ApplicationId`, `googleAnalyticsEnabled`)
+# cannot slip through the word split. The short words ("ad", "ads") are left
+# out here on purpose: as substrings they hit "loads" or "headless".
+BANNED_META_SUBSTRINGS = (
+    "analytics", "admob", "adid", "firebase", "appmetrica", "crashlytics",
+    "sentry", "bugsnag", "flurry", "mixpanel", "amplitude", "facebook",
+    "appsflyer", "adjust", "onesignal", "branch",
+)
 
 
 def meta_data_problems(root: ET.Element) -> list[str]:
@@ -60,7 +70,12 @@ def meta_data_problems(root: ET.Element) -> list[str]:
     for el in root.iter("meta-data"):
         name = el.get(ANDROID + "name", "")
         words = set(re.split(r"[^a-z0-9]+", name.lower()))
-        if words & BANNED_META_WORDS or "APPLICATION_ID" in name.upper():
+        lowered = name.lower()
+        if (
+            words & BANNED_META_WORDS
+            or any(b in lowered for b in BANNED_META_SUBSTRINGS)
+            or "APPLICATION_ID" in name.upper()
+        ):
             problems.append(f"advertising/analytics <meta-data>: {name}")
         if name == "flutter_deeplinking_enabled":
             deeplinks.append(el.get(ANDROID + "value"))
@@ -214,6 +229,30 @@ def self_test() -> None:
             "</application>",
             '<meta-data android:name="google_analytics_adid_collection_enabled" android:value="true"/></application>',
         ),
+        "camelCase facebook id": _GOOD.replace(
+            "</application>",
+            '<meta-data android:name="com.facebook.sdk.ApplicationId" android:value="x"/></application>',
+        ),
+        "camelCase analytics flag": _GOOD.replace(
+            "</application>",
+            '<meta-data android:name="googleAnalyticsEnabled" android:value="true"/></application>',
+        ),
+        "appsflyer": _GOOD.replace(
+            "</application>",
+            '<meta-data android:name="AppsFlyerDevKey" android:value="x"/></application>',
+        ),
+        "adjust": _GOOD.replace(
+            "</application>",
+            '<meta-data android:name="com.adjust.sdk.Token" android:value="x"/></application>',
+        ),
+        "onesignal": _GOOD.replace(
+            "</application>",
+            '<meta-data android:name="OneSignalAppId" android:value="x"/></application>',
+        ),
+        "branch": _GOOD.replace(
+            "</application>",
+            '<meta-data android:name="io.branch.sdk.BranchKey" android:value="x"/></application>',
+        ),
         "deep links not disabled": _GOOD.replace(
             '<meta-data android:name="flutter_deeplinking_enabled" android:value="false"/>', ""
         ),
@@ -223,6 +262,13 @@ def self_test() -> None:
     }
     for label, xml in cases.items():
         assert check(xml), f"{label}: expected a problem"
+    for ok_name in ("flutterEmbedding", "io.flutter.embedding.android.NormalTheme"):
+        assert check(
+            _GOOD.replace(
+                "</application>",
+                f'<meta-data android:name="{ok_name}" android:value="x"/></application>',
+            )
+        ) == [], ok_name
     assert check(
         _GOOD.replace("<application", '<application android:debuggable="true"'), release=True
     ), "debuggable release"
