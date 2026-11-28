@@ -16,6 +16,7 @@ class ServerEntry {
     required this.sortOrder,
     this.isStartup = false,
     this.needsCredentials = false,
+    this.hasApiKey = true,
     this.proxyLogin = false,
   });
 
@@ -28,6 +29,11 @@ class ServerEntry {
   /// A required secret is missing (Keystore loss, SRV-09): the UI prompts for
   /// re-entry instead of failing.
   final bool needsCredentials;
+
+  /// An API key is stored. [needsCredentials] is also true when some other
+  /// secret is lost (a custom-header value), which must not ask for the key
+  /// again; only this says whether the key itself is there.
+  final bool hasApiKey;
 
   /// A reverse-proxy login (HTTP Basic, sent in addition to the API key) is
   /// stored for this Sonarr or Radarr server. Derived from the secret store,

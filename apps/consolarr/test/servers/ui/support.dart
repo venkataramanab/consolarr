@@ -55,6 +55,7 @@ ServerEntry entry(
   sortOrder: sortOrder,
   isStartup: isStartup,
   needsCredentials: needsCredentials,
+  hasApiKey: !needsCredentials,
   proxyLogin: proxyLogin,
 );
 

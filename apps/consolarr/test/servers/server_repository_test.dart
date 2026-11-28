@@ -192,6 +192,25 @@ void main() {
     expect((await repo.find(id))!.needsCredentials, isFalse);
   });
 
+  test('a lost header secret needs credentials but the API key is still '
+      'there', () async {
+    final id = (await repo.save(
+      sonarr(
+        credentials: const ServerCredentials(
+          apiKey: 'test-key-0000',
+          headers: [HeaderEntry(name: 'X-Gateway', value: 'v1')],
+        ),
+      ),
+    )).valueOrNull!.profile.id;
+    expect((await repo.find(id))!.hasApiKey, isTrue);
+    await secrets.delete(ServerSecretKeys.header(id, 'X-Gateway'));
+    final entry = (await repo.find(id))!;
+    expect(entry.needsCredentials, isTrue);
+    expect(entry.hasApiKey, isTrue);
+    await secrets.delete(ServerSecretKeys.apiKey(id));
+    expect((await repo.find(id))!.hasApiKey, isFalse);
+  });
+
   test('delete removes row, secrets, pin and cached payloads', () async {
     final entry = (await repo.save(sonarr())).valueOrNull!;
     final id = entry.profile.id;

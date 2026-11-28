@@ -296,17 +296,21 @@ class ServerFormController extends ChangeNotifier {
   ServerEntry? get _usableStored => originChanged ? null : _existing;
 
   /// Whether Sonarr/Radarr would be saved or tested without any API key. A
-  /// stored key counts; a legacy `basic`/`none` profile has none stored.
+  /// stored key counts; a legacy `basic`/`none` profile has none stored. A
+  /// lost custom-header secret is not a missing key.
   bool get _apiKeyMissing =>
-      kind.isArr &&
-      apiKey.text.isEmpty &&
-      (_usableStored?.needsCredentials ?? true);
+      kind.isArr && apiKey.text.isEmpty && !(_usableStored?.hasApiKey ?? false);
 
-  bool get _proxyLoginIncomplete =>
-      kind.isArr &&
-      proxyLogin &&
-      !(_usableStored?.proxyLogin ?? false) &&
-      (username.text.isEmpty || password.text.isEmpty);
+  /// The proxy login is on but cannot be saved as it stands: typing only the
+  /// username or only the password is never enough (even over a stored login),
+  /// and a new login needs both.
+  bool get _proxyLoginIncomplete {
+    if (!kind.isArr || !proxyLogin) return false;
+    final hasUser = username.text.isNotEmpty;
+    final hasPass = password.text.isNotEmpty;
+    if (hasUser != hasPass) return true;
+    return !hasUser && !(_usableStored?.proxyLogin ?? false);
+  }
 
   bool get _missingSecretsAfterOriginChange {
     if (!originChanged) return false;

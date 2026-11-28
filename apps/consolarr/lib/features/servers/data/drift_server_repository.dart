@@ -92,6 +92,7 @@ class DriftServerRepository implements ServerRepository {
       sortOrder: row.sortOrder,
       isStartup: row.isStartup,
       needsCredentials: await _needsCredentials(profile),
+      hasApiKey: !await _missingAny([ServerSecretKeys.apiKey(profile.id)]),
       proxyLogin:
           profile.kind.isArr &&
           !await _missingAny([

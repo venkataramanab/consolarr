@@ -151,6 +151,7 @@ void main() {
         ServiceKind kind, {
         AuthMode mode = AuthMode.apiKey,
         bool needsCredentials = false,
+        bool hasApiKey = true,
         bool proxyLogin = false,
       }) => ServerEntry(
         profile: ServerProfile.parse(
@@ -162,6 +163,7 @@ void main() {
         ).valueOrNull!,
         sortOrder: 0,
         needsCredentials: needsCredentials,
+        hasApiKey: hasApiKey,
         proxyLogin: proxyLogin,
       );
 
@@ -227,6 +229,67 @@ void main() {
         expect(draft.credentials.password, 'pw');
       });
 
+      test(
+        'a lost custom-header secret does not ask for the API key again',
+        () {
+          final f = ServerFormController(
+            existing: stored(ServiceKind.sonarr, needsCredentials: true),
+          );
+          addTearDown(f.dispose);
+          expect(
+            f.validate().apiKey,
+            isNull,
+            reason: 'the key is still stored',
+          );
+          expect(f.hasLegacyArrAuth, isFalse);
+        },
+      );
+
+      test('a lost API key asks for it even on a current profile', () {
+        final f = ServerFormController(
+          existing: stored(
+            ServiceKind.sonarr,
+            needsCredentials: true,
+            hasApiKey: false,
+          ),
+        );
+        addTearDown(f.dispose);
+        expect(f.validate().apiKey, FieldIssue.apiKeyRequired);
+      });
+
+      test('a half-typed proxy login needs both fields, new or stored', () {
+        for (final storedLogin in [false, true]) {
+          final f = ServerFormController(
+            existing: stored(ServiceKind.radarr, proxyLogin: storedLogin),
+          )..setProxyLogin(true);
+          addTearDown(f.dispose);
+          f.username.text = 'user';
+          expect(
+            f.validate().proxyLogin,
+            FieldIssue.proxyLoginRequired,
+            reason: 'username only, stored=$storedLogin',
+          );
+          f
+            ..username.clear()
+            ..password.text = 'pw';
+          expect(
+            f.validate().proxyLogin,
+            FieldIssue.proxyLoginRequired,
+            reason: 'password only, stored=$storedLogin',
+          );
+          f.username.text = 'user';
+          expect(f.validate().proxyLogin, isNull, reason: 'both');
+          f
+            ..username.clear()
+            ..password.clear();
+          expect(
+            f.validate().proxyLogin,
+            storedLogin ? isNull : FieldIssue.proxyLoginRequired,
+            reason: 'neither, stored=$storedLogin',
+          );
+        }
+      });
+
       test('proxy login is arr only', () {
         final f = ServerFormController(kind: ServiceKind.deluge)
           ..setProxyLogin(true);
@@ -253,6 +316,7 @@ void main() {
               ServiceKind.radarr,
               mode: mode,
               needsCredentials: true,
+              hasApiKey: false,
               proxyLogin: mode == AuthMode.basic,
             ),
           );
