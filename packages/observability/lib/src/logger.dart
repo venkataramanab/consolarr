@@ -56,8 +56,18 @@ class AppLogger {
     final buffer = StringBuffer(message);
     if (error != null) buffer.write(': $error');
     final text = scrubber.scrub(redactor.redactText(buffer.toString()));
-    // One scrub, whichever sinks the line reaches.
-    diagnostics?._addScrubbed(level, text);
+    // The in-app log is always scrubbed by its own scrubber and redactor (and
+    // its known values), whatever this logger was given. The same pair means
+    // the line is already clean, so it is scrubbed once for every sink.
+    final log = diagnostics;
+    if (log != null) {
+      if (identical(log.scrubber, scrubber) &&
+          identical(log.redactor, redactor)) {
+        log._addScrubbed(level, text);
+      } else {
+        log.add(level, buffer.toString());
+      }
+    }
     if (level.index >= minLevel.index) _sink(level, text);
   }
 }
