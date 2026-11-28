@@ -46,6 +46,74 @@ void main() {
     expect(await markers.isMarked(key.storageKey), isTrue);
   });
 
+  test('the marker is written before the pin', () async {
+    final order = <String>[];
+    final ordered = MarkedPinStore(
+      _RecordingPins(SecretBackedPinStore(secrets), order),
+      _RecordingMarkers(markers, order),
+    );
+    await ordered.write(
+      key,
+      print_,
+      UserPinConfirmation.userAccepted(key: key, fingerprint: print_),
+    );
+    expect(order, ['mark', 'pin']);
+  });
+
+  test('a failing marker store leaves no pin behind', () async {
+    final failing = MarkedPinStore(
+      SecretBackedPinStore(secrets),
+      _RecordingMarkers(markers, [], failMark: true),
+    );
+    await expectLater(
+      failing.write(
+        key,
+        print_,
+        UserPinConfirmation.userAccepted(key: key, fingerprint: print_),
+      ),
+      throwsA(isA<StateError>()),
+    );
+    expect(await SecretBackedPinStore(secrets).read(key), isNull);
+  });
+
+  test('a pin store that fails after the marker reads as a mismatch', () async {
+    final failing = MarkedPinStore(
+      _RecordingPins(SecretBackedPinStore(secrets), [], fail: true),
+      markers,
+    );
+    await expectLater(
+      failing.write(
+        key,
+        print_,
+        UserPinConfirmation.userAccepted(key: key, fingerprint: print_),
+      ),
+      throwsA(isA<StateError>()),
+    );
+    final read = await pins.read(key);
+    expect(
+      read,
+      isNotNull,
+      reason: 'a marker without a pin is never first use',
+    );
+    expect(
+      decidePin(presented: print_, pinned: read!, chainValid: true).allowed,
+      isFalse,
+    );
+  });
+
+  test('a pin saved before markers existed gets one on first read', () async {
+    await SecretBackedPinStore(secrets).write(
+      key,
+      print_,
+      UserPinConfirmation.userAccepted(key: key, fingerprint: print_),
+    );
+    expect(await markers.isMarked(key.storageKey), isFalse);
+    expect(await pins.read(key), print_);
+    expect(await markers.isMarked(key.storageKey), isTrue);
+    secrets.simulateKeystoreLoss();
+    expect(await pins.read(key), isNot(print_));
+  });
+
   test('marker without a pin is a mismatch, never first use', () async {
     await pin();
     secrets.simulateKeystoreLoss();
@@ -153,4 +221,52 @@ void main() {
 class _FailingClear extends InMemorySecretStore {
   @override
   Future<void> deleteAll() async => throw const SecretStoreUnavailable();
+}
+
+class _RecordingPins implements PinStore {
+  _RecordingPins(this._inner, this._order, {this.fail = false});
+  final PinStore _inner;
+  final List<String> _order;
+  final bool fail;
+
+  @override
+  Future<CertificateFingerprint?> read(PinKey key) => _inner.read(key);
+
+  @override
+  Future<void> write(
+    PinKey key,
+    CertificateFingerprint fingerprint,
+    UserPinConfirmation confirmation,
+  ) async {
+    _order.add('pin');
+    if (fail) throw StateError('pin write failed');
+    await _inner.write(key, fingerprint, confirmation);
+  }
+
+  @override
+  Future<void> clear(PinKey key, UserPinConfirmation confirmation) =>
+      _inner.clear(key, confirmation);
+}
+
+class _RecordingMarkers implements PinnedMarkers {
+  _RecordingMarkers(this._inner, this._order, {this.failMark = false});
+  final PinnedMarkers _inner;
+  final List<String> _order;
+  final bool failMark;
+
+  @override
+  Future<bool> isMarked(String pinKey) => _inner.isMarked(pinKey);
+
+  @override
+  Future<void> mark(String pinKey) async {
+    _order.add('mark');
+    if (failMark) throw StateError('marker write failed');
+    await _inner.mark(pinKey);
+  }
+
+  @override
+  Future<void> unmark(String pinKey) => _inner.unmark(pinKey);
+
+  @override
+  Future<void> clear() => _inner.clear();
 }

@@ -44,7 +44,7 @@ void main() {
       );
     });
 
-    test('every call tells the plugin not to reset on error', () async {
+    test('every normal call tells the plugin not to reset on error', () async {
       final store = FlutterSecureSecretStore();
       await store.write('a', '1');
       await store.delete('a');
@@ -57,6 +57,35 @@ void main() {
         final options = (c.arguments as Map)['options'] as Map;
         expect(options['resetOnError'], 'false', reason: c.method);
       }
+    });
+
+    test(
+      'only the confirmed reset asks the plugin to reset on error',
+      () async {
+        final store = FlutterSecureSecretStore();
+        await store.write('a', '1');
+        await store.delete('a');
+        await store.deleteAll();
+        final byMethod = {
+          for (final c in calls)
+            c.method: ((c.arguments as Map)['options'] as Map)['resetOnError'],
+        };
+        expect(byMethod['deleteAll'], 'true');
+        expect(byMethod['write'], 'false');
+        expect(byMethod['delete'], 'false');
+      },
+    );
+
+    test('a normal read after the reset is still fail-closed', () async {
+      final store = FlutterSecureSecretStore();
+      await store.deleteAll();
+      calls.clear();
+      await expectLater(
+        store.read('a'),
+        throwsA(isA<SecretStoreUnavailable>()),
+      );
+      final options = (calls.single.arguments as Map)['options'] as Map;
+      expect(options['resetOnError'], 'false');
     });
 
     test('the default Android options are fail-closed', () {
