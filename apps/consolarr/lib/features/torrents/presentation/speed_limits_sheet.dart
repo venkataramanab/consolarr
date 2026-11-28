@@ -134,6 +134,35 @@ class _SpeedLimitsSheetState extends ConsumerState<SpeedLimitsSheet> {
   Widget _editor(String title, _LimitDraft d, bool busy) {
     final l10n = context.l10n;
     final invalid = _submitted && d.bytes == null;
+    final field = TextField(
+      controller: d.text,
+      enabled: !busy,
+      keyboardType: TextInputType.number,
+      inputFormatters: [
+        const AnyDigitsFormatter(),
+        // 7 digits: enough for any limit, never an overflow.
+        LengthLimitingTextInputFormatter(7),
+      ],
+      decoration: InputDecoration(
+        labelText: l10n.torLimitsValue,
+        errorText: invalid ? l10n.torLimitsInvalid : null,
+        errorMaxLines: 2,
+      ),
+    );
+    final units = Semantics(
+      container: true,
+      label: l10n.torLimitsUnit,
+      child: SegmentedButton<_Unit>(
+        segments: [
+          ButtonSegment(value: _Unit.kb, label: Text(l10n.torLimitsUnitKB)),
+          ButtonSegment(value: _Unit.mb, label: Text(l10n.torLimitsUnitMB)),
+        ],
+        selected: {d.unit},
+        onSelectionChanged: busy
+            ? null
+            : (s) => setState(() => d.unit = s.first),
+      ),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -161,50 +190,23 @@ class _SpeedLimitsSheetState extends ConsumerState<SpeedLimitsSheet> {
             ],
           ),
         ),
-        if (d.custom)
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: d.text,
-                  enabled: !busy,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [
-                    const AnyDigitsFormatter(),
-                    // 7 digits: enough for any limit, never an overflow.
-                    LengthLimitingTextInputFormatter(7),
-                  ],
-                  decoration: InputDecoration(
-                    labelText: l10n.torLimitsValue,
-                    errorText: invalid ? l10n.torLimitsInvalid : null,
-                    errorMaxLines: 2,
-                  ),
-                ),
-              ),
-              const SizedBox(width: ConsolarrSpacing.sm),
-              Semantics(
-                container: true,
-                label: l10n.torLimitsUnit,
-                child: SegmentedButton<_Unit>(
-                  segments: [
-                    ButtonSegment(
-                      value: _Unit.kb,
-                      label: Text(l10n.torLimitsUnitKB),
-                    ),
-                    ButtonSegment(
-                      value: _Unit.mb,
-                      label: Text(l10n.torLimitsUnitMB),
-                    ),
-                  ],
-                  selected: {d.unit},
-                  onSelectionChanged: busy
-                      ? null
-                      : (s) => setState(() => d.unit = s.first),
-                ),
-              ),
-            ],
-          ),
+        if (d.custom) ...[
+          // At large text the unit switch no longer fits beside the field: it
+          // goes below it instead of overflowing.
+          if (MediaQuery.textScalerOf(context).scale(1) > 1.3) ...[
+            field,
+            const SizedBox(height: ConsolarrSpacing.sm),
+            units,
+          ] else
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: field),
+                const SizedBox(width: ConsolarrSpacing.sm),
+                units,
+              ],
+            ),
+        ],
       ],
     );
   }
