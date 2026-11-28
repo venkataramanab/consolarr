@@ -39,9 +39,9 @@ void main() {
     final l10n = await _en();
     await tester.pumpWidget(_scope());
     await tester.pumpAndSettle();
-    expect(find.text(l10n.homeTitle), findsWidgets);
-    expect(find.text(l10n.homeEmptyHeading), findsOneWidget);
-    expect(find.text(l10n.homeSetupCta), findsOneWidget);
+    expect(find.text(l10n.dashboardTitle), findsWidgets);
+    expect(find.text(l10n.dashboardEmptyHeading), findsOneWidget);
+    expect(find.text(l10n.dashboardSetupCta), findsOneWidget);
     await _unmount(tester);
   });
 
@@ -52,13 +52,13 @@ void main() {
     await tester.pumpWidget(_scope());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip(l10n.homeAboutTooltip));
+    await tester.tap(find.byTooltip(l10n.dashboardAboutTooltip));
     await tester.pumpAndSettle();
     expect(find.text(l10n.aboutIndependence), findsOneWidget);
 
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
-    expect(find.text(l10n.homeEmptyHeading), findsOneWidget);
+    expect(find.text(l10n.dashboardEmptyHeading), findsOneWidget);
     await _unmount(tester);
   });
 

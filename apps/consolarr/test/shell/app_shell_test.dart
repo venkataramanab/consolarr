@@ -43,7 +43,7 @@ AppDestination _stub(
 );
 
 List<AppDestination> _destinations() => [
-  _stub('home', (l) => l.navHome, Icons.home_outlined),
+  _stub('home', (l) => l.navDashboard, Icons.home_outlined),
   _stub(
     'sonarr',
     (l) => l.navSonarr,
@@ -165,7 +165,7 @@ void main() {
       expect(find.text('Screen sonarr'), findsOneWidget);
       final bar = tester.widget<FloatingNavBar>(find.byType(FloatingNavBar));
       expect(bar.destinations.map((d) => d.label), [
-        'Home',
+        'Dashboard',
         'Series',
         'Settings',
         'Servers',
