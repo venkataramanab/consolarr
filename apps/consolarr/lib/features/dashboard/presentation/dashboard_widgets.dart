@@ -191,7 +191,7 @@ class DashboardSliceError extends ConsumerWidget {
     final roles = context.roles;
     final theme = Theme.of(context);
     final service = serviceTitle(l10n, slice.kind, slice.serverName);
-    final copy = connectionErrorMessage(l10n, slice.error);
+    final copy = connectionErrorMessage(l10n, slice.error, kind: slice.kind);
     final hostChoice = slice.needsHostChoice;
     final needsCredentials =
         slice.error.category == ErrorCategory.authFailed &&

@@ -22,7 +22,7 @@ const routeVocabulary = <String>{
   // Sonarr and Radarr.
   'calendar', 'episode', 'monitor', 'languageprofile', 'movie',
   'qualityprofile', 'queue', 'release', 'rootfolder', 'series', 'tag',
-  'wanted', 'cutoff', 'missing',
+  'wanted', 'cutoff', 'missing', 'history',
   // Artwork.
   'MediaCover', 'MediaCoverProxy',
   // qBittorrent.

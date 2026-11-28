@@ -415,9 +415,10 @@ class VisibleMoviesNotifier extends Notifier<VisibleMovies> {
     final names = {for (final p in profiles) p.id: p.name};
     final runner = ref.read(movieRunnerProvider);
     final generation = ++_generation;
-    // While loading or failed the value belongs to another state or server;
-    // before the saved default is read nothing is worth sorting yet.
-    if (library.isLoading || library.hasError || !query.restored) {
+    // While loading or failed the value belongs to another state or server.
+    // (The page holds its first frame until the saved sort is read, so this
+    // is never built before then.)
+    if (library.isLoading || library.hasError) {
       return _last = const VisibleMovies();
     }
     final data = library.value;

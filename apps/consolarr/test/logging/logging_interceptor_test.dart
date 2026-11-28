@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:consolarr/shared/logging/logging_interceptor.dart';
 import 'package:consolarr/shared/logging/route_shape.dart';
@@ -18,6 +20,32 @@ const _title = 'Canary Movie Title';
 // Built at run time: a literal token-shaped string would be flagged by the
 // secret scanner.
 final _basic = base64.encode(utf8.encode('$_user:$_pass'));
+
+/// An adapter whose request never finishes on its own: it completes [started]
+/// once the request is in flight and ends only when the caller cancels, the
+/// way a real adapter does.
+class _HangingAdapter implements HttpClientAdapter {
+  _HangingAdapter(this.started);
+
+  final Completer<void> started;
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    started.complete();
+    await cancelFuture;
+    throw DioException.requestCancelled(
+      requestOptions: options,
+      reason: 'cancelled',
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
 
 class _Lines {
   final List<(LogLevel, String)> lines = [];
@@ -255,14 +283,25 @@ void main() {
       },
     );
 
-    test('a cancelled request is not logged', () async {
+    test('a request cancelled while in flight is not logged', () async {
       final out = _Lines();
-      final dio = _dio(out, StubAdapter((o) => _json('[]')));
-      final token = CancelToken()..cancel();
-      await expectLater(
-        dio.get<Object>('/api/v3/movie', cancelToken: token),
-        throwsA(isA<DioException>()),
+      final started = Completer<void>();
+      final dio = _dio(out, _HangingAdapter(started));
+      final token = CancelToken();
+      final result = dio.get<Object>('/api/v3/movie', cancelToken: token);
+      final failure = expectLater(
+        result,
+        throwsA(
+          isA<DioException>().having(
+            (e) => e.type,
+            'type',
+            DioExceptionType.cancel,
+          ),
+        ),
       );
+      await started.future;
+      token.cancel();
+      await failure;
       expect(out.lines, isEmpty);
     });
 

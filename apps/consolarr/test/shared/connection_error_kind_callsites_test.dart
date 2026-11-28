@@ -17,6 +17,7 @@ const _featuresThatMustPassKind = [
   'arr_common',
   'servers',
   'settings',
+  'dashboard',
 ];
 
 void main() {
