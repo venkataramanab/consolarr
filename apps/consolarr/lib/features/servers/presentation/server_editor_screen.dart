@@ -135,7 +135,13 @@ class _ServerEditorScreenState extends ConsumerState<ServerEditorScreen> {
     if (_loading || c == null) {
       return Scaffold(
         appBar: AppBar(title: Text(title)),
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: BusyIndicator(
+            semanticLabel: l10n.commonLoading,
+            size: 36,
+            strokeWidth: 4,
+          ),
+        ),
       );
     }
     return ScreenViewTracker(

@@ -258,7 +258,7 @@ class _DownloadControl extends StatelessWidget {
           child: ExcludeSemantics(
             child: Row(
               children: [
-                const ArrBusyIndicator(),
+                const BusyIndicator(semanticLabel: null),
                 const SizedBox(width: ConsolarrSpacing.sm),
                 Flexible(child: Text(labels.grabbing)),
               ],
@@ -301,18 +301,4 @@ class _DownloadControl extends StatelessWidget {
         );
     }
   }
-}
-
-/// A small busy indicator: a spinner, or a static icon under reduced motion
-/// (the text next to it always states what is happening).
-class ArrBusyIndicator extends StatelessWidget {
-  const ArrBusyIndicator({super.key});
-
-  @override
-  Widget build(BuildContext context) => ConsolarrEffects.of(context).animate
-      ? const SizedBox.square(
-          dimension: 16,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        )
-      : const Icon(Icons.hourglass_top, size: 16);
 }

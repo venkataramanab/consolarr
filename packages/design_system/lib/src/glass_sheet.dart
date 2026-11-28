@@ -3,6 +3,7 @@
 import 'dart:ui' show ImageFilter;
 
 import 'package:design_system/src/blur_levels.dart';
+import 'package:design_system/src/color_roles.dart';
 import 'package:design_system/src/effects.dart';
 import 'package:design_system/src/motion.dart';
 import 'package:design_system/src/radii.dart';
@@ -123,6 +124,14 @@ typedef GlassSheetScrollBuilder = Widget Function(
   BuildContext context,
   ScrollController controller,
 );
+
+/// The translucent tint a glass sheet lays over its blurred backdrop.
+///
+/// Sheets carry long body text, so the tint is stronger than a bar's
+/// (`ConsolarrBlur.sheetTintOpacity`): text keeps WCAG AA (4.5:1) even over
+/// the worst-case backdrop, pure black or pure white.
+Color glassSheetTint(ConsolarrColorRoles roles) =>
+    roles.raised.withValues(alpha: ConsolarrBlur.sheetTintOpacity);
 
 /// The default handle label, in the languages the app ships. The design
 /// system has no l10n; pass `toggleDetentLabel` for anything else.
@@ -277,9 +286,7 @@ class _GlassSheetState extends State<GlassSheet> {
           ),
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: roles.raised.withValues(
-                alpha: ConsolarrBlur.barTintOpacity,
-              ),
+              color: glassSheetTint(roles),
               borderRadius: radius,
               border: Border.all(color: roles.track.withValues(alpha: 0.6)),
             ),

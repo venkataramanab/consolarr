@@ -111,7 +111,13 @@ class _EditSeriesFormState extends ConsumerState<EditSeriesForm> {
     final theme = Theme.of(context);
 
     if (lookups.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(
+        child: BusyIndicator(
+          semanticLabel: context.l10n.commonLoading,
+          size: 36,
+          strokeWidth: 4,
+        ),
+      );
     }
     final failure = lookups.error;
     if (failure != null) {

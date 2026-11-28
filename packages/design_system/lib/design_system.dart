@@ -4,6 +4,7 @@
 library;
 
 export 'src/blur_levels.dart';
+export 'src/busy_indicator.dart';
 export 'src/certificate_trust_sheet.dart';
 export 'src/color_roles.dart';
 export 'src/contrast.dart';

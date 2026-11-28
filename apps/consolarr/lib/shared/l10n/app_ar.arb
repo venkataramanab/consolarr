@@ -159,6 +159,10 @@
   "@commonSearch": {
     "description": "Action label and search field label."
   },
+  "commonLoading": "جارٍ التحميل",
+  "@commonLoading": {
+    "description": "Spoken label of a full-screen busy indicator while content loads."
+  },
   "commonRetry": "إعادة المحاولة",
   "@commonRetry": {
     "description": "Button label: repeat a failed action."
