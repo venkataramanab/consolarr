@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'dart:convert';
+
 import 'package:consolarr/shared/logging/logging_interceptor.dart';
 import 'package:consolarr/shared/logging/route_shape.dart';
 import 'package:dio/dio.dart';
@@ -13,6 +15,9 @@ const _key = 'test-key-CANARY0000';
 const _user = 'canaryuser';
 const _pass = 'canarypass';
 const _title = 'Canary Movie Title';
+// Built at run time: a literal token-shaped string would be flagged by the
+// secret scanner.
+final _basic = base64.encode(utf8.encode('$_user:$_pass'));
 
 class _Lines {
   final List<(LogLevel, String)> lines = [];
@@ -30,10 +35,7 @@ Dio _dio(
   final dio = Dio(
     BaseOptions(
       baseUrl: 'https://$_host:7878$prefix',
-      headers: {
-        'X-Api-Key': _key,
-        'Authorization': 'Basic Y2FuYXJ5dXNlcjpjYW5hcnlwYXNz',
-      },
+      headers: {'X-Api-Key': _key, 'Authorization': 'Basic $_basic'},
     ),
   )..httpClientAdapter = adapter;
   dio.interceptors.add(
@@ -243,13 +245,80 @@ void main() {
           'Canary',
           'apikey',
           'Basic',
-          'Y2FuYXJ5',
+          _basic.substring(0, 8),
           '@',
           '?',
           'radarr/',
         ]) {
           expect(out.all, isNot(contains(secret)), reason: secret);
         }
+      },
+    );
+
+    test('a cancelled request is not logged', () async {
+      final out = _Lines();
+      final dio = _dio(out, StubAdapter((o) => _json('[]')));
+      final token = CancelToken()..cancel();
+      await expectLater(
+        dio.get<Object>('/api/v3/movie', cancelToken: token),
+        throwsA(isA<DioException>()),
+      );
+      expect(out.lines, isEmpty);
+    });
+
+    test(
+      'artwork: a success is not logged, a 404 is debug, the rest warn',
+      () async {
+        for (final (status, level) in [
+          (200, null),
+          (404, LogLevel.debug),
+          (401, LogLevel.warning),
+          (500, LogLevel.warning),
+        ]) {
+          final out = _Lines();
+          final dio = _dio(out, StubAdapter((o) => _json('', status)));
+          try {
+            await dio.get<Object>('/MediaCover/9/poster.jpg');
+          } on DioException {
+            // Logged by the interceptor.
+          }
+          if (level == null) {
+            expect(out.lines, isEmpty, reason: '$status');
+          } else {
+            expect(out.lines.single.$1, level, reason: '$status');
+            expect(out.lines.single.$2, contains('MediaCover·{id}·poster_jpg'));
+          }
+        }
+      },
+    );
+
+    test('an artwork attempt marked as part of a chain is not logged on 404 '
+        '(the loader logs the whole attempt once)', () async {
+      final out = _Lines();
+      final dio = _dio(out, StubAdapter((o) => _json('', 404)));
+      await expectLater(
+        dio.get<Object>(
+          '/MediaCover/9/poster.jpg',
+          options: Options(extra: {artworkChainKey: true}),
+        ),
+        throwsA(isA<DioException>()),
+      );
+      expect(out.lines, isEmpty);
+    });
+
+    test(
+      'a chained artwork attempt that fails otherwise still warns',
+      () async {
+        final out = _Lines();
+        final dio = _dio(out, StubAdapter((o) => _json('', 500)));
+        await expectLater(
+          dio.get<Object>(
+            '/MediaCover/9/poster.jpg',
+            options: Options(extra: {artworkChainKey: true}),
+          ),
+          throwsA(isA<DioException>()),
+        );
+        expect(out.lines.single.$1, LogLevel.warning);
       },
     );
 

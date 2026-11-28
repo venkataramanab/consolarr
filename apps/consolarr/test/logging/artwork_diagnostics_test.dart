@@ -17,7 +17,7 @@ import 'package:test_harness/test_harness.dart';
 
 const _host = 'radarr-canary.invalid';
 
-final _movie = RadarrMovie.fromJson(const {
+RadarrMovie _movieWith(List<String> types) => RadarrMovie.fromJson({
   'id': 7,
   'title': 'Canary Movie Title',
   'sortTitle': 'canary movie title',
@@ -25,9 +25,12 @@ final _movie = RadarrMovie.fromJson(const {
   'status': 'released',
   'monitored': true,
   'images': [
-    {'coverType': 'poster', 'url': '/radarr/MediaCover/7/poster.jpg?h=abc123'},
+    for (final t in types)
+      {'coverType': t, 'url': '/radarr/MediaCover/7/$t.jpg?h=abc123'},
   ],
 });
+
+final _movie = _movieWith(['poster']);
 
 Future<Uint8List> _png() async {
   final recorder = ui.PictureRecorder();
@@ -73,6 +76,10 @@ class _Rig {
   late final Dio dio;
   late final ArtworkSource source;
 
+  List<LogLevel> get levels => [
+    for (var i = 0; i < diagnostics.length; i++) diagnostics.entryAt(i).level,
+  ];
+
   List<String> get lines => [
     for (var i = 0; i < diagnostics.length; i++) diagnostics.entryAt(i).message,
   ];
@@ -99,47 +106,43 @@ Future<Object?> _resolveError(ImageProvider provider) {
 }
 
 void main() {
-  testWidgets('a 404 poster logs a diagnostics entry and shows the '
-      'placeholder without a crash', (tester) async {
+  testWidgets('a poster that is missing everywhere shows the placeholder and '
+      'logs one debug line for the whole attempt', (tester) async {
     final rig = _Rig((_) => _status(404));
-    // Image loading is real async work: build and wait outside the fake clock.
     await tester.runAsync(() async {
+      final provider = ResizeImage(rig.source.poster(_movie)!, width: 100);
+      // The widget below resolves an equal provider, so it shares this load:
+      // waiting for its error replaces any fixed delay.
+      final failed = _resolveError(provider);
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(body: movieArtwork(rig.source, _movie, 100)),
         ),
       );
-      await Future<void>.delayed(const Duration(milliseconds: 200));
+      expect(await failed, isA<DioException>());
     });
     await tester.pump();
     expect(tester.takeException(), isNull);
     expect(find.byType(ArtworkPlaceholder), findsOneWidget);
-    // The plain poster, then its resized variant (also 404): two failures.
+    // The plain poster, then its resized variant (also 404).
     expect(rig.requests, [
       '/radarr/MediaCover/7/poster.jpg',
       '/radarr/MediaCover/7/poster-500.jpg',
     ]);
-    expect(
-      rig.lines,
-      everyElement(
-        matches(
-          RegExp(
-            r'^GET MediaCover·\{id\}·poster(-500)?_jpg failed '
-            r'category=not_found status=404, \d+ms$',
-          ),
-        ),
-      ),
-    );
-    expect(rig.lines, hasLength(2));
+    // One line for the attempt, not one per request, and only at debug.
+    expect(rig.lines, [
+      'artwork GET MediaCover·{id}·poster_jpg missing category=not_found '
+          'status=404 tried=2',
+    ]);
+    expect(rig.levels, [LogLevel.debug]);
     final all = rig.lines.join('\n');
     for (final secret in [_host, '7878', 'CANARY', 'abc123', 'Canary', '?']) {
       expect(all, isNot(contains(secret)), reason: secret);
     }
   });
 
-  testWidgets('a 404 poster is retried once with the resized variant', (
-    tester,
-  ) async {
+  testWidgets('a 404 poster is retried once with the resized variant and a '
+      'success logs nothing', (tester) async {
     await tester.runAsync(() async {
       final png = await _png();
       final rig = _Rig(
@@ -151,17 +154,83 @@ void main() {
       expect(error, isNull);
       expect(rig.requests, hasLength(2));
       expect(rig.requests.last, '/radarr/MediaCover/7/poster-500.jpg');
-      // The plain 404 is still on record, the variant succeeded at debug.
-      expect(
-        rig.lines,
-        contains(matches(RegExp(r'^GET MediaCover·\{id\}·poster_jpg failed '))),
-      );
-      expect(
-        rig.lines,
-        contains(
-          matches(RegExp(r'^GET MediaCover·\{id\}·poster-500_jpg -> 200,')),
+      expect(rig.lines, isEmpty);
+    });
+  });
+
+  testWidgets('a poster that is fine logs nothing at all', (tester) async {
+    await tester.runAsync(() async {
+      final png = await _png();
+      final rig = _Rig((_) => ResponseBody.fromBytes(png, 200));
+      expect(await _resolveError(rig.source.poster(_movie)!), isNull);
+      expect(rig.requests, hasLength(1));
+      expect(rig.lines, isEmpty);
+    });
+  });
+
+  testWidgets('when the poster and its resized variant are 404, cover, then '
+      'banner, then fanart are tried in that order', (tester) async {
+    await tester.runAsync(() async {
+      final png = await _png();
+      final movie = _movieWith(['poster', 'cover', 'banner', 'fanart']);
+      for (final (works, expected) in [
+        ('cover', ['poster.jpg', 'poster-500.jpg', 'cover.jpg']),
+        ('banner', ['poster.jpg', 'poster-500.jpg', 'cover.jpg', 'banner.jpg']),
+        (
+          'fanart',
+          [
+            'poster.jpg',
+            'poster-500.jpg',
+            'cover.jpg',
+            'banner.jpg',
+            'fanart.jpg',
+          ],
         ),
+      ]) {
+        final rig = _Rig(
+          (o) => o.uri.path.endsWith('/$works.jpg')
+              ? ResponseBody.fromBytes(png, 200)
+              : _status(404),
+        );
+        expect(await _resolveError(rig.source.poster(movie)!), isNull);
+        expect(rig.requests, [
+          for (final f in expected) '/radarr/MediaCover/7/$f',
+        ], reason: works);
+        expect(rig.lines, isEmpty, reason: works);
+      }
+    });
+  });
+
+  testWidgets('every image 404: all of them are tried, one line is logged, '
+      'and the load fails', (tester) async {
+    await tester.runAsync(() async {
+      final movie = _movieWith(['poster', 'cover', 'banner', 'fanart']);
+      final rig = _Rig((_) => _status(404));
+      expect(await _resolveError(rig.source.poster(movie)!), isNotNull);
+      expect(rig.requests, hasLength(5));
+      expect(rig.lines, [
+        'artwork GET MediaCover·{id}·poster_jpg missing category=not_found '
+            'status=404 tried=5',
+      ]);
+    });
+  });
+
+  testWidgets('a movie with no poster listed starts from its cover', (
+    tester,
+  ) async {
+    await tester.runAsync(() async {
+      final png = await _png();
+      final movie = _movieWith(['cover', 'fanart']);
+      final rig = _Rig(
+        (o) => o.uri.path.endsWith('/fanart.jpg')
+            ? ResponseBody.fromBytes(png, 200)
+            : _status(404),
       );
+      expect(await _resolveError(rig.source.poster(movie)!), isNull);
+      expect(rig.requests, [
+        '/radarr/MediaCover/7/cover.jpg',
+        '/radarr/MediaCover/7/fanart.jpg',
+      ]);
     });
   });
 
@@ -173,6 +242,7 @@ void main() {
         expect(error, isA<DioException>());
         expect(rig.requests, hasLength(1), reason: '$status');
         expect(rig.lines.single, contains('status=$status'));
+        expect(rig.levels.single, LogLevel.warning);
       }
     });
   });

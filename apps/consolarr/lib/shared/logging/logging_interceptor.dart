@@ -5,6 +5,12 @@ import 'package:dio/dio.dart';
 import 'package:observability/observability.dart';
 import 'package:security/security.dart';
 
+/// `RequestOptions.extra` flag the artwork loader sets on every attempt of one
+/// image (the listed file, its resized variant, the fallbacks): a 404 of such
+/// an attempt is not logged by the interceptor, the loader logs the whole
+/// attempt once ([LoggingInterceptor.artworkMissing]).
+const artworkChainKey = 'consolarr.artwork.chain';
+
 /// Logs each request of a server connection as a route shape plus a status or
 /// an [ErrorCategory], nothing else (SET-04 diagnostics).
 ///
@@ -53,6 +59,16 @@ class LoggingInterceptor extends Interceptor {
       _logger.minLevel == LogLevel.debug ||
       (_logger.diagnostics?.enabled ?? false);
 
+  /// Artwork is fetched in bulk (a poster per row): its successes are not
+  /// logged, and a missing image (404) is only a debug line.
+  static bool _isArtwork(String shape) {
+    final root = shape.split(routeSeparator).first;
+    return root == 'MediaCover' || root == 'MediaCoverProxy';
+  }
+
+  String _shape(RequestOptions o) =>
+      routeShape(o.uri.path, pathPrefix: pathPrefix);
+
   String _route(RequestOptions o) =>
       '${_method(o.method)} ${routeShape(o.uri.path, pathPrefix: pathPrefix)}';
 
@@ -77,8 +93,8 @@ class LoggingInterceptor extends Interceptor {
     Response<dynamic> response,
     ResponseInterceptorHandler handler,
   ) {
-    if (_wantsDebug) {
-      final o = response.requestOptions;
+    final o = response.requestOptions;
+    if (_wantsDebug && !_isArtwork(_shape(o))) {
       _logger.debug(
         '${_route(o)} -> ${response.statusCode ?? 0}, ${_elapsed(o)}ms',
       );
@@ -89,12 +105,21 @@ class LoggingInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     final o = err.requestOptions;
+    // Cancelling is the caller's choice (a list scrolled away), not a failure.
+    if (err.type == DioExceptionType.cancel) {
+      handler.next(err);
+      return;
+    }
     final category = appErrorFromDio(err).category.code;
     final status = err.response?.statusCode;
-    _logger.warning(
-      '${_route(o)} failed category=$category'
-      '${status == null ? '' : ' status=$status'}, ${_elapsed(o)}ms',
-    );
+    final line =
+        '${_route(o)} failed category=$category'
+        '${status == null ? '' : ' status=$status'}, ${_elapsed(o)}ms';
+    if (_isArtwork(_shape(o)) && status == 404) {
+      if (o.extra[artworkChainKey] != true && _wantsDebug) _logger.debug(line);
+    } else {
+      _logger.warning(line);
+    }
     handler.next(err);
   }
 
@@ -117,6 +142,17 @@ class LoggingInterceptor extends Interceptor {
     _logger.warning(
       'artwork GET ${routeShape(uri.path, pathPrefix: pathPrefix)} rejected '
       'category=not_an_image status=${status ?? 0} type=$type',
+    );
+  }
+
+  /// Every candidate of one artwork image answered 404 (for example a poster
+  /// and its resized variant): one debug line for the whole attempt, with the
+  /// route of the first candidate and how many were tried.
+  void artworkMissing(Uri uri, {required int tried}) {
+    if (!_wantsDebug) return;
+    _logger.debug(
+      'artwork GET ${routeShape(uri.path, pathPrefix: pathPrefix)} missing '
+      'category=not_found status=404 tried=$tried',
     );
   }
 }

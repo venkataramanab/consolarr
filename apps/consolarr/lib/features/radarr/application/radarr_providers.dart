@@ -510,11 +510,25 @@ class ArtworkSource {
     return SecureNetworkImage(
       dio: dio,
       uri: uri,
-      // A poster that answers 404 gets one try at its resized variant.
-      retryUri: type == ArrImageType.poster
-          ? posterSizeVariantUri(uri, 500)
-          : null,
+      fallbackUris: type == ArrImageType.poster
+          ? _posterFallbacks(movie, uri)
+          : const [],
     );
+  }
+
+  /// A poster that answers 404 is retried with its resized variant, then with
+  /// the movie's cover, banner and fanart, in that order.
+  List<Uri> _posterFallbacks(RadarrMovie movie, Uri poster) {
+    final seen = {poster};
+    return [
+      for (final uri in [
+        posterSizeVariantUri(poster, 500),
+        _api.artworkUri(movie, ArrImageType.cover),
+        _api.artworkUri(movie, ArrImageType.banner),
+        _api.artworkUri(movie, ArrImageType.fanart),
+      ])
+        if (uri != null && seen.add(uri)) uri,
+    ];
   }
 
   ImageProvider? poster(RadarrMovie movie) => image(movie, ArrImageType.poster);

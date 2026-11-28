@@ -42,7 +42,7 @@ class SecureNetworkImage extends ImageProvider<SecureNetworkImage> {
     required this.dio,
     required this.uri,
     this.maxBytes = defaultMaxBytes,
-    this.retryUri,
+    this.fallbackUris = const [],
   });
 
   /// Largest accepted artwork download (8 MiB).
@@ -52,10 +52,10 @@ class SecureNetworkImage extends ImageProvider<SecureNetworkImage> {
   final Uri uri;
   final int maxBytes;
 
-  /// Tried once, only when [uri] answers 404 (for example the resized
-  /// `poster-500.jpg` next to a plain `poster.jpg`). Its own failure is the
-  /// image's failure; there is no second retry.
-  final Uri? retryUri;
+  /// Tried in order, each only when the one before answered 404 (for example
+  /// the resized `poster-500.jpg` next to a plain `poster.jpg`, then the
+  /// cover, banner and fanart). Any other failure ends the load at once.
+  final List<Uri> fallbackUris;
 
   @override
   Future<SecureNetworkImage> obtainKey(ImageConfiguration configuration) =>
@@ -81,17 +81,26 @@ class SecureNetworkImage extends ImageProvider<SecureNetworkImage> {
       uri,
       options: Options(
         responseType: ResponseType.bytes,
-        extra: {maxResponseBytesKey: key.maxBytes},
+        extra: {maxResponseBytesKey: key.maxBytes, artworkChainKey: true},
       ),
     );
-    Response<List<int>> response;
-    try {
-      response = await fetch(key.uri);
-    } on DioException catch (e) {
-      final retry = key.retryUri;
-      if (retry == null || e.response?.statusCode != 404) rethrow;
-      response = await fetch(retry);
+    final candidates = [key.uri, ...key.fallbackUris];
+    Response<List<int>>? fetched;
+    for (var i = 0; fetched == null; i++) {
+      try {
+        fetched = await fetch(candidates[i]);
+      } on DioException catch (e) {
+        if (e.response?.statusCode != 404) rethrow;
+        if (i == candidates.length - 1) {
+          // The interceptor skips the 404 of a chained attempt: say once that
+          // the image is missing everywhere.
+          LoggingInterceptor.of(key.dio)
+              ?.artworkMissing(key.uri, tried: candidates.length);
+          rethrow;
+        }
+      }
     }
+    final response = fetched;
     final data = response.data;
     final bytes = data == null ? Uint8List(0) : Uint8List.fromList(data);
     if (!looksLikeSupportedImage(bytes)) {
