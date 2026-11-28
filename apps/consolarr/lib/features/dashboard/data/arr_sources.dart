@@ -21,8 +21,10 @@ import 'package:dio/dio.dart';
 /// Days ahead the upcoming card looks.
 const kUpcomingDays = 14;
 
-/// Imports asked from the history.
-const kRecentImports = 20;
+/// Imports asked from the history. A season pack imports many episodes of one
+/// series, so many more rows than posters are read; the list is cut to
+/// [kCarouselItems] after one entry per series or movie is kept.
+const kRecentImports = 100;
 
 /// Radarr has the route `movie/:id` under its tab but no helper for it.
 String _radarrMovieLocation(int id) => '$radarrRoute/movie/$id';
@@ -41,13 +43,13 @@ const _radarrTab = DashboardLink(
 // --- Sonarr ----------------------------------------------------------------
 
 SonarrClient _sonarr(SourceContext c) => SonarrClient(
-  dio: c.connection.dio,
+  dio: c.dio,
   parseRunner: c.runner,
   onRowsSkipped: c.onRowsSkipped,
 );
 
 RadarrClient _radarr(SourceContext c) => RadarrClient(
-  dio: c.connection.dio,
+  dio: c.dio,
   parseRunner: c.runner,
   onRowsSkipped: c.onRowsSkipped,
 );
@@ -59,9 +61,11 @@ final DashboardSource sonarrDashboardSource = DashboardSource(
   upcoming: (c) async {
     final today = calendarDay(c.now, c.utcOffset);
     final client = _sonarr(c);
+    // The server reads the dates as UTC days: one day more on each side, and
+    // the local day decides on the client.
     final r = await client.calendar(
-      start: today,
-      end: today.add(const Duration(days: kUpcomingDays)),
+      start: today.subtract(const Duration(days: 1)),
+      end: today.add(const Duration(days: kUpcomingDays + 1)),
     );
     return r.map(
       (episodes) => sonarrUpcomingItems(

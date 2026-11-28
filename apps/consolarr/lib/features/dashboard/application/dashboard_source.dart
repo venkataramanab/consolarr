@@ -6,14 +6,19 @@ import 'package:consolarr/features/servers/application/server_connection.dart';
 import 'package:consolarr/features/servers/domain/server_models.dart'
     show ServerCredentials;
 import 'package:core/core.dart' show Result;
+import 'package:dio/dio.dart' show Dio;
 
 /// Per-connection memory for a source (a torrent client keeps its session in
 /// it). Closed when the connection changes or the dashboard goes away.
 class SourceSession {
   final Map<String, Object> _values = {};
   final List<void Function()> _closers = [];
+  bool _closed = false;
 
   bool has(String key) => _values.containsKey(key);
+
+  /// `true` once [close] ran: nothing registers in a closed session.
+  bool get isClosed => _closed;
 
   /// The value stored under [key], created (once) with [create].
   T of<T extends Object>(
@@ -24,12 +29,19 @@ class SourceSession {
     final existing = _values[key];
     if (existing != null) return existing as T;
     final value = create();
+    if (_closed) {
+      // A late request of a connection that is gone: use the client once and
+      // forget it at once, so nothing outlives the session.
+      close?.call(value);
+      return value;
+    }
     _values[key] = value;
     if (close != null) _closers.add(() => close(value));
     return value;
   }
 
   void close() {
+    _closed = true;
     for (final closer in _closers) {
       closer();
     }
@@ -42,6 +54,7 @@ class SourceSession {
 class SourceContext {
   const SourceContext({
     required this.connection,
+    required this.dio,
     required this.loadCredentials,
     required this.session,
     required this.now,
@@ -51,6 +64,12 @@ class SourceContext {
   });
 
   final ServerConnection connection;
+
+  /// The Dio every request of a source goes through: the connection's own, but
+  /// each request of a card is cancelled when its deadline passes, the
+  /// connection changes or the dashboard goes away. Artwork keeps using
+  /// `connection.dio`.
+  final Dio dio;
 
   /// Reads the stored credentials (clients that log in themselves).
   final Future<ServerCredentials> Function() loadCredentials;

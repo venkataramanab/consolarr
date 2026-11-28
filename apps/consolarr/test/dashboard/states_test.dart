@@ -357,9 +357,7 @@ void main() {
         connections: {ServiceKind.deluge: c(ServiceKind.deluge)},
         sources: {
           ServiceKind.deluge: CountingSource(
-            activity: const Result.err(
-              AppError(ErrorCategory.notFound, debugDetail: delugeHostDetail),
-            ),
+            activity: const Result.err(HostChoiceRequired()),
             feedsMedia: false,
           ).source,
         },

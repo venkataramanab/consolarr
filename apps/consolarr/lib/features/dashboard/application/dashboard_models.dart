@@ -196,20 +196,6 @@ class MediaItem {
 
   bool get isEpisode => season != null && episode != null;
 
-  /// Same content with another [dio] (used after reading the cached copy).
-  MediaItem withDio(Dio dio) => MediaItem(
-    id: id,
-    title: title,
-    link: link,
-    dio: dio,
-    artwork: artwork,
-    season: season,
-    episode: episode,
-    release: release,
-    day: day,
-    at: at,
-  );
-
   @override
   bool operator ==(Object other) =>
       other is MediaItem &&
@@ -286,7 +272,7 @@ final class SliceFailed<T> extends CardSlice<T> {
   final AppError error;
 
   /// A Deluge web interface that needs its daemon host chosen first.
-  bool get needsHostChoice => error.debugDetail == delugeHostDetail;
+  bool get needsHostChoice => error is HostChoiceRequired;
 
   @override
   bool operator ==(Object other) =>
@@ -319,9 +305,12 @@ final class SliceLoading<T> extends CardSlice<T> {
   int get hashCode => Object.hash(serverId, kind);
 }
 
-/// `debugDetail` of the typed error the Deluge client raises for "choose the
-/// daemon host". Copied into the slice error so the UI needs no torrent type.
-const delugeHostDetail = 'deluge web is not connected to a daemon host';
+/// The Deluge client says "choose the daemon host first". The source maps its
+/// typed error to this one, so the UI needs no torrent type and the host list
+/// (addresses) never reaches the card.
+class HostChoiceRequired extends AppError {
+  const HostChoiceRequired() : super(ErrorCategory.notFound);
+}
 
 bool _valueEquals(Object? a, Object? b) {
   if (a is List && b is List) return listEquals(a, b);

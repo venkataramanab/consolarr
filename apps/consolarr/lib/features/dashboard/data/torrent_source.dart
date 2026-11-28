@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'dart:async';
+
 import 'package:consolarr/features/dashboard/application/dashboard_models.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_source.dart';
 import 'package:consolarr/features/torrents/application/torrent_client_registry.dart';
@@ -33,7 +35,7 @@ DashboardSource torrentDashboardSource(ServiceKind kind) => DashboardSource(
       'torrent',
       () => factory(
         TorrentClientContext(
-          dio: c.connection.dio,
+          dio: c.dio,
           profile: c.connection.profile,
           credentials: credentials!,
           onRowsSkipped: c.onRowsSkipped,
@@ -41,21 +43,21 @@ DashboardSource torrentDashboardSource(ServiceKind kind) => DashboardSource(
       ),
       close: (client) => client.forgetSession(),
     );
-    final list = await client.listTorrents();
+    // Both requests go out together; the statistics are optional.
+    final listFuture = client.listTorrents();
+    final transferFuture = client.transferInfo();
+    final list = await listFuture;
     final error = list.errorOrNull;
     if (error != null) {
       // The Deluge host list holds addresses: keep only the category and the
       // marker the card needs.
+      // The statistics request is not needed any more.
+      unawaited(transferFuture.then<void>((_) {}, onError: (_) {}));
       return Result.err(
-        error is DelugeHostRequired
-            ? const AppError(
-                ErrorCategory.notFound,
-                debugDetail: delugeHostDetail,
-              )
-            : error,
+        error is DelugeHostRequired ? const HostChoiceRequired() : error,
       );
     }
-    final transfer = await client.transferInfo();
+    final transfer = await transferFuture;
     return Result.ok(
       summarizeTorrents(list.valueOrNull!, transfer.valueOrNull),
     );

@@ -24,17 +24,41 @@ class DashboardCache {
     DateTime now,
   ) => _cache.write(serverId, keyFor(card), _encode(items), now);
 
+  /// Removes the copy of one card.
+  Future<void> delete(String serverId, DashboardCard card) =>
+      _cache.delete(serverId, keyFor(card));
+
+  /// Removes both cards of a server.
+  Future<void> deleteServer(String serverId) async {
+    for (final card in [DashboardCard.upcoming, DashboardCard.recent]) {
+      await delete(serverId, card);
+    }
+  }
+
+  /// Removes the rows of every server that is not in [serverIds].
+  Future<void> prune(Set<String> serverIds) =>
+      _cache.pruneKeys('dashboard.', serverIds);
+
   /// The cached items of [card] bound to [dio], with the time they were
-  /// stored; `null` when there is none or it cannot be read.
+  /// stored; `null` when there is none or it cannot be read. With [today] (a
+  /// UTC midnight, see `calendarDay`) items of a day that has passed are
+  /// dropped: they would read "today".
   Future<({List<MediaItem> items, DateTime at})?> read(
     String serverId,
     DashboardCard card,
-    Dio dio,
-  ) async {
+    Dio dio, {
+    DateTime? today,
+  }) async {
     try {
       final row = await _cache.read(serverId, keyFor(card));
       if (row == null) return null;
-      final items = _decode(row.json, dio);
+      var items = _decode(row.json, dio);
+      if (items != null && today != null) {
+        items = [
+          for (final i in items)
+            if (i.day == null || !i.day!.isBefore(today)) i,
+        ];
+      }
       return items == null ? null : (items: items, at: row.fetchedAt);
     } on Object {
       return null;

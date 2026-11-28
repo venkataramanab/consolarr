@@ -3,6 +3,8 @@
 import 'dart:async';
 
 import 'package:arr_api/arr_api.dart' show ParseRunner;
+import 'package:consolarr/features/dashboard/application/dashboard_cancel.dart';
+import 'package:consolarr/features/dashboard/application/dashboard_dates.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_models.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_source.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_sources.dart';
@@ -14,6 +16,7 @@ import 'package:consolarr/features/servers/domain/server_models.dart'
 import 'package:consolarr/src/first_frame.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
+import 'package:dio/dio.dart' show CancelToken, Dio;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
 import 'package:observability/observability.dart';
@@ -58,6 +61,17 @@ final dashboardMediaMaxAgeProvider = Provider<Duration>(
 /// slice shows the failure (a user action reports at once).
 const dashboardPollFailuresUntilError = 3;
 
+/// `debugDetail` of the error an unexpected throwable becomes.
+const kUnexpectedDetail = 'unexpected';
+
+/// Upcoming and recent keep what is on screen through this many failed polls
+/// in a row; the last one shows the failure (a user action reports at once).
+const dashboardMediaPollFailuresUntilError = 2;
+
+/// The first wait before a failed upcoming or recent request is tried again by
+/// a poll; it doubles with every failure, up to [dashboardMediaMaxAgeProvider].
+const dashboardMediaRetryBase = Duration(seconds: 30);
+
 /// Replaces the isolate runner of the clients (tests).
 final dashboardParseRunnerProvider = Provider<ParseRunner?>((ref) => null);
 
@@ -69,6 +83,15 @@ final dashboardCredentialLoaderProvider =
           (profile) =>
               ref.read(serverRepositoryProvider).loadCredentials(profile),
     );
+
+/// The ids of every stored server, or `null` when they cannot be read (a seam
+/// for tests). Used to drop cache rows of servers that are gone.
+final dashboardServerIdsProvider = Provider<Future<Set<String>?> Function()>(
+  (ref) => () async {
+    final entries = await ref.read(serverRepositoryProvider).watchAll().first;
+    return {for (final e in entries) e.profile.id};
+  },
+);
 
 /// The dashboard's last-good copy of upcoming and recent items.
 final dashboardCacheProvider = Provider<DashboardCache>(
@@ -89,8 +112,20 @@ Duration? _noRetry(int retryCount, Object error) => null;
 class _Slot {
   CardSlice<Object?>? slice;
   DateTime? loadedAt;
+
+  /// When the last request of this slot started (back-off of failed media
+  /// slices).
+  DateTime? lastAttempt;
   int failures = 0;
   Future<bool>? inFlight;
+
+  /// The request in flight, so a deadline, a connection change or dispose can
+  /// cancel it.
+  CancelToken? cancel;
+
+  /// A user action joined the request in flight: its result is reported as the
+  /// user's, not as a poll's.
+  bool userJoined = false;
 }
 
 /// What the dashboard knows about the active server of one kind.
@@ -108,6 +143,9 @@ class _Kind {
   String serverId = '';
   String serverName = '';
   SourceSession? session;
+
+  /// The connection's Dio whose requests can be cancelled.
+  Dio? dio;
   final Map<DashboardCard, _Slot> slots = {
     for (final c in DashboardCard.values) c: _Slot(),
   };
@@ -129,6 +167,7 @@ class DashboardNotifier extends Notifier<DashboardSnapshot> {
     // Nothing is read before the first frame.
     if (!ref.watch(firstFrameDoneProvider)) return const DashboardSnapshot();
     ref.onDispose(_closeSessions);
+    unawaited(Future(_pruneCache));
     _building = true;
     try {
       for (final kind in _sources.keys) {
@@ -147,8 +186,49 @@ class DashboardNotifier extends Notifier<DashboardSnapshot> {
 
   void _closeSessions() {
     for (final k in _kinds.values) {
+      _cancelRequests(k);
       k.session?.close();
       k.session = null;
+    }
+  }
+
+  /// Cancels every request of [k] still on the wire.
+  void _cancelRequests(_Kind k) {
+    for (final slot in k.slots.values) {
+      slot.cancel?.cancel();
+      slot.cancel = null;
+    }
+  }
+
+  /// Once after the first frame: cached rows of servers that no longer exist
+  /// (a delete that raced with a refresh) are dropped. No I/O before.
+  Future<void> _pruneCache() async {
+    try {
+      final ids = await ref.read(dashboardServerIdsProvider)();
+      if (ids == null || !ref.mounted) return;
+      await ref.read(dashboardCacheProvider).prune(ids);
+    } on Object {
+      // The rows are harmless: they are only read for an existing server.
+    }
+  }
+
+  /// Drops the cached rows of [serverId] when that server was deleted.
+  Future<void> _forgetIfDeleted(String serverId) async {
+    try {
+      final ids = await ref.read(dashboardServerIdsProvider)();
+      if (ids == null || ids.contains(serverId)) return;
+      await ref.read(dashboardCacheProvider).deleteServer(serverId);
+    } on Object {
+      // Nothing to do: the next start prunes.
+    }
+  }
+
+  Future<bool> _serverExists(String serverId) async {
+    try {
+      final ids = await ref.read(dashboardServerIdsProvider)();
+      return ids == null || ids.contains(serverId);
+    } on Object {
+      return true;
     }
   }
 
@@ -157,16 +237,24 @@ class DashboardNotifier extends Notifier<DashboardSnapshot> {
   void _onConnection(ServiceKind kind, AsyncValue<ServerConnection?> value) {
     final k = _kinds[kind];
     if (k == null || !ref.mounted) return;
+    final previousId = k.connection?.profile.id ?? '';
     k.generation++;
+    _cancelRequests(k);
     k.session?.close();
     k.session = null;
+    k.dio = null;
     for (final slot in k.slots.values) {
       slot
         ..slice = null
         ..loadedAt = null
+        ..lastAttempt = null
         ..failures = 0
+        ..userJoined = false
         ..inFlight = null;
     }
+    // A server that is gone leaves no titles behind, whatever a request still
+    // in flight did.
+    if (previousId.isNotEmpty) unawaited(_forgetIfDeleted(previousId));
     k.connection = null;
     k.connectionError = null;
     if (value.isLoading) {
@@ -196,6 +284,7 @@ class DashboardNotifier extends Notifier<DashboardSnapshot> {
         k.serverId = connection.profile.id;
         k.serverName = connection.profile.name;
         k.session = SourceSession();
+        k.dio = cancellableDio(connection.dio);
         for (final card in DashboardCard.values) {
           if (!_sources[kind]!.feeds(card)) continue;
           k.slots[card]!.slice = SliceLoading(
@@ -347,11 +436,19 @@ class DashboardNotifier extends Notifier<DashboardSnapshot> {
     );
   }
 
+  /// Whether a poll should ask for [slot] again: it is older than the media
+  /// age and, after failures, the back-off since the last try has passed.
   bool _isStale(_Slot slot) {
-    final at = slot.loadedAt;
-    if (at == null) return true;
     final now = ref.read(clockProvider)();
-    return now.difference(at) >= ref.read(dashboardMediaMaxAgeProvider);
+    final maxAge = ref.read(dashboardMediaMaxAgeProvider);
+    final at = slot.loadedAt;
+    if (at != null && now.difference(at) < maxAge) return false;
+    final attempt = slot.lastAttempt;
+    if (slot.failures == 0 || attempt == null) return true;
+    final steps = (slot.failures - 1).clamp(0, 10);
+    var wait = dashboardMediaRetryBase * (1 << steps);
+    if (wait > maxAge) wait = maxAge;
+    return now.difference(attempt) >= wait;
   }
 
   /// Loads [cards] of one kind (one request group). Returns whether every
@@ -380,9 +477,17 @@ class DashboardNotifier extends Notifier<DashboardSnapshot> {
     final slot = k.slots[card]!;
     // Overlapping refreshes coalesce.
     final running = slot.inFlight;
-    if (running != null) return running;
-    final future = _fetchCard(k, card, trigger).whenComplete(() {
-      slot.inFlight = null;
+    if (running != null) {
+      // A user action that joins a poll gets its result reported as its own.
+      if (trigger != null && trigger.userInitiated) slot.userJoined = true;
+      return running;
+    }
+    slot.userJoined = false;
+    late final Future<bool> future;
+    future = _fetchCard(k, card, trigger).whenComplete(() {
+      // Only the request that is still the slot's current one clears it: a
+      // late answer of the previous server must not drop the new one.
+      if (identical(slot.inFlight, future)) slot.inFlight = null;
     });
     slot.inFlight = future;
     return future;
@@ -395,19 +500,24 @@ class DashboardNotifier extends Notifier<DashboardSnapshot> {
   ) async {
     final connection = k.connection;
     final session = k.session;
-    if (connection == null || session == null) return true;
+    final dio = k.dio;
+    if (connection == null || session == null || dio == null) return true;
     final generation = k.generation;
     final build = _build;
     bool stale() =>
         !ref.mounted || k.generation != generation || build != _build;
 
+    final slot = k.slots[card]!;
     final source = _sources[k.kind]!;
     final now = ref.read(clockProvider)();
+    slot.lastAttempt = now;
+    final token = CancelToken();
+    slot.cancel = token;
     final context = SourceContext(
       connection: connection,
-      loadCredentials: () => ref
-          .read(serverRepositoryProvider)
-          .loadCredentials(connection.profile),
+      dio: dio,
+      loadCredentials: () =>
+          ref.read(dashboardCredentialLoaderProvider)(connection.profile),
       session: session,
       now: now,
       utcOffset: now.timeZoneOffset,
@@ -431,16 +541,20 @@ class DashboardNotifier extends Notifier<DashboardSnapshot> {
 
     Result<Object?> result;
     try {
-      result = await run().timeout(
+      result = await runCancellable(token, run).timeout(
         deadline,
-        onTimeout: () => const Result.err(AppError(ErrorCategory.timeout)),
+        onTimeout: () {
+          // Close the socket: a hung server must not collect connections.
+          token.cancel();
+          return const Result.err(AppError(ErrorCategory.timeout));
+        },
       );
     } on Object catch (e) {
       result = Result.err(_asAppError(e));
     }
+    if (identical(slot.cancel, token)) slot.cancel = null;
     if (stale()) return true;
 
-    final slot = k.slots[card]!;
     final error = result.errorOrNull;
     if (error == null) {
       final value = result.valueOrNull;
@@ -455,13 +569,7 @@ class DashboardNotifier extends Notifier<DashboardSnapshot> {
         );
       _publish();
       if (card != DashboardCard.activity && value is List<MediaItem>) {
-        try {
-          await ref
-              .read(dashboardCacheProvider)
-              .write(k.serverId, card, value, slot.loadedAt!);
-        } on Object {
-          // A failed cache write only loses the offline copy.
-        }
+        await _cacheWrite(k, card, value, slot.loadedAt!, generation);
       }
       return true;
     }
@@ -469,21 +577,25 @@ class DashboardNotifier extends Notifier<DashboardSnapshot> {
     _recordError(k.kind, error);
     slot.failures++;
     final previous = slot.slice;
-    // A transient failure of a background poll keeps what is on screen.
-    if (trigger == DashboardTrigger.poll &&
-        card == DashboardCard.activity &&
-        previous is SliceData &&
-        slot.failures < dashboardPollFailuresUntilError) {
-      return false;
+    // A transient failure of a background poll keeps what is on screen; a user
+    // action (even one that joined this poll) reports at once.
+    final poll = trigger == DashboardTrigger.poll && !slot.userJoined;
+    if (poll && previous is SliceData) {
+      final limit = card == DashboardCard.activity
+          ? dashboardPollFailuresUntilError
+          : dashboardMediaPollFailuresUntilError;
+      if (slot.failures < limit) return false;
     }
     // Last good copy: only for reachability failures, never after
-    // `auth_failed`, `unsupported_version` or a TLS error, and never for the
-    // live activity card.
+    // `auth_failed`, `unsupported_version`, a TLS error or an unexpected
+    // error, and never for the live activity card.
     if (card != DashboardCard.activity &&
+        error.debugDetail != kUnexpectedDetail &&
         kOfflineFallbackCategories.contains(error.category)) {
+      final today = calendarDay(now, now.timeZoneOffset);
       final cached = await ref
           .read(dashboardCacheProvider)
-          .read(k.serverId, card, connection.dio);
+          .read(k.serverId, card, connection.dio, today: today);
       if (stale()) return false;
       if (cached != null) {
         slot.slice = SliceData<Object?>(
@@ -505,6 +617,28 @@ class DashboardNotifier extends Notifier<DashboardSnapshot> {
     );
     _publish();
     return false;
+  }
+
+  /// Stores the last good copy, but never for a server that is gone or no
+  /// longer the active one: a delete purges the cache first and the row is
+  /// removed later, so the check is made before and after the write.
+  Future<void> _cacheWrite(
+    _Kind k,
+    DashboardCard card,
+    List<MediaItem> items,
+    DateTime at,
+    int generation,
+  ) async {
+    final serverId = k.serverId;
+    final cache = ref.read(dashboardCacheProvider);
+    try {
+      if (!await _serverExists(serverId)) return;
+      if (!ref.mounted || k.generation != generation) return;
+      await cache.write(serverId, card, items, at);
+      if (!await _serverExists(serverId)) await cache.delete(serverId, card);
+    } on Object {
+      // A failed cache write only loses the offline copy.
+    }
   }
 
   // --- state ------------------------------------------------------------------
@@ -603,6 +737,22 @@ class DashboardNotifier extends Notifier<DashboardSnapshot> {
         );
   }
 
+  /// Anything that is not a typed [AppError] is a bug, not an outage: it is
+  /// reported as `parse_error` (never as "offline", which would show old data
+  /// and hide it) and only its type is logged.
+  AppError _asAppError(Object? e) {
+    if (e is AppError) return e;
+    if (ref.mounted) {
+      ref
+          .read(loggerProvider)
+          .warning('dashboard unexpected error: ${e.runtimeType}');
+    }
+    return const AppError(
+      ErrorCategory.parseError,
+      debugDetail: kUnexpectedDetail,
+    );
+  }
+
   void _recordError(ServiceKind kind, AppError error) {
     final category = ErrorCategoryParam.values.where(
       (c) => c.code == error.category.code,
@@ -614,9 +764,6 @@ class DashboardNotifier extends Notifier<DashboardSnapshot> {
         .add(Breadcrumb.apiError(category.first, service.first));
   }
 }
-
-AppError _asAppError(Object? e) =>
-    e is AppError ? e : const AppError(ErrorCategory.networkUnreachable);
 
 DashboardCardParam _cardParam(DashboardCard card) => switch (card) {
   DashboardCard.activity => DashboardCardParam.activity,

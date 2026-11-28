@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:arr_api/arr_api.dart' show isolateParseRunner;
 import 'package:consolarr/features/dashboard/application/dashboard_dates.dart';
+import 'package:consolarr/features/dashboard/application/dashboard_cancel.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_models.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_source.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_sources.dart';
@@ -27,15 +28,19 @@ SourceContext ctx(
   DateTime? now,
   SourceSession? session,
   bool realIsolate = false,
-}) => SourceContext(
-  connection: connection(kind, 'x', server),
-  loadCredentials: () async => const ServerCredentials(),
-  session: session ?? SourceSession(),
-  now: now ?? fixedNow,
-  utcOffset: offset,
-  onRowsSkipped: (_) {},
-  runner: realIsolate ? isolateParseRunner : <T>(f) async => f(),
-);
+}) {
+  final conn = connection(kind, 'x', server);
+  return SourceContext(
+    connection: conn,
+    dio: cancellableDio(conn.dio),
+    loadCredentials: () async => const ServerCredentials(),
+    session: session ?? SourceSession(),
+    now: now ?? fixedNow,
+    utcOffset: offset,
+    onRowsSkipped: (_) {},
+    runner: realIsolate ? isolateParseRunner : <T>(f) async => f(),
+  );
+}
 
 void main() {
   group('calendar days', () {
@@ -93,8 +98,9 @@ void main() {
         expect(art.toString().toLowerCase(), isNot(contains('apikey')));
         final request = server.requests.single;
         expect(request.method, 'GET');
-        expect(request.uri.queryParameters['start'], '2026-03-11');
-        expect(request.uri.queryParameters['end'], '2026-03-25');
+        // one day of slack on each side; the local day is decided on the client
+        expect(request.uri.queryParameters['start'], '2026-03-10');
+        expect(request.uri.queryParameters['end'], '2026-03-26');
       },
     );
 
@@ -493,7 +499,7 @@ void main() {
           .activity!(ctx(ServiceKind.deluge, FakeServer()));
       final error = r.errorOrNull!;
       expect(error, isNot(isA<DelugeHostRequired>()));
-      expect(error.debugDetail, delugeHostDetail);
+      expect(error, isA<HostChoiceRequired>());
       expect(error.toString(), isNot(contains('192.0.2')));
     });
 

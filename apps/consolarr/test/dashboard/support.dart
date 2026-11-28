@@ -54,6 +54,9 @@ class FakeServer implements HttpClientAdapter {
   int inFlight = 0;
   int maxInFlight = 0;
 
+  /// Requests that were cancelled by the client.
+  int cancelledRequests = 0;
+
   /// Requests per path suffix.
   int count(String suffix) =>
       requests.where((r) => r.uri.path.endsWith(suffix)).length;
@@ -67,13 +70,32 @@ class FakeServer implements HttpClientAdapter {
     requests.add(options);
     inFlight++;
     if (inFlight > maxInFlight) maxInFlight = inFlight;
-    try {
+    // Like a real adapter, a cancelled request ends at once.
+    final cancelled = Completer<Never>();
+    unawaited(
+      cancelFuture?.then((_) {
+        cancelledRequests++;
+        if (!cancelled.isCompleted) {
+          cancelled.completeError(
+            DioException.requestCancelled(
+              requestOptions: options,
+              reason: 'cancelled',
+            ),
+          );
+        }
+      }),
+    );
+    Future<ResponseBody> serve() async {
       if (gate != null) await gate!.future;
       if (delay != null) await Future<void>.delayed(delay!);
       for (final e in routes.entries) {
         if (options.uri.path.endsWith(e.key)) return await e.value(options);
       }
       return ResponseBody.fromString('not found', 404);
+    }
+
+    try {
+      return await Future.any([serve(), cancelled.future]);
     } finally {
       inFlight--;
     }
@@ -239,6 +261,16 @@ class MemoryPayloadCache implements PayloadCache {
   @override
   Future<void> deleteForServer(String serverId) async =>
       rows.removeWhere((k, _) => k.$1 == serverId);
+
+  @override
+  Future<void> delete(String serverId, String key) async =>
+      rows.remove((serverId, key));
+
+  @override
+  Future<void> pruneKeys(String keyPrefix, Set<String> keepServerIds) async =>
+      rows.removeWhere(
+        (k, _) => k.$2.startsWith(keyPrefix) && !keepServerIds.contains(k.$1),
+      );
 }
 
 class RecordingAnalytics implements Analytics {
@@ -270,11 +302,25 @@ class Env {
   final cache = MemoryPayloadCache();
   final List<String> logs = [];
 
+  /// The stored servers: `null` (unknown) means nothing is ever pruned.
+  Set<String>? serverIds;
+  late Future<Set<String>?> Function() serverIdsLoader = () async => serverIds;
+
+  /// Reads the credentials of a profile; counts its calls.
+  final List<String> credentialReads = [];
+  Future<ServerCredentials> credentialLoader(ServerProfile profile) async {
+    credentialReads.add(profile.id);
+    return const ServerCredentials();
+  }
+
   late final DashboardCache dashboardCache = DashboardCache(cache);
 
+  /// [realConnections] keeps the app's own `activeConnectionProvider` (the
+  /// caller overrides the repository and the HTTP client factory instead).
   List<Override> overrides({
     bool firstFrameDone = true,
     Map<ServiceKind, DashboardSource>? sources,
+    bool realConnections = false,
   }) => [
     if (firstFrameDone)
       firstFrameDoneProvider.overrideWith(_FirstFrameDone.new),
@@ -282,8 +328,9 @@ class Env {
     dashboardDeadlineProvider.overrideWithValue(deadline),
     dashboardCacheProvider.overrideWithValue(dashboardCache),
     dashboardCredentialLoaderProvider.overrideWithValue(
-      (profile) async => const ServerCredentials(),
+      (profile) async => credentialLoader(profile),
     ),
+    dashboardServerIdsProvider.overrideWithValue(() => serverIdsLoader()),
     clockProvider.overrideWithValue(now ?? () => fixedNow),
     eventTrackerProvider.overrideWithValue(
       EventTracker(analytics: analytics, breadcrumbs: breadcrumbs),
@@ -292,40 +339,52 @@ class Env {
     loggerProvider.overrideWithValue(
       AppLogger(sink: (level, message) => logs.add(message)),
     ),
-    activeConnectionProvider.overrideWith((ref, kind) async {
-      final value = ref.watch(
-        activeConnections.select((m) => m.containsKey(kind) ? m[kind] : null),
-      );
-      if (value is Completer<ServerConnection?>) return value.future;
-      if (value is AppError) throw value;
-      return value as ServerConnection?;
-    }),
-    activeConnectionKeyProvider.overrideWith(
-      (ref, kind) => Stream.value(ConnectionKey('failed-${kind.name}', 1)),
-    ),
-    serversProvider.overrideWith(
-      (ref) => Stream.value([
-        for (final kind in ServiceKind.values)
-          ServerEntry(
-            profile: ServerProfile.parse(
-              id: 'failed-${kind.name}',
-              name: 'Server one',
-              kind: kind,
-              address: 'https://failed.example',
-            ).valueOrNull!,
-            sortOrder: 0,
-          ),
-      ]),
-    ),
+    if (!realConnections)
+      activeConnectionProvider.overrideWith((ref, kind) async {
+        final value = ref.watch(
+          activeConnections.select((m) => m.containsKey(kind) ? m[kind] : null),
+        );
+        if (value is Completer<ServerConnection?>) return value.future;
+        if (value is AppError) throw value;
+        return value as ServerConnection?;
+      }),
+    if (!realConnections)
+      activeConnectionKeyProvider.overrideWith(
+        (ref, kind) => Stream.value(ConnectionKey('failed-${kind.name}', 1)),
+      ),
+    if (!realConnections)
+      serversProvider.overrideWith(
+        (ref) => Stream.value([
+          for (final kind in ServiceKind.values)
+            ServerEntry(
+              profile: ServerProfile.parse(
+                id: 'failed-${kind.name}',
+                name: 'Server one',
+                kind: kind,
+                address: 'https://failed.example',
+              ).valueOrNull!,
+              sortOrder: 0,
+            ),
+        ]),
+      ),
   ];
 
   ProviderContainer container({
     bool firstFrameDone = true,
     Map<ServiceKind, DashboardSource>? sources,
+    List<Override> extra = const [],
+    bool realConnections = false,
   }) {
     final c = ProviderContainer(
       retry: (_, _) => null,
-      overrides: overrides(firstFrameDone: firstFrameDone, sources: sources),
+      overrides: [
+        ...overrides(
+          firstFrameDone: firstFrameDone,
+          sources: sources,
+          realConnections: realConnections,
+        ),
+        ...extra,
+      ],
     );
     addTearDownContainer(c);
     return c;
