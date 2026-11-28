@@ -3,6 +3,7 @@
 import 'package:arr_api/src/arr_common.dart';
 import 'package:arr_api/src/json_read.dart';
 import 'package:arr_api/src/models.dart';
+import 'package:core/core.dart';
 
 /// A season of a series (`seasons[]`).
 class SonarrSeason {
@@ -156,22 +157,22 @@ class SonarrSeriesDetail {
     if (imdbId != null && RegExp(r'^tt\d{1,12}$').hasMatch(imdbId!))
       SonarrExternalLink(
         SonarrExternalLinkKind.imdb,
-        Uri.https('www.imdb.com', '/title/$imdbId/'),
+        Uri.https(ExternalHosts.imdb, '/title/$imdbId/'),
       ),
     if (tvdbId != null)
       SonarrExternalLink(
         SonarrExternalLinkKind.tvdb,
-        Uri.https('thetvdb.com', '/', {'tab': 'series', 'id': '$tvdbId'}),
+        Uri.https(ExternalHosts.tvdb, '/', {'tab': 'series', 'id': '$tvdbId'}),
       ),
     if (tmdbId != null)
       SonarrExternalLink(
         SonarrExternalLinkKind.tmdb,
-        Uri.https('www.themoviedb.org', '/tv/$tmdbId'),
+        Uri.https(ExternalHosts.tmdb, '/tv/$tmdbId'),
       ),
     if (tvMazeId != null)
       SonarrExternalLink(
         SonarrExternalLinkKind.tvMaze,
-        Uri.https('www.tvmaze.com', '/shows/$tvMazeId'),
+        Uri.https(ExternalHosts.tvMaze, '/shows/$tvMazeId'),
       ),
   ];
 

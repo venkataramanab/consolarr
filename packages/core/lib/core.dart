@@ -5,6 +5,7 @@ library;
 
 export 'src/app_error.dart';
 export 'src/cleartext_policy.dart';
+export 'src/external_hosts.dart';
 export 'src/off_isolate.dart';
 export 'src/parsed_rows.dart';
 export 'src/result.dart';

@@ -631,7 +631,7 @@
   "@aboutPrivacyHeading": {
     "description": "Heading of the privacy statement on the About screen."
   },
-  "aboutPrivacyBody": "Consolarr talks only to the servers you add. On its own it contacts no other host. It reaches others only if you choose: if you switch on crash reports or anonymous usage in a build that includes a reporting service, or if you tap “Open a GitHub issue” or “Source code”, which opens github.com in your browser. No account or identity is collected.",
+  "aboutPrivacyBody": "Consolarr talks only to the servers you add. On its own it contacts no other host. It reaches others only if you choose: if you switch on crash reports or anonymous usage in a build that includes a reporting service, or when you tap a link. Links open only when you tap them, in your browser or the site's app, and each one tells that site which title you opened. “Source code” and “Open a GitHub issue” open github.com. A series can open www.imdb.com, thetvdb.com, www.themoviedb.org or www.tvmaze.com. A movie trailer opens www.youtube.com. No account or identity is collected.",
   "@aboutPrivacyBody": {
     "description": "Privacy statement on the About screen listing every non-user host the app can contact."
   },

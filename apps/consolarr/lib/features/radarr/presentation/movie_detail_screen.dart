@@ -26,7 +26,7 @@ final _trailerId = RegExp(r'^[A-Za-z0-9_-]{6,32}$');
 /// Built from the id only; nothing the server sends as a URL is used.
 Uri? trailerUri(String? id) => id == null || !_trailerId.hasMatch(id)
     ? null
-    : Uri.https('www.youtube.com', '/watch', {'v': id});
+    : Uri.https(ExternalHosts.youtube, '/watch', {'v': id});
 
 /// Movie detail (RAD-08): backdrop with scrim, availability banner, actions,
 /// overview, file info, ratings, trailer link and collection (plain text).

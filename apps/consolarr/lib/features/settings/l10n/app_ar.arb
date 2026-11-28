@@ -631,7 +631,7 @@
   "@aboutPrivacyHeading": {
     "description": "Heading of the privacy statement on the About screen."
   },
-  "aboutPrivacyBody": "يتحدث كونسولار مع الخوادم التي تضيفها فقط. ولا يتصل بأي مضيف آخر من تلقاء نفسه. لا يصل إلى غيرها إلا باختيارك: إذا فعّلت تقارير الأعطال أو الاستخدام المجهول في إصدار يتضمن خدمة إبلاغ، أو إذا ضغطت «فتح مشكلة على GitHub» أو «الشيفرة المصدرية» فيُفتح github.com في المتصفح. لا يُجمع أي حساب أو هوية.",
+  "aboutPrivacyBody": "يتحدث كونسولار مع الخوادم التي تضيفها فقط. ولا يتصل بأي مضيف آخر من تلقاء نفسه. لا يصل إلى غيرها إلا باختيارك: إذا فعّلت تقارير الأعطال أو الاستخدام المجهول في إصدار يتضمن خدمة إبلاغ، أو عند الضغط على رابط. لا تُفتح الروابط إلا عند الضغط عليها، في المتصفح أو في تطبيق الموقع، وكل رابط يُعلم ذلك الموقع بالعنوان الذي فتحته. «الشيفرة المصدرية» و«فتح مشكلة على ⁨GitHub⁩» يفتحان ⁨github.com⁩. وقد يفتح المسلسل ⁨www.imdb.com⁩ أو ⁨thetvdb.com⁩ أو ⁨www.themoviedb.org⁩ أو ⁨www.tvmaze.com⁩. ويفتح مقطع الإعلان عن الفيلم ⁨www.youtube.com⁩. لا يُجمع أي حساب أو هوية.",
   "@aboutPrivacyBody": {
     "description": "Privacy statement on the About screen listing every non-user host the app can contact."
   },

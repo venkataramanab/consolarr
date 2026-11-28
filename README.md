@@ -40,6 +40,11 @@ In progress: Radarr, Transmission and Deluge support, and torrent actions
 - TLS is always verified, with trust-on-first-use certificate pinning; a
   changed certificate blocks the connection until you re-trust it.
 - No ads.
+- The app contacts only the servers you add. It opens other sites only when
+  you tap a link, in your browser or the site's app, and each link tells that
+  site which title you opened: github.com (source code, issue), www.imdb.com,
+  thetvdb.com, www.themoviedb.org and www.tvmaze.com (series links) and
+  www.youtube.com (movie trailers).
 - The F-Droid/foss build contains **no telemetry SDKs at all**.
 - The Play build currently contains no telemetry SDKs either. Any telemetry
   added there in future will be opt-in, off by default, and will never send
