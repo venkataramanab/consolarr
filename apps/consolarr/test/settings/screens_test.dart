@@ -26,6 +26,7 @@ import 'package:observability/observability.dart';
 import 'package:test_harness/test_harness.dart';
 
 import 'screens_support.dart';
+import '../support/fake_hex.dart';
 
 Future<AppLocalizations> _en() =>
     AppLocalizations.delegate.load(const Locale('en'));
@@ -499,7 +500,7 @@ void main() {
           'server Fake Server Name at sonarr.example failed',
           'connect 192.0.2.77 refused',
           'loading "Fake Show Title S01E01" failed',
-          'magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567&dn=Fake',
+          'magnet:?xt=urn:btih:${fakeHex(40)}&dn=Fake',
           '/storage/emulated/0/Download/Fake Movie 2020.mkv',
         ],
       );

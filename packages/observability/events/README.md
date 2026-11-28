@@ -25,6 +25,9 @@ events:
 
 Rules (enforced by the generator):
 
+* An event name starts with its file's area prefix: `servers_`, `sonarr_`,
+  `radarr_`, `torrents_`, `settings_`, `dashboard_`, and `poll_` for
+  `polling.yaml`. Counts use `count_bucket_param`, never a raw `int`.
 * Parameter types are `bool`, `int` or the name of a declared enum. There is no
   string type, so URLs, hosts, keys, usernames and titles cannot be reported.
 * Files are processed in file-name order. An enum declared in several files is

@@ -8,9 +8,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes.dart';
+import '../support/fake_hex.dart';
 
 const _target = InteractiveSearchTarget.episode(7);
-const _hash = '0123456789abcdef0123456789abcdef01234567';
+final _hash = fakeHex(40);
 
 void main() {
   Future<bool> confirm(
