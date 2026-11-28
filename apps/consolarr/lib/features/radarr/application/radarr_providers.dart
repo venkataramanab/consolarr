@@ -506,7 +506,15 @@ class ArtworkSource {
 
   ImageProvider? image(RadarrMovie movie, ArrImageType type) {
     final uri = _api.artworkUri(movie, type);
-    return uri == null ? null : SecureNetworkImage(dio: dio, uri: uri);
+    if (uri == null) return null;
+    return SecureNetworkImage(
+      dio: dio,
+      uri: uri,
+      // A poster that answers 404 gets one try at its resized variant.
+      retryUri: type == ArrImageType.poster
+          ? posterSizeVariantUri(uri, 500)
+          : null,
+    );
   }
 
   ImageProvider? poster(RadarrMovie movie) => image(movie, ArrImageType.poster);

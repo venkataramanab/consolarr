@@ -42,6 +42,7 @@ class SecureNetworkImage extends ImageProvider<SecureNetworkImage> {
     required this.dio,
     required this.uri,
     this.maxBytes = defaultMaxBytes,
+    this.retryUri,
   });
 
   /// Largest accepted artwork download (8 MiB).
@@ -50,6 +51,11 @@ class SecureNetworkImage extends ImageProvider<SecureNetworkImage> {
   final Dio dio;
   final Uri uri;
   final int maxBytes;
+
+  /// Tried once, only when [uri] answers 404 (for example the resized
+  /// `poster-500.jpg` next to a plain `poster.jpg`). Its own failure is the
+  /// image's failure; there is no second retry.
+  final Uri? retryUri;
 
   @override
   Future<SecureNetworkImage> obtainKey(ImageConfiguration configuration) =>
@@ -71,20 +77,28 @@ class SecureNetworkImage extends ImageProvider<SecureNetworkImage> {
     SecureNetworkImage key,
     ImageDecoderCallback decode,
   ) async {
-    final response = await key.dio.getUri<List<int>>(
-      key.uri,
+    Future<Response<List<int>>> fetch(Uri uri) => key.dio.getUri<List<int>>(
+      uri,
       options: Options(
         responseType: ResponseType.bytes,
         extra: {maxResponseBytesKey: key.maxBytes},
       ),
     );
+    Response<List<int>> response;
+    try {
+      response = await fetch(key.uri);
+    } on DioException catch (e) {
+      final retry = key.retryUri;
+      if (retry == null || e.response?.statusCode != 404) rethrow;
+      response = await fetch(retry);
+    }
     final data = response.data;
     final bytes = data == null ? Uint8List(0) : Uint8List.fromList(data);
     if (!looksLikeSupportedImage(bytes)) {
       // Network failures are logged by the connection's request logger; this
       // is the one failure it cannot see (a 200 that is not an image).
       LoggingInterceptor.of(key.dio)?.artworkRejected(
-        key.uri,
+        response.requestOptions.uri,
         status: response.statusCode,
         contentType: response.headers.value(Headers.contentTypeHeader),
         isEmpty: bytes.isEmpty,

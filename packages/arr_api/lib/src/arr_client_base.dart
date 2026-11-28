@@ -120,7 +120,27 @@ abstract class ArrClientBase implements ArrApi {
 
   /// The server-relative artwork URL of the first [images] entry of [type].
   /// Never contains credentials and never points at another host.
+  ///
+  /// A poster that is missing (or has no usable URL) falls back to the
+  /// `cover`, then the `banner`, then the `fanart` entry, so a title without a
+  /// poster still shows some artwork. Other types do not fall back.
   Uri? artworkUriFor(List<ArrImage> images, ArrImageType type) {
+    final exact = _artworkUriOfType(images, type);
+    if (exact != null || type != ArrImageType.poster) return exact;
+    for (final fallback in _posterFallbacks) {
+      final uri = _artworkUriOfType(images, fallback);
+      if (uri != null) return uri;
+    }
+    return null;
+  }
+
+  static const _posterFallbacks = [
+    ArrImageType.cover,
+    ArrImageType.banner,
+    ArrImageType.fanart,
+  ];
+
+  Uri? _artworkUriOfType(List<ArrImage> images, ArrImageType type) {
     for (final image in images) {
       if (image.type != type) continue;
       final raw = image.url;
@@ -155,4 +175,28 @@ abstract class ArrClientBase implements ArrApi {
     final n = name.toLowerCase().replaceAll(RegExp('[-_]'), '');
     return n.contains('key') || n.contains('token') || n.contains('auth');
   }
+}
+
+/// The resized variant (`poster-500.jpg`, `poster-250.jpg`) next to a plain
+/// served poster `.../MediaCover/<id>/poster.jpg`, without the query, or
+/// `null` for any other URL. Radarr writes these two heights for every poster
+/// (`MediaCoverService.EnsureResizedCovers`: 500 and 250 for posters); the
+/// loader tries one when the plain file answers 404.
+Uri? posterSizeVariantUri(Uri poster, int height) {
+  if (height != 500 && height != 250) return null;
+  final segments = poster.pathSegments;
+  if (segments.length < 3 ||
+      segments[segments.length - 1] != 'poster.jpg' ||
+      segments[segments.length - 3] != 'MediaCover') {
+    return null;
+  }
+  return Uri(
+    scheme: poster.scheme,
+    host: poster.host,
+    port: poster.hasPort ? poster.port : null,
+    pathSegments: [
+      ...segments.take(segments.length - 1),
+      'poster-$height.jpg',
+    ],
+  );
 }
