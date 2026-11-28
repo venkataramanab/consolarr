@@ -139,5 +139,54 @@ void main() {
       h.ui.tester.gate!.complete();
       await tester.pumpAndSettle();
     });
+
+    // The three states of the services check on the diagnostics preview.
+    for (final phase in ['checking', 'partial', 'failed']) {
+      testWidgets(
+        'golden: diagnostics preview, services $phase ${_nameOf(v)}',
+        (tester) async {
+          final stream = StreamController<List<ServerEntry>>();
+          addTearDown(stream.close);
+          final h = ScreenHarness(
+            stored: {SettingsKeys.diagnosticsEnabled: '1'},
+            serversStream: () => stream.stream,
+          );
+          stream.add([entry('a')]);
+          applyVariantView(tester, v);
+          await tester.pumpWidget(
+            h.screen(v, const DiagnosticsPreviewScreen()),
+          );
+          await tester.pumpAndSettle();
+          switch (phase) {
+            case 'checking':
+              h.ui.tester.gate = Completer<void>();
+              await tester.tap(find.byType(OutlinedButton).first);
+              await tester.pump();
+              await tester.pump(const Duration(milliseconds: 50));
+            case 'partial':
+              await tester.tap(find.byType(OutlinedButton).first);
+              await tester.pumpAndSettle();
+              stream.add([entry('a'), entry('b')]);
+              await tester.pumpAndSettle();
+            case 'failed':
+              stream.addError(StateError('db'));
+              await tester.pumpAndSettle();
+              await tester.tap(find.byType(OutlinedButton).first);
+              await tester.pumpAndSettle();
+          }
+          await expectLater(
+            find.byType(MaterialApp),
+            matchesGoldenFile(
+              'goldens/settings_preview_services_${phase}_${_nameOf(v)}.png',
+            ),
+          );
+          final gate = h.ui.tester.gate;
+          if (gate != null && !gate.isCompleted) {
+            gate.complete();
+            await tester.pumpAndSettle();
+          }
+        },
+      );
+    }
   }
 }

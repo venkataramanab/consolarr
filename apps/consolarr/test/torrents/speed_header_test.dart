@@ -43,12 +43,6 @@ Widget _app(
   ),
 );
 
-final _stress = harnessMatrix(
-  sizes: const [Size(320, 568)],
-  textScales: const [2],
-  locales: const [Locale('ar'), Locale('en', 'XA')],
-);
-
 void main() {
   final cases = <String, Widget Function(HarnessVariant)>{
     'live': (v) => _app(v),
@@ -129,13 +123,12 @@ void main() {
       await pumpMatrix(tester, entry.value);
     });
 
-    testWidgets('${entry.key}: accessible at 320x568, scale 2.0, ar/en_XA', (
+    testWidgets('${entry.key}: accessible across the full matrix', (
       tester,
     ) async {
       await pumpMatrix(
         tester,
         entry.value,
-        variants: _stress,
         verify: (v) => expectAccessible(tester),
       );
     });

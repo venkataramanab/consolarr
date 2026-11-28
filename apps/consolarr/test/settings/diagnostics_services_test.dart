@@ -10,6 +10,7 @@ import 'package:consolarr/features/settings/application/settings_providers.dart'
 import 'package:consolarr/features/settings/domain/app_settings.dart';
 import 'package:consolarr/features/settings/presentation/diagnostics_preview_screen.dart';
 import 'package:core/core.dart';
+import 'package:design_system/design_system.dart';
 import 'package:flutter/rendering.dart' show SemanticsNode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -22,6 +23,15 @@ import 'screens_support.dart';
 
 Future<AppLocalizations> _en() =>
     AppLocalizations.delegate.load(const Locale('en'));
+
+/// The WCAG contrast ratio between two opaque colours.
+double wcagContrast(Color a, Color b) {
+  final la = a.computeLuminance();
+  final lb = b.computeLuminance();
+  final hi = la > lb ? la : lb;
+  final lo = la > lb ? lb : la;
+  return (hi + 0.05) / (lo + 0.05);
+}
 
 /// The labels of every live-region node on screen. A live region is announced
 /// whenever its label changes (it does not go through
@@ -44,8 +54,6 @@ List<String> liveRegionLabels(WidgetTester tester) {
 void expectLiveLabelUnchanged(WidgetTester tester, String expected) {
   expect(liveRegionLabels(tester), [expected]);
 }
-
-final _matrix = harnessMatrix(sizes: const [Size(320, 568), Size(412, 915)]);
 
 ServerEntry _withPrefix(String id, String prefix) => ServerEntry(
   profile: ServerProfile.parse(
@@ -362,33 +370,148 @@ void main() {
   });
 
   group('matrix: every state is accessible', () {
-    for (final phase in ['not checked', 'done']) {
-      testWidgets('services check, $phase', (tester) async {
-        final l10n = await _en();
-        await pumpMatrix(
-          tester,
-          (v) => ScreenHarness(
-            stored: {SettingsKeys.diagnosticsEnabled: '1'},
-            servers: [entry('a')],
-          ).screen(v, const DiagnosticsPreviewScreen()),
-          variants: _matrix,
-          verify: (v) async {
-            if (phase == 'done') {
-              // Run the check in this variant, then verify the result view.
-              await tester.tap(find.byType(OutlinedButton).first);
-              await tester.pumpAndSettle();
-            }
-            await expectTapTargets(tester);
-            await expectLabeledTapTargets(tester);
-            // Known harness quirk (also on main, before this change): at
-            // 412x915 the last body texts of this screen sit on the bottom
-            // edge and the pixel sampler reads the wrong background, so the
-            // contrast check runs at the small size only.
-            if (v.size.height < 800) await expectTextContrast(tester);
-            expect(l10n.diagServicesCheck, isNotEmpty);
-          },
-        );
-      });
+    // The whole matrix (3 sizes x 2 scales x 3 locales x 2 themes) for every
+    // state of the services check, with the tap-target, label and contrast
+    // guidelines.
+    //
+    // I-4: the contrast guideline misreads two nodes at text scale 1.0: the
+    // "log is empty" line and the GitHub note, both 12 px `textPrimary` text
+    // directly on the page. It is a sampler artifact, not a layout or
+    // semantics bug. The semantics rect of the empty-log line, once every
+    // ancestor transform is applied, is 797..825 at 412x915 (the line plus
+    // its 12 px of padding) and the text paints at 797..813, so focus
+    // highlights land where the text is (the `SemanticsNode.toString` rect is
+    // about 56 px higher only because it leaves out the app bar's offset).
+    // Measured at the pixels, the text is #eceff4 on #181b21 (14.96:1); the
+    // guideline takes the two most frequent colours in the text's box, and
+    // for thin 12 px glyphs an anti-aliasing grey outnumbers the glyph colour.
+    // Only these two nodes are exempt, only at scale 1.0 (at 2.0 they are
+    // judged), and their declared colours are checked analytically instead.
+    Future<void> verifyState(
+      WidgetTester tester,
+      HarnessVariant v,
+      AppLocalizations l10n,
+    ) async {
+      await expectTapTargets(tester);
+      await expectLabeledTapTargets(tester);
+      final exempt = <String>{
+        if (v.textScale == 1.0) ...{
+          l10n.diagPreviewEmptyLog,
+          l10n.diagGithubNote,
+        },
+        // The "checking" status line: the gap to the button above it (4 px)
+        // is as small as the guideline's own sampling margin, so the sample
+        // takes in the button's teal spinner (1.1..4.3 measured, against a
+        // declared ratio far above 7).
+        l10n.diagServicesChecking,
+      };
+      try {
+        await expectTextContrastWhileScrolling(tester, skipLabels: exempt);
+      } on TestFailure catch (e) {
+        fail('${v.label}: ${e.message}');
+      }
+      if (exempt.isNotEmpty) {
+        // always: the checking label
+        final context = tester.element(find.byType(Scaffold).first);
+        final page = Theme.of(context).scaffoldBackgroundColor;
+        final body = Theme.of(context).textTheme.bodyMedium?.color;
+        for (final color in [context.roles.textPrimary, ?body]) {
+          expect(
+            wcagContrast(color, page),
+            greaterThanOrEqualTo(7),
+            reason:
+                'the exempt nodes use these colours on the page: ${v.label}',
+          );
+        }
+      }
     }
+
+    Future<void> runPhase(
+      WidgetTester tester,
+      String phase,
+      Future<void> Function(
+        ScreenHarness h,
+        StreamController<List<ServerEntry>>? stream,
+        AppLocalizations l10n,
+      )
+      reach,
+    ) async {
+      final controllers = <StreamController<List<ServerEntry>>>[];
+      addTearDown(() {
+        for (final c in controllers) {
+          c.close();
+        }
+      });
+      late ScreenHarness h;
+      StreamController<List<ServerEntry>>? stream;
+      await pumpMatrix(
+        tester,
+        (v) {
+          stream = StreamController<List<ServerEntry>>();
+          controllers.add(stream!);
+          h = ScreenHarness(
+            stored: {SettingsKeys.diagnosticsEnabled: '1'},
+            serversStream: () => stream!.stream,
+          );
+          stream!.add([entry('a')]);
+          return h.screen(v, const DiagnosticsPreviewScreen());
+        },
+        verify: (v) async {
+          final l10n = await AppLocalizations.delegate.load(v.locale);
+          await reach(h, stream, l10n);
+          await verifyState(tester, v, l10n);
+        },
+      );
+    }
+
+    Future<void> tapCheck(WidgetTester tester) async {
+      await tester.tap(find.byType(OutlinedButton).first);
+    }
+
+    testWidgets('services check, not checked', (tester) async {
+      await runPhase(tester, 'not checked', (h, s, l10n) async {});
+    });
+
+    testWidgets('services check, checking', (tester) async {
+      await runPhase(tester, 'checking', (h, s, l10n) async {
+        h.ui.tester.gate = Completer<void>();
+        await tapCheck(tester);
+        await tester.pump();
+        await tester.pump();
+        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        // Release the probe at the end so the test leaves nothing running.
+        addTearDown(() {
+          final gate = h.ui.tester.gate;
+          if (gate != null && !gate.isCompleted) gate.complete();
+        });
+      });
+    });
+
+    testWidgets('services check, done', (tester) async {
+      await runPhase(tester, 'done', (h, s, l10n) async {
+        await tapCheck(tester);
+        await tester.pumpAndSettle();
+      });
+    });
+
+    testWidgets('services check, partial', (tester) async {
+      await runPhase(tester, 'partial', (h, s, l10n) async {
+        await tapCheck(tester);
+        await tester.pumpAndSettle();
+        s!.add([entry('a'), entry('b')]);
+        await tester.pumpAndSettle();
+        expect(find.text(l10n.diagServicesPartial), findsOneWidget);
+      });
+    });
+
+    testWidgets('services check, failed', (tester) async {
+      await runPhase(tester, 'failed', (h, s, l10n) async {
+        s!.addError(StateError('db'));
+        await tester.pumpAndSettle();
+        await tapCheck(tester);
+        await tester.pumpAndSettle();
+        expect(find.text(l10n.diagServicesFailed), findsOneWidget);
+      });
+    });
   });
 }

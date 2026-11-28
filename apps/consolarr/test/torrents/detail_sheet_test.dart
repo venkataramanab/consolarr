@@ -242,4 +242,33 @@ void main() {
       verify: (v) => expectAccessible(tester),
     );
   });
+
+  testWidgets('I-3: the failed load and its recovery are accessible in the '
+      'stress matrix', (tester) async {
+    final c = FakeTorrentClient();
+    await pumpMatrix(
+      tester,
+      (v) {
+        c.detailError = const AppError(ErrorCategory.timeout);
+        return sheetApp(
+          v,
+          const TorrentDetailSheet(hash: 'hash1'),
+          client: c,
+          poll: const Duration(seconds: 3),
+        );
+      },
+      variants: stressVariants,
+      verify: (v) async {
+        expect(find.byType(ErrorState), findsOneWidget, reason: v.label);
+        await expectAccessible(tester);
+        // The server comes back; the next poll tick recovers on its own.
+        c.detailError = null;
+        await tester.pump(const Duration(seconds: 3));
+        await tester.pumpAndSettle();
+        expect(find.byType(ErrorState), findsNothing, reason: v.label);
+        expect(find.byType(SkeletonBox), findsNothing, reason: v.label);
+        await expectAccessible(tester);
+      },
+    );
+  });
 }
