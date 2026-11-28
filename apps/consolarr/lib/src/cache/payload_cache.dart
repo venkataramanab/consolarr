@@ -78,17 +78,15 @@ class DriftPayloadCache implements PayloadCache {
   )..where((r) => r.serverId.equals(serverId))).go();
 
   @override
-  Future<void> delete(String serverId, String key) =>
-      (_db.delete(_db.cachedPayloadRows)
-            ..where((r) => r.serverId.equals(serverId) & r.key.equals(key)))
-          .go();
+  Future<void> delete(String serverId, String key) => (_db.delete(
+    _db.cachedPayloadRows,
+  )..where((r) => r.serverId.equals(serverId) & r.key.equals(key))).go();
 
   @override
   Future<void> pruneKeys(String keyPrefix, Set<String> keepServerIds) =>
       (_db.delete(_db.cachedPayloadRows)..where(
             (r) =>
-                r.key.like('$keyPrefix%') &
-                r.serverId.isNotIn(keepServerIds),
+                r.key.like('$keyPrefix%') & r.serverId.isNotIn(keepServerIds),
           ))
           .go();
 }
