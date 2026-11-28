@@ -219,6 +219,18 @@ class MemoryPayloadCache implements PayloadCache {
   @override
   Future<void> deleteForServer(String serverId) async =>
       rows.removeWhere((k, _) => k.startsWith('$serverId|'));
+
+  @override
+  Future<void> delete(String serverId, String key) async =>
+      rows.remove(_k(serverId, key));
+
+  @override
+  Future<void> pruneKeys(String keyPrefix, Set<String> keepServerIds) async =>
+      rows.removeWhere(
+        (k, _) =>
+            k.contains('|$keyPrefix') &&
+            !keepServerIds.contains(k.split('|').first),
+      );
 }
 
 class MemoryPrefs implements RadarrPrefs {

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import 'package:consolarr/features/home/home_routes.dart';
+import 'package:consolarr/features/dashboard/dashboard_routes.dart';
 import 'package:consolarr/features/radarr/radarr_routes.dart';
 import 'package:consolarr/features/servers/domain/server_models.dart';
 import 'package:consolarr/features/settings/settings_routes.dart';

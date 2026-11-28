@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Dashboard area (DSH-*). Every event name starts with `dashboard_`: names are
+# global. Parameters are enums, ints or bools only: no titles, names, hosts or
+# ids.
+enums:
+  screen_name:
+    dart: ScreenName
+    values: [dashboard]
+  dashboard_trigger_param:
+    dart: DashboardTriggerParam
+    values: [pull, poll, retry, resume]
+  dashboard_card_param:
+    dart: DashboardCardParam
+    values: [activity, upcoming, recent]
+  dashboard_destination_param:
+    dart: DashboardDestinationParam
+    values: [series, movie, sonarr, radarr, torrents]
+events:
+  dashboard_refreshed:
+    description: A dashboard refresh finished; counts of the servers asked and the ones that failed.
+    params:
+      trigger: {type: dashboard_trigger_param}
+      servers: {type: int}
+      failed: {type: int}
+  dashboard_card_opened:
+    description: An item or a card of the dashboard was opened.
+    params:
+      card: {type: dashboard_card_param}
+      destination: {type: dashboard_destination_param}
+  dashboard_card_retried:
+    description: Retry was tapped on a failed dashboard card.
+    params:
+      card: {type: dashboard_card_param}
+      error_category: {type: error_category_param}

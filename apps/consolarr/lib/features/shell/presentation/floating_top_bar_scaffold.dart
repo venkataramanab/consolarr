@@ -2,6 +2,7 @@
 
 import 'package:consolarr/features/shell/presentation/shell_chrome.dart';
 import 'package:design_system/design_system.dart';
+import 'package:flutter/semantics.dart' show OrdinalSortKey;
 import 'package:material_ui/material_ui.dart';
 
 /// Frame for a screen with a slim floating top bar over scrolling content.
@@ -54,7 +55,7 @@ class _FloatingTopBarScaffoldState extends State<FloatingTopBarScaffold> {
     final roles = context.roles;
     return Stack(
       children: [
-        Positioned.fill(
+        _BodySlot(
           child: ValueListenableBuilder<double>(
             valueListenable: _barHeight,
             builder: (context, height, _) {
@@ -69,10 +70,7 @@ class _FloatingTopBarScaffoldState extends State<FloatingTopBarScaffold> {
             },
           ),
         ),
-        PositionedDirectional(
-          top: 0,
-          start: 0,
-          end: 0,
+        _BarSlot(
           child: SafeArea(
             bottom: false,
             child: Padding(
@@ -148,4 +146,43 @@ class _FloatingTopBarScaffoldState extends State<FloatingTopBarScaffold> {
       ],
     );
   }
+}
+
+/// The scrolling body, filling the stack. It is read after the bar: the bar is
+/// painted last (it floats above the content) but comes first for a screen
+/// reader, and the sort keys put the traversal in visual order.
+class _BodySlot extends StatelessWidget {
+  const _BodySlot({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Positioned.fill(
+    child: Semantics(
+      container: true,
+      explicitChildNodes: true,
+      sortKey: const OrdinalSortKey(1),
+      child: child,
+    ),
+  );
+}
+
+/// The floating bar at the top of the stack, read first.
+class _BarSlot extends StatelessWidget {
+  const _BarSlot({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => PositionedDirectional(
+    top: 0,
+    start: 0,
+    end: 0,
+    child: Semantics(
+      container: true,
+      explicitChildNodes: true,
+      sortKey: const OrdinalSortKey(0),
+      child: child,
+    ),
+  );
 }

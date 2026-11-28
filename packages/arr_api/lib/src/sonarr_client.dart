@@ -8,6 +8,7 @@ import 'package:arr_api/src/arr_common.dart';
 import 'package:arr_api/src/json_read.dart';
 import 'package:arr_api/src/models.dart';
 import 'package:arr_api/src/shared/arr_command.dart';
+import 'package:arr_api/src/shared/arr_history.dart';
 import 'package:arr_api/src/shared/arr_page.dart';
 import 'package:arr_api/src/shared/arr_queue.dart';
 import 'package:arr_api/src/shared/arr_release.dart';
@@ -45,8 +46,13 @@ ParsedRows<SonarrLookupResult> _parseLookup(String body) =>
 ///
 /// URL building, artwork URLs and the shared lists (quality profiles, root
 /// folders, tags) come from [ArrClientBase].
-class SonarrClient extends ArrClientBase implements SonarrApi {
+class SonarrClient extends ArrClientBase
+    with ArrHistoryReader
+    implements SonarrApi {
   SonarrClient({required super.dio, super.parseRunner, this.onRowsSkipped});
+
+  @override
+  List<String> get historyIncludes => const ['includeSeries', 'includeEpisode'];
 
   /// Called with the number of malformed series rows that were skipped (only
   /// when greater than zero). A count only: never row content.
