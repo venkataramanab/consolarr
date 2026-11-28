@@ -5,6 +5,7 @@ import 'package:consolarr/features/settings/application/connection_check.dart';
 import 'package:consolarr/features/settings/presentation/settings_page.dart';
 import 'package:consolarr/features/shell/application/shell_providers.dart';
 import 'package:consolarr/shared/errors/connection_error_message.dart';
+import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:l10n/l10n.dart';
@@ -111,7 +112,8 @@ class ConnectionCheckScreen extends ConsumerWidget {
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
             ),
-          if (check.result != null) _Steps(result: check.result!),
+          if (check.result != null)
+            _Steps(result: check.result!, kind: selected.profile.kind),
         ];
       }
     }
@@ -132,9 +134,10 @@ class ConnectionCheckScreen extends ConsumerWidget {
 }
 
 class _Steps extends StatelessWidget {
-  const _Steps({required this.result});
+  const _Steps({required this.result, required this.kind});
 
   final ConnectionCheckResult result;
+  final ServiceKind kind;
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +149,9 @@ class _Steps extends StatelessWidget {
       children: [
         SettingsSection(
           title: l10n.checkTitle,
-          children: [for (final s in result.steps) _StepRow(result: s)],
+          children: [
+            for (final s in result.steps) _StepRow(result: s, kind: kind),
+          ],
         ),
         if (result.allPassed) ...[
           Semantics(
@@ -172,9 +177,10 @@ class _Steps extends StatelessWidget {
 }
 
 class _StepRow extends StatelessWidget {
-  const _StepRow({required this.result});
+  const _StepRow({required this.result, required this.kind});
 
   final StepResult result;
+  final ServiceKind kind;
 
   @override
   Widget build(BuildContext context) {
@@ -204,7 +210,7 @@ class _StepRow extends StatelessWidget {
     if (state == CheckStepState.fail) {
       final error = result.error;
       if (error != null) {
-        final m = connectionErrorMessage(l10n, error);
+        final m = connectionErrorMessage(l10n, error, kind: kind);
         message = m.message;
         hint = m.hint;
       } else if (result.localFailure == CheckStep.dns) {

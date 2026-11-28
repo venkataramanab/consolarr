@@ -23,6 +23,10 @@ const _invalidInputDetails = {
 /// `debugDetail` of the `auth_failed` raised when stored secrets are missing.
 const needsCredentialsDetail = 'needs_credentials';
 
+/// `debugDetail` of the `auth_failed` raised when a Sonarr or Radarr server has
+/// no API key stored (the one credential its API accepts).
+const needsApiKeyDetail = 'needs_api_key';
+
 /// Maps any [AppError] to copy (SRV-05). One pair of ARB keys per category:
 /// `connError<Category>Message` and `connError<Category>Hint`.
 ///
@@ -38,6 +42,13 @@ ErrorMessage connectionErrorMessage(
   AppError error, {
   ServiceKind? kind,
 }) {
+  if (error.category == ErrorCategory.authFailed &&
+      error.debugDetail == needsApiKeyDetail) {
+    return ErrorMessage(
+      message: l10n.serverErrorApiKeyRequired,
+      hint: l10n.sonarrErrorNeedsCredentialsHint,
+    );
+  }
   if (error.category == ErrorCategory.authFailed &&
       error.debugDetail != needsCredentialsDetail &&
       (kind == ServiceKind.sonarr || kind == ServiceKind.radarr)) {

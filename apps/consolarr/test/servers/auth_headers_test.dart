@@ -29,15 +29,38 @@ void main() {
     expect(h, {'X-Api-Key': 'test-key-0000'});
   });
 
-  test('basic auth for Sonarr is an Authorization header', () {
+  test('basic auth for Sonarr is an Authorization header next to the key', () {
     final h = buildAuthHeaders(
       profile(ServiceKind.sonarr, AuthMode.basic),
-      const ServerCredentials(username: 'user', password: 'pw'),
+      const ServerCredentials(
+        apiKey: 'test-key-0000',
+        username: 'user',
+        password: 'pw',
+      ),
     );
     expect(
       h['Authorization'],
       'Basic ${base64.encode(utf8.encode('user:pw'))}',
     );
+    expect(h['X-Api-Key'], 'test-key-0000');
+  });
+
+  test('arr kinds send no auth header at all without an API key', () {
+    for (final kind in [ServiceKind.sonarr, ServiceKind.radarr]) {
+      for (final mode in AuthMode.values) {
+        for (final creds in const [
+          ServerCredentials(username: 'user', password: 'pw'),
+          ServerCredentials(apiKey: '', username: 'user', password: 'pw'),
+          ServerCredentials(apiKey: 'bad\nkey', username: 'u', password: 'p'),
+        ]) {
+          expect(
+            buildAuthHeaders(profile(kind, mode), creds),
+            isEmpty,
+            reason: '$kind $mode: Basic is only ever additive to a key',
+          );
+        }
+      }
+    }
   });
 
   test('basic auth for qBittorrent adds no header (client logs in)', () {
