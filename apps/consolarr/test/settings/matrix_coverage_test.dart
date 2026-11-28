@@ -13,7 +13,6 @@ import 'package:consolarr/features/settings/presentation/privacy_screen.dart';
 import 'package:consolarr/features/settings/presentation/settings_screen.dart';
 import 'package:core/core.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:test_harness/test_harness.dart';
 
@@ -24,34 +23,13 @@ import 'screens_support.dart';
 /// screen), with no overflow and the accessibility guidelines.
 final _matrix = harnessMatrix(sizes: const [Size(320, 568), Size(412, 915)]);
 
-/// Small (12-15 px) captions and rows whose box is mostly background. The
-/// contrast guideline picks the two most frequent colours in a node's box, and
-/// at text scale 1.0 the glyph pixels are outnumbered by the background and by
-/// anti-aliasing greys, so it reports ratios (even 1.1) that the theme's
-/// colours do not have. At text scale 2.0 the very same nodes are judged
-/// normally, and they pass; only these exact strings are exempted at 1.0.
-Set<String> _samplerArtifacts(AppLocalizations l10n) => {
-  l10n.settingsSectionSecurity,
-  l10n.lockDelayHint,
-  l10n.privacyEventScreenViewed,
-  l10n.a11yFollowsSystem,
-  l10n.diagLogSwitchHint,
-  l10n.diagRedactionNotice,
-  l10n.diagGithubNote,
-  l10n.diagPreviewEmptyLog,
-  l10n.aboutLicensesRow,
-};
-
 /// Tap targets and labels, and text contrast at every scroll position (the
 /// guideline reads pixels, so text the viewport clips is judged once it is
 /// scrolled fully into view).
 Future<void> _expectAccessible(WidgetTester tester, HarnessVariant v) async {
   await expectTapTargets(tester);
   await expectLabeledTapTargets(tester);
-  final skip = v.textScale == 1
-      ? _samplerArtifacts(await AppLocalizations.delegate.load(v.locale))
-      : const <String>{};
-  await expectTextContrastWhileScrolling(tester, skipLabels: skip);
+  await expectTextContrastWhileScrolling(tester);
 }
 
 void _screen(

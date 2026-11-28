@@ -16,10 +16,10 @@ import 'package:l10n/l10n.dart';
 import '../tool/src/merge.dart';
 import 'l10n_keys_test.dart' show findRepoRoot;
 
-const _fsi = '⁨';
-const _pdi = '⁩';
+const _fsi = '\u2068';
+const _pdi = '\u2069';
 // Openers accepted before a String placeholder: FSI, LRI, RLI.
-const _openers = {'⁨', '⁦', '⁧'};
+const _openers = {'\u2068', '\u2066', '\u2067'};
 
 /// Keys whose text is owned by another workstream; they are checked once the
 /// owner has finished (see the W6b hand-off in docs/patterns.md).

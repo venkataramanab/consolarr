@@ -35,6 +35,9 @@ enum _Unit {
 }
 
 /// One limit editor: none or custom with a unit.
+/// Narrowest width at which the field and the unit switch share a row.
+const double _sideBySideMinWidth = 360;
+
 class _LimitDraft {
   _LimitDraft(int bytesPerSecond) : text = TextEditingController() {
     reset(bytesPerSecond);
@@ -191,21 +194,34 @@ class _SpeedLimitsSheetState extends ConsumerState<SpeedLimitsSheet> {
           ),
         ),
         if (d.custom) ...[
-          // At large text the unit switch no longer fits beside the field: it
-          // goes below it instead of overflowing.
-          if (MediaQuery.textScalerOf(context).scale(1) > 1.3) ...[
-            field,
-            const SizedBox(height: ConsolarrSpacing.sm),
-            units,
-          ] else
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(child: field),
-                const SizedBox(width: ConsolarrSpacing.sm),
-                units,
-              ],
-            ),
+          // When the unit switch does not leave the field a usable width (a
+          // narrow screen, large text or a long translation), it goes below
+          // the field instead of squeezing it.
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final stacked =
+                  MediaQuery.textScalerOf(context).scale(1) > 1.3 ||
+                  constraints.maxWidth < _sideBySideMinWidth;
+              if (stacked) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    field,
+                    const SizedBox(height: ConsolarrSpacing.sm),
+                    units,
+                  ],
+                );
+              }
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: field),
+                  const SizedBox(width: ConsolarrSpacing.sm),
+                  units,
+                ],
+              );
+            },
+          ),
         ],
       ],
     );

@@ -2,7 +2,7 @@
 name: consolarr_play
 description: Consolarr Play Store entry point. The only app allowed to add telemetry SDKs.
 publish_to: none
-version: 0.1.0+1
+version: 0.1.1+2
 resolution: workspace
 
 environment:

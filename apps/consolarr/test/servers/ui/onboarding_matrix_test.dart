@@ -2,7 +2,6 @@
 
 import 'package:consolarr/features/servers/presentation/onboarding_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:test_harness/test_harness.dart';
 
@@ -29,28 +28,12 @@ Future<void> _top(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-/// Text fields holding a value and a 12 px error line. The contrast guideline
-/// picks the two most frequent colours in a node's box, and at text scale 1.0
-/// the outline, fill and anti-aliasing outnumber the glyph pixels, so it
-/// reports ratios that the theme's colours do not have. At text scale 2.0 the
-/// very same nodes are judged normally, and they pass; only these exact
-/// strings are exempted at 1.0.
-Set<String> _samplerArtifacts(AppLocalizations l10n) => {
-  l10n.serverFieldName,
-  l10n.serverFieldAddress,
-  l10n.serverFieldApiKey,
-  l10n.serverErrorApiKeyRequired,
-};
-
 Future<void> _check(WidgetTester tester, HarnessVariant v) async {
   await _top(tester);
   expectNoFrameworkExceptions(tester);
   await expectTapTargets(tester);
   await expectLabeledTapTargets(tester);
-  final skip = v.textScale == 1
-      ? _samplerArtifacts(await AppLocalizations.delegate.load(v.locale))
-      : const <String>{};
-  await expectTextContrastWhileScrolling(tester, skipLabels: skip);
+  await expectTextContrastWhileScrolling(tester);
 }
 
 Finder _fieldAt(int index) => find.byType(TextField).at(index);

@@ -263,6 +263,23 @@ in `EmptyArrLists`.
   with `plainInt`; years go through `plainInt`; design-system code formats
   through `MaterialLocalizations.formatDecimal`. Never `'$n'` for display.
   `numerals_test` fails if a message mixes systems.
+* **Joining parts.** Never hardcode `', '`, `'. '`, `' · '`, `'• '` or a
+  `title (year)` pattern. Use `joinList`, `joinSentences`, `joinParts` and the
+  `sharedBulletLine` / `sharedTitleWithYear` messages (the Arabic comma and
+  the order of the parts then localize). Design-system widgets read
+  `ConsolarrSeparators.of(context)`, which the app fills from the same ARB
+  messages. `no_hardcoded_separators_test` guards presentation code.
+* **Busy indicators.** Use `BusyIndicator` from `design_system`, never a raw
+  indeterminate `CircularProgressIndicator`/`LinearProgressIndicator` (a test
+  bans them): it is a static hourglass under the platform's remove-animations
+  flag or the in-app reduce-motion setting, takes the caller's localized
+  label (or `null` when text beside it already says it) and announces itself
+  once when it first appears.
+* **Contrast is never exempted in tests.** `expectAccessible` and the matrix
+  tests take no label skips. If the guideline fails, fix the colour token or
+  the layout (for example, glass sheets use `ConsolarrBlur.sheetTintOpacity`,
+  floated field labels use the strongest text colour, and the unit switch of
+  the limits sheet stacks under the field on narrow widths).
 * Shared strings (connection errors, common actions) live in
   `lib/shared/l10n`. `reserved_keys.txt` lists keys declared ahead of use: the
   key test tolerates them unused and fails once one is used (remove its line).

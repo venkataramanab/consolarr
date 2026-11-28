@@ -682,7 +682,7 @@ void main() {
       final l10n = await _en();
       final h = ScreenHarness();
       await _pump(tester, h, const AboutScreen());
-      expect(find.text(l10n.aboutVersionValue('0.1.0', '1')), findsOneWidget);
+      expect(find.text(l10n.aboutVersionValue('0.1.1', '2')), findsOneWidget);
       expect(find.text(l10n.aboutLicensesRow), findsOneWidget);
       expect(find.text(l10n.aboutPrivacyBody), findsOneWidget);
       await tester.tap(find.text(l10n.aboutSourceRow));

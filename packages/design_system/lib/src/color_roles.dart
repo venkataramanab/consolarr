@@ -58,7 +58,7 @@ class ConsolarrColorRoles {
     track: Color(0xFFDCE1E9),
     textPrimary: Color(0xFF12161D),
     textSecondary: Color(0xFF3F4856),
-    textTertiary: Color(0xFF566070),
+    textTertiary: Color(0xFF4A5463),
     accent: Color(0xFF0A6A7D),
     onAccent: Color(0xFFFFFFFF),
     success: Color(0xFF1B6B3A),
