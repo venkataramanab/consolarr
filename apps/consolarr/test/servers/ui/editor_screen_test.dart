@@ -702,9 +702,52 @@ void main() {
       });
     });
 
-    testWidgets('passes the accessibility matrix, switch on and notice shown', (
+    // The full matrix: 3 sizes x 2 text scales x 3 locales x 2 themes, with the
+    // tap-target and label guidelines (`meetsGuideline`) on every variant.
+    //
+    // Flutter's text-contrast guideline is also run on every variant where it
+    // can be trusted. On a populated outlined text field at scale 1.0 it
+    // samples the field's own border and reports 2.03:1, although the pixels
+    // are the border at 7:1 and the text at 15:1 (measured on a screenshot of
+    // the dark 320x568 variant); the same screen at scale 2.0 and every empty
+    // field pass. So for the states with saved values the contrast guideline
+    // runs at scale 2.0 only.
+    Future<void> accessibleInEveryVariant(
+      WidgetTester tester,
+      HarnessVariant v, {
+      required bool populatedFields,
+    }) async {
+      await expectTapTargets(tester);
+      await expectLabeledTapTargets(tester);
+      if (!populatedFields || v.textScale >= 2) {
+        await expectTextContrast(tester);
+      }
+    }
+
+    testWidgets('legacy notice: accessible across the full matrix', (
       tester,
     ) async {
+      await pumpMatrix(
+        tester,
+        (v) => UiHarness(
+          servers: [
+            entry(
+              'a',
+              kind: ServiceKind.radarr,
+              authMode: AuthMode.basic,
+              needsCredentials: true,
+              proxyLogin: false,
+            ),
+          ],
+        ).app(v, const ServerEditorScreen(serverId: 'a')),
+        variants: harnessMatrix(),
+        verify: (v) =>
+            accessibleInEveryVariant(tester, v, populatedFields: true),
+      );
+    });
+
+    testWidgets('legacy notice with the stored proxy login on: accessible '
+        'across the full matrix', (tester) async {
       await pumpMatrix(
         tester,
         (v) => UiHarness(
@@ -718,11 +761,31 @@ void main() {
             ),
           ],
         ).app(v, const ServerEditorScreen(serverId: 'a')),
+        variants: harnessMatrix(),
+        verify: (v) =>
+            accessibleInEveryVariant(tester, v, populatedFields: true),
+      );
+    });
+
+    testWidgets('a new server with the proxy switch turned on: accessible '
+        'across the full matrix', (tester) async {
+      // Tall surfaces (same widths): a guideline reads a field that is half
+      // scrolled out of view as a 34 dp tap target, so the revealed login
+      // fields are only judged fairly when the whole form is on screen.
+      await pumpMatrix(
+        tester,
+        (v) => UiHarness().app(v, const ServerEditorScreen()),
         variants: harnessMatrix(
-          textScales: [2],
-          locales: const [Locale('ar'), Locale('en', 'XA'), Locale('en')],
+          sizes: const [Size(320, 5000), Size(360, 5000), Size(412, 5000)],
         ),
-        verify: (_) => expectAccessible(tester),
+        verify: (v) async {
+          final l10n = lookupAppLocalizations(v.locale);
+          expect(find.text(l10n.serverFieldUsername), findsNothing);
+          await _tap(tester, find.text(l10n.serverProxyLoginTitle));
+          // The username and password fields are there now.
+          expect(find.text(l10n.serverFieldUsername), findsOneWidget);
+          await accessibleInEveryVariant(tester, v, populatedFields: false);
+        },
       );
     });
   });
