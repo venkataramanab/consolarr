@@ -21,9 +21,12 @@ class EventTracker {
 
   Future<void> track(AppEvent event) {
     switch (event) {
-      case ScreenViewedEvent(:final screen):
+      case ServersScreenViewedEvent(:final screen):
         breadcrumbs.add(Breadcrumb.navigation(screen));
-      case ConnectionTestResultEvent(:final errorCategory, :final serviceKind):
+      case ServersConnectionTestResultEvent(
+        :final errorCategory,
+        :final serviceKind,
+      ):
         if (errorCategory != null) {
           breadcrumbs.add(Breadcrumb.apiError(errorCategory, serviceKind));
         }

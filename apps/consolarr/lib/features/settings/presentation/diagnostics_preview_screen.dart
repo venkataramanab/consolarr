@@ -43,7 +43,9 @@ class _DiagnosticsPreviewScreenState
       await ref
           .read(eventTrackerProvider)
           .track(
-            const DiagnosticsSharedEvent(channel: DiagnosticsChannelParam.file),
+            const SettingsDiagnosticsSharedEvent(
+              channel: DiagnosticsChannelParam.file,
+            ),
           );
       if (mounted) setState(() => _message = null);
     } on ShareTextTooLarge {
@@ -70,7 +72,7 @@ class _DiagnosticsPreviewScreenState
       await ref
           .read(eventTrackerProvider)
           .track(
-            const DiagnosticsSharedEvent(
+            const SettingsDiagnosticsSharedEvent(
               channel: DiagnosticsChannelParam.github,
             ),
           );

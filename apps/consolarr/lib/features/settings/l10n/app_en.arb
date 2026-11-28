@@ -254,7 +254,7 @@
   "@privacyCrashTitle": {
     "description": "Title of the crash reports consent switch."
   },
-  "privacyCrashWhat": "When the app crashes, sends the kind of error, the app and Android version, and the last screens you opened (screen names only). Never addresses, keys, names or titles.",
+  "privacyCrashWhat": "When the app crashes, sends the name of the error type, a general error category when there is one, the code locations of the crash (file names and line numbers), the app and Android version, and the last screens you opened and the kinds of server errors just before (names from a fixed list). Never the error message, addresses, keys, names or titles.",
   "@privacyCrashWhat": {
     "description": "Explains exactly what the crash reports switch sends."
   },
@@ -298,9 +298,77 @@
   "@privacyEventDiagnostics": {
     "description": "Payload list item for the diagnostics shared event."
   },
-  "privacyEventOther": "Other feature actions, as counts of closed choices only",
-  "@privacyEventOther": {
-    "description": "Payload list item covering events of other features."
+  "privacyEventSonarrSeriesAdded": "That a series was added, and whether a search was started",
+  "@privacyEventSonarrSeriesAdded": {
+    "description": "Payload list item for the series added event."
+  },
+  "privacyEventSonarrReleaseGrabbed": "Whether a series release you picked was sent to the download client, failed or was rejected",
+  "@privacyEventSonarrReleaseGrabbed": {
+    "description": "Payload list item for the Sonarr release grabbed event."
+  },
+  "privacyEventSonarrSearchStarted": "That a series search was started, and its scope (episode, season, series or all missing)",
+  "@privacyEventSonarrSearchStarted": {
+    "description": "Payload list item for the Sonarr search started event."
+  },
+  "privacyEventSonarrSearchFinished": "How a series search ended (found, nothing found, failed or timed out)",
+  "@privacyEventSonarrSearchFinished": {
+    "description": "Payload list item for the Sonarr search finished event."
+  },
+  "privacyEventSonarrQueueItemRemoved": "That a series download was removed from the queue, and the blocklist choice",
+  "@privacyEventSonarrQueueItemRemoved": {
+    "description": "Payload list item for the Sonarr queue item removed event."
+  },
+  "privacyEventSonarrMonitorChanged": "That monitoring of a series, season or episode was switched on or off",
+  "@privacyEventSonarrMonitorChanged": {
+    "description": "Payload list item for the series monitor changed event."
+  },
+  "privacyEventRadarrMovieAdded": "That a movie was added, and whether a search and a collection were chosen",
+  "@privacyEventRadarrMovieAdded": {
+    "description": "Payload list item for the movie added event."
+  },
+  "privacyEventRadarrReleaseGrabbed": "Whether a movie release you picked was sent to the download client, and whether it had been rejected",
+  "@privacyEventRadarrReleaseGrabbed": {
+    "description": "Payload list item for the Radarr release grabbed event."
+  },
+  "privacyEventRadarrSearchStarted": "That a movie search was started (one movie or all missing)",
+  "@privacyEventRadarrSearchStarted": {
+    "description": "Payload list item for the Radarr search started event."
+  },
+  "privacyEventRadarrQueueItemRemoved": "That a movie download was removed from the queue, and the removal choice",
+  "@privacyEventRadarrQueueItemRemoved": {
+    "description": "Payload list item for the Radarr queue item removed event."
+  },
+  "privacyEventTorrentsAdded": "That a torrent was added, how (magnet link, address or file), for which client kind, and whether it worked",
+  "@privacyEventTorrentsAdded": {
+    "description": "Payload list item for the torrent added event."
+  },
+  "privacyEventTorrentsAction": "That you paused, resumed or removed torrents, and whether it worked",
+  "@privacyEventTorrentsAction": {
+    "description": "Payload list item for the torrent action event."
+  },
+  "privacyEventTorrentsSpeedLimits": "That speed limits were changed, for which client kind, and whether it worked",
+  "@privacyEventTorrentsSpeedLimits": {
+    "description": "Payload list item for the speed limits changed event."
+  },
+  "privacyEventDashboardRefreshed": "That the dashboard was refreshed (at most once per session), what triggered it and rough counts of servers and failures (0, 1, 2, 3 to 5, 6 or more)",
+  "@privacyEventDashboardRefreshed": {
+    "description": "Payload list item for the dashboard refreshed event."
+  },
+  "privacyEventDashboardCardOpened": "That you opened an item from a dashboard card, and what kind of screen it led to",
+  "@privacyEventDashboardCardOpened": {
+    "description": "Payload list item for the dashboard card opened event."
+  },
+  "privacyEventDashboardCardRetried": "That you tapped retry on a dashboard card, and the kind of failure",
+  "@privacyEventDashboardCardRetried": {
+    "description": "Payload list item for the dashboard card retried event."
+  },
+  "privacyEventPollCycleFinished": "That a background check of your servers finished, with rough counts of servers, failures and changes (0, 1, 2, 3 to 5, 6 or more)",
+  "@privacyEventPollCycleFinished": {
+    "description": "Payload list item for the poll cycle finished event."
+  },
+  "privacyEventPollChangeDetected": "That a finished or failed download was noticed, and which kind",
+  "@privacyEventPollChangeDetected": {
+    "description": "Payload list item for the poll change detected event."
   },
   "privacyWithdrawHint": "Turning a switch off stops collection at once and clears anything waiting to be sent.",
   "@privacyWithdrawHint": {

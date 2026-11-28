@@ -794,7 +794,7 @@ void main() {
         (e) => e.name == 'dashboard_refreshed',
       );
       expect(refreshed.parameters.keys, {'trigger', 'servers', 'failed'});
-      expect(refreshed.parameters['servers'], 1);
+      expect(refreshed.parameters['servers'], 'one');
     });
   });
 }

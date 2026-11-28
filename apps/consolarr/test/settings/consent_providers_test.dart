@@ -25,9 +25,11 @@ void main() {
       final h = SettingsHarness();
       final c = await h.startedContainer();
       final tracker = c.read(eventTrackerProvider);
-      await tracker.track(const ScreenViewedEvent(screen: ScreenName.settings));
       await tracker.track(
-        const ServerAddedEvent(serviceKind: ServiceKindParam.sonarr),
+        const ServersScreenViewedEvent(screen: ScreenName.settings),
+      );
+      await tracker.track(
+        const ServersAddedEvent(serviceKind: ServiceKindParam.sonarr),
       );
       await c
           .read(crashReporterProvider)
@@ -48,11 +50,14 @@ void main() {
         .read(consentProvider.notifier)
         .set(ConsentPurpose.analytics, enabled: true);
     expect(c.read(consentProvider).analytics, isTrue);
-    expect(h.analytics.events, ['consent_changed']);
+    expect(h.analytics.events, ['settings_consent_changed']);
     await c
         .read(eventTrackerProvider)
-        .track(const ScreenViewedEvent(screen: ScreenName.settings));
-    expect(h.analytics.events, ['consent_changed', 'screen_viewed']);
+        .track(const ServersScreenViewedEvent(screen: ScreenName.settings));
+    expect(h.analytics.events, [
+      'settings_consent_changed',
+      'servers_screen_viewed',
+    ]);
     expect(h.crash.errors, isEmpty);
   });
 
@@ -64,7 +69,7 @@ void main() {
     await n.set(ConsentPurpose.crashReports, enabled: true);
     await c
         .read(eventTrackerProvider)
-        .track(const ScreenViewedEvent(screen: ScreenName.settings));
+        .track(const ServersScreenViewedEvent(screen: ScreenName.settings));
     expect(c.read(breadcrumbsProvider).entries, isNotEmpty);
 
     final before = h.analytics.events.length;
@@ -76,7 +81,7 @@ void main() {
 
     await c
         .read(eventTrackerProvider)
-        .track(const ScreenViewedEvent(screen: ScreenName.settings));
+        .track(const ServersScreenViewedEvent(screen: ScreenName.settings));
     await c.read(crashReporterProvider).recordError('x', null);
     // Withdrawing is itself not reported (analytics is off by then).
     expect(h.analytics.events.length, before);

@@ -173,11 +173,12 @@ class TrackedConnectionTester implements ConnectionTester {
     final kind = ServiceKindParam.fromCode(profile.kind.name);
     if (kind != null) {
       await _tracker.track(switch (outcome) {
-        ConnectionTestSuccess(:final majorVersion) => ConnectionTestResultEvent(
-          serviceKind: kind,
-          majorVersion: majorVersion,
-        ),
-        ConnectionTestFailure(:final error) => ConnectionTestResultEvent(
+        ConnectionTestSuccess(:final majorVersion) =>
+          ServersConnectionTestResultEvent(
+            serviceKind: kind,
+            majorVersion: majorVersionParam(majorVersion),
+          ),
+        ConnectionTestFailure(:final error) => ServersConnectionTestResultEvent(
           serviceKind: kind,
           errorCategory: ErrorCategoryParam.fromCode(error.category.code),
         ),

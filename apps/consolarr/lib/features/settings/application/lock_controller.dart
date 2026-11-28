@@ -379,7 +379,7 @@ class AppLockController extends Notifier<AppLockState> {
 
   Future<void> _track({required bool enabled}) => ref
       .read(eventTrackerProvider)
-      .track(AppLockToggledEvent(enabled: enabled));
+      .track(SettingsAppLockToggledEvent(enabled: enabled));
 }
 
 enum EnableLockResult { enabled, noSecureLock, notConfirmed }

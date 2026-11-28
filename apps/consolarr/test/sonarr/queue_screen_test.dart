@@ -241,7 +241,7 @@ void main() {
         expect(find.text('Removed from the queue'), findsOneWidget);
         expect(find.byTooltip('Remove from queue'), findsOneWidget);
         final removed = events.logged.singleWhere(
-          (e) => e.$1 == 'queue_item_removed',
+          (e) => e.$1 == 'sonarr_queue_item_removed',
         );
         expect(removed.$2['from_client'], isTrue);
         // Closed values only: no titles in the event.

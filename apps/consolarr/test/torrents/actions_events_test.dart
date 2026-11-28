@@ -69,7 +69,7 @@ void main() {
         expect((await f).isOk, isTrue);
         expect(c.read(torrentActionsProvider).rows, isEmpty);
         expect(client.calls.where((x) => x == 'pause'), hasLength(1));
-        expect(analytics.events, contains('torrent_action'));
+        expect(analytics.events, contains('torrents_action'));
         expect(analytics.parameters.last, {
           'action': 'pause',
           'outcome': 'success',
@@ -147,7 +147,7 @@ void main() {
           );
       expect(ok, isTrue);
       expect(client.addedLinks, [_secretMagnet]);
-      expect(analytics.events, contains('torrent_added'));
+      expect(analytics.events, contains('torrents_added'));
       expect(analytics.parameters.last, {
         'source': 'magnet',
         'client': 'qbittorrent',

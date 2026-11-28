@@ -18,29 +18,29 @@ enums:
     dart: SonarrBlocklistChoiceParam
     values: [none, blocklist_and_search, blocklist_only]
 events:
-  series_added:
+  sonarr_series_added:
     description: A series was added to Sonarr; says whether a search was started.
     params:
       searched: {type: bool}
-  release_grabbed:
+  sonarr_release_grabbed:
     description: An interactive-search release was sent to the download client.
     params:
       outcome: {type: sonarr_grab_outcome_param}
-  search_started:
+  sonarr_search_started:
     description: A Sonarr search command was started.
     params:
       scope: {type: sonarr_search_scope_param}
-  search_finished:
+  sonarr_search_finished:
     description: A tracked Sonarr search command ended.
     params:
       scope: {type: sonarr_search_scope_param}
       outcome: {type: sonarr_search_outcome_param}
-  queue_item_removed:
+  sonarr_queue_item_removed:
     description: A queue item was removed, with the blocklist choice made.
     params:
       blocklist: {type: sonarr_blocklist_choice_param}
       from_client: {type: bool}
-  series_monitor_changed:
+  sonarr_series_monitor_changed:
     description: Monitoring of a series, season or episode was changed.
     params:
       monitored: {type: bool}

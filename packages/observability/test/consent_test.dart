@@ -72,27 +72,33 @@ void main() {
   test(
     'with consent off zero calls reach analytics or the crash reporter',
     () async {
-      await tracker.track(const ScreenViewedEvent(screen: ScreenName.settings));
+      await tracker.track(
+        const ServersScreenViewedEvent(screen: ScreenName.settings),
+      );
       await manager.crashReporter.recordError('x', null);
       await manager.crashReporter.recordError('y', null, fatal: true);
       expect(analytics.events, isEmpty);
       expect(crash.errors, isEmpty);
-      // Breadcrumbs stay local.
-      expect(crumbs.entries, isNotEmpty);
+      // Not even breadcrumbs are kept without crash consent (P-L3).
+      expect(crumbs.entries, isEmpty);
     },
   );
 
   test('analytics consent forwards events but not errors', () async {
     await manager.set(ConsentPurpose.analytics, enabled: true);
-    await tracker.track(const ScreenViewedEvent(screen: ScreenName.settings));
+    await tracker.track(
+      const ServersScreenViewedEvent(screen: ScreenName.settings),
+    );
     await manager.crashReporter.recordError('x', null);
-    expect(analytics.events, ['screen_viewed']);
+    expect(analytics.events, ['servers_screen_viewed']);
     expect(crash.errors, isEmpty);
   });
 
   test('crash consent forwards errors but not events', () async {
     await manager.set(ConsentPurpose.crashReports, enabled: true);
-    await tracker.track(const ScreenViewedEvent(screen: ScreenName.settings));
+    await tracker.track(
+      const ServersScreenViewedEvent(screen: ScreenName.settings),
+    );
     await manager.crashReporter.recordError('x', null);
     expect(analytics.events, isEmpty);
     expect(crash.errors.single, isA<CrashPayload>());
@@ -104,7 +110,9 @@ void main() {
     () async {
       await manager.set(ConsentPurpose.crashReports, enabled: true);
       await manager.set(ConsentPurpose.analytics, enabled: true);
-      await tracker.track(const ScreenViewedEvent(screen: ScreenName.settings));
+      await tracker.track(
+        const ServersScreenViewedEvent(screen: ScreenName.settings),
+      );
       expect(crumbs.entries, isNotEmpty);
 
       await manager.set(ConsentPurpose.crashReports, enabled: false);
@@ -116,7 +124,9 @@ void main() {
       await manager.set(ConsentPurpose.analytics, enabled: false);
       expect(analytics.enabledCalls.last, isFalse);
       final before = analytics.events.length;
-      await tracker.track(const ScreenViewedEvent(screen: ScreenName.settings));
+      await tracker.track(
+        const ServersScreenViewedEvent(screen: ScreenName.settings),
+      );
       expect(analytics.events.length, before);
     },
   );
@@ -162,8 +172,10 @@ void main() {
   test('the loaded state is applied to the sinks without a toggle', () async {
     await store.save(const ConsentState(analytics: true));
     await manager.load();
-    await tracker.track(const ScreenViewedEvent(screen: ScreenName.settings));
-    expect(analytics.events, ['screen_viewed']);
+    await tracker.track(
+      const ServersScreenViewedEvent(screen: ScreenName.settings),
+    );
+    expect(analytics.events, ['servers_screen_viewed']);
   });
 
   group('strict zero calls while consent is off (L2)', () {

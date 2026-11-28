@@ -51,7 +51,7 @@ void main() {
       'poll_cycle_finished',
     ]);
     expect(sink.events[1].$2, {'change': 'queue_item_completed'});
-    expect(sink.events.last.$2, {'servers': 1, 'failed': 0, 'changes': 1});
+    expect(sink.events.last.$2, {'servers': 'one', 'failed': 'zero', 'changes': 'one'});
     final all = sink.events.toString();
     expect(all, isNot(contains('Secret')));
     expect(all, isNot(contains('srv-')));

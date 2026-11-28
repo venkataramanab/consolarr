@@ -21,16 +21,16 @@ enums:
     dart: DiagnosticsChannelParam
     values: [file, github]
 events:
-  app_lock_toggled:
+  settings_app_lock_toggled:
     description: The app lock was switched on or off.
     params:
       enabled: {type: bool}
-  consent_changed:
+  settings_consent_changed:
     description: The user changed a telemetry consent switch.
     params:
       purpose: {type: consent_purpose_param}
       enabled: {type: bool}
-  diagnostics_shared:
+  settings_diagnostics_shared:
     description: The user shared a previewed diagnostics bundle.
     params:
       channel: {type: diagnostics_channel_param}

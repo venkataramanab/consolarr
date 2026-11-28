@@ -17,11 +17,11 @@ enums:
     values: [series, movie, sonarr, radarr, torrents]
 events:
   dashboard_refreshed:
-    description: A dashboard refresh finished; counts of the servers asked and the ones that failed.
+    description: A dashboard refresh finished (at most once per session); bucketed counts of the servers asked and the ones that failed.
     params:
       trigger: {type: dashboard_trigger_param}
-      servers: {type: int}
-      failed: {type: int}
+      servers: {type: count_bucket_param}
+      failed: {type: count_bucket_param}
   dashboard_card_opened:
     description: An item or a card of the dashboard was opened.
     params:

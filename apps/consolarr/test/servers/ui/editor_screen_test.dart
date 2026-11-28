@@ -402,7 +402,7 @@ void main() {
       expect(await h.pins.read(pinKeyFor('x')), details().fingerprint);
       expect(h.tester.profiles, hasLength(2));
       expect(find.text('Connected'), findsOneWidget);
-      expect(h.analytics.events, contains('certificate_decision'));
+      expect(h.analytics.events, contains('servers_certificate_decision'));
       expect(
         h.analytics.parameters.any((p) => p['decision'] == 'accepted'),
         isTrue,
@@ -574,7 +574,7 @@ void main() {
       final h = UiHarness();
       await _pump(tester, h);
       expect(
-        h.analytics.events.where((e) => e == 'screen_viewed'),
+        h.analytics.events.where((e) => e == 'servers_screen_viewed'),
         hasLength(1),
       );
     });

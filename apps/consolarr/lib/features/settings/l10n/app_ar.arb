@@ -254,7 +254,7 @@
   "@privacyCrashTitle": {
     "description": "Title of the crash reports consent switch."
   },
-  "privacyCrashWhat": "عند تعطل التطبيق يرسل نوع الخطأ وإصدار التطبيق وأندرويد وآخر الشاشات التي فتحتها (أسماء الشاشات فقط). لا يرسل أبدًا العناوين أو المفاتيح أو الأسماء أو العناوين الفنية.",
+  "privacyCrashWhat": "عند تعطل التطبيق يرسل اسم نوع الخطأ وتصنيفًا عامًّا للخطأ إن وُجد ومواضع الشيفرة في العطل (أسماء الملفات وأرقام الأسطر) وإصدار التطبيق وأندرويد وآخر الشاشات التي فتحتها وأنواع أخطاء الخوادم قبل العطل مباشرة (أسماء من قائمة ثابتة). لا يرسل أبدًا نص رسالة الخطأ أو العناوين أو المفاتيح أو الأسماء أو العناوين الفنية.",
   "@privacyCrashWhat": {
     "description": "Explains exactly what the crash reports switch sends."
   },
@@ -298,9 +298,77 @@
   "@privacyEventDiagnostics": {
     "description": "Payload list item for the diagnostics shared event."
   },
-  "privacyEventOther": "إجراءات ميزات أخرى كأعداد لخيارات محددة فقط",
-  "@privacyEventOther": {
-    "description": "Payload list item covering events of other features."
+  "privacyEventSonarrSeriesAdded": "أنه أُضيف مسلسل، وهل بدأ بحث",
+  "@privacyEventSonarrSeriesAdded": {
+    "description": "Payload list item for the series added event."
+  },
+  "privacyEventSonarrReleaseGrabbed": "هل أُرسل إصدار مسلسل اخترته إلى عميل التنزيل أم فشل أم رُفض",
+  "@privacyEventSonarrReleaseGrabbed": {
+    "description": "Payload list item for the Sonarr release grabbed event."
+  },
+  "privacyEventSonarrSearchStarted": "أنه بدأ بحث عن مسلسل، ونطاقه (حلقة أو موسم أو مسلسل أو كل الناقص)",
+  "@privacyEventSonarrSearchStarted": {
+    "description": "Payload list item for the Sonarr search started event."
+  },
+  "privacyEventSonarrSearchFinished": "كيف انتهى بحث المسلسل (وُجد أو لم يوجد شيء أو فشل أو انتهت المهلة)",
+  "@privacyEventSonarrSearchFinished": {
+    "description": "Payload list item for the Sonarr search finished event."
+  },
+  "privacyEventSonarrQueueItemRemoved": "أنه أُزيل تنزيل مسلسل من الطابور، وخيار القائمة المحظورة",
+  "@privacyEventSonarrQueueItemRemoved": {
+    "description": "Payload list item for the Sonarr queue item removed event."
+  },
+  "privacyEventSonarrMonitorChanged": "أنه جرى تشغيل أو إيقاف متابعة مسلسل أو موسم أو حلقة",
+  "@privacyEventSonarrMonitorChanged": {
+    "description": "Payload list item for the series monitor changed event."
+  },
+  "privacyEventRadarrMovieAdded": "أنه أُضيف فيلم، وهل اخترت البحث والمجموعة",
+  "@privacyEventRadarrMovieAdded": {
+    "description": "Payload list item for the movie added event."
+  },
+  "privacyEventRadarrReleaseGrabbed": "هل أُرسل إصدار فيلم اخترته إلى عميل التنزيل، وهل كان مرفوضًا",
+  "@privacyEventRadarrReleaseGrabbed": {
+    "description": "Payload list item for the Radarr release grabbed event."
+  },
+  "privacyEventRadarrSearchStarted": "أنه بدأ بحث عن فيلم (فيلم واحد أو كل الناقص)",
+  "@privacyEventRadarrSearchStarted": {
+    "description": "Payload list item for the Radarr search started event."
+  },
+  "privacyEventRadarrQueueItemRemoved": "أنه أُزيل تنزيل فيلم من الطابور، وخيار الإزالة",
+  "@privacyEventRadarrQueueItemRemoved": {
+    "description": "Payload list item for the Radarr queue item removed event."
+  },
+  "privacyEventTorrentsAdded": "أنه أُضيف تورنت، وبأي طريقة (رابط ماغنت أو عنوان أو ملف)، ولأي نوع من العملاء، وهل نجح",
+  "@privacyEventTorrentsAdded": {
+    "description": "Payload list item for the torrent added event."
+  },
+  "privacyEventTorrentsAction": "أنك أوقفت تورنتات مؤقتًا أو استأنفتها أو أزلتها، وهل نجح ذلك",
+  "@privacyEventTorrentsAction": {
+    "description": "Payload list item for the torrent action event."
+  },
+  "privacyEventTorrentsSpeedLimits": "أنه جرى تغيير حدود السرعة، ولأي نوع من العملاء، وهل نجح",
+  "@privacyEventTorrentsSpeedLimits": {
+    "description": "Payload list item for the speed limits changed event."
+  },
+  "privacyEventDashboardRefreshed": "أنه جرى تحديث لوحة المعلومات (مرة واحدة في الجلسة على الأكثر)، وما الذي أطلقه، وأعداد تقريبية للخوادم والإخفاقات (0 أو 1 أو 2 أو 3 إلى 5 أو 6 فأكثر)",
+  "@privacyEventDashboardRefreshed": {
+    "description": "Payload list item for the dashboard refreshed event."
+  },
+  "privacyEventDashboardCardOpened": "أنك فتحت عنصرًا من بطاقة في لوحة المعلومات، ونوع الشاشة التي أدى إليها",
+  "@privacyEventDashboardCardOpened": {
+    "description": "Payload list item for the dashboard card opened event."
+  },
+  "privacyEventDashboardCardRetried": "أنك ضغطت إعادة المحاولة على بطاقة في لوحة المعلومات، ونوع الإخفاق",
+  "@privacyEventDashboardCardRetried": {
+    "description": "Payload list item for the dashboard card retried event."
+  },
+  "privacyEventPollCycleFinished": "أنه انتهى فحص خوادمك في الخلفية، مع أعداد تقريبية للخوادم والإخفاقات والتغييرات (0 أو 1 أو 2 أو 3 إلى 5 أو 6 فأكثر)",
+  "@privacyEventPollCycleFinished": {
+    "description": "Payload list item for the poll cycle finished event."
+  },
+  "privacyEventPollChangeDetected": "أنه لوحظ تنزيل مكتمل أو فاشل، ونوعه",
+  "@privacyEventPollChangeDetected": {
+    "description": "Payload list item for the poll change detected event."
   },
   "privacyWithdrawHint": "إيقاف المفتاح يوقف الجمع فورًا ويمسح كل ما ينتظر الإرسال.",
   "@privacyWithdrawHint": {

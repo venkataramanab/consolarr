@@ -209,7 +209,7 @@ class SeriesDetailNotifier extends AsyncNotifier<DetailState> {
     if (ok) {
       ref
           .read(eventTrackerProvider)
-          .track(SeriesMonitorChangedEvent(monitored: monitored));
+          .track(SonarrSeriesMonitorChangedEvent(monitored: monitored));
       await _repository?.store(next.snapshot);
     }
   }
@@ -255,7 +255,7 @@ class SeriesDetailNotifier extends AsyncNotifier<DetailState> {
     }
     ref
         .read(eventTrackerProvider)
-        .track(SeriesMonitorChangedEvent(monitored: monitored));
+        .track(SonarrSeriesMonitorChangedEvent(monitored: monitored));
     state = AsyncData(
       now.copyWith(
         snapshot: now.snapshot.copyWith(detail: updated),
@@ -294,7 +294,9 @@ class SeriesDetailNotifier extends AsyncNotifier<DetailState> {
       ref
           .read(eventTrackerProvider)
           .track(
-            SeriesMonitorChangedEvent(monitored: updated.summary.monitored),
+            SonarrSeriesMonitorChangedEvent(
+              monitored: updated.summary.monitored,
+            ),
           );
     }
     // The server took the change; the screen may already show an error.

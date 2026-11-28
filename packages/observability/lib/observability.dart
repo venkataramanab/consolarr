@@ -8,6 +8,7 @@ library;
 
 export 'src/analytics.dart';
 export 'src/breadcrumbs.dart';
+export 'src/buckets.dart';
 export 'src/consent_gating.dart';
 export 'src/consent_store.dart';
 export 'src/crash_payload.dart';
