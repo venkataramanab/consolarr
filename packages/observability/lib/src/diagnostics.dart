@@ -1,10 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'dart:convert';
+import 'dart:developer' as developer;
 
 import 'package:observability/src/events/catalog.dart';
-import 'package:observability/src/logger.dart';
 import 'package:observability/src/redactor.dart';
+
+// AppLogger is part of this library so that it alone can reach the private
+// scrubbed writer below (the compiler, not a convention, keeps every other
+// caller on the scrubbing [DiagnosticsLog.add]).
+part 'logger.dart';
 
 /// One captured log line. The message is already redacted.
 class LogEntry {
@@ -22,7 +27,7 @@ class LogEntry {
 /// The opt-in in-app log (SET-04): off by default, memory only, a circular
 /// buffer with a cap, cleared on request, when turned off and when the
 /// process ends. Messages are redacted and scrubbed once at write time (by
-/// [add], or by [AppLogger] before [addScrubbed]) and capped at
+/// [add], or by [AppLogger] before the private scrubbed writer) and capped at
 /// [maxMessageLength]; the bundle scrubs them again with the known server
 /// values.
 ///
@@ -105,8 +110,9 @@ class DiagnosticsLog {
 
   /// Records a line that has **already** been through the redactor and the
   /// scrubber (it is [AppLogger]'s output, which scrubs once for every sink
-  /// it feeds). Anything else must use [add].
-  void addScrubbed(LogLevel level, String scrubbed) => _store(level, scrubbed);
+  /// it feeds). Library-private: only [AppLogger] (a `part` of this library)
+  /// can call it; everything else must use [add].
+  void _addScrubbed(LogLevel level, String scrubbed) => _store(level, scrubbed);
 
   void _store(LogLevel level, String text) {
     if (!_enabled || level.index < _level.index) return;

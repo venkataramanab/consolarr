@@ -1,0 +1,170 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Signed release: builds both flavours, signs them with the release key and
+# creates a DRAFT GitHub Release. The owner reviews and publishes it by hand.
+# See docs/releasing.md for the one-time setup (keystore, environment secrets,
+# environment protection) and the release procedure.
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to (re)build, e.g. v0.1.0. Run this workflow FROM that tag."
+        required: true
+        type: string
+
+# Least privilege by default; jobs that need more declare it themselves.
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+
+jobs:
+  verify:
+    name: Verify tag
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      sha: ${{ steps.check.outputs.sha }}
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Tag is on main and matches the pubspec versions
+        id: check
+        run: bash tools/release/stage.sh tag
+
+  build:
+    name: Build and sign
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    # Required reviewers on this environment give every release a manual
+    # approval. The four signing secrets exist only here.
+    environment: release
+    outputs:
+      sums_sha256: ${{ steps.verify.outputs.sums_sha256 }}
+      cert_sha256: ${{ steps.verify.outputs.cert_sha256 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.verify.outputs.sha }}
+          persist-credentials: false
+
+      # First, so a missing secret fails in seconds. The cleanup steps below
+      # run with always(), also when a step before them fails.
+      - name: Decode keystore and write key.properties
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: bash tools/release/stage.sh prepare
+
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          cache-provider: basic
+          # Tag refs never write the cache.
+          cache-read-only: true
+          build-scan-publish: false
+          dependency-graph: disabled
+          add-job-summary-as-pr-comment: never
+      - uses: ./.github/actions/setup-flutter
+
+      - name: Build both flavours (release, obfuscated, gated)
+        run: bash tools/release/stage.sh build
+
+      - name: Verify signatures; record the certificate digest
+        id: verify
+        env:
+          # Repository variable: the pinned release certificate digest.
+          EXPECTED_CERT_SHA256: ${{ vars.RELEASE_CERT_SHA256 }}
+        run: bash tools/release/stage.sh verify
+
+      # As soon as nothing needs the key any more, before any upload.
+      - name: Remove keystore and key.properties
+        if: always()
+        run: bash tools/release/stage.sh cleanup
+
+      - name: Upload release files
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-files
+          path: |
+            ${{ runner.temp }}/release/*.apk
+            ${{ runner.temp }}/release/SHA256SUMS.txt
+            ${{ runner.temp }}/release/SIGNING-CERT-SHA256.txt
+          retention-days: 14
+          if-no-files-found: error
+          compression-level: 0
+
+      # Obfuscation symbols, kept only for crash symbolication. They are not
+      # release assets.
+      - name: Upload debug-info (symbols)
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: debug-info-${{ env.TAG }}
+          path: ${{ runner.temp }}/debug-info/
+          retention-days: 90
+          if-no-files-found: error
+
+      # Again at the very end, in case a step in between left something.
+      - name: Remove keystore and key.properties (final)
+        if: always()
+        run: bash tools/release/stage.sh cleanup
+
+  attest:
+    name: Build provenance
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    # No checkout, no environment, no secrets: only what attestation needs.
+    permissions:
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-files
+          path: release
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: release/*.apk
+
+  publish:
+    name: Draft GitHub Release
+    needs: [verify, build, attest]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-files
+          path: release
+
+      - name: Check the files, then create the draft release
+        env:
+          SHA: ${{ needs.verify.outputs.sha }}
+          RECORDED_SUMS_SHA256: ${{ needs.build.outputs.sums_sha256 }}
+          RECORDED_CERT_SHA256: ${{ needs.build.outputs.cert_sha256 }}
+        run: bash tools/release/stage.sh publish

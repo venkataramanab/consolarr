@@ -2,7 +2,7 @@
 
 import 'dart:async';
 
-import 'package:consolarr/features/dashboard/application/dashboard_day.dart';
+import 'package:consolarr/shared/time/current_day.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_models.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_providers.dart';
 import 'package:consolarr/features/dashboard/presentation/activity_card.dart';
@@ -39,14 +39,14 @@ class DashboardScreen extends ConsumerStatefulWidget {
 class _DashboardScreenState extends ConsumerState<DashboardScreen>
     with WidgetsBindingObserver {
   late final PollScheduler _scheduler;
-  late final DashboardDay _day;
+  late final CurrentDay _day;
   bool _resumed = true;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _day = ref.read(dashboardDayProvider.notifier);
+    _day = ref.read(currentDayProvider.notifier);
     _scheduler = PollScheduler(
       interval: ref.read(dashboardPollIntervalProvider),
       isVisible: () =>
@@ -69,7 +69,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
   void _syncVisibility() {
     if (!mounted) return;
     final visible = _scheduler.isVisible();
-    _day.setVisible(visible);
+    _day.setVisible(visible, owner: this);
     if (visible) {
       _scheduler.visibilityChanged();
     } else {
@@ -97,7 +97,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
     if (ref.read(firstFrameDoneProvider)) {
       // Coming back refreshes everything (pollNow checks visibility itself).
       final visible = _scheduler.isVisible();
-      _day.setVisible(visible);
+      _day.setVisible(visible, owner: this);
       if (visible) {
         unawaited(
           ref.read(dashboardProvider.notifier).refresh(DashboardTrigger.resume),
@@ -110,7 +110,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
   @override
   void dispose() {
     _scheduler.dispose();
-    _day.setVisible(false);
+    _day.setVisible(false, owner: this);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

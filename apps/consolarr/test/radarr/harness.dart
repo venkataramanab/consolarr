@@ -37,6 +37,7 @@ Widget radarrApp(
   bool includeContext = true,
   ArtworkSource? artwork,
   MovieRunner? movieRunner,
+  DateTime Function()? clock,
 }) {
   return ProviderScope(
     overrides: [
@@ -46,6 +47,7 @@ Widget radarrApp(
         prefs: prefs,
         includeContext: includeContext,
         movieRunner: movieRunner,
+        clock: clock,
       ),
       artworkSourceProvider.overrideWithValue(artwork),
       ...extra,

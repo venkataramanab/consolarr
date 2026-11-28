@@ -1,0 +1,57 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Proves the release signing path (tools/release/*, the same scripts
+# release.yml runs) with a throwaway keystore generated at runtime. No secrets,
+# nothing is published, nothing is uploaded.
+name: Release dry run
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/release.yml"
+      - ".github/workflows/release-dry-run.yml"
+      - "tools/release/**"
+      - "tools/ci/check_apk_size.sh"
+      - "tools/ci/check_merged_manifest.py"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-dry-run-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dry-run:
+    name: Signing dry run (throwaway keystore)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          cache-provider: basic
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          build-scan-publish: false
+          dependency-graph: disabled
+          add-job-summary-as-pr-comment: never
+      - uses: ./.github/actions/setup-flutter
+
+      - name: Run the release path with a throwaway keystore
+        run: |
+          set -euo pipefail
+          export APKSIGNER="${ANDROID_HOME}/build-tools/35.0.0/apksigner"
+          mkdir -p "$RUNNER_TEMP/dry"
+          bash tools/release/dry_run.sh "$RUNNER_TEMP/dry" | tee "$RUNNER_TEMP/dry.log"
+          {
+            echo '### Release dry run (digests only)'
+            echo '```'
+            grep -E '^(ok:|== |Dry run complete|Signature verified|Certificate SHA-256)|\.apk$' "$RUNNER_TEMP/dry.log" || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -84,6 +84,8 @@ android {
                 keyPassword = keystoreProperties.getProperty("keyPassword")
                 storeFile = file(keystoreProperties.getProperty("storeFile"))
                 storePassword = keystoreProperties.getProperty("storePassword")
+                // The release workflow requires the v3 scheme (v2 stays at the AGP default).
+                enableV3Signing = true
             }
         }
     }
