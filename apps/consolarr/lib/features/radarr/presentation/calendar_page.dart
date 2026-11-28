@@ -56,13 +56,20 @@ class _CalendarPageState extends ConsumerState<CalendarPage>
   void initState() {
     super.initState();
     _day = ref.read(currentDayProvider.notifier);
-    _syncDay();
+    _syncDay(building: true);
   }
 
   /// The midnight timer runs only while this page is visible (the same rule
-  /// as every poll). Deferred: a provider cannot change while widgets build,
-  /// and visibility is first known during the build.
-  void _syncDay() {
+  /// as every poll). Turning invisible is applied at once: lifecycle and lock
+  /// callbacks run outside build, and while the app is paused no frame runs,
+  /// so a deferred cancel would leave the timer armed. Only the build-time
+  /// case (visibility is first known during the build, and a provider cannot
+  /// change while widgets build) is deferred.
+  void _syncDay({bool building = false}) {
+    if (!building && !isVisible) {
+      _day.setVisible(false, owner: this);
+      return;
+    }
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (mounted) _day.setVisible(isVisible, owner: this);
     });

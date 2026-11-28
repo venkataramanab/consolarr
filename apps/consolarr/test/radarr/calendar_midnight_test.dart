@@ -102,4 +102,32 @@ void main() {
     expect(_today(DateTime(2026, 5, 2)), findsOneWidget);
     expect(_today(DateTime(2026, 5, 1)), findsNothing);
   });
+
+  testWidgets('a backgrounded app cancels the midnight timer at once, before '
+      'any frame runs', (tester) async {
+    var now = DateTime(2026, 5, 1, 23, 59, 50);
+    final v = phone.first;
+    applyVariantView(tester, v);
+    await tester.pumpWidget(
+      radarrApp(v, _api(), const CalendarPage(padding: _pad), clock: () => now),
+    );
+    await tester.pumpAndSettle();
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(CalendarPage)),
+    );
+    expect(container.read(currentDayProvider), DateTime.utc(2026, 5, 1));
+
+    // No frame is pumped between the lifecycle change and the clock moving:
+    // while paused the engine runs none, so a cancel deferred to a
+    // post-frame callback would never happen and the timer would fire.
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    now = DateTime(2026, 5, 2, 0, 0, 5);
+    // `pump` elapses the time first (timers fire), then draws one frame.
+    await tester.pump(const Duration(minutes: 5));
+    expect(container.read(currentDayProvider), DateTime.utc(2026, 5, 1));
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
+    expect(container.read(currentDayProvider), DateTime.utc(2026, 5, 2));
+  });
 }

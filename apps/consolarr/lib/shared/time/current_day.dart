@@ -38,14 +38,20 @@ class CurrentDay extends Notifier<DateTime> {
   /// Arms the midnight timer while any [owner] is visible, cancels it when
   /// none is.
   void setVisible(bool visible, {required Object owner}) {
-    if (visible) {
-      _visibleOwners.add(owner);
-    } else {
+    if (!visible) {
+      // Never touches `state`, so it is safe at any time, even during a
+      // build; the timer of an owner that is still visible keeps running.
       _visibleOwners.remove(owner);
+      if (_visibleOwners.isEmpty) {
+        _timer?.cancel();
+        _timer = null;
+      }
+      return;
     }
+    _visibleOwners.add(owner);
     _timer?.cancel();
     _timer = null;
-    if (_visibleOwners.isEmpty || !ref.mounted) return;
+    if (!ref.mounted) return;
     final today = _today();
     if (today != state) state = today;
     _arm();
