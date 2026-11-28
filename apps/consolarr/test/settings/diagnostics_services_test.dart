@@ -10,7 +10,7 @@ import 'package:consolarr/features/settings/application/settings_providers.dart'
 import 'package:consolarr/features/settings/domain/app_settings.dart';
 import 'package:consolarr/features/settings/presentation/diagnostics_preview_screen.dart';
 import 'package:core/core.dart';
-import 'package:flutter/services.dart' show SystemChannels;
+import 'package:flutter/rendering.dart' show SemanticsNode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:l10n/l10n.dart';
@@ -22,6 +22,28 @@ import 'screens_support.dart';
 
 Future<AppLocalizations> _en() =>
     AppLocalizations.delegate.load(const Locale('en'));
+
+/// The labels of every live-region node on screen. A live region is announced
+/// whenever its label changes (it does not go through
+/// `SystemChannels.accessibility`), so the label is what to assert on.
+List<String> liveRegionLabels(WidgetTester tester) {
+  final out = <String>[];
+  void visit(SemanticsNode n) {
+    final d = n.getSemanticsData();
+    if (d.flagsCollection.isLiveRegion) out.add(d.label);
+    n.visitChildren((c) {
+      visit(c);
+      return true;
+    });
+  }
+
+  visit(tester.binding.pipelineOwner.semanticsOwner!.rootSemanticsNode!);
+  return out;
+}
+
+void expectLiveLabelUnchanged(WidgetTester tester, String expected) {
+  expect(liveRegionLabels(tester), [expected]);
+}
 
 final _matrix = harnessMatrix(sizes: const [Size(320, 568), Size(412, 915)]);
 
@@ -267,32 +289,74 @@ void main() {
       expect(find.text(l10n.diagServicesCheckAgain), findsOneWidget);
     });
 
-    testWidgets('a poll tick (rebuild with the same state) announces nothing', (
-      tester,
-    ) async {
+    testWidgets('I-2: poll ticks leave the live-region label untouched, and '
+        'it changes exactly once per phase change', (tester) async {
       final l10n = await _en();
       final handle = tester.ensureSemantics();
+      final gate = Completer<void>();
       final h = ScreenHarness(
         stored: {SettingsKeys.diagnosticsEnabled: '1'},
         servers: [entry('a')],
       );
       final c = await _pump(tester, h);
+      final seen = <String>[];
+      void record() {
+        final labels = liveRegionLabels(tester);
+        expect(labels, hasLength(1), reason: 'one live region on the screen');
+        if (seen.isEmpty || seen.last != labels.single) {
+          seen.add(labels.single);
+        }
+      }
+
+      record();
+      expect(seen, [l10n.diagServicesNotChecked]);
+      // Ticks before any check: the same label every time.
+      for (var i = 0; i < 3; i++) {
+        c.invalidate(serversProvider);
+        await tester.pump(const Duration(seconds: 10));
+        expectLiveLabelUnchanged(tester, seen.last);
+      }
+      // One phase change: not checked -> done (the fake check is instant).
       await tester.tap(find.text(l10n.diagServicesCheck));
       await tester.pumpAndSettle();
-      final messages = <Object?>[];
-      tester.binding.defaultBinaryMessenger
-          .setMockDecodedMessageHandler<Object?>(SystemChannels.accessibility, (
-            m,
-          ) async {
-            messages.add(m);
-            return null;
-          });
+      record();
+      expect(seen, [l10n.diagServicesNotChecked, l10n.diagServicesDone(1, 0)]);
       // Health refreshes elsewhere invalidate the server list repeatedly.
       for (var i = 0; i < 3; i++) {
         c.invalidate(serversProvider);
         await tester.pump(const Duration(seconds: 10));
+        expectLiveLabelUnchanged(tester, seen.last);
       }
-      expect(messages, isEmpty);
+      expect(seen, hasLength(2), reason: 'exactly one change per phase');
+      gate.complete();
+      handle.dispose();
+    });
+
+    testWidgets('I-2 (proof): the check fails when the label ticks', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      final tick = ValueNotifier<int>(0);
+      addTearDown(tick.dispose);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ValueListenableBuilder<int>(
+            valueListenable: tick,
+            builder: (_, n, _) => Semantics(
+              liveRegion: true,
+              child: Text('checked $n seconds ago'),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      final first = liveRegionLabels(tester).single;
+      tick.value++;
+      await tester.pump();
+      expect(
+        () => expectLiveLabelUnchanged(tester, first),
+        throwsA(isA<TestFailure>()),
+      );
       handle.dispose();
     });
   });
