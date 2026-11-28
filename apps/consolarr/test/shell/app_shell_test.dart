@@ -165,7 +165,7 @@ void main() {
       expect(find.text('Screen sonarr'), findsOneWidget);
       final bar = tester.widget<FloatingNavBar>(find.byType(FloatingNavBar));
       expect(bar.destinations.map((d) => d.label), [
-        'Home',
+        'Dashboard',
         'Series',
         'Settings',
         'Servers',

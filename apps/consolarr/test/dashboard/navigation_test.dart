@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:consolarr/features/dashboard/application/dashboard_models.dart';
+import 'package:consolarr/features/dashboard/dashboard_routes.dart';
 import 'package:consolarr/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:consolarr/features/radarr/radarr_routes.dart' show parseMovieId;
 import 'package:consolarr/features/servers/domain/server_models.dart';
@@ -10,11 +11,13 @@ import 'package:consolarr/features/sonarr/sonarr_routes.dart'
 import 'package:consolarr/features/settings/application/lock_controller.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart' show PosterCard;
+import 'package:consolarr/src/router.dart' show AppRoutes;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:observability/observability.dart' show ScreenName;
 import 'package:test_harness/test_harness.dart';
 
 import 'screen_support.dart';
@@ -221,6 +224,14 @@ void main() {
     await tester.tap(find.byIcon(Icons.info_outline));
     await tester.pumpAndSettle();
     expect(find.text('About'), findsOneWidget);
+  });
+
+  test('the dashboard keeps the home destination and reports its screen', () {
+    expect(homeDestination.id, 'home');
+    expect(homeDestination.route, '/');
+    expect(homeDestination.kinds, isNull, reason: 'always offered');
+    expect(homeDestination.screen, ScreenName.dashboard);
+    expect(AppRoutes.home, '/');
   });
 
   test('every link the sources build is one the detail routes accept', () {

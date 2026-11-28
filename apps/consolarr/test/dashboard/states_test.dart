@@ -4,11 +4,9 @@ import 'dart:async';
 
 import 'package:consolarr/features/dashboard/application/dashboard_models.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_source.dart';
-import 'package:consolarr/features/dashboard/presentation/dashboard_widgets.dart';
 import 'package:consolarr/features/servers/application/server_connection.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:l10n/l10n.dart';
@@ -282,7 +280,7 @@ void main() {
           );
           expect(find.text(l10n.dashboardRetry), findsNWidgets(2));
           // the healthy services are still there
-          expect(find.textContaining('Sonarr ('), findsWidgets);
+          expect(find.textContaining('Sonarr'), findsWidgets);
           expect(find.byType(PosterCard), findsWidgets);
         },
       ),

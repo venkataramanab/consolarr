@@ -13,6 +13,7 @@ import 'package:arr_api/arr_api.dart'
 import 'package:consolarr/features/dashboard/application/dashboard_dates.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_models.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_source.dart';
+import 'package:consolarr/features/radarr/radarr_routes.dart' show radarrRoute;
 import 'package:consolarr/features/sonarr/sonarr_routes.dart'
     show sonarrRoute, sonarrSeriesLocation;
 import 'package:dio/dio.dart';
@@ -23,10 +24,8 @@ const kUpcomingDays = 14;
 /// Imports asked from the history.
 const kRecentImports = 20;
 
-const _radarrRoute = '/radarr';
-
 /// Radarr has the route `movie/:id` under its tab but no helper for it.
-String _radarrMovieLocation(int id) => '$_radarrRoute/movie/$id';
+String _radarrMovieLocation(int id) => '$radarrRoute/movie/$id';
 
 const _sonarrTab = DashboardLink(
   sonarrRoute,
@@ -34,7 +33,7 @@ const _sonarrTab = DashboardLink(
   DashboardDestination.sonarr,
 );
 const _radarrTab = DashboardLink(
-  _radarrRoute,
+  radarrRoute,
   DashboardTarget.tab,
   DashboardDestination.radarr,
 );

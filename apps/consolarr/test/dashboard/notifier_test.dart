@@ -4,7 +4,6 @@ import 'dart:async';
 
 import 'package:consolarr/features/dashboard/application/dashboard_models.dart';
 import 'package:consolarr/features/dashboard/application/dashboard_providers.dart';
-import 'package:consolarr/features/dashboard/application/dashboard_source.dart';
 import 'package:consolarr/features/servers/application/server_connection.dart';
 import 'package:core/core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

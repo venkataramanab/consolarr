@@ -72,9 +72,9 @@
   "@dashboardRecentEmptyBody": {
     "description": "Hint of the recent downloads card when nothing was imported lately."
   },
-  "dashboardServiceName": "{service} (⁨{name}⁩)",
+  "dashboardServiceName": "⁨{service}⁩ (⁨{name}⁩)",
   "@dashboardServiceName": {
-    "description": "A service and the name the user gave the server, for example \"Sonarr (Living room)\". The name is isolated for bidirectional text.",
+    "description": "A service and the name the user gave the server, for example \"Sonarr (Living room)\". Both are isolated for bidirectional text.",
     "placeholders": {
       "service": {
         "type": "String",
