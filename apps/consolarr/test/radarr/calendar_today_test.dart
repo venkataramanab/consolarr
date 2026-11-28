@@ -97,4 +97,47 @@ void main() {
       },
     );
   });
+
+  testWidgets('only earlier days: says nothing is upcoming and the earlier '
+      'days stay reachable by scrolling up', (tester) async {
+    final api = FakeRadarrApi()
+      ..calendarResult = Result.ok([
+        fakeMovie(1, title: 'Past Far', digital: DateTime.utc(2026, 4, 18)),
+        fakeMovie(2, title: 'Past Near', digital: DateTime.utc(2026, 4, 29)),
+      ]);
+    await pumpMatrix(
+      tester,
+      (v) => radarrApp(v, api, const CalendarPage(padding: _pad)),
+      variants: phone,
+      verify: (_) async {
+        // Not a blank screen: the opening view says why.
+        expect(
+          find.text('No upcoming releases. Scroll up for earlier ones.'),
+          findsOneWidget,
+        );
+        expect(find.text('Past Near').hitTestable(), findsNothing);
+        await tester.drag(find.byType(Scrollable).first, const Offset(0, 500));
+        await tester.pumpAndSettle();
+        expect(find.text('Past Near').hitTestable(), findsOneWidget);
+        await tester.drag(find.byType(Scrollable).first, const Offset(0, 900));
+        await tester.pumpAndSettle();
+        expect(find.text('Past Far').hitTestable(), findsOneWidget);
+      },
+    );
+  });
+
+  testWidgets('nothing in the window at all still shows the empty state, not '
+      'the upcoming row', (tester) async {
+    final api = FakeRadarrApi()..calendarResult = Result.ok(const []);
+    await pumpMatrix(
+      tester,
+      (v) => radarrApp(v, api, const CalendarPage(padding: _pad)),
+      variants: phone,
+    );
+    expect(
+      find.text('No upcoming releases. Scroll up for earlier ones.'),
+      findsNothing,
+    );
+    expect(find.textContaining('release date in this range'), findsOneWidget);
+  });
 }

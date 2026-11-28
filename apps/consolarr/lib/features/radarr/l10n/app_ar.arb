@@ -926,6 +926,10 @@
   "@radarrCalendarEmptyMessage": {
     "description": "Hint under the empty calendar headline."
   },
+  "radarrCalendarNothingUpcoming": "لا توجد إصدارات قادمة. مرّر لأعلى لعرض الإصدارات السابقة.",
+  "@radarrCalendarNothingUpcoming": {
+    "description": "Row at the top of the Radarr calendar when every release date in the loaded window is before today: nothing is upcoming, and the earlier days are above."
+  },
   "radarrCalendarDay": "{date}",
   "@radarrCalendarDay": {
     "description": "Day header of the calendar.",

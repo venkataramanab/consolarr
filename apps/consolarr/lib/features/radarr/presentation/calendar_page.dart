@@ -238,7 +238,10 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
             sliver: SliverList.builder(
               // The bar inset, the filters, then upcoming rows (or the empty
               // state when nothing is in the window).
-              itemCount: 1 + head.length + (entries.isEmpty ? 1 : ahead.length),
+              itemCount:
+                  1 +
+                  head.length +
+                  (entries.isEmpty || ahead.isEmpty ? 1 : ahead.length),
               itemBuilder: (context, i) {
                 if (i == 0) return SizedBox(height: padding.top);
                 i -= 1;
@@ -250,6 +253,23 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                       icon: Icons.event_busy_outlined,
                       headline: l10n.radarrCalendarEmptyHeadline,
                       message: l10n.radarrCalendarEmptyMessage,
+                    ),
+                  );
+                }
+                if (ahead.isEmpty) {
+                  // Everything in the window is before today: say so, with
+                  // the earlier days a scroll up away, instead of a blank view.
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: ConsolarrSpacing.xl,
+                    ),
+                    child: Semantics(
+                      liveRegion: true,
+                      child: Text(
+                        l10n.radarrCalendarNothingUpcoming,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
                     ),
                   );
                 }
