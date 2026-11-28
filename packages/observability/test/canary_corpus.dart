@@ -20,7 +20,9 @@ const _hex32 = '0a1b2c3d4e5f60718293a4b5c6d7e8f9';
 const _base32 = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP';
 // JWT-shaped, but assembled at runtime from fragments so that no literal in
 // the repository (or its history) matches a secret scanner's JWT pattern.
-const _jwtPrefix = 'ey' 'J';
+const _jwtPrefix =
+    'ey'
+    'J';
 const _jwtPayloadBody = 'zdWIiOiJjYW5hcnktYWxpY2UifQ';
 final _jwt = [
   '${_jwtPrefix}hbGciOiJIUzI1NiJ9',
