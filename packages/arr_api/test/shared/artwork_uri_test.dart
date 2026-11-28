@@ -25,13 +25,10 @@ void main() {
 
     test('keeps the ?h= and ?lastWrite= cache-busting queries', () {
       final h = c.artworkUriFor([
-        _img(
-          ArrImageType.poster,
-          '/MediaCover/7/poster.jpg?h=0123456789abcdef0123',
-        ),
+        _img(ArrImageType.poster, '/MediaCover/7/poster.jpg?h=${'ab' * 10}'),
       ], ArrImageType.poster)!;
       expect(h.path, '/MediaCover/7/poster.jpg');
-      expect(h.queryParameters, {'h': '0123456789abcdef0123'});
+      expect(h.queryParameters, {'h': 'ab' * 10});
       final w = c.artworkUriFor([
         _img(
           ArrImageType.poster,
