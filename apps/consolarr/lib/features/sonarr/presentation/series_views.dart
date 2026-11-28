@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:arr_api/arr_api.dart';
+import 'package:consolarr/shared/l10n/join_parts.dart';
 import 'package:consolarr/features/sonarr/application/sonarr_providers.dart';
 import 'package:consolarr/features/sonarr/presentation/formatters.dart';
 import 'package:consolarr/features/sonarr/sonarr_routes.dart';
@@ -11,8 +12,6 @@ import 'package:material_ui/material_ui.dart';
 
 /// Widest a poster card grows before another column is added.
 const double posterMaxExtent = 160;
-
-const _dot = ' · ';
 
 /// Opens the detail screen of series [id] (NAV-05 path).
 void openSeries(BuildContext context, int id) =>
@@ -92,7 +91,7 @@ class SeriesPosterTile extends StatelessWidget {
     final next = now == null
         ? null
         : nextAiringText(l10n, series.nextAiring, now!);
-    final subtitle = [
+    final subtitle = joinParts(l10n, [
       if (series.year != null) '${series.year}',
       if (stats.totalEpisodeCount > 0)
         l10n.sonarrEpisodesShort(
@@ -100,7 +99,7 @@ class SeriesPosterTile extends StatelessWidget {
           stats.totalEpisodeCount,
         ),
       ?next,
-    ].join(_dot);
+    ]);
     return PosterCard(
       title: series.title,
       onTap: onTap ?? () => openSeries(context, series.id),

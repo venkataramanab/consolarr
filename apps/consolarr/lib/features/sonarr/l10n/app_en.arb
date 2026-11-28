@@ -1887,5 +1887,13 @@
         "description": "Day of month."
       }
     }
+  },
+  "sonarrLookupsFailed": "Quality profiles or tags could not be loaded, so their names are missing.",
+  "@sonarrLookupsFailed": {
+    "description": "Notice inside the library when the quality profile or tag lists could not be read; names are missing. A retry button follows."
+  },
+  "sonarrAddTagsFailed": "Tags could not be loaded, so none are listed.",
+  "@sonarrAddTagsFailed": {
+    "description": "Notice in the add-series options when the tag list could not be read. A retry button follows."
   }
 }

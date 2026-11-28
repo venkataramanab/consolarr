@@ -232,6 +232,24 @@ class _AddOptionsBodyState extends ConsumerState<AddOptionsBody> {
           ),
           onCreate: _createTag,
         ),
+        if (data.tagsFailed)
+          Padding(
+            padding: const EdgeInsets.only(top: ConsolarrSpacing.xs),
+            child: Semantics(
+              container: true,
+              child: Row(
+                children: [
+                  const Icon(Icons.warning_amber_outlined),
+                  const SizedBox(width: ConsolarrSpacing.sm),
+                  Expanded(child: Text(l10n.sonarrAddTagsFailed)),
+                  TextButton(
+                    onPressed: () => ref.invalidate(addFormDataProvider),
+                    child: Text(l10n.sonarrRetry),
+                  ),
+                ],
+              ),
+            ),
+          ),
         if (add case AddFailed(:final error))
           _Failure(error: error, onRetry: () => _submit(search: false)),
         if (busy)

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:arr_api/arr_api.dart';
+import 'package:consolarr/shared/l10n/join_parts.dart';
 import 'package:consolarr/features/radarr/application/radarr_providers.dart';
 import 'package:consolarr/features/radarr/domain/availability.dart';
 import 'package:consolarr/features/radarr/domain/dates.dart';
@@ -123,7 +124,8 @@ class _Content extends ConsumerWidget {
     final source = ref.watch(artworkSourceProvider);
     final availability = availabilityOf(movie, now);
     final offline = snapshot.isOffline;
-    final profiles = ref.watch(qualityProfilesProvider).value ?? const [];
+    final profilesAsync = ref.watch(qualityProfilesProvider);
+    final profiles = profilesAsync.value ?? const [];
     final profileName = profiles
         .where((p) => p.id == movie.qualityProfileId)
         .map((p) => p.name)
@@ -139,6 +141,13 @@ class _Content extends ConsumerWidget {
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
+          if (profilesAsync.hasError)
+            const Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: ConsolarrSpacing.gutter,
+              ),
+              child: ListsFailedRow(),
+            ),
           if (offline)
             Padding(
               padding: const EdgeInsets.all(ConsolarrSpacing.gutter),
@@ -196,13 +205,13 @@ class _Content extends ConsumerWidget {
                 ),
                 const SizedBox(height: ConsolarrSpacing.xs),
                 Text(
-                  [
+                  joinParts(l10n, [
                     if (movie.year != null) '${movie.year}',
                     if (movie.runtime != null)
                       l10n.radarrRuntime(movie.runtime!),
                     ?movie.certification,
                     ?movie.studio,
-                  ].join(dot),
+                  ]),
                   style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: ConsolarrSpacing.md),
@@ -498,12 +507,12 @@ class _FileInfo extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          [
+          joinParts(l10n, [
             ?file.qualityName,
             sizeText(l10n, file.size),
             ?file.videoCodec,
             ?file.audioCodec,
-          ].join(dot),
+          ]),
         ),
         if (file.dateAdded != null)
           Text(l10n.radarrImportedOn(file.dateAdded!.toLocal())),

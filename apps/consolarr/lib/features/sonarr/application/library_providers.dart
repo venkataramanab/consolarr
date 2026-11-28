@@ -113,15 +113,24 @@ class LibraryQueryNotifier extends Notifier<LibraryQuery> {
 
 /// Quality profiles and tags for names in the filter sheet and groups.
 class LibraryLookups {
-  const LibraryLookups({this.profiles = const [], this.tags = const []});
+  const LibraryLookups({
+    this.profiles = const [],
+    this.tags = const [],
+    this.failed = false,
+  });
   final List<ArrQualityProfile> profiles;
   final List<ArrTag> tags;
+
+  /// A list could not be read: names are missing and the library says so
+  /// (with a retry) instead of silently showing none.
+  final bool failed;
 
   Map<int, String> get profileNames => {for (final p in profiles) p.id: p.name};
 }
 
-/// Loaded once per server; failures just mean no names (the library itself
-/// does not depend on them).
+/// Loaded once per server; a failure leaves names out (the library itself
+/// does not depend on them) and sets [LibraryLookups.failed], which the
+/// library shows with a retry (invalidate this provider).
 final libraryLookupsProvider = FutureProvider<LibraryLookups>(
   retry: (_, _) => null,
   (ref) async {
@@ -132,6 +141,7 @@ final libraryLookupsProvider = FutureProvider<LibraryLookups>(
     return LibraryLookups(
       profiles: profiles.valueOrNull ?? const [],
       tags: tags.valueOrNull ?? const [],
+      failed: profiles.isErr || tags.isErr,
     );
   },
 );

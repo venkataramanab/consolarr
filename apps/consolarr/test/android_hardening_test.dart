@@ -2,11 +2,32 @@
 
 // Guards the hardened Android configuration of both apps.
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
 String read(String path) => File(path).readAsStringSync();
+
+/// The packages that list `cross_file` as a dependency, from
+/// `dart pub deps --json` run in [root] (the resolved graph, not a guess).
+List<String> crossFileDependents(String root) {
+  final result = Process.runSync(
+    Platform.resolvedExecutable.endsWith('dart')
+        ? Platform.resolvedExecutable
+        : 'dart',
+    ['pub', 'deps', '--json'],
+    workingDirectory: root,
+  );
+  expect(result.exitCode, 0, reason: '${result.stderr}');
+  final json = jsonDecode(result.stdout as String) as Map<String, dynamic>;
+  return [
+    for (final p in json['packages'] as List<dynamic>)
+      if (((p as Map<String, dynamic>)['dependencies'] as List<dynamic>)
+          .contains('cross_file'))
+        p['name']! as String,
+  ];
+}
 
 void main() {
   final apps = {
@@ -96,9 +117,11 @@ void main() {
           '${Directory.current.parent.parent.path}/pubspec.lock',
         );
         expect(lock, isNot(contains('share_plus')));
-        // `cross_file` came with share_plus. It may stay only as a transitive
-        // dependency of `file_selector` (the torrent file picker), never as a
-        // direct one.
+        // `cross_file` came with share_plus. It may stay only while it is a
+        // transitive dependency of the `file_selector` packages (the torrent
+        // file picker), never as a direct one, and only for as long as one of
+        // them actually depends on it (`dart pub deps --json` says so): the
+        // allowance expires with the dependency.
         expect(read('$root/pubspec.yaml'), isNot(contains('cross_file')));
         final entry = RegExp(
           r'^  cross_file:\n((?:    .*\n)+)',
@@ -106,6 +129,17 @@ void main() {
         ).firstMatch(lock);
         if (entry != null) {
           expect(entry.group(1), contains('dependency: transitive'));
+          final dependents = crossFileDependents(root);
+          expect(
+            dependents,
+            isNotEmpty,
+            reason: 'cross_file is locked but nothing depends on it',
+          );
+          expect(
+            dependents.where((n) => !n.startsWith('file_selector')),
+            isEmpty,
+            reason: 'only file_selector packages may bring in cross_file',
+          );
         }
       });
 

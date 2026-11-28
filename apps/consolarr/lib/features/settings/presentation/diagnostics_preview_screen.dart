@@ -218,7 +218,6 @@ class _ServicesCheck extends ConsumerWidget {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final touch = TouchTargets.of(context).minimum;
-    final roles = context.roles;
     final check = ref.watch(servicesCheckProvider);
     final servers = ref.watch(serversProvider).value ?? const <ServerEntry>[];
     final checking = check.phase == ServicesCheckPhase.checking;

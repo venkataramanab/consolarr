@@ -11,7 +11,38 @@ import 'package:go_router/go_router.dart';
 import 'package:l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 
-const dot = ' · ';
+/// A partial failure inside a working screen: the quality profile or tag
+/// lists could not be read (their names are missing), with a retry. The rest
+/// of the screen stays usable.
+class ListsFailedRow extends ConsumerWidget {
+  const ListsFailedRow({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    return Padding(
+      padding: const EdgeInsets.only(top: ConsolarrSpacing.xs),
+      child: Semantics(
+        container: true,
+        child: Row(
+          children: [
+            const Icon(Icons.warning_amber_outlined),
+            const SizedBox(width: ConsolarrSpacing.sm),
+            Expanded(child: Text(l10n.radarrProfilesFailed)),
+            TextButton(
+              onPressed: () {
+                ref
+                  ..invalidate(qualityProfilesProvider)
+                  ..invalidate(tagsProvider);
+              },
+              child: Text(l10n.radarrRetry),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 /// The servers screen, for "check server settings" shortcuts.
 const serversRoute = '/servers';

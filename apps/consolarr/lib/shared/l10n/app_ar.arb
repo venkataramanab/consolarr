@@ -178,5 +178,9 @@
   "connErrorNonAsciiHostHint": "أدخل صيغة punycode لاسم المضيف (تبدأ بـ xn--).",
   "@connErrorNonAsciiHostHint": {
     "description": "Fix hint shown under the message for a connection problem: the host contains non-ASCII characters; enter the punycode form."
+  },
+  "sharedPartSeparator": " · ",
+  "@sharedPartSeparator": {
+    "description": "Separator placed between the short facts of a line, for example year, size and quality. Translate only if the language uses another mark."
   }
 }

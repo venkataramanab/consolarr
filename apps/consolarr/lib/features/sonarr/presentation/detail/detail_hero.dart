@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:arr_api/arr_api.dart';
+import 'package:consolarr/shared/l10n/join_parts.dart';
 import 'package:consolarr/features/sonarr/application/detail_providers.dart';
 import 'package:consolarr/features/sonarr/presentation/series_views.dart';
 import 'package:design_system/design_system.dart';
@@ -40,10 +41,10 @@ class DetailHero extends StatelessWidget {
     final dpr = MediaQuery.devicePixelRatioOf(context);
     final backdrop = artwork?.backdrop(series);
     final poster = artwork?.poster(series);
-    final facts = [
+    final facts = joinParts(l10n, [
       if (series.year != null) '${series.year}',
       ?series.network,
-    ].join(' · ');
+    ]);
     return SizedBox(
       height: heroBackdropHeight + topInset,
       child: Stack(

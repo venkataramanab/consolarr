@@ -221,6 +221,24 @@ class _LibraryBodyState extends ConsumerState<LibraryBody> {
             clearAllLabel: l10n.sonarrLibraryFilterClearAll,
             onClearAll: ref.read(libraryQueryProvider.notifier).clearFilter,
           ),
+          if (lookups.failed)
+            Padding(
+              padding: const EdgeInsets.only(top: ConsolarrSpacing.xs),
+              child: Semantics(
+                container: true,
+                child: Row(
+                  children: [
+                    const Icon(Icons.warning_amber_outlined),
+                    const SizedBox(width: ConsolarrSpacing.sm),
+                    Expanded(child: Text(l10n.sonarrLookupsFailed)),
+                    TextButton(
+                      onPressed: () => ref.invalidate(libraryLookupsProvider),
+                      child: Text(l10n.sonarrRetry),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           if (visible.computing)
             Semantics(
               liveRegion: true,

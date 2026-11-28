@@ -365,28 +365,7 @@ class _Toolbar extends ConsumerWidget {
               .read(libraryQueryProvider.notifier)
               .setFilter(MovieFilter.none),
         ),
-        if (profiles.hasError || tags.hasError)
-          Padding(
-            padding: const EdgeInsets.only(top: ConsolarrSpacing.xs),
-            child: Semantics(
-              container: true,
-              child: Row(
-                children: [
-                  const Icon(Icons.warning_amber_outlined),
-                  const SizedBox(width: ConsolarrSpacing.sm),
-                  Expanded(child: Text(l10n.radarrProfilesFailed)),
-                  TextButton(
-                    onPressed: () {
-                      ref
-                        ..invalidate(qualityProfilesProvider)
-                        ..invalidate(tagsProvider);
-                    },
-                    child: Text(l10n.radarrRetry),
-                  ),
-                ],
-              ),
-            ),
-          ),
+        if (profiles.hasError || tags.hasError) const ListsFailedRow(),
         if (computing)
           Semantics(
             liveRegion: true,

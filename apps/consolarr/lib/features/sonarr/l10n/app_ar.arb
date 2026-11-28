@@ -1887,5 +1887,13 @@
         "description": "Day of month."
       }
     }
+  },
+  "sonarrLookupsFailed": "تعذّر تحميل ملفات الجودة أو الوسوم، لذا أسماؤها غير متوفرة.",
+  "@sonarrLookupsFailed": {
+    "description": "Notice inside the library when the quality profile or tag lists could not be read; names are missing. A retry button follows."
+  },
+  "sonarrAddTagsFailed": "تعذّر تحميل الوسوم، لذا لا تُعرض أي وسوم.",
+  "@sonarrAddTagsFailed": {
+    "description": "Notice in the add-series options when the tag list could not be read. A retry button follows."
   }
 }
