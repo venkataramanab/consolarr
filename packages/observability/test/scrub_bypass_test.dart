@@ -82,6 +82,8 @@ void main() {
         if (f.readAsStringSync().contains('ddScrubbed')) hits.add(f.path);
       }
     }
+    // Directory listing order is filesystem-dependent; compare sorted.
+    hits.sort();
     expect(hits, [
       endsWith('observability/lib/src/diagnostics.dart'),
       endsWith('observability/lib/src/logger.dart'),
