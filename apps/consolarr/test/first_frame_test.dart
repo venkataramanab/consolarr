@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:consolarr/consolarr.dart';
+import 'package:consolarr/features/dashboard/application/dashboard_providers.dart';
+import 'package:consolarr/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:consolarr/features/servers/application/server_connection.dart';
 import 'package:consolarr/features/servers/application/servers_providers.dart';
 import 'package:consolarr/features/settings/application/settings_providers.dart';
@@ -79,6 +81,11 @@ void main() {
       secureHttpClientFactoryProvider,
       activeConnectionProvider,
       activeConnectionKeyProvider,
+      // The dashboard is the first screen: its notifier, the cache of its
+      // last good copies and its connections are created after the first
+      // frame, never during it.
+      dashboardProvider,
+      dashboardCacheProvider,
       // The settings and consent rows are read only after the first frame.
       settingsStoreProvider,
       consentStoreProvider,
@@ -150,6 +157,45 @@ void main() {
     );
     // And the first frame really was produced.
     expect(find.byType(ConsolarrApp), findsOneWidget);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(Duration.zero);
+  });
+
+  testWidgets('the dashboard is the first screen: it shows skeletons in the '
+      'first frame and starts loading only after it', (tester) async {
+    final reads = _EarlyReads();
+    await tester.pumpWidget(
+      ProviderScope(
+        observers: [reads],
+        overrides: [
+          firstFrameDoneProvider.overrideWith(() => _SpyFirstFrame(reads)),
+          databaseProvider.overrideWith((ref) {
+            final db = AppDatabase.memory();
+            ref.onDispose(db.close);
+            return db;
+          }),
+          secretStoreProvider.overrideWithValue(InMemorySecretStore()),
+        ],
+        child: const ConsolarrApp(),
+      ),
+    );
+    expect(reads.firstFrameDone, isTrue);
+    expect(
+      reads.early.where((p) => p == dashboardProvider),
+      isEmpty,
+      reason: 'the dashboard notifier is not created before the first frame',
+    );
+    // The router builds the home route right after; it still created nothing
+    // before the first frame (the check above covered everything built so
+    // far) and now shows the dashboard.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(find.byType(DashboardScreen), findsOneWidget);
+    expect(
+      reads.early.where((p) => p == dashboardProvider),
+      isEmpty,
+      reason: 'nor while the dashboard route was built',
+    );
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(Duration.zero);
   });

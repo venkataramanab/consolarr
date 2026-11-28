@@ -8,6 +8,7 @@ export 'src/arr_client_base.dart';
 export 'src/arr_common.dart';
 export 'src/models.dart';
 export 'src/shared/arr_command.dart';
+export 'src/shared/arr_history.dart';
 export 'src/shared/arr_page.dart';
 export 'src/shared/arr_queue.dart';
 export 'src/shared/arr_release.dart';

@@ -75,8 +75,8 @@ void main() {
       final h = SettingsHarness(stored: lockOn());
       await tester.pumpWidget(_app(h));
       // The very first frame: nothing of the app, nothing to read.
-      expect(find.text(l10n.homeTitle), findsNothing);
-      expect(find.text(l10n.homeEmptyHeading), findsNothing);
+      expect(find.text(l10n.dashboardTitle), findsNothing);
+      expect(find.text(l10n.dashboardEmptyHeading), findsNothing);
       await _unmount(tester);
     });
 
@@ -89,11 +89,11 @@ void main() {
       await tester.pumpWidget(_app(h));
       await tester.pumpAndSettle();
       expect(find.text(l10n.lockScreenTitle), findsOneWidget);
-      expect(find.text(l10n.homeEmptyHeading), findsNothing);
+      expect(find.text(l10n.dashboardEmptyHeading), findsNothing);
       expect(h.auth.reasons, [l10n.lockReasonUnlock]);
       h.auth.hold!.complete(DeviceAuthResult.success);
       await tester.pumpAndSettle();
-      expect(find.text(l10n.homeEmptyHeading), findsOneWidget);
+      expect(find.text(l10n.dashboardEmptyHeading), findsOneWidget);
       expect(find.text(l10n.lockScreenTitle), findsNothing);
       await _unmount(tester);
     });
@@ -105,7 +105,7 @@ void main() {
       final h = SettingsHarness();
       await tester.pumpWidget(_app(h));
       await tester.pumpAndSettle();
-      expect(find.text(l10n.homeEmptyHeading), findsOneWidget);
+      expect(find.text(l10n.dashboardEmptyHeading), findsOneWidget);
       expect(h.auth.reasons, isEmpty);
       await _unmount(tester);
     });
@@ -118,9 +118,9 @@ void main() {
       final h = SettingsHarness(stored: lockOn());
       await tester.pumpWidget(_app(h));
       await tester.pumpAndSettle(); // locked, auto prompt succeeds (default)
-      expect(find.text(l10n.homeEmptyHeading), findsOneWidget);
+      expect(find.text(l10n.dashboardEmptyHeading), findsOneWidget);
 
-      final context = tester.element(find.text(l10n.homeEmptyHeading));
+      final context = tester.element(find.text(l10n.dashboardEmptyHeading));
       unawaited(
         showDialog<void>(
           context: context,
@@ -167,7 +167,7 @@ void main() {
         'dialog-canary',
         'sheet-body-canary',
         'sheet-canary',
-        l10n.homeEmptyHeading,
+        l10n.dashboardEmptyHeading,
       ]) {
         expect(find.text(canary), findsNothing, reason: canary);
         expect(_semanticsContain(tester, canary), isFalse, reason: canary);
@@ -213,20 +213,20 @@ void main() {
       final h = SettingsHarness(stored: lockOn());
       await tester.pumpWidget(_app(h));
       await tester.pumpAndSettle();
-      expect(find.text(l10n.homeEmptyHeading), findsOneWidget);
+      expect(find.text(l10n.dashboardEmptyHeading), findsOneWidget);
 
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       await tester.pump();
-      expect(find.text(l10n.homeEmptyHeading), findsNothing);
+      expect(find.text(l10n.dashboardEmptyHeading), findsNothing);
       // Back without having been paused: uncovered and still unlocked.
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await tester.pumpAndSettle();
-      expect(find.text(l10n.homeEmptyHeading), findsOneWidget);
+      expect(find.text(l10n.dashboardEmptyHeading), findsOneWidget);
 
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
       await tester.pump();
-      expect(find.text(l10n.homeEmptyHeading), findsNothing);
+      expect(find.text(l10n.dashboardEmptyHeading), findsNothing);
       // Leave the process resumed so the tree can be torn down cleanly.
       h.auth.hold = Completer<DeviceAuthResult>();
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
@@ -245,7 +245,7 @@ void main() {
       await tester.pump();
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
       await tester.pump();
-      expect(find.text(l10n.homeEmptyHeading), findsOneWidget);
+      expect(find.text(l10n.dashboardEmptyHeading), findsOneWidget);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await _unmount(tester);
     });
@@ -261,7 +261,7 @@ void main() {
       h.clock.advance(const Duration(minutes: 2));
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await tester.pumpAndSettle();
-      expect(find.text(l10n.homeEmptyHeading), findsOneWidget);
+      expect(find.text(l10n.dashboardEmptyHeading), findsOneWidget);
       expect(find.text(l10n.lockScreenTitle), findsNothing);
       await _unmount(tester);
     });
@@ -381,7 +381,7 @@ void main() {
       await tester.pumpWidget(_app(h));
       await tester.pumpAndSettle();
       expect(find.text(l10n.lockLoadFailedTitle), findsOneWidget);
-      expect(find.text(l10n.homeEmptyHeading), findsNothing);
+      expect(find.text(l10n.dashboardEmptyHeading), findsNothing);
       expect(find.byType(Navigator), findsNothing);
       expect(h.secure.isSecure, isTrue);
       expect(h.auth.reasons, isEmpty);
@@ -546,13 +546,13 @@ void main() {
       await tester.pumpWidget(_app(h));
       await tester.pumpAndSettle();
       expect(find.text(l10n.lockRemovedTitle), findsOneWidget);
-      expect(find.text(l10n.homeEmptyHeading), findsNothing);
+      expect(find.text(l10n.dashboardEmptyHeading), findsNothing);
       await tester.tap(find.text(l10n.lockTurnOffButton));
       await tester.pumpAndSettle();
       expect(find.text(l10n.lockTurnOffConfirmBody), findsOneWidget);
       await tester.tap(find.text(l10n.lockTurnOffConfirm));
       await tester.pumpAndSettle();
-      expect(find.text(l10n.homeEmptyHeading), findsOneWidget);
+      expect(find.text(l10n.dashboardEmptyHeading), findsOneWidget);
       expect(h.store.values[SettingsKeys.lockEnabled], '0');
       await _unmount(tester);
     });

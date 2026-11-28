@@ -14,14 +14,14 @@ void main() {
 
   test('plural forms resolve per locale', () async {
     final en = await AppLocalizations.delegate.load(const Locale('en'));
-    expect(en.homeServerCount(0), 'No servers');
-    expect(en.homeServerCount(1), '1 server');
-    expect(en.homeServerCount(5), '5 servers');
+    expect(en.dashboardActivityActive(0), '0 downloading');
+    expect(en.dashboardActivityActive(1), '1 downloading');
+    expect(en.dashboardActivityActive(5), '5 downloading');
     final ar = await AppLocalizations.delegate.load(const Locale('ar'));
-    expect(ar.homeServerCount(2), 'خادمان');
+    expect(ar.dashboardActivityActive(2), 'تنزيلان جاريان');
     final xa = await AppLocalizations.delegate.load(const Locale('en', 'XA'));
-    expect(xa.homeServerCount(5), contains('5'));
-    expect(xa.homeTitle, isNot('Home'));
+    expect(xa.dashboardActivityActive(5), contains('5'));
+    expect(xa.dashboardTitle, isNot('Dashboard'));
   });
 
   test('app delegates include Material localizations for every locale', () {
