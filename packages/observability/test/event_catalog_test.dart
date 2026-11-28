@@ -57,9 +57,9 @@ void main() {
     expect(
       () => generateCatalog({
         'a.yaml': _ok,
-        // The same event name again, in the same file prefix via a second
-        // key of the same map (duplicate key inside one file).
-        'a.yaml': '$_ok  a_thing_happened:\n    description: Again.\n',
+        // `a_thing.yaml` also accepts the prefix `a_thing_`, so the same name
+        // is declared twice.
+        'a_thing.yaml': _ok.split('events:')[1].replaceFirst('', 'events:'),
       }),
       throwsA(isA<EventCatalogException>()),
     );
