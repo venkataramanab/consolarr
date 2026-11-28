@@ -131,6 +131,14 @@ mechanical follow-up. Do not add further cross-feature imports.
   the repository drops the stored ones that are not re-supplied. Editing the
   identity (kind, address, path prefix) also clears the cached payloads and the
   old pins. `save()` keeps the alternate address.
+* **Sonarr and Radarr always need the API key** (their API has no username and
+  password login). A username and password for a reverse proxy in front of
+  them is an optional extra: it is stored under the same
+  `<serverId>/username` / `<serverId>/password` keys and sent as
+  `Authorization: Basic` *in addition to* `X-Api-Key`
+  (`ServerEntry.proxyLogin` is derived from the stored secrets, so there is no
+  profile column). Profiles saved in the old `basic` or `none` mode open in the
+  editor with the key required and keep their login as the proxy login.
 * Secret fields use `SecretTextField` (masked, reveal toggle); the editor route
   sets the platform secure flag while any secret is revealed.
 * Addresses: ports must be 1..65535, no backslash, no non-ASCII host (enter the
@@ -202,6 +210,18 @@ in `EmptyArrLists`.
   `connection_test_result`).
 * Navigation and API error categories are recorded as breadcrumbs. Logs go
   through `loggerProvider` (redacted); log counts and categories only.
+* **Request log.** Every server connection (`activeConnectionProvider`) and
+  every connection test carries a `LoggingInterceptor`
+  (`lib/shared/logging/`): `GET /api/v3/movie/{id} -> 200, 12ms` at debug,
+  `... failed category=auth_failed status=401, 12ms` at warning. It reads the
+  method, the path (reduced by `routeShape`: only plain route words survive,
+  ids/hashes/titles become `{id}`), the status and the clock, never the host,
+  port, query, headers, bodies or credentials. App-level lines
+  (`server_switch`, `needs_credentials`, `offline_fallback`,
+  `connection_test`) are built in `shared/logging/log_events.dart` from closed
+  values only. Artwork failures are visible the same way (the image loader
+  uses the connection's Dio); a 200 that is not an image is logged by
+  `LoggingInterceptor.artworkRejected`.
 
 ## 9. UI
 
