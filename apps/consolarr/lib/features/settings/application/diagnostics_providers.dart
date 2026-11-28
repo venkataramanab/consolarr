@@ -5,6 +5,7 @@ import 'package:consolarr/features/servers/application/servers_providers.dart';
 import 'package:consolarr/features/servers/domain/server_models.dart';
 import 'package:consolarr/features/settings/application/services_check.dart';
 import 'package:consolarr/features/settings/application/settings_providers.dart';
+import 'package:consolarr/features/settings/data/external_actions.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -159,6 +160,8 @@ final diagnosticsBundleProvider = FutureProvider.autoDispose<DiagnosticsBundle>(
       errorCategories: errorCategoriesFrom(ref.read(breadcrumbsProvider)),
       entries: ref.read(diagnosticsLogProvider).entries,
       services: serviceEntries(servers, check, known: known0),
+      // Preview == shared text: the bundle itself stays within the share cap.
+      maxBytes: shareTextMaxBytes,
       scrubber: DiagnosticsScrubber(knownValues: known),
     );
   },

@@ -396,6 +396,116 @@ void main() {
       );
     });
   });
+
+  group('DiagnosticsBundle size cap', () {
+    List<LogEntry> entries(int n) => [
+      for (var i = 0; i < n; i++)
+        LogEntry(
+          time: DateTime.utc(2026, 1, 1, 0, 0, i % 60),
+          level: LogLevel.info,
+          message: 'entry number $i سجل ${'x' * 200}',
+        ),
+    ];
+
+    test('the text never exceeds maxBytes and keeps the newest entries', () {
+      for (final max in [2000, 5000, 20000]) {
+        final b = DiagnosticsBundle.build(
+          info: _info,
+          errorCategories: const [],
+          entries: entries(400),
+          maxBytes: max,
+        );
+        expect(
+          utf8.encode(b.text).length,
+          lessThanOrEqualTo(max),
+          reason: '$max',
+        );
+        expect(b.text, contains('entry number 399 '));
+        expect(b.text, isNot(contains('entry number 0 ')));
+        expect(b.text, contains('older entries left out'));
+        // Preview and shared text agree: every section body is in the text.
+        for (final s in b.sections) {
+          expect(b.text, contains(s.body));
+        }
+        expect(b.bytes, utf8.encode(b.text));
+      }
+    });
+
+    test('nothing is dropped when it fits, and the boundary is exact', () {
+      final all = DiagnosticsBundle.build(
+        info: _info,
+        errorCategories: const [],
+        entries: entries(5),
+      );
+      final size = utf8.encode(all.text).length;
+      for (final (max, dropped) in [(size, false), (size - 1, true)]) {
+        final b = DiagnosticsBundle.build(
+          info: _info,
+          errorCategories: const [],
+          entries: entries(5),
+          maxBytes: max,
+        );
+        expect(b.text.contains('older entries left out'), dropped);
+        expect(utf8.encode(b.text).length, lessThanOrEqualTo(max));
+      }
+    });
+  });
+
+  group('DiagnosticsBundle services', () {
+    test('services, flavor and consent lines carry closed values only', () {
+      final b = DiagnosticsBundle.build(
+        info: const DiagnosticsInfo(
+          appVersion: '0.1.0+1',
+          buildMode: 'release',
+          platform: 'Android API 34',
+          locale: 'en',
+          flavor: AppFlavor.play,
+          crashReportsConsent: true,
+        ),
+        errorCategories: const [],
+        entries: const [],
+        services: const [
+          DiagnosticsServiceEntry(
+            kind: ServiceKindParam.sonarr,
+            servers: 2,
+            health: ServiceHealthBucket.partial,
+            majorVersion: 4,
+            cleartextOptIn: true,
+          ),
+          DiagnosticsServiceEntry(
+            kind: ServiceKindParam.deluge,
+            servers: 1,
+            health: ServiceHealthBucket.notChecked,
+          ),
+        ],
+      );
+      expect(b.text, contains('flavor: play'));
+      expect(b.text, contains('crash reports: on'));
+      expect(b.text, contains('usage analytics: off'));
+      expect(
+        b.text,
+        contains(
+          'sonarr: servers=2, health=partly checked, major=4, cleartext=yes',
+        ),
+      );
+      expect(
+        b.text,
+        contains(
+          'deluge: servers=1, health=not checked, major=unknown, cleartext=no',
+        ),
+      );
+      expect(b.sections.map((s) => s.id), contains('services'));
+    });
+
+    test('no services reads as none configured', () {
+      final b = DiagnosticsBundle.build(
+        info: _info,
+        errorCategories: const [],
+        entries: const [],
+      );
+      expect(b.text, contains('## Services\n(none configured)'));
+    });
+  });
 }
 
 String utf8Decode(List<int> bytes) => const Utf8Decoder().convert(bytes);

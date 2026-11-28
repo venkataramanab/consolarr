@@ -10,7 +10,6 @@ import 'package:consolarr/features/settings/application/settings_providers.dart'
 import 'package:consolarr/features/settings/domain/app_settings.dart';
 import 'package:consolarr/features/settings/presentation/diagnostics_preview_screen.dart';
 import 'package:core/core.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart' show SystemChannels;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

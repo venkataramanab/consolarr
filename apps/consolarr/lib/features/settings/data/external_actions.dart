@@ -17,6 +17,16 @@ const int shareTextMaxBytes = 150 * 1024;
 /// header and section titles), in UTF-8 bytes.
 const int _shareHeadMaxBytes = 4 * 1024;
 
+/// The platform refused the text as over the native size guard
+/// (`too_large`). Cannot happen while [capShareText] runs first; it exists so
+/// a Dart/native disagreement is a typed error, never a silent truncation.
+class ShareTextTooLarge implements Exception {
+  const ShareTextTooLarge();
+
+  @override
+  String toString() => 'ShareTextTooLarge';
+}
+
 bool _isContinuation(int byte) => (byte & 0xC0) == 0x80;
 
 /// [text] cut to at most [maxBytes] UTF-8 bytes, always on a character
@@ -99,10 +109,15 @@ class PlatformExternalActions implements ExternalActions {
     required String truncationNote,
   }) async {
     final capped = capShareText(text, truncationNote);
-    await _shareChannel.invokeMethod<void>('shareText', {
-      'text': capped.text,
-      'subject': subject,
-    });
+    try {
+      await _shareChannel.invokeMethod<void>('shareText', {
+        'text': capped.text,
+        'subject': subject,
+      });
+    } on PlatformException catch (e) {
+      if (e.code == 'too_large') throw const ShareTextTooLarge();
+      rethrow;
+    }
     return capped.truncated;
   }
 

@@ -401,62 +401,97 @@ class DiagnosticsBundle {
   const DiagnosticsBundle._(this.sections, this.text, this.logIsEmpty);
 
   /// Section titles are English: the bundle is read by maintainers.
+  ///
+  /// With [maxBytes] the log section keeps only the newest entries that fit,
+  /// so [text] (what the preview shows and what is shared) never exceeds it
+  /// in UTF-8 bytes and needs no further cutting.
   factory DiagnosticsBundle.build({
     required DiagnosticsInfo info,
     required List<String> errorCategories,
     required List<LogEntry> entries,
     List<DiagnosticsServiceEntry> services = const [],
+    int? maxBytes,
     DiagnosticsScrubber scrubber = const DiagnosticsScrubber(),
   }) {
     String s(String v) => scrubber.scrub(v);
-    final sections = [
-      DiagnosticsSection(
-        id: 'app',
-        title: 'App',
-        body:
-            'version: ${s(info.appVersion)}\nbuild: ${s(info.buildMode)}\n'
-            'flavor: ${info.flavor.name}\n'
-            'crash reports: ${info.crashReportsConsent ? 'on' : 'off'}\n'
-            'usage analytics: ${info.analyticsConsent ? 'on' : 'off'}',
-      ),
-      DiagnosticsSection(
-        id: 'platform',
-        title: 'Platform',
-        body: s(info.platform),
-      ),
-      DiagnosticsSection(id: 'locale', title: 'Locale', body: s(info.locale)),
-      DiagnosticsSection(
-        id: 'services',
-        title: 'Services',
-        body: services.isEmpty
-            ? '(none configured)'
-            : services.map((e) => e.line).join('\n'),
-      ),
-      DiagnosticsSection(
-        id: 'error_categories',
-        title: 'Error categories',
-        body: errorCategories.isEmpty
-            ? '(none)'
-            : errorCategories.map(s).join('\n'),
-      ),
-      DiagnosticsSection(
-        id: 'log',
-        title: 'Log',
-        body: entries.isEmpty
-            ? '(empty)'
-            : entries
-                  .map(
-                    (e) =>
-                        '${e.time.toIso8601String()} '
-                        '${e.level.name.toUpperCase()} ${s(e.message)}',
-                  )
-                  .join('\n'),
-      ),
+    // Every line is scrubbed once; trimming only joins fewer of them.
+    final lines = [
+      for (final e in entries)
+        '${e.time.toIso8601String()} '
+            '${e.level.name.toUpperCase()} ${s(e.message)}',
     ];
-    final text = [
+
+    List<DiagnosticsSection> sectionsFor(int keep) {
+      final omitted = lines.length - keep;
+      return [
+        DiagnosticsSection(
+          id: 'app',
+          title: 'App',
+          body:
+              'version: ${s(info.appVersion)}\nbuild: ${s(info.buildMode)}\n'
+              'flavor: ${info.flavor.name}\n'
+              'crash reports: ${info.crashReportsConsent ? 'on' : 'off'}\n'
+              'usage analytics: ${info.analyticsConsent ? 'on' : 'off'}',
+        ),
+        DiagnosticsSection(
+          id: 'platform',
+          title: 'Platform',
+          body: s(info.platform),
+        ),
+        DiagnosticsSection(id: 'locale', title: 'Locale', body: s(info.locale)),
+        DiagnosticsSection(
+          id: 'services',
+          title: 'Services',
+          body: services.isEmpty
+              ? '(none configured)'
+              : services.map((e) => e.line).join('\n'),
+        ),
+        DiagnosticsSection(
+          id: 'error_categories',
+          title: 'Error categories',
+          body: errorCategories.isEmpty
+              ? '(none)'
+              : errorCategories.map(s).join('\n'),
+        ),
+        DiagnosticsSection(
+          id: 'log',
+          title: 'Log',
+          body: lines.isEmpty
+              ? '(empty)'
+              : [
+                  if (omitted > 0)
+                    '($omitted older entries left out to keep the text '
+                        'within the size limit)',
+                  ...lines.skip(omitted),
+                ].join('\n'),
+        ),
+      ];
+    }
+
+    String textOf(List<DiagnosticsSection> sections) => [
       'Consolarr diagnostics',
       for (final section in sections) '## ${section.title}\n${section.body}',
     ].join('\n\n');
+
+    var keep = lines.length;
+    var sections = sectionsFor(keep);
+    var text = textOf(sections);
+    if (maxBytes != null && utf8.encode(text).length > maxBytes) {
+      // The oldest entries go first: the largest suffix that fits.
+      var low = 0;
+      var high = lines.length - 1;
+      while (low < high) {
+        final mid = (low + high + 1) >> 1;
+        if (utf8.encode(textOf(sectionsFor(mid))).length <= maxBytes) {
+          low = mid;
+        } else {
+          high = mid - 1;
+        }
+      }
+      keep = low;
+      sections = sectionsFor(keep);
+      text = textOf(sections);
+    }
     return DiagnosticsBundle._(
       List.unmodifiable(sections),
       text,
