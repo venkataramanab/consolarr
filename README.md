@@ -127,6 +127,22 @@ may change before the first public release: update `namespace` and
 `MainActivity.kt` to the matching package directory, and update the splash/icon
 resources if needed.
 
+## Test builds
+
+Every CI run on `main` (and on pull requests from this repository) publishes
+the built APKs as workflow artifacts: open **Actions**, pick a CI run, and
+look under **Artifacts** (one per app, named
+`consolarr-<app>-test-apk-<commit>`). You must be signed in to GitHub to
+download them.
+
+- They are **debug-signed test builds**, not releases, and are kept for
+  14 days. They cannot be upgraded to or from a future signed release.
+- Each artifact contains a debug APK, a release arm64 APK, `SHA256SUMS.txt`
+  and `README-TEST-BUILD.txt`. Verify the download with
+  `sha256sum -c SHA256SUMS.txt` in the folder holding the files.
+- Properly signed releases will come later through a separate release
+  workflow.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), the
