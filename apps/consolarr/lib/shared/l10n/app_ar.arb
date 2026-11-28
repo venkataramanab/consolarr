@@ -189,9 +189,9 @@
       }
     }
   },
-  "connErrorArrAuthFailedHint": "استخدم مفتاح API من إعدادات {service} ← عام ← الأمان. لا يعمل اسم المستخدم وكلمة المرور مع واجهة API.",
+  "connErrorArrAuthFailedHint": "استخدم مفتاح API من «⁦Settings → General → Security⁩» في ⁦{service}⁩. لا يعمل اسم المستخدم وكلمة المرور مع واجهة API.",
   "@connErrorArrAuthFailedHint": {
-    "description": "Fix hint for a Sonarr or Radarr connection problem: only the API key authenticates the API.",
+    "description": "Fix hint for a Sonarr or Radarr connection problem: only the API key authenticates the API. The menu path stays in English on purpose, because the Sonarr and Radarr web interface is usually in English; in Arabic it is quoted and, like the service name, wrapped in left-to-right isolates (U+2066 and U+2069).",
     "placeholders": {
       "service": {
         "type": "String",
