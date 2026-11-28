@@ -5,10 +5,17 @@
 // fire; it proves the analyzer plugin is actually loaded in CI.
 import 'dart:io';
 
+import 'package:flutter/semantics.dart';
 import 'package:material_ui/material_ui.dart';
 
 Widget canary(HttpClient client) {
   print('canary');
   client.badCertificateCallback = (cert, host, port) => true;
+  // The positions below were added to the rule after the first release; each
+  // one is a separate report of consolarr_no_ui_string.
+  const InputDecoration(prefixText: 'Prefix', suffixText: 'Suffix');
+  const Semantics(value: 'Value', onTapHint: 'Tap', onLongPressHint: 'Hold');
+  const DropdownMenuEntry<int>(value: 1, label: 'Entry');
+  SemanticsService.announce('Announced', TextDirection.ltr);
   return const Text('Hardcoded');
 }
