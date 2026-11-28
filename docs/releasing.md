@@ -141,6 +141,22 @@ delete the draft first (keep the tag). The obfuscation symbols
 (`debug-info-<tag>`, kept 90 days) are a workflow artifact, never a release
 asset; keep them if you need to symbolicate a crash.
 
+If a run fails **before the draft release is created** (for example a workflow
+bug), nothing was published, so the fix is to move the tag. Merge the fix to
+`main`, then delete the tag and re-tag the same version on the fixed commit:
+
+```sh
+git push origin :refs/tags/vX.Y.Z                        # delete the remote tag
+git tag -d vX.Y.Z                                        # delete the local tag
+git switch main && git pull
+git tag -a vX.Y.Z <sha> -m "Consolarr vX.Y.Z"            # <sha>: the fixed main commit
+git push origin vX.Y.Z
+```
+
+This is **only safe while no release for that tag has been published** (no
+draft, or a draft you delete first). Once a release is public, never move or
+reuse its tag: bump the version and tag a new one.
+
 Per-ABI APKs are published (arm64 for current phones, armeabi-v7a for older
 ones). There is no universal APK: each APK must stay inside the 20 MiB size
 gate, and mixing split and universal builds would give different version codes
@@ -177,6 +193,9 @@ and break upgrades.
   Its negative tests cover: a wrong pinned digest, a v1-only signature, mixed
   and debug certificates, a moved tag, files changed between jobs, invalid
   tags and missing secrets.
+  It also fails if a `release.yml` job runs a `tools/release/` script without an
+  earlier `actions/checkout` step in the same job (`check_workflow_checkout.sh`,
+  with a negative self-test).
 
 Threat notes that need no code change: a heap dump of the runner process could
 expose the secrets during the build (the environment's required reviewer and
