@@ -121,7 +121,7 @@ void main() {
       contains(
         matches(
           RegExp(
-            r'^GET /api/v3/system/status failed category=auth_failed status=401, \d+ms$',
+            r'^GET api·v3·system·status failed category=auth_failed status=401, \d+ms$',
           ),
         ),
       ),
@@ -132,7 +132,7 @@ void main() {
       contains(
         matches(
           RegExp(
-            r'^GET /api/v3/movie failed category=auth_failed status=401, \d+ms$',
+            r'^GET api·v3·movie failed category=auth_failed status=401, \d+ms$',
           ),
         ),
       ),
@@ -171,7 +171,7 @@ void main() {
     out = lines(sub.read());
     expect(
       out,
-      contains(matches(RegExp(r'^GET /api/v3/system/status -> 200, \d+ms$'))),
+      contains(matches(RegExp(r'^GET api·v3·system·status -> 200, \d+ms$'))),
     );
   });
 }

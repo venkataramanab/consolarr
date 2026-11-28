@@ -212,11 +212,16 @@ in `EmptyArrLists`.
   through `loggerProvider` (redacted); log counts and categories only.
 * **Request log.** Every server connection (`activeConnectionProvider`) and
   every connection test carries a `LoggingInterceptor`
-  (`lib/shared/logging/`): `GET /api/v3/movie/{id} -> 200, 12ms` at debug,
+  (`lib/shared/logging/`): `GET api·v3·movie·{id} -> 200, 12ms` at debug,
   `... failed category=auth_failed status=401, 12ms` at warning. It reads the
-  method, the path (reduced by `routeShape`: only plain route words survive,
-  ids/hashes/titles become `{id}`), the status and the clock, never the host,
-  port, query, headers, bodies or credentials. App-level lines
+  method, the path (reduced by `routeShape`), the status and the clock, never
+  the host, port, query, headers, bodies or credentials. A route has **no `/`,
+  `.` or `:`** (the diagnostics scrubber reads those as a file path, a host
+  and an IPv6 address and would print `[REDACTED]`): segments are joined with
+  `·`, may only be words of the closed `routeVocabulary` (the clients' own
+  endpoints), digits become `{id}` and anything else `{seg}`. A test runs
+  every line through `DiagnosticsScrubber` and asserts it is unchanged; the
+  scrubber itself is never loosened. App-level lines
   (`server_switch`, `needs_credentials`, `offline_fallback`,
   `connection_test`) are built in `shared/logging/log_events.dart` from closed
   values only. Artwork failures are visible the same way (the image loader

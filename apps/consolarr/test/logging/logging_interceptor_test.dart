@@ -52,24 +52,56 @@ ResponseBody _json(String body, [int status = 200]) => ResponseBody.fromString(
 
 void main() {
   group('routeShape', () {
-    test('keeps route words and replaces ids, hashes, titles and files', () {
-      expect(routeShape('/api/v3/movie/123'), '/api/v3/movie/{id}');
-      expect(routeShape('/api/v3/movie'), '/api/v3/movie');
-      expect(routeShape('api/v3/queue/status'), '/api/v3/queue/status');
+    test('joins known route words with a middle dot, ids become {id}', () {
+      expect(routeShape('/api/v3/movie/123'), 'api·v3·movie·{id}');
+      expect(routeShape('/api/v3/movie'), 'api·v3·movie');
+      expect(routeShape('api/v3/queue/status'), 'api·v3·queue·status');
+      expect(routeShape('/api/v3/system/status'), 'api·v3·system·status');
+      expect(routeShape('/api/v2/torrents/info'), 'api·v2·torrents·info');
+      expect(routeShape('/transmission/rpc'), 'transmission·rpc');
+      expect(routeShape('/json'), 'json');
+      expect(routeShape('/'), '{root}');
       expect(
         routeShape('/api/v2/torrents/${'a' * 40}'),
-        '/api/v2/torrents/{id}',
+        'api·v2·torrents·{seg}',
       );
       expect(
         routeShape('/MediaCover/12/poster-500.jpg'),
-        '/MediaCover/{id}/poster-500.jpg',
+        'MediaCover·{id}·poster-500_jpg',
       );
       expect(
         routeShape('/MediaCoverProxy/${'b' * 64}/${'c' * 32}.jpg'),
-        '/MediaCoverProxy/{id}/{file}',
+        'MediaCoverProxy·{seg}·{seg}',
       );
-      expect(routeShape('/x/Canary%20Movie'), '/x/{id}');
-      expect(routeShape('/x/canary-movie-2020'), '/x/{id}');
+    });
+
+    test('a title or slug can never reach the output (closed vocabulary)', () {
+      expect(routeShape('/x/Canary%20Movie'), '{seg}·{seg}');
+      expect(routeShape('/x/canary-movie-2020'), '{seg}·{seg}');
+      expect(
+        routeShape('/api/v3/series/SecretTitleQZXW'),
+        'api·v3·series·{seg}',
+      );
+      expect(routeShape('/api/v3/series/secret-slug'), 'api·v3·series·{seg}');
+      expect(routeShape('/api/v3/movie/abcdef'), 'api·v3·movie·{seg}');
+      expect(routeShape('/MediaCover/7/Secret.jpg'), 'MediaCover·{id}·{seg}');
+      expect(routeShape('/api/v3/movie/../x'), 'api·v3·movie·{seg}·{seg}');
+    });
+
+    test('no output ever has a slash, a dot or a colon', () {
+      for (final path in [
+        '/api/v3/movie/5',
+        '/MediaCover/5/poster.jpg',
+        '/a.b/c:d/e%2Ff',
+        'https://$_host:7878/radarr/api/v3/movie/5?x=1#f',
+        '',
+        '////',
+        '/${'x' * 500}',
+        '/a/b/c/d/e/f/g/h/i/j/k',
+      ]) {
+        final shape = routeShape(path);
+        expect(shape, isNot(matches(RegExp(r'[/.:]'))), reason: path);
+      }
     });
 
     test('drops host, query, fragment and the path prefix', () {
@@ -78,17 +110,17 @@ void main() {
           'https://$_host:7878/radarr/api/v3/movie/5?apikey=$_key#f',
           pathPrefix: '/radarr',
         ),
-        '/api/v3/movie/{id}',
+        'api·v3·movie·{id}',
       );
-      expect(routeShape('/a/b?term=$_title'), '/a/b');
+      expect(routeShape('/api/v3/movie?term=$_title'), 'api·v3·movie');
       // A prefix only matches whole segments.
-      expect(routeShape('/radarrx/api', pathPrefix: '/radarr'), '/radarrx/api');
+      expect(routeShape('/radarrx/api', pathPrefix: '/radarr'), '{seg}·api');
     });
 
     test('long paths are cut', () {
       expect(
-        routeShape('/a/b/c/d/e/f/g/h/i/j/k').split('/').length,
-        lessThan(11),
+        routeShape('/api/v3/movie/1/2/3/4/5/6/7/8/9'),
+        'api·v3·movie·{id}·{id}·{id}·{id}·{id}·{more}',
       );
     });
   });
@@ -102,7 +134,7 @@ void main() {
       expect(out.lines.single.$1, LogLevel.debug);
       expect(
         out.lines.single.$2,
-        matches(RegExp(r'^GET /api/v3/movie/\{id\} -> 200, \d+ms$')),
+        matches(RegExp(r'^GET api·v3·movie·\{id\} -> 200, \d+ms$')),
       );
     });
 
@@ -118,7 +150,7 @@ void main() {
         out.lines.single.$2,
         matches(
           RegExp(
-            r'^GET /api/v3/movie failed category=auth_failed status=401, \d+ms$',
+            r'^GET api·v3·movie failed category=auth_failed status=401, \d+ms$',
           ),
         ),
       );
@@ -141,7 +173,7 @@ void main() {
       );
       expect(
         out.lines.single.$2,
-        startsWith('POST /api/v3/command failed category=timeout'),
+        startsWith('POST api·v3·command failed category=timeout'),
       );
       expect(out.lines.single.$2, isNot(contains('status')));
     });
@@ -239,7 +271,7 @@ void main() {
       );
       expect(
         out.lines.single.$2,
-        'artwork GET /MediaCover/{id}/poster.jpg rejected '
+        'artwork GET MediaCover·{id}·poster_jpg rejected '
         'category=not_an_image status=200 type=html',
       );
       expect(out.lines.single.$1, LogLevel.warning);

@@ -124,7 +124,7 @@ void main() {
       everyElement(
         matches(
           RegExp(
-            r'^GET /MediaCover/\{id\}/poster(-500)?\.jpg failed '
+            r'^GET MediaCover·\{id\}·poster(-500)?_jpg failed '
             r'category=not_found status=404, \d+ms$',
           ),
         ),
@@ -154,14 +154,12 @@ void main() {
       // The plain 404 is still on record, the variant succeeded at debug.
       expect(
         rig.lines,
-        contains(
-          matches(RegExp(r'^GET /MediaCover/\{id\}/poster\.jpg failed ')),
-        ),
+        contains(matches(RegExp(r'^GET MediaCover·\{id\}·poster_jpg failed '))),
       );
       expect(
         rig.lines,
         contains(
-          matches(RegExp(r'^GET /MediaCover/\{id\}/poster-500\.jpg -> 200,')),
+          matches(RegExp(r'^GET MediaCover·\{id\}·poster-500_jpg -> 200,')),
         ),
       );
     });
@@ -196,7 +194,7 @@ void main() {
       expect(
         rig.lines,
         contains(
-          'artwork GET /MediaCover/{id}/poster.jpg rejected '
+          'artwork GET MediaCover·{id}·poster_jpg rejected '
           'category=not_an_image status=200 type=html',
         ),
       );
@@ -216,7 +214,7 @@ void main() {
       expect(error, isA<DioException>());
       expect(
         rig.lines.single,
-        matches(RegExp(r'poster\.jpg failed category=tls_untrusted')),
+        matches(RegExp(r'poster_jpg failed category=tls_untrusted')),
       );
     });
   });
@@ -233,7 +231,7 @@ void main() {
       expect(error, isA<DioException>());
       expect(
         rig.lines.single,
-        matches(RegExp(r'poster\.jpg failed category=timeout')),
+        matches(RegExp(r'poster_jpg failed category=timeout')),
       );
     });
   });

@@ -8,9 +8,13 @@ import 'package:security/security.dart';
 /// Logs each request of a server connection as a route shape plus a status or
 /// an [ErrorCategory], nothing else (SET-04 diagnostics).
 ///
-/// * Success, at debug: `GET /api/v3/movie/{id} -> 200, 12ms`.
-/// * Failure, at warning: `GET /api/v3/movie failed category=auth_failed
+/// * Success, at debug: `GET api·v3·movie·{id} -> 200, 12ms`.
+/// * Failure, at warning: `GET api·v3·movie failed category=auth_failed
 ///   status=401, 12ms`.
+///
+/// Routes join their segments with `·` and contain only words from a closed
+/// vocabulary (see [routeShape]): the diagnostics scrubber would turn a `/`
+/// path or a dotted name into `[REDACTED]`, so a line never has either.
 ///
 /// What it never touches: the host, port, userinfo, query string, headers,
 /// request or response bodies, titles or credentials. It reads only the method,
