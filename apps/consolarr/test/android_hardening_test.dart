@@ -29,7 +29,44 @@ List<String> crossFileDependents(String root) {
   ];
 }
 
+/// The only packages that may bring in `cross_file`: exact names, so a
+/// look-alike (`file_selector_evil`, `file_selector`-prefixed) is refused.
+const crossFileAllowedDependents = {
+  'file_selector_linux',
+  'file_selector_macos',
+  'file_selector_platform_interface',
+  'file_selector_windows',
+};
+
+/// The [dependents] that are not on [crossFileAllowedDependents].
+List<String> unexpectedCrossFileDependents(Iterable<String> dependents) => [
+  for (final n in dependents)
+    if (!crossFileAllowedDependents.contains(n)) n,
+];
+
 void main() {
+  group('cross_file allowlist', () {
+    test('accepts exactly the resolved file_selector packages', () {
+      expect(
+        unexpectedCrossFileDependents(crossFileAllowedDependents),
+        isEmpty,
+      );
+    });
+
+    test('rejects a look-alike or an unrelated package', () {
+      expect(
+        unexpectedCrossFileDependents([
+          'file_selector_linux',
+          'file_selector_evil',
+          'file_selector',
+          'file_selectors',
+          'share_plus',
+        ]),
+        ['file_selector_evil', 'file_selector', 'file_selectors', 'share_plus'],
+      );
+    });
+  });
+
   final apps = {
     'consolarr': Directory.current.path,
     'consolarr_play': '${Directory.current.parent.path}/consolarr_play',
@@ -136,9 +173,9 @@ void main() {
             reason: 'cross_file is locked but nothing depends on it',
           );
           expect(
-            dependents.where((n) => !n.startsWith('file_selector')),
+            unexpectedCrossFileDependents(dependents),
             isEmpty,
-            reason: 'only file_selector packages may bring in cross_file',
+            reason: 'only the exact allowlist may bring in cross_file',
           );
         }
       });
