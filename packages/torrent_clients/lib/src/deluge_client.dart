@@ -271,20 +271,14 @@ class DelugeClient implements TorrentClient, DaemonHostSelection {
 
   void _captureCookie(Response<String> response) {
     // A redirect to another origin must not plant a session cookie.
-    if (!_sameOrigin(response.realUri, Uri.parse(_dio.options.baseUrl))) return;
+    if (!answeredByServerOrigin(response, Uri.parse(_dio.options.baseUrl))) {
+      return;
+    }
     for (final c in response.headers['set-cookie'] ?? const <String>[]) {
       final pair = c.split(';').first.trim();
       if (pair.startsWith('_session_id=')) _cookie = pair;
     }
   }
-
-  static bool _sameOrigin(Uri a, Uri b) =>
-      a.scheme == b.scheme &&
-      a.host.toLowerCase() == b.host.toLowerCase() &&
-      _port(a) == _port(b);
-
-  static int _port(Uri u) =>
-      u.hasPort ? u.port : (u.scheme == 'https' ? 443 : 80);
 
   Future<void> _login() async {
     final password = _password;

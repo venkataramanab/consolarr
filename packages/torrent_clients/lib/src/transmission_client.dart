@@ -172,6 +172,13 @@ class TransmissionClient implements TorrentClient {
     });
     var response = await _post(body);
     if (response.statusCode == 409) {
+      // Only the server's own origin may hand out a session id.
+      if (!answeredByServerOrigin(response, Uri.parse(_dio.options.baseUrl))) {
+        throw const AppError(
+          ErrorCategory.redirectRefused,
+          debugDetail: 'session id from another origin',
+        );
+      }
       final id = response.headers.value('x-transmission-session-id');
       if (id == null || id.isEmpty) {
         throw const AppError(ErrorCategory.serverError);
