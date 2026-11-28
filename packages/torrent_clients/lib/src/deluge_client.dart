@@ -7,7 +7,6 @@ import 'package:core/core.dart';
 import 'package:dio/dio.dart';
 import 'package:torrent_clients/src/client_support.dart';
 import 'package:torrent_clients/src/models.dart';
-import 'package:torrent_clients/src/parse_runner.dart';
 import 'package:torrent_clients/src/torrent_actions.dart';
 import 'package:torrent_clients/src/torrent_capabilities.dart';
 import 'package:torrent_clients/src/torrent_client.dart';
