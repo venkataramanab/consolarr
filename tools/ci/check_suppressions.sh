@@ -39,6 +39,20 @@ hits=$(
 )
 
 status=0
+
+# The shared test harness is library code that every test depends on, so it
+# takes no analyzer suppression at all, whatever the rule: the pattern above
+# only names project rules, so `// ignore: invalid_use_of_visible_for_testing_member`
+# once passed unnoticed. Not allowlistable; fix the code instead.
+harness_hits=$(git grep -n -I -E '(//|/\*)[[:space:]]*ignore(_for_file)?[[:space:]]*:' \
+  -- 'packages/test_harness/lib/*.dart' || true)
+while IFS= read -r hit; do
+  [ -n "$hit" ] || continue
+  echo "::error file=${hit%%:*}::Analyzer suppression in test_harness library code. Fix the code instead; it cannot be allowlisted."
+  echo "  $hit"
+  status=1
+done <<< "$harness_hits"
+
 while IFS= read -r hit; do
   [ -n "$hit" ] || continue
   file=${hit%%:*}

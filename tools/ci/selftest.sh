@@ -72,7 +72,23 @@ probe "combined bypass" '// ignore: type=lint' 'HttpClient()..badCertificateCall
 plant a.dart '// ignore: unused_local_variable
 var nosemantics = 1; // not a suppression'
 bash "$s/tools/ci/check_suppressions.sh" "$s" >/dev/null 2>&1 || fail "unrelated words/ignores must pass"
+# The shared test harness is library code: no analyzer suppression at all,
+# whatever the rule (a non-project ignore used to pass unnoticed).
 rm "$s/a.dart"
+mkdir -p "$s/packages/test_harness/lib/src" "$s/packages/test_harness/test"
+hp=packages/test_harness/lib/src/x.dart
+printf '%s\n' '// ignore: invalid_use_of_visible_for_testing_member' 'class X {}' > "$s/$hp"; git -C "$s" add -A
+bash "$s/tools/ci/check_suppressions.sh" "$s" >/dev/null 2>&1 && fail "test_harness lib ignore must fail"
+printf '%s\n' 'class X {}  // ignore_for_file: unused_element' > "$s/$hp"; git -C "$s" add -A
+bash "$s/tools/ci/check_suppressions.sh" "$s" >/dev/null 2>&1 && fail "test_harness lib ignore_for_file must fail"
+printf '%s\n' 'class X {}' > "$s/$hp"
+# ... but the same form elsewhere (and in the harness's own tests) stays allowed.
+printf '%s\n' '// ignore: unused_local_variable' 'var y = 1;' > "$s/packages/test_harness/test/x_test.dart"
+printf '%s\n' '// ignore: unused_local_variable' 'var y = 1;' > "$s/b.dart"
+git -C "$s" add -A
+bash "$s/tools/ci/check_suppressions.sh" "$s" >/dev/null 2>&1 || fail "harness test and other ignores must still pass"
+rm -r "$s/packages" "$s/b.dart"; git -C "$s" add -A
+rm -f "$s/a.dart"
 printf 'analyzer:\n  errors:\n    consolarr_no_print: ignore\n' > "$s/analysis_options.yaml"; git -C "$s" add -A
 bash "$s/tools/ci/check_suppressions.sh" "$s" >/dev/null 2>&1 && fail "analysis_options override must fail"
 
