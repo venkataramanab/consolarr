@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "dart": {
+      "command": "dart",
+      "args": ["mcp-server", "--disable", "pub_dev_search"],
+      "env": {
+        "DART_SUPPRESS_ANALYTICS": "true",
+        "FLUTTER_SUPPRESS_ANALYTICS": "true"
+      }
+    }
+  }
+}
