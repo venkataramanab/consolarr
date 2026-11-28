@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:consolarr/shared/logging/logging_interceptor.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/painting.dart';
 import 'package:security/security.dart';
@@ -80,6 +81,14 @@ class SecureNetworkImage extends ImageProvider<SecureNetworkImage> {
     final data = response.data;
     final bytes = data == null ? Uint8List(0) : Uint8List.fromList(data);
     if (!looksLikeSupportedImage(bytes)) {
+      // Network failures are logged by the connection's request logger; this
+      // is the one failure it cannot see (a 200 that is not an image).
+      LoggingInterceptor.of(key.dio)?.artworkRejected(
+        key.uri,
+        status: response.statusCode,
+        contentType: response.headers.value(Headers.contentTypeHeader),
+        isEmpty: bytes.isEmpty,
+      );
       throw const FormatException('not a supported image');
     }
     final buffer = await ui.ImmutableBuffer.fromUint8List(bytes);

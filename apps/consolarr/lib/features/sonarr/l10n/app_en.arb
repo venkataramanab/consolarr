@@ -64,7 +64,7 @@
   "@sonarrErrorAuthMessage": {
     "description": "Plain-language cause shown in the series library error state (Auth)."
   },
-  "sonarrErrorAuthHint": "Check the credentials in the server settings.",
+  "sonarrErrorAuthHint": "Use the API key from Sonarr Settings → General → Security. A username and password don't work for the API.",
   "@sonarrErrorAuthHint": {
     "description": "Likely fix shown under the cause in the series library error state (Auth)."
   },

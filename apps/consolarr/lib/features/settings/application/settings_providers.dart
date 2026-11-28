@@ -38,6 +38,13 @@ final storedRowsProvider = FutureProvider<Map<String, String>>(
 /// The logger for settings write failures (error type only). A seam of its
 /// own: the app logger depends on the settings, so the notifier cannot read
 /// it without a cycle. Redacting, like every logger.
+///
+/// Deliberately **not** diagnostics-aware: pointing it at `loggerProvider`
+/// (whose `diagnosticsLogProvider` listens to `settingsProvider`) throws a
+/// `CircularDependencyError` when a write fails inside `SettingsNotifier`
+/// (`settings_providers_test`: "a failed write only reverts its own field").
+/// A failed settings write therefore reaches the platform log only; it does
+/// not show up in the in-app diagnostics view.
 final settingsLoggerProvider = Provider<AppLogger>((ref) => AppLogger());
 
 /// User settings. Starts with defaults (dark theme, system language, lock

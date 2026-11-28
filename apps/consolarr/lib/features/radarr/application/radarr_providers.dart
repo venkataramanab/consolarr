@@ -11,6 +11,7 @@ import 'package:consolarr/features/radarr/domain/library_query.dart';
 import 'package:consolarr/features/radarr/domain/wanted.dart';
 import 'package:consolarr/features/servers/application/server_connection.dart';
 import 'package:consolarr/features/settings/application/lock_controller.dart';
+import 'package:consolarr/shared/logging/log_events.dart';
 import 'package:consolarr/src/images/secure_image_provider.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
@@ -179,6 +180,7 @@ abstract class SnapshotNotifier<T> extends AsyncNotifier<RadarrState<T>> {
         previous is RadarrData<T> &&
         kOfflineFallbackCategories.contains(error.category)) {
       recordApiError(ref.read(breadcrumbsProvider), error);
+      logOfflineFallback(ref.read(loggerProvider), 'radarr', error);
       state = AsyncData(RadarrData(previous.snapshot.withOfflineError(error)));
       return;
     }

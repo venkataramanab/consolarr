@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:consolarr/features/servers/application/auth_headers.dart';
-import 'package:consolarr/shared/errors/connection_error_message.dart';
 import 'package:consolarr/features/servers/application/servers_providers.dart';
 import 'package:consolarr/features/servers/domain/server_models.dart';
+import 'package:consolarr/shared/errors/connection_error_message.dart';
+import 'package:consolarr/shared/logging/log_events.dart';
+import 'package:consolarr/shared/logging/logging_interceptor.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
 import 'package:dio/dio.dart';
@@ -65,6 +67,7 @@ final activeConnectionProvider =
       final entry = await repo.find(id);
       if (entry == null) return null;
       if (entry.needsCredentials) {
+        logNeedsCredentials(ref.read(loggerProvider), kind);
         throw const AppError(
           ErrorCategory.authFailed,
           debugDetail: needsCredentialsDetail,
@@ -75,6 +78,12 @@ final activeConnectionProvider =
           .watch(secureHttpClientFactoryProvider)
           .create(entry.profile);
       dio.options.headers.addAll(buildAuthHeaders(entry.profile, credentials));
+      dio.interceptors.add(
+        LoggingInterceptor(
+          ref.read(loggerProvider),
+          pathPrefix: entry.profile.pathPrefix,
+        ),
+      );
       ref.onDispose(() => dio.close(force: true));
       return ServerConnection(profile: entry.profile, dio: dio);
     });
