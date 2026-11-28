@@ -13,6 +13,10 @@ abstract interface class ChangeStore {
 }
 
 /// A bounded in-memory [ChangeStore]; the oldest entry is dropped first.
+///
+/// Known limit: once [capacity] other keys have been added, an evicted key is
+/// forgotten, so its item can fire again. Consumers get "at least once", not
+/// "exactly once" (see docs/patterns.md).
 class InMemoryChangeStore implements ChangeStore {
   InMemoryChangeStore({this.capacity = 512}) : assert(capacity > 0);
 

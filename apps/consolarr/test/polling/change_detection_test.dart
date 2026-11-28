@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:consolarr/shared/polling/change_detection/change_detection.dart';
@@ -255,6 +256,125 @@ void main() {
       expect(peak, 3);
     });
 
+    test('a never-completing source times out beside healthy ones', () async {
+      final cycle = PollCycle(
+        targetTimeout: const Duration(milliseconds: 50),
+        maxConcurrent: 2,
+      );
+      final hang = Completer<Result<SnapshotFetch>>();
+      final r = await cycle
+          .run([
+            target('hang', () => hang.future),
+            target('good', () => ok([item('a', TrackedState.active)])),
+            target('good2', () => ok([item('b', TrackedState.active)])),
+          ])
+          .timeout(const Duration(seconds: 5));
+      expect(r.outcomes.map((o) => o.status), [
+        PollStatus.failed,
+        PollStatus.baseline,
+        PollStatus.baseline,
+      ]);
+      expect(r.outcomes.first.error, ErrorCategory.timeout);
+      expect(r.outcomes.first.failure, PollFailure.timeout);
+    });
+
+    test('a timed-out server keeps its previous snapshot', () async {
+      final cycle = PollCycle(targetTimeout: const Duration(milliseconds: 50));
+      var s = TrackedState.active;
+      var hang = false;
+      final t = target(
+        's1',
+        () => hang
+            ? Completer<Result<SnapshotFetch>>().future
+            : ok([item('a', s)]),
+      );
+      await cycle.run([t]);
+      hang = true;
+      await cycle.run([t]);
+      hang = false;
+      s = TrackedState.failed;
+      final r = await cycle.run([t]);
+      expect(r.events.single.type, ChangeType.downloadFailed);
+    });
+
+    test(
+      'a throwing source is reported as unexpected, not a parse error',
+      () async {
+        final r = await PollCycle().run([
+          target('bad', () async => throw StateError('boom')),
+        ]);
+        final o = r.outcomes.single;
+        expect(o.status, PollStatus.failed);
+        expect(o.failure, PollFailure.unexpected);
+        expect(o.error, isNull);
+      },
+    );
+
+    test('a partial fetch is reported as partial', () async {
+      final r = await PollCycle().run([
+        target(
+          'p',
+          () async => const Result.ok(SnapshotFetch([], partial: true)),
+        ),
+      ]);
+      expect(r.outcomes.single.failure, PollFailure.partial);
+    });
+
+    test('a source error keeps its own category', () async {
+      final r = await PollCycle().run([
+        target(
+          'e',
+          () async => const Result.err(AppError(ErrorCategory.authFailed)),
+        ),
+      ]);
+      expect(r.outcomes.single.error, ErrorCategory.authFailed);
+      expect(r.outcomes.single.failure, PollFailure.source);
+    });
+
+    test('concurrent runs are serialised: no shared-snapshot race', () async {
+      final cycle = PollCycle();
+      final gate = Completer<void>();
+      var s = TrackedState.active;
+      final t = target('s1', () async {
+        await gate.future;
+        return Result.ok(SnapshotFetch([item('a', s)]));
+      });
+      final first = cycle.run([t]);
+      final second = cycle.run([t]);
+      s = TrackedState.failed;
+      gate.complete();
+      final a = await first;
+      final b = await second;
+      // The first run is the baseline; the second diffs against it.
+      expect(a.outcomes.single.status, PollStatus.baseline);
+      expect(b.outcomes.single.status, PollStatus.updated);
+      expect(a.events, isEmpty);
+      expect(b.events.map((e) => e.itemKey).toSet().length, b.events.length);
+    });
+
+    test('a second run waits for the first to finish', () async {
+      final cycle = PollCycle();
+      final order = <String>[];
+      final gate = Completer<void>();
+      final slow = target('s1', () async {
+        order.add('slow-start');
+        await gate.future;
+        order.add('slow-end');
+        return ok([]);
+      });
+      final fast = target('s2', () {
+        order.add('fast');
+        return ok([]);
+      });
+      final first = cycle.run([slow]);
+      final second = cycle.run([fast]);
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(order, ['slow-start']);
+      gate.complete();
+      await Future.wait([first, second]);
+      expect(order, ['slow-start', 'slow-end', 'fast']);
+    });
+
     test(
       'reports counts to the observer without any identifying value',
       () async {
@@ -276,7 +396,12 @@ void main() {
     );
   });
 
-  test('change_detection stays pure Dart (no Flutter imports)', () {
+  test('change_detection imports only pure-Dart libraries', () {
+    // A real headless proof needs the layer outside the Flutter app package
+    // (a larger move). Instead every import is checked against an exact
+    // allowlist, so nothing that needs the engine (package:flutter, dart:ui,
+    // material, riverpod, ...) can enter, directly or by a transitive import
+    // of a sibling.
     final dir = Directory('lib/shared/polling/change_detection');
     final files = dir
         .listSync(recursive: true)
@@ -284,8 +409,65 @@ void main() {
         .where((f) => f.path.endsWith('.dart'));
     expect(files, isNotEmpty);
     for (final f in files) {
-      expect(f.readAsStringSync(), isNot(contains('package:flutter')));
-      expect(f.readAsStringSync(), isNot(contains('package:flutter_riverpod')));
+      expect(
+        disallowedChangeDetectionImports(f.readAsStringSync()),
+        isEmpty,
+        reason: f.path,
+      );
     }
   });
+
+  group('the import allowlist itself', () {
+    test('rejects engine, UI and state libraries', () {
+      for (final bad in [
+        "import 'dart:ui';",
+        "import 'dart:io';",
+        "import 'package:flutter/material.dart';",
+        "import 'package:flutter/foundation.dart';",
+        "import 'package:flutter_riverpod/flutter_riverpod.dart';",
+        "import 'package:riverpod/riverpod.dart';",
+        "import 'package:consolarr/shared/widgets/x.dart';",
+        "import 'package:design_system/design_system.dart';",
+        "export 'dart:ui';",
+      ]) {
+        expect(disallowedChangeDetectionImports(bad), isNotEmpty, reason: bad);
+      }
+    });
+
+    test('accepts the pure libraries the layer uses', () {
+      for (final good in [
+        "import 'dart:async';",
+        "import 'dart:collection';",
+        "import 'package:core/core.dart';",
+        "import 'package:consolarr/shared/polling/change_detection/diff.dart';",
+        "import 'diff.dart';",
+      ]) {
+        expect(disallowedChangeDetectionImports(good), isEmpty, reason: good);
+      }
+    });
+  });
+}
+
+/// The imports of [source] that a pure-Dart change-detection core may not use.
+List<String> disallowedChangeDetectionImports(String source) {
+  const allowedDart = {'async', 'collection', 'convert', 'math', 'typed_data'};
+  const allowedPackages = {'core'};
+  const ownPrefix = 'package:consolarr/shared/polling/change_detection/';
+  final bad = <String>[];
+  for (final m in RegExp(
+    r'''^\s*(?:import|export)\s+['"]([^'"]+)['"]''',
+    multiLine: true,
+  ).allMatches(source)) {
+    final uri = m.group(1)!;
+    final ok = switch (uri) {
+      _ when uri.startsWith('dart:') => allowedDart.contains(uri.substring(5)),
+      _ when uri.startsWith(ownPrefix) => true,
+      _ when uri.startsWith('package:') => allowedPackages.contains(
+        uri.substring(8).split('/').first,
+      ),
+      _ => !uri.contains(':'), // relative
+    };
+    if (!ok) bad.add(uri);
+  }
+  return bad;
 }

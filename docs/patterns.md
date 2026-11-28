@@ -348,11 +348,18 @@ that SET-09 (notifications, later) plugs into.
     observed transition (present and not terminal -> completed or failed)
     counts; each `(server, item)` fires at most once.
   * Servers are fetched independently with bounded concurrency (4); one
-    failure never touches another.
+    failure never touches another. A server that does not answer within
+    `targetTimeout` (30 s) fails on its own (`PollFailure.timeout`) and keeps
+    its previous snapshot; a throwing source is `PollFailure.unexpected`.
+    `run` calls are serialised (the last-good snapshots are shared).
   * `ChangeEvent.title` exists for a future notification text only: it is
     in memory, excluded from `toString`/`toJson`, never persisted or logged.
     The ledger is in-memory only (persistence is deferred, so an item may fire
-    once more after a restart).
+    once more after a restart). **Known limit:** it holds 512 entries and drops
+    the oldest first, so an item whose entry was evicted (more than 512 other
+    items fired since) can fire a second time if it transitions again. The
+    notification layer must treat an event as "at least once", not "exactly
+    once", until a persisted store replaces the in-memory one.
 * **Sources** (`snapshot_sources.dart`): `arrQueueSource` and `torrentSource`
   adapt the existing `queue()` / `listTorrents()`; `snapshotSources` is the
   per-kind registry. No new endpoint.

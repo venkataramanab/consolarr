@@ -35,14 +35,37 @@ class PollTarget {
 /// How one server fared in a cycle.
 enum PollStatus { baseline, updated, failed }
 
+/// Why a server failed. A closed set: it never carries a message or a value.
+enum PollFailure {
+  /// The source returned an error (see [PollOutcome.error]).
+  source,
+
+  /// The fetch may be missing items, so it was not used as a snapshot.
+  partial,
+
+  /// The source did not answer within [PollCycle.targetTimeout].
+  timeout,
+
+  /// The source threw instead of returning a result.
+  unexpected,
+}
+
 class PollOutcome {
-  const PollOutcome({required this.serverId, required this.status, this.error});
+  const PollOutcome({
+    required this.serverId,
+    required this.status,
+    this.error,
+    this.failure,
+  });
 
   final String serverId;
   final PollStatus status;
 
-  /// The error category when [status] is [PollStatus.failed].
+  /// The error category when the source reported one (or timed out).
   final ErrorCategory? error;
+
+  /// Why the server failed, when [status] is [PollStatus.failed].
+  final PollFailure? failure;
 }
 
 class PollCycleResult {
@@ -60,11 +83,15 @@ class PollCycleResult {
 ///   snapshot: an error is never "everything vanished".
 /// * One server's failure never touches another.
 ///
+/// A source that never answers fails after [targetTimeout]; its previous
+/// snapshot is kept.
+///
 /// Nothing here schedules itself; the owner decides when to call [run].
 class PollCycle {
   PollCycle({
     ChangeLedger? ledger,
     this.maxConcurrent = 4,
+    this.targetTimeout = const Duration(seconds: 30),
     this.onCycleFinished,
     this.onChange,
   }) : ledger = ledger ?? ChangeLedger(InMemoryChangeStore()),
@@ -72,6 +99,10 @@ class PollCycle {
 
   final ChangeLedger ledger;
   final int maxConcurrent;
+
+  /// The longest one server may take. A server that is slower fails on its
+  /// own ([PollFailure.timeout]) instead of stalling the whole cycle.
+  final Duration targetTimeout;
 
   /// Counts only: servers, failed, changes.
   final void Function(int servers, int failed, int changes)? onCycleFinished;
@@ -84,7 +115,18 @@ class PollCycle {
   /// Forgets the snapshot of a server (for example when it was removed).
   void forget(String serverId) => _last.remove(serverId);
 
-  Future<PollCycleResult> run(List<PollTarget> targets) async {
+  Future<void> _tail = Future<void>.value();
+
+  /// Runs one cycle. Calls are serialised: a second call waits for the first,
+  /// because the last-good snapshots are shared and two overlapping cycles
+  /// would diff against each other's half-written state.
+  Future<PollCycleResult> run(List<PollTarget> targets) {
+    final result = _tail.then((_) => _run(targets));
+    _tail = result.then<void>((_) {}, onError: (_) {});
+    return result;
+  }
+
+  Future<PollCycleResult> _run(List<PollTarget> targets) async {
     final outcomes = List<PollOutcome?>.filled(targets.length, null);
     final perTarget = List<List<ChangeEvent>>.filled(
       targets.length,
@@ -120,13 +162,19 @@ class PollCycle {
 
   Future<(PollOutcome, List<ChangeEvent>)> _one(PollTarget t) async {
     try {
-      final result = await t.source();
+      final result = await t.source().timeout(targetTimeout);
       switch (result) {
         case Err(:final error):
-          return (_failed(t, error.category), <ChangeEvent>[]);
+          return (
+            _failed(t, PollFailure.source, error.category),
+            <ChangeEvent>[],
+          );
         case Ok(:final value):
           if (value.partial) {
-            return (_failed(t, ErrorCategory.parseError), <ChangeEvent>[]);
+            return (
+              _failed(t, PollFailure.partial, ErrorCategory.parseError),
+              <ChangeEvent>[],
+            );
           }
           final snapshot = ServiceSnapshot(
             serverId: t.serverId,
@@ -142,11 +190,21 @@ class PollCycle {
             diffSnapshots(prev, snapshot),
           );
       }
+    } on TimeoutException {
+      return (
+        _failed(t, PollFailure.timeout, ErrorCategory.timeout),
+        <ChangeEvent>[],
+      );
     } on Object {
-      return (_failed(t, ErrorCategory.parseError), <ChangeEvent>[]);
+      return (_failed(t, PollFailure.unexpected, null), <ChangeEvent>[]);
     }
   }
 
-  PollOutcome _failed(PollTarget t, ErrorCategory c) =>
-      PollOutcome(serverId: t.serverId, status: PollStatus.failed, error: c);
+  PollOutcome _failed(PollTarget t, PollFailure why, ErrorCategory? c) =>
+      PollOutcome(
+        serverId: t.serverId,
+        status: PollStatus.failed,
+        error: c,
+        failure: why,
+      );
 }
