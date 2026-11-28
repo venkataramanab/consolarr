@@ -62,6 +62,50 @@ void main() {
     }
   });
 
+  for (final (error, expectEn, expectAr) in <(Object, String, String)>[
+    (
+      const ShareTextTooLarge(),
+      'The diagnostics are too large to share',
+      'سجل التشخيص أكبر من أن تتم مشاركته',
+    ),
+    (StateError('boom'), 'Could not share the file.', 'تعذرت مشاركة الملف.'),
+  ]) {
+    for (final lang in ['en', 'ar']) {
+      testWidgets('L3: a share error ${error.runtimeType} says its own '
+          'message ($lang)', (tester) async {
+        final l10n = await AppLocalizations.delegate.load(Locale(lang));
+        final h = ScreenHarness(
+          stored: {SettingsKeys.diagnosticsEnabled: '1'},
+          servers: [entry('a')],
+        );
+        h.base.actions.shareError = error;
+        final v = HarnessVariant(
+          size: wide.size,
+          textScale: 1,
+          locale: Locale(lang),
+          brightness: Brightness.light,
+        );
+        applyVariantView(tester, v);
+        await tester.pumpWidget(h.screen(v, const DiagnosticsPreviewScreen()));
+        await tester.pumpAndSettle();
+        final share = find.text(l10n.diagShareFile, skipOffstage: false);
+        for (var i = 0; i < 80 && share.evaluate().isEmpty; i++) {
+          await tester.drag(find.byType(ListView), const Offset(0, -600));
+          await tester.pump();
+        }
+        await tester.ensureVisible(share);
+        await tester.pumpAndSettle();
+        await tester.tap(share);
+        await tester.pumpAndSettle();
+        final expected = lang == 'en' ? expectEn : expectAr;
+        expect(find.textContaining(expected), findsOneWidget);
+        if (error is ShareTextTooLarge) {
+          expect(find.text(l10n.diagShareFailed), findsNothing);
+        }
+      });
+    }
+  }
+
   group('canary corpus after the share cap', () {
     test('capShareText keeps the corpus out of the shared text', () {
       final bundle = DiagnosticsBundle.build(

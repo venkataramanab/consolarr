@@ -138,6 +138,9 @@ class RecordingExternalActions implements ExternalActions {
   final List<String> shared = [];
   bool openResult = true;
 
+  /// Thrown by [shareText] when set (tests of the failure messages).
+  Object? shareError;
+
   @override
   Future<bool> openHttps(Uri uri) async {
     if (uri.scheme != 'https') return false;
@@ -151,6 +154,8 @@ class RecordingExternalActions implements ExternalActions {
     required String subject,
     required String truncationNote,
   }) async {
+    final failure = shareError;
+    if (failure != null) throw failure;
     final capped = capShareText(text, truncationNote);
     shared.add(capped.text);
     return capped.truncated;

@@ -445,6 +445,10 @@
   "@diagShareFailed": {
     "description": "Message shown when the share sheet failed."
   },
+  "diagShareTooLarge": "The diagnostics are too large to share. Open a GitHub issue instead, or clear the log first.",
+  "@diagShareTooLarge": {
+    "description": "Message shown when the diagnostics text is over the size the share sheet accepts."
+  },
   "checkTitle": "Connection check",
   "@checkTitle": {
     "description": "Title of the connection check screen."

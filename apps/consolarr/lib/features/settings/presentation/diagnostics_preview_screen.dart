@@ -6,6 +6,7 @@ import 'package:consolarr/features/servers/domain/server_models.dart';
 import 'package:consolarr/features/settings/application/diagnostics_providers.dart';
 import 'package:consolarr/features/settings/application/services_check.dart';
 import 'package:consolarr/features/settings/application/settings_providers.dart';
+import 'package:consolarr/features/settings/data/external_actions.dart';
 import 'package:consolarr/features/settings/presentation/settings_page.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:design_system/design_system.dart';
@@ -45,6 +46,10 @@ class _DiagnosticsPreviewScreenState
             const DiagnosticsSharedEvent(channel: DiagnosticsChannelParam.file),
           );
       if (mounted) setState(() => _message = null);
+    } on ShareTextTooLarge {
+      // The platform refused the text as over its size guard: say so, so the
+      // user knows to use the GitHub issue instead of retrying.
+      if (mounted) setState(() => _message = l10n.diagShareTooLarge);
     } on Object {
       if (mounted) setState(() => _message = l10n.diagShareFailed);
     }

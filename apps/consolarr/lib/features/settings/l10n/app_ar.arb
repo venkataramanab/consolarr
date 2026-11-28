@@ -445,6 +445,10 @@
   "@diagShareFailed": {
     "description": "Message shown when the share sheet failed."
   },
+  "diagShareTooLarge": "سجل التشخيص أكبر من أن تتم مشاركته. افتح بلاغًا على GitHub بدلًا من ذلك، أو امسح السجل أولًا.",
+  "@diagShareTooLarge": {
+    "description": "Message shown when the diagnostics text is over the size the share sheet accepts."
+  },
   "checkTitle": "فحص الاتصال",
   "@checkTitle": {
     "description": "Title of the connection check screen."
