@@ -192,7 +192,7 @@ void main() {
         logConnectionTest(logger, kind, AppError(category));
       }
     }
-    for (final area in ['radarr', 'sonarr', 'torrents']) {
+    for (final area in OfflineArea.values) {
       for (final category in ErrorCategory.values) {
         logOfflineFallback(logger, area, AppError(category));
       }

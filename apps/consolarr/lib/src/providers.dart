@@ -103,6 +103,11 @@ final themeModeProvider = Provider<ThemeMode>(
 // All lazy: nothing below is read before the first frame. Tests and the Play
 // entry point override these.
 
+/// Which build this is. **Each entry point states its own flavor**
+/// (`overrideWithValue` in its `main`); it is never guessed from what happens
+/// to be plugged in. The diagnostics bundle reports it.
+final appFlavorProvider = Provider<AppFlavor>((ref) => AppFlavor.foss);
+
 /// Current time. Override in tests for stable ages and expiry.
 final clockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
 

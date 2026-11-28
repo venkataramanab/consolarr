@@ -3,6 +3,7 @@
 import 'package:consolarr/consolarr.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:observability/observability.dart';
 
 /// Play Store entry point.
 ///
@@ -13,5 +14,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// would bypass consent (a test enforces it). None are added yet, so behaviour
 /// is identical to the foss app.
 void main() {
-  runApp(const ProviderScope(overrides: [], child: ConsolarrApp()));
+  runApp(
+    ProviderScope(
+      overrides: [appFlavorProvider.overrideWithValue(AppFlavor.play)],
+      child: const ConsolarrApp(),
+    ),
+  );
 }
