@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:consolarr/features/about/source_link.dart';
+import 'package:consolarr/features/servers/application/servers_providers.dart';
+import 'package:consolarr/features/servers/domain/server_models.dart';
 import 'package:consolarr/features/settings/application/diagnostics_providers.dart';
+import 'package:consolarr/features/settings/application/services_check.dart';
 import 'package:consolarr/features/settings/application/settings_providers.dart';
 import 'package:consolarr/features/settings/presentation/settings_page.dart';
 import 'package:consolarr/src/providers.dart';
@@ -80,13 +83,15 @@ class _DiagnosticsPreviewScreenState
 
     // Loading, then error, then the value.
     final List<Widget> children;
-    if (bundle.isLoading) {
+    // A rebuild with a value (the services check changing a line) keeps the
+    // sections on screen instead of flashing the skeleton.
+    if (bundle.isLoading && !bundle.hasValue) {
       children = const [
         SkeletonBox(height: 24),
         SizedBox(height: ConsolarrSpacing.sm),
         SkeletonBox(height: 160),
       ];
-    } else if (bundle.hasError) {
+    } else if (bundle.hasError && !bundle.hasValue) {
       children = [
         ErrorState(
           headline: l10n.diagLoadFailedTitle,
@@ -100,6 +105,8 @@ class _DiagnosticsPreviewScreenState
       final b = bundle.requireValue;
       children = [
         Text(l10n.diagPreviewIntro, style: theme.textTheme.bodyLarge),
+        const SizedBox(height: ConsolarrSpacing.md),
+        const _ServicesCheck(),
         const SizedBox(height: ConsolarrSpacing.md),
         for (final section in b.sections)
           Padding(
@@ -147,7 +154,9 @@ class _DiagnosticsPreviewScreenState
             padding: const EdgeInsets.only(bottom: ConsolarrSpacing.md),
             child: Text(
               l10n.diagPreviewEmptyLog,
-              style: theme.textTheme.bodySmall,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: roles.textPrimary,
+              ),
             ),
           ),
         if (_message != null)
@@ -182,7 +191,10 @@ class _DiagnosticsPreviewScreenState
           label: Text(l10n.diagOpenGithub),
         ),
         const SizedBox(height: ConsolarrSpacing.sm),
-        Text(l10n.diagGithubNote, style: theme.textTheme.bodySmall),
+        Text(
+          l10n.diagGithubNote,
+          style: theme.textTheme.bodySmall?.copyWith(color: roles.textPrimary),
+        ),
       ];
     }
 
@@ -190,6 +202,77 @@ class _DiagnosticsPreviewScreenState
       title: l10n.diagPreviewTitle,
       screen: ScreenName.settingsDiagnostics,
       children: children,
+    );
+  }
+}
+
+/// The user-initiated "Check services" control: a button with a running state
+/// and a status line that says what the check found, in words. The status is
+/// a live region whose text changes only when the check starts, finishes or
+/// fails, so nothing is announced twice.
+class _ServicesCheck extends ConsumerWidget {
+  const _ServicesCheck();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final touch = TouchTargets.of(context).minimum;
+    final roles = context.roles;
+    final check = ref.watch(servicesCheckProvider);
+    final servers = ref.watch(serversProvider).value ?? const <ServerEntry>[];
+    final checking = check.phase == ServicesCheckPhase.checking;
+
+    final String status;
+    switch (check.phase) {
+      case ServicesCheckPhase.notChecked:
+        status = l10n.diagServicesNotChecked;
+      case ServicesCheckPhase.checking:
+        status = l10n.diagServicesChecking;
+      case ServicesCheckPhase.failed:
+        status = l10n.diagServicesFailed;
+      case ServicesCheckPhase.done:
+        final results = check.results.values;
+        if (servers.isEmpty && results.isEmpty) {
+          status = l10n.diagServicesNone;
+        } else if (results.length < servers.length) {
+          status = l10n.diagServicesPartial;
+        } else {
+          status = l10n.diagServicesDone(
+            results.length,
+            results.where((r) => r.health != ServerHealth.healthy).length,
+          );
+        }
+    }
+
+    final label = checking
+        ? l10n.diagServicesChecking
+        : check.phase == ServicesCheckPhase.notChecked
+        ? l10n.diagServicesCheck
+        : l10n.diagServicesCheckAgain;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        OutlinedButton.icon(
+          style: OutlinedButton.styleFrom(minimumSize: Size(0, touch)),
+          onPressed: checking
+              ? null
+              : () => ref.read(servicesCheckProvider.notifier).check(),
+          icon: checking
+              ? const SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.health_and_safety_outlined),
+          label: Text(label),
+        ),
+        const SizedBox(height: ConsolarrSpacing.xs),
+        Semantics(
+          liveRegion: true,
+          child: Text(status, style: theme.textTheme.bodyMedium),
+        ),
+      ],
     );
   }
 }

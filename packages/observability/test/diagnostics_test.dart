@@ -278,6 +278,7 @@ void main() {
         'app',
         'platform',
         'locale',
+        'services',
         'error_categories',
         'log',
       ]);

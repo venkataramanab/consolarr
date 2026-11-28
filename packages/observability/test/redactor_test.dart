@@ -595,7 +595,8 @@ void main() {
         ..info('GET https://u:pw1234@h.example/?apikey=test-key-0000')
         ..error('boom', error: 'password=hunter2');
       expect(lines, [
-        'info:GET https://$mask@h.example/?apikey=$mask',
+        // The stricter pass removes the whole address, not only its secrets.
+        'info:GET $mask',
         'error:boom: password=$mask',
       ]);
     });

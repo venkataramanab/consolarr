@@ -2,6 +2,8 @@
 
 import 'package:consolarr/features/about/app_info.dart';
 import 'package:consolarr/features/servers/application/servers_providers.dart';
+import 'package:consolarr/features/servers/domain/server_models.dart';
+import 'package:consolarr/features/settings/application/services_check.dart';
 import 'package:consolarr/features/settings/application/settings_providers.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:flutter/foundation.dart';
@@ -109,9 +111,31 @@ final diagnosticsBundleProvider = FutureProvider.autoDispose<DiagnosticsBundle>(
         ..add(s.profile.address.host);
       final alt = s.profile.alternateAddress;
       if (alt != null) known.add(alt.host);
+      // The path prefix is part of the address (`/sonarr`, `/media/tv`).
+      if (s.profile.pathPrefix.isNotEmpty) known.add(s.profile.pathPrefix);
       final creds = await repo.loadCredentials(s.profile);
-      known..addAll([?creds.username, ?creds.password, ?creds.apiKey]);
+      known
+        ..addAll([?creds.username, ?creds.password, ?creds.apiKey])
+        // Custom header values are secrets too (names are not).
+        ..addAll(creds.headers.map((h) => h.value));
     }
+    // Health that is already resolved (the server list) counts; nothing is
+    // started here: a check runs only on the user's tap.
+    final known0 = <String, ServerHealth>{};
+    for (final s in servers) {
+      final provider = serverHealthProvider(s.profile.id);
+      if (ref.read(provider.exists)) {
+        final h = ref.read(provider).asData?.value;
+        if (h != null && h != ServerHealth.checking) {
+          known0[s.profile.id] = h;
+        }
+      }
+    }
+    final check = ref.watch(servicesCheckProvider);
+    final consent = ref.watch(consentProvider);
+    final flavor = ref.watch(telemetryAvailableProvider)
+        ? AppFlavor.play
+        : AppFlavor.foss;
     final platform = await ref
         .watch(externalActionsProvider)
         .platformDescription();
@@ -126,11 +150,15 @@ final diagnosticsBundleProvider = FutureProvider.autoDispose<DiagnosticsBundle>(
       locale:
           settings.localeTag ??
           WidgetsBinding.instance.platformDispatcher.locale.languageCode,
+      flavor: flavor,
+      crashReportsConsent: consent.crashReports,
+      analyticsConsent: consent.analytics,
     );
     return DiagnosticsBundle.build(
       info: info,
       errorCategories: errorCategoriesFrom(ref.read(breadcrumbsProvider)),
       entries: ref.read(diagnosticsLogProvider).entries,
+      services: serviceEntries(servers, check, known: known0),
       scrubber: DiagnosticsScrubber(knownValues: known),
     );
   },

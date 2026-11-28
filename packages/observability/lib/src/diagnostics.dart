@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:observability/src/events/catalog.dart';
 import 'package:observability/src/logger.dart';
 import 'package:observability/src/redactor.dart';
 
@@ -31,8 +32,10 @@ class DiagnosticsLog {
   DiagnosticsLog({
     this.capacity = 500,
     this.redactor = const Redactor(),
+    DiagnosticsScrubber? scrubber,
     DateTime Function()? clock,
-  }) : assert(capacity > 0, 'capacity > 0'),
+  }) : scrubber = scrubber ?? const DiagnosticsScrubber(),
+       assert(capacity > 0, 'capacity > 0'),
        _clock = clock ?? DateTime.now;
 
   /// Largest stored message, marker included (about 1 KB).
@@ -43,6 +46,11 @@ class DiagnosticsLog {
 
   final int capacity;
   final Redactor redactor;
+
+  /// The stricter pass applied to every line at write time (hosts, addresses,
+  /// paths, quoted titles, passkeys), so the log view only ever shows
+  /// scrubbed text. The bundle scrubs again, with the known server values.
+  final DiagnosticsScrubber scrubber;
   final DateTime Function() _clock;
 
   final List<LogEntry?> _ring = [];
@@ -95,7 +103,7 @@ class DiagnosticsLog {
     final entry = LogEntry(
       time: _clock().toUtc(),
       level: level,
-      message: _cap(redactor.redactText(message)),
+      message: _cap(scrubber.scrub(redactor.redactText(message))),
     );
     if (_ring.length < capacity) {
       _ring.add(entry);
@@ -237,8 +245,23 @@ class DiagnosticsScrubber {
     r'(?<![0-9A-Za-z])(?=[a-z2-7]*[2-7])[a-z2-7]{16,}(?![0-9A-Za-z])',
   );
 
-  /// Returns [line] with everything above removed. Idempotent.
+  /// Returns [line] with everything above removed. Idempotent: the passes
+  /// repeat until the text stops changing (a replacement can change how
+  /// quotes pair up, so one pass is not always enough), at most
+  /// [_maxPasses] times.
   String scrub(String line) {
+    var out = line;
+    for (var i = 0; i < _maxPasses; i++) {
+      final next = _pass(out);
+      if (next == out) break;
+      out = next;
+    }
+    return out;
+  }
+
+  static const _maxPasses = 6;
+
+  String _pass(String line) {
     var out = line;
     for (final v in knownValues) {
       if (v.length < 3) continue;
@@ -270,6 +293,64 @@ class DiagnosticsScrubber {
   }
 }
 
+/// Which build this is (closed set, so nothing else can be reported).
+enum AppFlavor { foss, play }
+
+/// How the services of one kind are doing, as shown in the bundle. A closed
+/// set: the bundle can say nothing else about a server's state.
+enum ServiceHealthBucket {
+  /// No check has run (the bundle never starts one).
+  notChecked,
+  checking,
+
+  /// Some servers of the kind were checked, others were not.
+  partial,
+  healthy,
+  degraded,
+  unauthorized,
+  unreachable;
+
+  /// The English words used in the bundle.
+  String get label => switch (this) {
+    notChecked => 'not checked',
+    checking => 'checking',
+    partial => 'partly checked',
+    healthy => 'healthy',
+    degraded => 'degraded',
+    unauthorized => 'unauthorized',
+    unreachable => 'unreachable',
+  };
+}
+
+/// The connection health of every server of one [kind]. Only closed values
+/// and counts: a server name, host, port or id cannot be carried.
+class DiagnosticsServiceEntry {
+  const DiagnosticsServiceEntry({
+    required this.kind,
+    required this.servers,
+    required this.health,
+    this.majorVersion,
+    this.cleartextOptIn = false,
+  });
+
+  final ServiceKindParam kind;
+
+  /// Number of configured servers of this kind.
+  final int servers;
+  final ServiceHealthBucket health;
+
+  /// The server's major version when a check reported it.
+  final int? majorVersion;
+
+  /// At least one server of this kind has plain http opted in.
+  final bool cleartextOptIn;
+
+  String get line =>
+      '${kind.code}: servers=$servers, health=${health.label}, '
+      'major=${majorVersion ?? 'unknown'}, '
+      'cleartext=${cleartextOptIn ? 'yes' : 'no'}';
+}
+
 /// Facts about the install that go in the bundle. No identity.
 class DiagnosticsInfo {
   const DiagnosticsInfo({
@@ -277,7 +358,16 @@ class DiagnosticsInfo {
     required this.buildMode,
     required this.platform,
     required this.locale,
+    this.flavor = AppFlavor.foss,
+    this.crashReportsConsent = false,
+    this.analyticsConsent = false,
   });
+
+  final AppFlavor flavor;
+
+  /// The state of the two consent switches.
+  final bool crashReportsConsent;
+  final bool analyticsConsent;
 
   final String appVersion;
 
@@ -315,6 +405,7 @@ class DiagnosticsBundle {
     required DiagnosticsInfo info,
     required List<String> errorCategories,
     required List<LogEntry> entries,
+    List<DiagnosticsServiceEntry> services = const [],
     DiagnosticsScrubber scrubber = const DiagnosticsScrubber(),
   }) {
     String s(String v) => scrubber.scrub(v);
@@ -322,7 +413,11 @@ class DiagnosticsBundle {
       DiagnosticsSection(
         id: 'app',
         title: 'App',
-        body: 'version: ${s(info.appVersion)}\nbuild: ${s(info.buildMode)}',
+        body:
+            'version: ${s(info.appVersion)}\nbuild: ${s(info.buildMode)}\n'
+            'flavor: ${info.flavor.name}\n'
+            'crash reports: ${info.crashReportsConsent ? 'on' : 'off'}\n'
+            'usage analytics: ${info.analyticsConsent ? 'on' : 'off'}',
       ),
       DiagnosticsSection(
         id: 'platform',
@@ -330,6 +425,13 @@ class DiagnosticsBundle {
         body: s(info.platform),
       ),
       DiagnosticsSection(id: 'locale', title: 'Locale', body: s(info.locale)),
+      DiagnosticsSection(
+        id: 'services',
+        title: 'Services',
+        body: services.isEmpty
+            ? '(none configured)'
+            : services.map((e) => e.line).join('\n'),
+      ),
       DiagnosticsSection(
         id: 'error_categories',
         title: 'Error categories',

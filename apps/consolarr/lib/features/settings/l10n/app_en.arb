@@ -730,5 +730,49 @@
   "diagAnnounceCleared": "Log cleared",
   "@diagAnnounceCleared": {
     "description": "Announced by the screen reader after the in-app log was cleared."
+  },
+  "diagServicesCheck": "Check services",
+  "@diagServicesCheck": {
+    "description": "Button on the diagnostics preview that checks the health of every configured server. Nothing is contacted until it is tapped."
+  },
+  "diagServicesChecking": "Checking services…",
+  "@diagServicesChecking": {
+    "description": "Label of the services button and status while the check runs."
+  },
+  "diagServicesCheckAgain": "Check again",
+  "@diagServicesCheckAgain": {
+    "description": "Button label after a services check finished or failed."
+  },
+  "diagServicesNotChecked": "Not checked yet. The Services section says “not checked” until you run the check. Nothing is contacted unless you tap the button.",
+  "@diagServicesNotChecked": {
+    "description": "Status text on the diagnostics preview before any services check."
+  },
+  "diagServicesNone": "There are no servers to check.",
+  "@diagServicesNone": {
+    "description": "Status text when the services check ran but no server is configured."
+  },
+  "diagServicesPartial": "Only some servers were checked. Check again to fill in the rest.",
+  "@diagServicesPartial": {
+    "description": "Status text when the services check covered only part of the configured servers."
+  },
+  "diagServicesFailed": "The check could not run. Try again.",
+  "@diagServicesFailed": {
+    "description": "Status text when the services check failed as a whole."
+  },
+  "diagServicesDone": "{checked, plural, =1{Checked 1 server.} other{Checked {checked} servers.}} {problems, plural, =0{No problems found.} =1{1 server has a problem.} other{{problems} servers have problems.}}",
+  "@diagServicesDone": {
+    "description": "Status text after a services check: how many servers were checked and how many have a problem.",
+    "placeholders": {
+      "checked": {
+        "type": "int",
+        "description": "Number of servers checked.",
+        "format": "decimalPattern"
+      },
+      "problems": {
+        "type": "int",
+        "description": "Number of servers that are not healthy.",
+        "format": "decimalPattern"
+      }
+    }
   }
 }

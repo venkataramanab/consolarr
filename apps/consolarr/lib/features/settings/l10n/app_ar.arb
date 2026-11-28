@@ -730,5 +730,49 @@
   "diagAnnounceCleared": "تم مسح السجل",
   "@diagAnnounceCleared": {
     "description": "Announced by the screen reader after the in-app log was cleared."
+  },
+  "diagServicesCheck": "فحص الخدمات",
+  "@diagServicesCheck": {
+    "description": "Button on the diagnostics preview that checks the health of every configured server. Nothing is contacted until it is tapped."
+  },
+  "diagServicesChecking": "جارٍ فحص الخدمات…",
+  "@diagServicesChecking": {
+    "description": "Label of the services button and status while the check runs."
+  },
+  "diagServicesCheckAgain": "فحص مجددًا",
+  "@diagServicesCheckAgain": {
+    "description": "Button label after a services check finished or failed."
+  },
+  "diagServicesNotChecked": "لم يُفحص بعد. يذكر قسم الخدمات «لم تُفحص» حتى تُجري الفحص. لا يُتصل بأي خادم ما لم تضغط الزر.",
+  "@diagServicesNotChecked": {
+    "description": "Status text on the diagnostics preview before any services check."
+  },
+  "diagServicesNone": "لا توجد خوادم لفحصها.",
+  "@diagServicesNone": {
+    "description": "Status text when the services check ran but no server is configured."
+  },
+  "diagServicesPartial": "فُحصت بعض الخوادم فقط. افحص مجددًا لإكمال الباقي.",
+  "@diagServicesPartial": {
+    "description": "Status text when the services check covered only part of the configured servers."
+  },
+  "diagServicesFailed": "تعذّر إجراء الفحص. حاول مجددًا.",
+  "@diagServicesFailed": {
+    "description": "Status text when the services check failed as a whole."
+  },
+  "diagServicesDone": "{checked, plural, =1{تم فحص خادم واحد.} =2{تم فحص خادمين.} few{تم فحص {checked} خوادم.} many{تم فحص {checked} خادمًا.} other{تم فحص {checked} خادم.}} {problems, plural, =0{لم يُعثر على مشكلات.} =1{خادم واحد به مشكلة.} =2{خادمان بهما مشكلة.} few{{problems} خوادم بها مشكلات.} many{{problems} خادمًا بها مشكلات.} other{{problems} خادم بها مشكلات.}}",
+  "@diagServicesDone": {
+    "description": "Status text after a services check: how many servers were checked and how many have a problem.",
+    "placeholders": {
+      "checked": {
+        "type": "int",
+        "description": "Number of servers checked.",
+        "format": "decimalPattern"
+      },
+      "problems": {
+        "type": "int",
+        "description": "Number of servers that are not healthy.",
+        "format": "decimalPattern"
+      }
+    }
   }
 }

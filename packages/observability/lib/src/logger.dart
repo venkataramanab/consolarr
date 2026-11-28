@@ -26,11 +26,16 @@ class AppLogger {
   AppLogger({
     LogSink? sink,
     this.redactor = const Redactor(),
+    this.scrubber = const DiagnosticsScrubber(),
     this.minLevel = LogLevel.info,
     this.diagnostics,
   }) : _sink = sink ?? _defaultSink;
 
   final Redactor redactor;
+
+  /// Applied after [redactor]: no address, host, path or quoted title
+  /// reaches a sink.
+  final DiagnosticsScrubber scrubber;
   final LogLevel minLevel;
   final LogSink _sink;
 
@@ -53,7 +58,7 @@ class AppLogger {
     if (level.index < minLevel.index && !captured) return;
     final buffer = StringBuffer(message);
     if (error != null) buffer.write(': $error');
-    final text = redactor.redactText(buffer.toString());
+    final text = scrubber.scrub(redactor.redactText(buffer.toString()));
     diagnostics?.add(level, text);
     if (level.index >= minLevel.index) _sink(level, text);
   }

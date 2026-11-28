@@ -110,7 +110,11 @@ void main() {
       c.invalidate(serversProvider);
       await tester.tap(find.text(l10n.settingsRetry));
       await tester.pumpAndSettle();
-      expect(find.text(l10n.diagShareFile), findsOneWidget);
+      // The services control above pushes the buttons below the first screen.
+      expect(
+        find.text(l10n.diagShareFile, skipOffstage: false),
+        findsOneWidget,
+      );
     });
 
     testWidgets('the bundle waits for the server list, so known names are '

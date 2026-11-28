@@ -132,6 +132,50 @@ void main() {
     });
   });
 
+  for (final (name, v) in [
+    (
+      'dark_en_360x800',
+      const HarnessVariant(
+        size: Size(360, 800),
+        textScale: 1,
+        locale: Locale('en'),
+        brightness: Brightness.dark,
+      ),
+    ),
+    (
+      'light_ar_320x568_x2',
+      const HarnessVariant(
+        size: Size(320, 568),
+        textScale: 2,
+        locale: Locale('ar'),
+        brightness: Brightness.light,
+      ),
+    ),
+  ]) {
+    testWidgets('golden: preview services checked $name', (tester) async {
+      final h = ScreenHarness(
+        stored: {SettingsKeys.diagnosticsEnabled: '1'},
+        servers: [
+          entry('a'),
+          entry('b', kind: ServiceKind.radarr),
+        ],
+        healthTester: FakeTester([
+          const ConnectionTestSuccess(version: '5.1.0', majorVersion: 5),
+          const ConnectionTestFailure(AppError(ErrorCategory.authFailed)),
+        ]),
+      );
+      applyVariantView(tester, v);
+      await tester.pumpWidget(h.screen(v, const DiagnosticsPreviewScreen()));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(OutlinedButton).first);
+      await tester.pumpAndSettle();
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/settings_preview_services_$name.png'),
+      );
+    });
+  }
+
   testWidgets('golden: connection check failed', (tester) async {
     const v = HarnessVariant(
       size: Size(360, 800),
