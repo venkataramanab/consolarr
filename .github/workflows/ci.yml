@@ -227,7 +227,9 @@ jobs:
 
       # No secrets: telemetry stays off. Release builds refuse to run without
       # key.properties unless debug signing is explicitly allowed; CI has no
-      # signing key, so it opts in (the APK is never published).
+      # signing key, so it opts in. The debug and arm64 APKs are uploaded as
+      # 1-day, debug-signed test artifacts, for pushes to main and same-repo
+      # PRs only. Fork PRs and Dependabot PRs upload nothing.
       - name: Debug APK
         working-directory: apps/${{ matrix.app }}
         run: flutter build apk --debug
@@ -265,3 +267,58 @@ jobs:
       - name: APK size gate (20 MiB)
         working-directory: apps/${{ matrix.app }}
         run: bash ../../tools/ci/check_apk_size.sh build/app/outputs/flutter-apk/app-release.apk 20
+
+      # Test builds for the project owner. Only runs for pushes to main and
+      # same-repository PRs, never for fork PRs (no confusable APK from
+      # untrusted code). Only the files staged below are uploaded, by explicit
+      # path: no debug-info, keystores, key.properties or dart-defines.
+      - name: Stage test APKs
+        id: stage
+        if: (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) && github.actor != 'dependabot[bot]'
+        working-directory: apps/${{ matrix.app }}
+        env:
+          APP: ${{ matrix.app }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          short="${GITHUB_SHA::7}"
+          dir="$RUNNER_TEMP/test-apk"
+          rm -rf "$dir"
+          mkdir -p "$dir"
+          cp build/app/outputs/flutter-apk/app-debug.apk "$dir/${APP}-debug-${short}.apk"
+          cp build/app/outputs/flutter-apk/app-release.apk "$dir/${APP}-release-arm64-debugsigned-${short}.apk"
+          {
+            echo "CONSOLARR TEST BUILD - NOT FOR DISTRIBUTION"
+            echo
+            echo "App:     ${APP}"
+            echo "Commit:  ${GITHUB_SHA}"
+            if [ -n "${PR_HEAD_SHA}" ]; then
+              echo "         (pull request merge commit; PR head: ${PR_HEAD_SHA})"
+            fi
+            echo "Run:     ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo
+            echo "These are DEBUG-SIGNED TEST BUILDS: both APKs are signed with the"
+            echo "Android debug key, not a release key. Do not distribute them."
+            echo
+            echo "They cannot be upgraded to or from a future store or release build,"
+            echo "because the signatures differ. Uninstall the test build first."
+            echo
+            echo "Verify the files (run in the folder holding the downloaded files):"
+            echo "  sha256sum -c SHA256SUMS.txt"
+          } > "$dir/README-TEST-BUILD.txt"
+          (cd "$dir" && sha256sum -- *.apk > SHA256SUMS.txt && cat SHA256SUMS.txt)
+          echo "short=${short}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload test APKs
+        if: (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) && github.actor != 'dependabot[bot]'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: consolarr-${{ matrix.app }}-test-apk-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/test-apk/${{ matrix.app }}-debug-${{ steps.stage.outputs.short }}.apk
+            ${{ runner.temp }}/test-apk/${{ matrix.app }}-release-arm64-debugsigned-${{ steps.stage.outputs.short }}.apk
+            ${{ runner.temp }}/test-apk/SHA256SUMS.txt
+            ${{ runner.temp }}/test-apk/README-TEST-BUILD.txt
+          retention-days: 1
+          if-no-files-found: error
+          compression-level: 0
