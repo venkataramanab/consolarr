@@ -25,12 +25,16 @@ import 'package:flutter_test/flutter_test.dart';
 ///    never painted as text.
 ///
 /// Here the sample is exactly the text's paint box. The page colour is the
-/// most frequent colour in it, and the ink is the colour farthest from it in
-/// contrast (the ratio is symmetric, so dense bold text whose ink is the
-/// commonest colour is judged the same way). A blend of ink and page can never be farther from the page than
-/// the ink itself, so this cannot be fooled upwards by anti-aliasing: it
-/// reports the contrast of the most contrasting colour actually painted in the
-/// text's box (the glyph colour when any pixel is solid).
+/// most frequent colour in it. The other pixels are split by whether they are
+/// lighter or darker than the page, and only the larger side is the text: a
+/// stray mark on the other side of the page (an underline in another colour, a
+/// cursor, a lone dot) is not what is being read. The ink is then the 90th
+/// percentile of those pixels' contrast with the page, so a colour needs real
+/// coverage (at least a tenth of the text's pixels) to count: one dark pixel,
+/// a one-letter span or a hairline cannot lift the result, and the caret of a
+/// focused field is left out of the sample. Anti-aliasing blends are never
+/// farther from the page than the ink, so this cannot be fooled upwards by
+/// them either.
 class TextContrastGuideline extends AccessibilityGuideline {
   /// Judges every text node except those whose label is in [skipLabels].
   const TextContrastGuideline({this.skipLabels = const {}});
@@ -154,22 +158,34 @@ class TextContrastGuideline extends AccessibilityGuideline {
 
     final double? fontSize;
     final bool bold;
+    final Color? declared;
     final widget = element.widget;
     if (widget is Text) {
       final style = widget.style;
       final effective = style == null || style.inherit
           ? DefaultTextStyle.of(element).style.merge(style)
           : style;
-      bold = effective.fontWeight == FontWeight.bold;
-      fontSize = effective.fontSize;
+      final root = widget.textSpan?.style;
+      final painted = root == null ? effective : effective.merge(root);
+      bold = painted.fontWeight == FontWeight.bold;
+      fontSize = painted.fontSize;
+      declared = painted.color;
     } else if (widget is EditableText) {
       bold = widget.style.fontWeight == FontWeight.bold;
       fontSize = widget.style.fontSize;
+      declared = widget.style.color;
     } else {
       throw StateError('Unexpected widget type: ${widget.runtimeType}');
     }
 
-    final pixels = _Pixels.sample(bytes, sample, image.width, image.height);
+    final pixels = _Pixels.sample(
+      bytes,
+      sample,
+      image.width,
+      image.height,
+      skip: _caret(box, global),
+      declared: declared,
+    );
     if (pixels == null) return const Evaluation.pass(); // off screen
     final ratio = pixels.contrast();
     final target = _target(fontSize, bold: bold);
@@ -182,6 +198,31 @@ class TextContrastGuideline extends AccessibilityGuideline {
       'The sampled colors were:\n'
       'page - ${pixels.page}, ink - ${pixels.ink}',
     );
+  }
+
+  /// The caret of a focused field, in image pixels, or null. A cursor is
+  /// painted in its own colour and blinks; it is not the text.
+  Rect? _caret(RenderBox box, Matrix4 global) {
+    RenderEditable? editable;
+    void find(RenderObject o) {
+      if (editable != null) return;
+      if (o is RenderEditable) {
+        editable = o;
+        return;
+      }
+      o.visitChildren(find);
+    }
+
+    find(box);
+    final e = editable;
+    if (e == null || !e.hasFocus) return null;
+    final selection = e.selection;
+    if (selection == null || !selection.isValid) return null;
+    final caret = e.getLocalRectForCaret(
+      TextPosition(offset: selection.extentOffset),
+    );
+    final toScreen = e.getTransformTo(null);
+    return MatrixUtils.transformRect(toScreen, caret).inflate(1);
   }
 
   double _target(double? fontSize, {required bool bold}) {
@@ -200,7 +241,14 @@ class _Pixels {
   final Color page;
   final Color ink;
 
-  static _Pixels? sample(ByteData data, Rect box, int width, int height) {
+  static _Pixels? sample(
+    ByteData data,
+    Rect box,
+    int width,
+    int height, {
+    Rect? skip,
+    Color? declared,
+  }) {
     final clipped = box.intersect(
       Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
     );
@@ -214,23 +262,64 @@ class _Pixels {
     final all = <int, int>{};
     for (var y = top; y < bottom; y++) {
       for (var x = left; x < right; x++) {
+        if (skip != null && skip.contains(Offset(x + 0.5, y + 0.5))) continue;
         final rgba = data.getUint32((y * width + x) * 4);
         all.update(rgba, (n) => n + 1, ifAbsent: () => 1);
       }
     }
+    if (all.isEmpty) return null;
     final page = _color(_mode(all));
-    var ink = page;
-    var best = 1.0;
-    for (final rgba in all.keys) {
-      final color = _color(rgba);
-      final r = _ratio(color, page);
-      if (r > best) {
-        best = r;
-        ink = color;
+    final pageLuminance = page.computeLuminance();
+
+    // Pixels lighter than the page and pixels darker than it; the larger
+    // side is the text.
+    final lighter = <_Weighted>[];
+    final darker = <_Weighted>[];
+    var lighterCount = 0;
+    var darkerCount = 0;
+    for (final entry in all.entries) {
+      final color = _color(entry.key);
+      final luminance = color.computeLuminance();
+      final ratio = _ratio(color, page);
+      // A faint shadow or gradient is not a mark: it must not count as one.
+      if (ratio < _visible) continue;
+      final w = _Weighted(color, ratio, entry.value);
+      if (luminance > pageLuminance) {
+        lighter.add(w);
+        lighterCount += entry.value;
+      } else {
+        darker.add(w);
+        darkerCount += entry.value;
+      }
+    }
+    // The side the text's declared colour lies on; when it says nothing (no
+    // colour, or the same luminance as the page) the side with more pixels.
+    var useLighter = lighterCount > darkerCount;
+    if (declared != null) {
+      final d = declared.computeLuminance() - pageLuminance;
+      if (d.abs() > 1e-3) useLighter = d > 0;
+    }
+    final side = useLighter ? lighter : darker;
+    final total = useLighter ? lighterCount : darkerCount;
+    if (total == 0) return _Pixels(page, page);
+    side.sort((a, b) => a.ratio.compareTo(b.ratio));
+    final rank = ((total - 1) * _percentile).floor();
+    var seen = 0;
+    var ink = side.last.color;
+    for (final w in side) {
+      seen += w.count;
+      if (seen > rank) {
+        ink = w.color;
+        break;
       }
     }
     return _Pixels(page, ink);
   }
+
+  static const double _percentile = 0.9;
+
+  /// Below this ratio a pixel is indistinguishable from the page.
+  static const double _visible = 1.1;
 
   double contrast() => _ratio(ink, page);
 
@@ -256,4 +345,12 @@ class _Pixels {
     final lo = la > lb ? lb : la;
     return (hi + 0.05) / (lo + 0.05);
   }
+}
+
+class _Weighted {
+  const _Weighted(this.color, this.ratio, this.count);
+
+  final Color color;
+  final double ratio;
+  final int count;
 }

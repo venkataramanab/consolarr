@@ -276,6 +276,120 @@ void main() {
     });
   });
 
+  group('sampler: one stray dark pixel does not rescue grey text', () {
+    // Grey text on a grey page is 1.23:1. Each case adds a little black over
+    // the text box. Flutter's own guideline fails all of them; picking "the
+    // colour farthest from the page" passed them on a single pixel.
+    const page = Color(0xFF888888);
+    const grey = Color(0xFF999999);
+    const word =
+        'Quiet words here'; // ignore: consolarr_no_ui_string -- fixture
+
+    Widget onPage(Widget child) => ColoredBox(
+      color: page,
+      child: Padding(padding: const EdgeInsets.all(16), child: child),
+    );
+
+    testWidgets('plain grey on grey fails', (tester) async {
+      await _pump(
+        tester,
+        onPage(const Text(word, style: TextStyle(color: grey, fontSize: 24))),
+      );
+      await expectTestFailure(() => expectTextContrast(tester));
+    });
+
+    testWidgets('D: a black underline does not count as the text', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        onPage(
+          const Text(
+            word,
+            style: TextStyle(
+              color: grey,
+              fontSize: 24,
+              decoration: TextDecoration.underline,
+              decorationColor: Color(0xFF000000),
+            ),
+          ),
+        ),
+      );
+      await expectTestFailure(() => expectTextContrast(tester));
+    });
+
+    testWidgets('E: a black cursor does not count as the text', (tester) async {
+      final focus = FocusNode();
+      addTearDown(focus.dispose);
+      final controller = TextEditingController(text: word);
+      addTearDown(controller.dispose);
+      await _pump(
+        tester,
+        onPage(
+          EditableText(
+            controller: controller,
+            focusNode: focus,
+            autofocus: true,
+            style: const TextStyle(color: grey, fontSize: 24),
+            cursorColor: const Color(0xFF000000),
+            backgroundCursorColor: const Color(0xFF000000),
+            cursorOpacityAnimates: false,
+            cursorWidth: 3,
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(focus.hasFocus, isTrue);
+      await expectTestFailure(() => expectTextContrast(tester));
+    });
+
+    testWidgets('B: one black span in the text does not count', (tester) async {
+      await _pump(
+        tester,
+        onPage(
+          const Text.rich(
+            TextSpan(
+              style: TextStyle(color: grey, fontSize: 24),
+              children: [
+                TextSpan(text: 'Quiet words here'),
+                TextSpan(
+                  text: '.',
+                  style: TextStyle(color: Color(0xFF000000)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      await expectTestFailure(() => expectTextContrast(tester));
+    });
+
+    testWidgets('C: a 1x1 black pixel over the text box does not count', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        onPage(
+          const Stack(
+            children: [
+              Text(word, style: TextStyle(color: grey, fontSize: 24)),
+              Positioned(
+                left: 2,
+                top: 2,
+                child: SizedBox(
+                  width: 1,
+                  height: 1,
+                  child: ColoredBox(color: Color(0xFF000000)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      await expectTestFailure(() => expectTextContrast(tester));
+    });
+  });
+
   group('scrolled content', () {
     Widget list({bool bad = false, double pad = 12}) => ListView(
       children: [
