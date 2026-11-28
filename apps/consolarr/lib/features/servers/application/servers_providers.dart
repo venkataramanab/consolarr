@@ -18,7 +18,7 @@ final serverRepositoryProvider = Provider<ServerRepository>((ref) {
     cache: ref.watch(payloadCacheProvider),
     onServerAdded: (profile) {
       final kind = ServiceKindParam.fromCode(profile.kind.name);
-      if (kind != null) tracker.track(ServerAddedEvent(serviceKind: kind));
+      if (kind != null) tracker.track(ServersAddedEvent(serviceKind: kind));
     },
   );
 });

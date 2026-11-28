@@ -108,6 +108,13 @@ class QBittorrentClient implements TorrentClient {
       }
       throw appErrorFromDio(e);
     }
+    // A login answered by another origin (a redirect) never plants a session.
+    if (!answeredByServerOrigin(response, Uri.parse(_dio.options.baseUrl))) {
+      throw const AppError(
+        ErrorCategory.redirectRefused,
+        debugDetail: 'login answered by another origin',
+      );
+    }
     if ((response.data ?? '').trim() != 'Ok.') {
       throw const AppError(ErrorCategory.authFailed);
     }

@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'support.dart';
 import 'switching.dart';
+import '../support/fake_hex.dart';
 
 void main() {
   group('I2: search state is keyed by server and movie', () {
@@ -251,7 +252,7 @@ void main() {
   });
 
   group('M1: a grab that may have been sent is never repeated by itself', () {
-    const guid = 'abcdef0123456789abcdef0123456789';
+    final guid = fakeHex(32, seed: 10);
 
     for (final category in [
       ErrorCategory.timeout,

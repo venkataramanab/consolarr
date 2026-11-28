@@ -251,7 +251,7 @@ class ReleaseGrabNotifier extends Notifier<Map<String, GrabStatus>> {
     final tracker = ref.read(eventTrackerProvider);
     if (confirmedRejected) {
       tracker.track(
-        const ReleaseGrabbedEvent(
+        const SonarrReleaseGrabbedEvent(
           outcome: SonarrGrabOutcomeParam.rejectedConfirmed,
         ),
       );
@@ -260,7 +260,7 @@ class ReleaseGrabNotifier extends Notifier<Map<String, GrabStatus>> {
     final result = await session.api.grabRelease(release);
     final error = result.errorOrNull;
     tracker.track(
-      ReleaseGrabbedEvent(
+      SonarrReleaseGrabbedEvent(
         outcome: error == null
             ? SonarrGrabOutcomeParam.grabbed
             : SonarrGrabOutcomeParam.failed,

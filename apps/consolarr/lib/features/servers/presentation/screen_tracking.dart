@@ -29,7 +29,7 @@ class _ScreenViewTrackerState extends ConsumerState<ScreenViewTracker> {
       if (mounted) {
         ref
             .read(eventTrackerProvider)
-            .track(ScreenViewedEvent(screen: widget.screen));
+            .track(ServersScreenViewedEvent(screen: widget.screen));
       }
     });
   }

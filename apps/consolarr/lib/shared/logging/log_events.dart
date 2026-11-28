@@ -16,10 +16,16 @@ void logServerSwitch(AppLogger logger, ServiceKind kind) =>
 void logNeedsCredentials(AppLogger logger, ServiceKind kind) =>
     logger.warning('needs_credentials kind=${kind.name}');
 
+/// The features that can fall back to saved data. A closed set: the log line
+/// can never carry a free-form string.
+enum OfflineArea { sonarr, radarr, torrents }
+
 /// A screen kept showing saved data because the live load failed with
-/// [error]. [area] is a fixed feature name (`radarr`, `sonarr`, `torrents`).
-void logOfflineFallback(AppLogger logger, String area, AppError error) =>
-    logger.info('offline_fallback area=$area category=${error.category.code}');
+/// [error].
+void logOfflineFallback(AppLogger logger, OfflineArea area, AppError error) =>
+    logger.info(
+      'offline_fallback area=${area.name} category=${error.category.code}',
+    );
 
 /// Result of a connection test or health check of a [kind] server.
 void logConnectionTest(AppLogger logger, ServiceKind kind, AppError? error) {

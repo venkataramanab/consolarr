@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
 
+import 'package:observability/src/buckets.dart';
 import 'package:observability/src/events/catalog.dart';
 import 'package:observability/src/redactor.dart';
 
@@ -378,7 +379,9 @@ class DiagnosticsServiceEntry {
 
   final ServiceKindParam kind;
 
-  /// Number of configured servers of this kind.
+  /// Number of configured servers of this kind. Shown as a bucket (`0`, `1`,
+  /// `2`, `3-5`, `6+`), so the bundle and the issue summary never carry the
+  /// exact size of a setup.
   final int servers;
   final ServiceHealthBucket health;
 
@@ -389,7 +392,7 @@ class DiagnosticsServiceEntry {
   final bool cleartextOptIn;
 
   String get line =>
-      '${kind.code}: servers=$servers, health=${health.label}, '
+      '${kind.code}: servers=${countBucketLabel(servers)}, health=${health.label}, '
       'major=${majorVersion ?? 'unknown'}, '
       'cleartext=${cleartextOptIn ? 'yes' : 'no'}';
 }

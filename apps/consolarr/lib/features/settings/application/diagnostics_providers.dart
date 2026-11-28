@@ -139,9 +139,7 @@ class DiagnosticsBundleNotifier extends AsyncNotifier<DiagnosticsBundle> {
       }
     }
     final consent = ref.watch(consentProvider);
-    final flavor = ref.watch(telemetryAvailableProvider)
-        ? AppFlavor.play
-        : AppFlavor.foss;
+    final flavor = ref.watch(appFlavorProvider);
     final platform = await ref
         .watch(externalActionsProvider)
         .platformDescription();

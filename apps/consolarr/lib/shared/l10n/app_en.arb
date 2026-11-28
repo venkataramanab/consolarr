@@ -99,7 +99,7 @@
   "@connErrorRedirectRefusedMessage": {
     "description": "Plain-language message for a connection problem: redirect refused by the redirect policy."
   },
-  "connErrorRedirectRefusedHint": "Use the final address of the server directly, and https if it redirects from https to http.",
+  "connErrorRedirectRefusedHint": "Enter the final address of the server instead: its scheme (http or https) and its port, as the server redirects to them.",
   "@connErrorRedirectRefusedHint": {
     "description": "Fix hint shown under the message for a connection problem: redirect refused by the redirect policy."
   },

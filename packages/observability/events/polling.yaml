@@ -7,11 +7,11 @@ enums:
     values: [queue_item_completed, download_failed, torrent_finished]
 events:
   poll_cycle_finished:
-    description: One polling cycle over all servers finished; counts only.
+    description: One polling cycle over all servers finished; bucketed counts only.
     params:
-      servers: {type: int}
-      failed: {type: int}
-      changes: {type: int}
+      servers: {type: count_bucket_param}
+      failed: {type: count_bucket_param}
+      changes: {type: count_bucket_param}
   poll_change_detected:
     description: A completed or failed download was detected; the kind only.
     params:

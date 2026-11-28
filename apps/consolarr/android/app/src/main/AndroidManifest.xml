@@ -3,7 +3,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <!-- Permissions: INTERNET, and USE_BIOMETRIC for the opt-in app lock.
-         Anything else must be asked for at the point of use with a
+         The merged manifest also carries USE_FINGERPRINT, which
+         androidx.biometric adds for the API 26-27 fallback of the same
+         prompt. Anything else must be asked for at the point of use with a
          rationale. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- App lock (SET-02): the platform authenticator (biometric with
@@ -46,6 +48,10 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- The app has no deep links. -->
+        <meta-data
+            android:name="flutter_deeplinking_enabled"
+            android:value="false" />
         <!-- AndroidX profileinstaller ships an exported broadcast receiver
              (guarded only by the DUMP permission). Remove it so the launcher
              activity is the only exported component; profiles are still

@@ -7,6 +7,23 @@ import 'package:core/core.dart';
 import 'package:dio/dio.dart';
 import 'package:security/security.dart';
 
+/// Whether [response] was answered by the configured server's own origin
+/// (scheme, host, port), looking at the **final hop** the secure adapter
+/// reports (`finalUriExtraKey`; `Response.realUri` is always the first URI
+/// because the adapter follows redirects itself). A session cookie or id may
+/// be captured only from such a response.
+///
+/// Without the adapter's key (a plain adapter in tests) the request URI is
+/// used, which is the final hop when nothing redirects.
+bool answeredByServerOrigin(Response<Object?> response, Uri server) {
+  final reported = response.extra[finalUriExtraKey];
+  final final_ = reported is Uri ? reported : response.realUri;
+  int port(Uri u) => u.hasPort ? u.port : (u.scheme == 'https' ? 443 : 80);
+  return final_.scheme == server.scheme &&
+      final_.host.toLowerCase() == server.host.toLowerCase() &&
+      port(final_) == port(server);
+}
+
 /// Runs [body] and turns every failure into a typed [AppError] (no exception
 /// leaves a client). A [FormatException] is a `parse_error`.
 Future<Result<T>> guardResult<T>(Future<T> Function() body) async {

@@ -310,6 +310,13 @@ void main() {
     expect(isOpenableExternalUri(Uri.parse('javascript:alert(1)')), isFalse);
     expect(isOpenableExternalUri(Uri.parse('intent://x#Intent;end')), isFalse);
     expect(isOpenableExternalUri(Uri.parse('https://u:p@x.example/')), isFalse);
+    expect(isOpenableExternalUri(Uri.parse('https://x.example/')), isFalse);
+    expect(isOpenableExternalUri(Uri.parse('http://www.imdb.com/')), isFalse);
+    expect(
+      isOpenableExternalUri(Uri.parse('https://www.imdb.com.x.example/')),
+      isFalse,
+    );
+    expect(isOpenableExternalUri(Uri.parse('https://www.imdb.com/t')), isTrue);
   });
 
   group('writes that finish after a refresh failed', () {

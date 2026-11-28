@@ -32,7 +32,7 @@ void main() {
       expect(migrationSteps, contains(v), reason: 'version $v has no step');
     }
     expect(AppDatabase.memory().schemaVersion, currentSchemaVersion);
-    expect(currentSchemaVersion, greaterThanOrEqualTo(5));
+    expect(currentSchemaVersion, greaterThanOrEqualTo(6));
   });
 
   test(
@@ -53,6 +53,12 @@ void main() {
       expect(rows.single.id, 's1');
       final version = await db.customSelect('PRAGMA user_version').getSingle();
       expect(version.data['user_version'], currentSchemaVersion);
+      // Slot 6: the pinned markers table exists, empty, and is writable.
+      expect(await db.select(db.pinnedMarkerRows).get(), isEmpty);
+      await db
+          .into(db.pinnedMarkerRows)
+          .insert(PinnedMarkerRowsCompanion.insert(pinKey: 'k'));
+      expect(await db.select(db.pinnedMarkerRows).get(), hasLength(1));
     },
   );
 

@@ -155,7 +155,7 @@ void main() {
   test('saving a new server reports server_added once', () async {
     await addSonarr();
     await Future<void>.delayed(Duration.zero);
-    expect(analytics.events, ['server_added']);
+    expect(analytics.events, ['servers_added']);
   });
 
   group('health', () {

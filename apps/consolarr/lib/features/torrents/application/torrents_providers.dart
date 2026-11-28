@@ -285,7 +285,7 @@ class TorrentListNotifier extends AsyncNotifier<TorrentListState> {
           consecutiveFailures < pollFailuresUntilOffline) {
         return; // keep showing the data; the scheduler backs off
       }
-      logOfflineFallback(ref.read(loggerProvider), 'torrents', error);
+      logOfflineFallback(ref.read(loggerProvider), OfflineArea.torrents, error);
       state = AsyncData(previous.withOfflineError(error));
     } else {
       state = AsyncError(error, StackTrace.current);

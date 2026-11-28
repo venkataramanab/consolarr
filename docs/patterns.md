@@ -120,7 +120,9 @@ mechanical follow-up. Do not add further cross-feature imports.
   write fails (logging only the error type); they return whether it was stored.
 * **Time away** (the app lock delay) uses the monotonic clock together with the
   wall clock: the longer of the two counts, so changing the wall clock cannot
-  extend it.
+  extend it. The **unlock cool-down** is measured on the monotonic clock only,
+  and the failed-attempt counter is stored (a restart does not reset it; a
+  restart during a cool-down starts it again).
 
 ## 4. Secrets
 
@@ -129,6 +131,29 @@ mechanical follow-up. Do not add further cross-feature imports.
   `<serverId>/header/<name>`; the drift row only references the server id.
 * A missing or unreadable secret means "needs credentials": the server is
   marked, the UI asks for re-entry. Never throw.
+* **Keystore errors never wipe anything.** `FlutterSecureSecretStore` opens
+  the plugin with `AndroidOptions(resetOnError: false)` (the plugin's default
+  deletes every key on a cipher error and then reads as empty, which would
+  turn a pinned server back into a first-use prompt). A read error is
+  `SecretStoreUnavailable`; the pin path stays closed.
+* **Recovery is user-confirmed.** "Reset secure storage" (Settings, Security,
+  and the banner on the servers list while the store cannot be read) asks a
+  destructive confirmation that says keys, passwords and pins are deleted and
+  must be entered again; only then `SecureStorageReset.reset()` runs
+  (`deleteAll`, markers cleared, every server's connection revision bumped).
+  Servers then read "credentials needed". A failed clear is reported and keeps
+  the markers. Nothing else may clear the store.
+* **Pinned marker.** Every pin write also writes a non-secret marker
+  (`pinned_marker_rows`, schema version 6) through `MarkedPinStore`. A marker
+  with no pin in the secret store reads as a fingerprint nothing can match, so
+  the connection is blocked and shown as a **pin mismatch**, never as first
+  use. Explicit clear and re-trust remove and re-write both. Code that deletes
+  pins directly (server delete, identity edit) removes the marker too.
+* **Session capture.** A cookie or session id (qBittorrent `SID`, Deluge
+  `_session_id`, Transmission `X-Transmission-Session-Id`) is taken only from a
+  response whose final hop is the configured origin
+  (`answeredByServerOrigin`, reading `finalUriExtraKey` that the secure adapter
+  sets; `realUri` is always the first URI).
 * **Secrets never follow an address change.** When scheme, host or port
   changes, the editor and the connection test require the secrets again and
   the repository drops the stored ones that are not re-supplied. Editing the
@@ -215,12 +240,26 @@ in `EmptyArrLists`.
 ## 8. Observability
 
 * Events are declared in `packages/observability/events/<area>.yaml`
-  (`servers`, `sonarr`, `radarr`, `torrents`, `settings`, `polling`); parameters are
-  closed enums, ints or bools, so URLs, hosts, keys, usernames and titles
-  cannot be reported by construction. Every planned `screen_name` and every
-  `service_kind_param` value is declared up front.
-* Names: `snake_case`, noun then past-tense verb or state (`server_added`,
-  `connection_test_result`).
+  (`servers`, `sonarr`, `radarr`, `torrents`, `settings`, `dashboard`,
+  `polling`); parameters are closed enums, ints or bools, so URLs, hosts, keys,
+  usernames and titles cannot be reported by construction. Every planned
+  `screen_name` and every `service_kind_param` value is declared up front.
+* Names: `snake_case`, the area prefix, then noun and past-tense verb or state
+  (`servers_added`, `sonarr_search_started`). The prefix is the file's
+  (`servers_`, `sonarr_`, `radarr_`, `torrents_`, `settings_`, `dashboard_`,
+  and `poll_` for `polling.yaml`); the generator fails an event without it.
+* Counts are **buckets** (`CountBucketParam`: 0, 1, 2, 3-5, 6+; `countBucket`)
+  and major versions a closed `MajorVersionParam`; never an exact number.
+  `dashboard_refreshed` is sent once per session (`DashboardRefreshReportGate`).
+* Every event needs a line in `privacyPayloadItems` (a test compares it with
+  the catalog). Shipped code never calls `Analytics.logEvent` (a test
+  enforces it); events go through `EventTracker.track(AppEvent)`.
+* **Crash gate.** The consent gate never forwards an error object: the sink
+  gets a `CrashPayload` (runtime type, closed `ErrorCategoryParam`, frames as
+  `package:name/file.dart:line`). Breadcrumbs are recorded only while crash
+  consent is on and cleared when it is withdrawn.
+* The build flavor is stated by each entry point (`appFlavorProvider`), never
+  inferred from which sinks exist.
 * Navigation and API error categories are recorded as breadcrumbs. Logs go
   through `loggerProvider` (redacted); log counts and categories only.
 * **Request log.** Every server connection (`activeConnectionProvider`) and
@@ -280,8 +319,8 @@ Per-feature files so parallel work does not collide:
 * drift: `features/<f>/data/<f>_tables.drift` and
   `<f>_migration.dart`, one pre-allocated schema version per feature
   (`lib/src/database/migrations.dart`: 2 sonarr, 3 radarr, 4 torrents,
-  5 settings). A feature creates its tables only in its own step; a later
-  change appends a new slot.
+  5 settings, 6 storage: pinned markers). A feature creates its tables only in
+  its own step; a later change appends a new slot.
 
 ## 11. Tests
 
@@ -416,7 +455,8 @@ that SET-09 (notifications, later) plugs into.
 
 * The bundle holds only closed values and scrubbed text: sections App (version,
   build, flavor, consent switches), Platform, Locale, **Services** (per kind:
-  server count, health bucket, major version if known, cleartext opt-in),
+  server count as a bucket, health bucket, major version if known, cleartext
+  opt-in),
   Error categories, Log. A server name, host, port or id cannot be carried.
 * Building it never starts a network call. "Check services" in the preview is
   the only thing that probes (user-initiated, with a running state); health

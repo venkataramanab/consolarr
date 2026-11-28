@@ -355,12 +355,12 @@ void main() {
       );
       await bad.test(profile(ServiceKind.sonarr), sonarrKey);
       expect(analytics.events, [
-        'connection_test_result',
-        'connection_test_result',
+        'servers_connection_test_result',
+        'servers_connection_test_result',
       ]);
       expect(analytics.params[0], {
         'service_kind': 'sonarr',
-        'major_version': 4,
+        'major_version': 'v4',
       });
       expect(analytics.params[1], {
         'service_kind': 'sonarr',

@@ -209,7 +209,7 @@ class SeriesDetailNotifier extends AsyncNotifier<DetailState> {
     if (ok) {
       ref
           .read(eventTrackerProvider)
-          .track(SeriesMonitorChangedEvent(monitored: monitored));
+          .track(SonarrSeriesMonitorChangedEvent(monitored: monitored));
       await _repository?.store(next.snapshot);
     }
   }
@@ -255,7 +255,7 @@ class SeriesDetailNotifier extends AsyncNotifier<DetailState> {
     }
     ref
         .read(eventTrackerProvider)
-        .track(SeriesMonitorChangedEvent(monitored: monitored));
+        .track(SonarrSeriesMonitorChangedEvent(monitored: monitored));
     state = AsyncData(
       now.copyWith(
         snapshot: now.snapshot.copyWith(detail: updated),
@@ -294,7 +294,9 @@ class SeriesDetailNotifier extends AsyncNotifier<DetailState> {
       ref
           .read(eventTrackerProvider)
           .track(
-            SeriesMonitorChangedEvent(monitored: updated.summary.monitored),
+            SonarrSeriesMonitorChangedEvent(
+              monitored: updated.summary.monitored,
+            ),
           );
     }
     // The server took the change; the screen may already show an error.
@@ -393,11 +395,8 @@ abstract interface class ExternalLinkLauncher {
   Future<bool> open(Uri uri);
 }
 
-/// Whether [uri] may be opened (scheme and host check).
-bool isOpenableExternalUri(Uri uri) =>
-    (uri.scheme == 'https' || uri.scheme == 'http') &&
-    uri.host.isNotEmpty &&
-    uri.userInfo.isEmpty;
+/// Whether [uri] may be opened: https and one of [ExternalHosts.all].
+bool isOpenableExternalUri(Uri uri) => ExternalHosts.allows(uri);
 
 class UrlLauncherExternalLinkLauncher implements ExternalLinkLauncher {
   const UrlLauncherExternalLinkLauncher();

@@ -65,8 +65,20 @@ class AppStateRows extends Table {
   Set<Column> get primaryKey => {key};
 }
 
+/// Non-secret marker: "a certificate pin was stored under this key". The pin
+/// itself lives in the secret store. If this row exists but the store returns
+/// no pin, the pin was lost (Keystore loss), which must read as a pin
+/// mismatch and never as a first-use trust prompt. [pinKey] is
+/// `PinKey.storageKey`; it holds no secret.
+class PinnedMarkerRows extends Table {
+  TextColumn get pinKey => text()();
+
+  @override
+  Set<Column> get primaryKey => {pinKey};
+}
+
 @DriftDatabase(
-  tables: [ServerRows, CachedPayloadRows, AppStateRows],
+  tables: [ServerRows, CachedPayloadRows, AppStateRows, PinnedMarkerRows],
   // One SQL file per feature, so features add tables without touching this
   // file (see migrations.dart for the schema version each one owns).
   include: {

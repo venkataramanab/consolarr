@@ -25,17 +25,20 @@ void main() {
       final h = SettingsHarness();
       final c = await h.startedContainer();
       final tracker = c.read(eventTrackerProvider);
-      await tracker.track(const ScreenViewedEvent(screen: ScreenName.settings));
       await tracker.track(
-        const ServerAddedEvent(serviceKind: ServiceKindParam.sonarr),
+        const ServersScreenViewedEvent(screen: ScreenName.settings),
+      );
+      await tracker.track(
+        const ServersAddedEvent(serviceKind: ServiceKindParam.sonarr),
       );
       await c
           .read(crashReporterProvider)
           .recordError('boom', null, fatal: true);
       expect(h.analytics.events, isEmpty);
       expect(h.crash.errors, isEmpty);
-      // Breadcrumbs stay local and are still written.
-      expect(c.read(breadcrumbsProvider).entries, isNotEmpty);
+      // Breadcrumbs are crash-report context: not even kept in memory while
+      // crash consent is off.
+      expect(c.read(breadcrumbsProvider).entries, isEmpty);
     },
   );
 
@@ -47,11 +50,14 @@ void main() {
         .read(consentProvider.notifier)
         .set(ConsentPurpose.analytics, enabled: true);
     expect(c.read(consentProvider).analytics, isTrue);
-    expect(h.analytics.events, ['consent_changed']);
+    expect(h.analytics.events, ['settings_consent_changed']);
     await c
         .read(eventTrackerProvider)
-        .track(const ScreenViewedEvent(screen: ScreenName.settings));
-    expect(h.analytics.events, ['consent_changed', 'screen_viewed']);
+        .track(const ServersScreenViewedEvent(screen: ScreenName.settings));
+    expect(h.analytics.events, [
+      'settings_consent_changed',
+      'servers_screen_viewed',
+    ]);
     expect(h.crash.errors, isEmpty);
   });
 
@@ -63,7 +69,7 @@ void main() {
     await n.set(ConsentPurpose.crashReports, enabled: true);
     await c
         .read(eventTrackerProvider)
-        .track(const ScreenViewedEvent(screen: ScreenName.settings));
+        .track(const ServersScreenViewedEvent(screen: ScreenName.settings));
     expect(c.read(breadcrumbsProvider).entries, isNotEmpty);
 
     final before = h.analytics.events.length;
@@ -75,7 +81,7 @@ void main() {
 
     await c
         .read(eventTrackerProvider)
-        .track(const ScreenViewedEvent(screen: ScreenName.settings));
+        .track(const ServersScreenViewedEvent(screen: ScreenName.settings));
     await c.read(crashReporterProvider).recordError('x', null);
     // Withdrawing is itself not reported (analytics is off by then).
     expect(h.analytics.events.length, before);
@@ -97,7 +103,7 @@ void main() {
     expect(c2.read(consentProvider).crashReports, isTrue);
     expect(c2.read(consentProvider).analytics, isFalse);
     await c2.read(crashReporterProvider).recordError('after restart', null);
-    expect(h.crash.errors, contains('after restart'));
+    expect(h.crash.errors.single, isA<CrashPayload>());
   });
 
   test('stored consent applies after the first frame without the Settings '
@@ -117,7 +123,7 @@ void main() {
     await h.settle(c);
     // Only the gated sink is read: consentProvider is never touched.
     await c.read(crashReporterProvider).recordError('after start', null);
-    expect(h.crash.errors, ['after start']);
+    expect(h.crash.errors.single, isA<CrashPayload>());
     expect(h.crash.enabledCalls, contains(true));
     expect(h.analytics.enabledCalls, isNot(contains(true)));
   });

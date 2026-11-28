@@ -719,15 +719,20 @@ class DashboardNotifier extends Notifier<DashboardSnapshot> {
     required int servers,
     required int failed,
   }) {
-    ref
-        .read(eventTrackerProvider)
-        .track(
-          DashboardRefreshedEvent(
-            trigger: trigger.param,
-            servers: servers,
-            failed: failed,
-          ),
-        );
+    // Sampled: the event is sent at most once per app session (the first
+    // finished refresh), with bucketed counts. Later refreshes are still
+    // logged locally below.
+    if (ref.read(dashboardRefreshReportProvider).tryTake()) {
+      ref
+          .read(eventTrackerProvider)
+          .track(
+            DashboardRefreshedEvent(
+              trigger: trigger.param,
+              servers: countBucket(servers),
+              failed: countBucket(failed),
+            ),
+          );
+    }
     // Counts only: no titles, names, hosts or ids.
     ref
         .read(loggerProvider)
@@ -783,3 +788,20 @@ DashboardDestinationParam dashboardDestinationParam(
   DashboardDestination.radarr => DashboardDestinationParam.radarr,
   DashboardDestination.torrents => DashboardDestinationParam.torrents,
 };
+
+/// Lets `dashboard_refreshed` be sent once per app session. (The refresh runs
+/// on pull, poll, retry and resume; reporting each would send a steady stream
+/// that says nothing new.)
+final dashboardRefreshReportProvider = Provider<DashboardRefreshReportGate>(
+  (ref) => DashboardRefreshReportGate(),
+);
+
+class DashboardRefreshReportGate {
+  bool _taken = false;
+
+  /// True for the first caller only.
+  bool tryTake() {
+    if (_taken) return false;
+    return _taken = true;
+  }
+}

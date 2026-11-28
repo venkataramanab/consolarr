@@ -152,7 +152,7 @@ class AddSeriesNotifier extends Notifier<AddState> {
     }
     ref
         .read(eventTrackerProvider)
-        .track(SeriesAddedEvent(searched: options.searchForMissing));
+        .track(SonarrSeriesAddedEvent(searched: options.searchForMissing));
     state = AddSuccess(detail, searched: options.searchForMissing);
     try {
       await ref

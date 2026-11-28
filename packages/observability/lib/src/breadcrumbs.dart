@@ -42,10 +42,20 @@ class Breadcrumbs {
   final int capacity;
   final List<Breadcrumb> _entries = [];
 
+  /// Whether a crumb may be kept right now. The consent manager sets it to
+  /// "crash-report consent is on", so nothing is collected, not even in
+  /// memory, while the user has not opted in. Default: never, so nothing is kept
+  /// before the consent state is known (the manager is built after the first
+  /// frame).
+  bool Function() recordingAllowed = _never;
+
+  static bool _never() => false;
+
   /// Oldest first.
   List<Breadcrumb> get entries => List.unmodifiable(_entries);
 
   void add(Breadcrumb crumb) {
+    if (!recordingAllowed()) return;
     _entries.add(crumb);
     if (_entries.length > capacity) _entries.removeAt(0);
   }

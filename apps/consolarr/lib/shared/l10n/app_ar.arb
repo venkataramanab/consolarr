@@ -99,7 +99,7 @@
   "@connErrorRedirectRefusedMessage": {
     "description": "Plain-language message for a connection problem: redirect refused by the redirect policy."
   },
-  "connErrorRedirectRefusedHint": "استخدم العنوان النهائي للخادم مباشرة، واستخدم https إذا كان يعيد التوجيه من https إلى http.",
+  "connErrorRedirectRefusedHint": "أدخل العنوان النهائي للخادم بدلاً من ذلك: بروتوكوله (http أو https) ومنفذه، كما يعيد الخادم التوجيه إليهما.",
   "@connErrorRedirectRefusedHint": {
     "description": "Fix hint shown under the message for a connection problem: redirect refused by the redirect policy."
   },

@@ -4,6 +4,13 @@
 /// one request (for example larger limits for artwork).
 const maxResponseBytesKey = 'consolarr.maxResponseBytes';
 
+/// `Response.extra` key under which the secure adapter reports the URI of the
+/// **final hop** (a [Uri]). The adapter follows redirects itself, so
+/// `Response.realUri` always shows the first URI; clients that capture a
+/// session (cookie, session id) must compare this one with the configured
+/// server origin first.
+const finalUriExtraKey = 'consolarr.finalUri';
+
 /// Timeouts and size limits applied to every request of a secure client.
 class HttpLimits {
   const HttpLimits({

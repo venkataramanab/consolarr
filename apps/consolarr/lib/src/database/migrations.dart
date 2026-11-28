@@ -5,6 +5,7 @@ import 'package:consolarr/features/settings/data/settings_migration.dart';
 import 'package:consolarr/features/sonarr/data/sonarr_migration.dart';
 import 'package:consolarr/features/torrents/data/torrents_migration.dart';
 import 'package:consolarr/src/database/app_database.dart';
+import 'package:consolarr/src/storage/pinned_marker_migration.dart';
 import 'package:drift/drift.dart';
 
 /// Upgrades one schema version.
@@ -24,6 +25,7 @@ const baseSchemaVersion = 1;
 /// | 3       | radarr   | `features/radarr/data/radarr_tables.drift`   |
 /// | 4       | torrents | `features/torrents/data/torrents_tables.drift` |
 /// | 5       | settings | `features/settings/data/settings_tables.drift` |
+/// | 6       | storage  | `pinned_marker_rows` (pinned-without-pin guard) |
 ///
 /// A feature creates its tables in its own step (`m.createTable(db.<table>)`)
 /// and in nothing else. Versions are applied in order, so a database created
@@ -35,6 +37,7 @@ final Map<int, MigrationStep> migrationSteps = {
   3: radarrMigration,
   4: torrentsMigration,
   5: settingsMigration,
+  6: pinnedMarkerMigration,
 };
 
 /// The version of the last slot.

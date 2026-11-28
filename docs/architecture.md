@@ -23,7 +23,7 @@ apps/consolarr_play ──────► consolarr   (Play entry point, only pl
 | `core` | pure Dart | - | `ServerProfile`, `Result`/`AppError` + `ErrorCategory`, `CleartextPolicy`, `ParsedRows`, and the one off-isolate parse helper (`ParseRunner`, `isolateRunner`, `parseOffIsolate`, 64 KB threshold; imports only `dart:isolate`). `arr_api` and `torrent_clients` keep their old names as thin delegates. |
 | `security` | pure Dart | `core`, `dio` | `SecretStore`, `PinStore` (+ `PinKey`, `UserPinConfirmation`, `decidePin`), `SecureHttpClientFactory` contracts. The only package allowed to touch TLS trust. |
 | `arr_api` | pure Dart | `core`, `security` | Sonarr client and models (`RadarrApi` interface only). |
-| `torrent_clients` | pure Dart | `core`, `security` | `TorrentClient` interface and the qBittorrent client. |
+| `torrent_clients` | pure Dart | `core`, `security` | `TorrentClient` interface and the qBittorrent, Transmission and Deluge clients. |
 | `observability` | pure Dart | - | `CrashReporter`, `Analytics`, `ConsentStore` + no-ops, `Redactor`, `AppLogger`. No SDKs. |
 | `design_system` | Flutter | - | Tokens, theme, bundled Inter font. |
 | `l10n` | Flutter | `material_ui` | Generated `AppLocalizations`, merged from feature ARBs. |
@@ -125,7 +125,7 @@ binary, checksum-verified, with a planted-token canary), osv-scanner (both
 lockfiles), Semgrep (hash-locked install), licence check, Gradle wrapper
 validation, repo guard (clean-room terms from a secret, never printed),
 debug builds of both apps with assertions on the **merged** Android manifest
-(only INTERNET requested, only the launcher activity exported) and an arm64
+(only INTERNET and the app-lock biometric permissions USE_BIOMETRIC and USE_FINGERPRINT requested, backup and network-security resources present, no advertising or analytics metadata, only the launcher activity exported) and an arm64
 release APK size gate (20 MiB). Release builds without `key.properties` are
 refused unless debug signing is explicitly allowed (CI does). A nightly workflow runs an emulator smoke
 test on API 34.

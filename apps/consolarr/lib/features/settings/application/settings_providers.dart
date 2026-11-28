@@ -256,7 +256,12 @@ class ConsentNotifier extends Notifier<ConsentState> {
       // Gated: reaches analytics only when analytics consent is on.
       await ref
           .read(eventTrackerProvider)
-          .track(ConsentChangedEvent(purpose: purpose.param, enabled: enabled));
+          .track(
+            SettingsConsentChangedEvent(
+              purpose: purpose.param,
+              enabled: enabled,
+            ),
+          );
     }
   }
 }

@@ -25,7 +25,7 @@ class _TrackScreenState extends ConsumerState<TrackScreen> {
       if (!mounted) return;
       ref
           .read(eventTrackerProvider)
-          .track(ScreenViewedEvent(screen: widget.screen));
+          .track(ServersScreenViewedEvent(screen: widget.screen));
     });
   }
 

@@ -44,25 +44,25 @@ void main() {
     'every event/breadcrumb combination is free of hostile values',
     () async {
       final a = _Recording();
-      final crumbs = Breadcrumbs();
+      final crumbs = Breadcrumbs()..recordingAllowed = () => true;
       final t = EventTracker(analytics: a, breadcrumbs: crumbs);
       for (final s in ScreenName.values) {
-        await t.track(ScreenViewedEvent(screen: s));
+        await t.track(ServersScreenViewedEvent(screen: s));
       }
       for (final k in ServiceKindParam.values) {
-        await t.track(ServerAddedEvent(serviceKind: k));
+        await t.track(ServersAddedEvent(serviceKind: k));
         for (final c in ErrorCategoryParam.values) {
           await t.track(
-            ConnectionTestResultEvent(
+            ServersConnectionTestResultEvent(
               serviceKind: k,
               errorCategory: c,
-              majorVersion: 4,
+              majorVersion: MajorVersionParam.v4,
             ),
           );
         }
       }
       for (final d in CertificateDecisionParam.values) {
-        await t.track(CertificateDecisionEvent(decision: d));
+        await t.track(ServersCertificateDecisionEvent(decision: d));
       }
       _expectClean(a.lines);
       _expectClean(crumbs.entries.map((c) => c.line));
@@ -72,17 +72,21 @@ void main() {
   );
 
   test('tracker records navigation and API error breadcrumbs', () async {
-    final crumbs = Breadcrumbs();
+    final crumbs = Breadcrumbs()..recordingAllowed = () => true;
     final t = EventTracker(analytics: _Recording(), breadcrumbs: crumbs);
-    await t.track(const ScreenViewedEvent(screen: ScreenName.serverEditor));
     await t.track(
-      const ConnectionTestResultEvent(
+      const ServersScreenViewedEvent(screen: ScreenName.serverEditor),
+    );
+    await t.track(
+      const ServersConnectionTestResultEvent(
         serviceKind: ServiceKindParam.sonarr,
         errorCategory: ErrorCategoryParam.authFailed,
       ),
     );
     await t.track(
-      const ConnectionTestResultEvent(serviceKind: ServiceKindParam.sonarr),
+      const ServersConnectionTestResultEvent(
+        serviceKind: ServiceKindParam.sonarr,
+      ),
     );
     expect(crumbs.entries.map((c) => c.line), [
       'nav server_editor',
@@ -90,8 +94,17 @@ void main() {
     ]);
   });
 
+  test('a fresh trail records nothing until consent allows it', () {
+    final crumbs = Breadcrumbs();
+    crumbs.add(Breadcrumb.navigation(ScreenName.shell));
+    expect(crumbs.entries, isEmpty);
+    crumbs.recordingAllowed = () => true;
+    crumbs.add(Breadcrumb.navigation(ScreenName.shell));
+    expect(crumbs.entries, hasLength(1));
+  });
+
   test('breadcrumbs are a bounded ring buffer', () {
-    final crumbs = Breadcrumbs(capacity: 3);
+    final crumbs = Breadcrumbs(capacity: 3)..recordingAllowed = () => true;
     for (var i = 0; i < 10; i++) {
       crumbs.add(Breadcrumb.navigation(ScreenName.values[i % 3]));
     }
@@ -104,13 +117,13 @@ void main() {
   test('analytics that is disabled records nothing', () async {
     final a = _Recording()..enabled = false;
     final t = EventTracker(analytics: a, breadcrumbs: Breadcrumbs());
-    await t.track(const ScreenViewedEvent(screen: ScreenName.shell));
+    await t.track(const ServersScreenViewedEvent(screen: ScreenName.shell));
     expect(a.lines, isEmpty);
     // The no-op default accepts events without effect or error.
     await EventTracker(
       analytics: const NoopAnalytics(),
       breadcrumbs: Breadcrumbs(),
-    ).track(const ScreenViewedEvent(screen: ScreenName.shell));
+    ).track(const ServersScreenViewedEvent(screen: ScreenName.shell));
   });
 
   test('logger redacts hostile values placed in messages and errors', () {
