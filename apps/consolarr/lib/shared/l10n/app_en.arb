@@ -3,7 +3,7 @@
   "@connErrorAuthFailedMessage": {
     "description": "Plain-language message for a connection problem: wrong or missing credentials."
   },
-  "connErrorAuthFailedHint": "Check the API key or the username and password, then test again.",
+  "connErrorAuthFailedHint": "Check the credentials saved for this server, then test again.",
   "@connErrorAuthFailedHint": {
     "description": "Fix hint shown under the message for a connection problem: wrong or missing credentials."
   },

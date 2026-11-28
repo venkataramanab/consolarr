@@ -173,6 +173,7 @@ class _QueueList extends ConsumerWidget {
       itemLabel: itemLabel,
       // A proper noun, not translated.
       serviceName: 'Radarr',
+      kind: ServiceKind.radarr,
       onConfirm: (choice) => ref
           .read(queueProvider.notifier)
           .remove(

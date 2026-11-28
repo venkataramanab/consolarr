@@ -215,7 +215,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   List<Widget> _test(AppLocalizations l10n, ThemeData theme) {
     final error = _saveError;
-    final message = error == null ? null : connectionErrorMessage(l10n, error);
+    final message = error == null
+        ? null
+        : connectionErrorMessage(l10n, error, kind: _form.kind);
     return [
       _heading(l10n.onboardingTestTitle, theme),
       ConnectionTestPanel(

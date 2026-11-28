@@ -31,6 +31,7 @@ class _Host extends StatelessWidget {
             context: context,
             itemLabel: 'Example Show 1',
             serviceName: 'Sonarr',
+            kind: ServiceKind.sonarr,
             onConfirm: onConfirm,
           ),
         ),
@@ -150,6 +151,20 @@ void main() {
     await tester.pumpAndSettle();
     expect(calls, 2);
     expect(result, [true]);
+  });
+
+  testWidgets('a 401 says the API key was rejected, not "retry the login"', (
+    tester,
+  ) async {
+    await _open(
+      tester,
+      (_) async => const AppError(ErrorCategory.authFailed),
+      <bool>[],
+    );
+    await tester.tap(find.text('Remove'));
+    await tester.pumpAndSettle();
+    expect(find.text('Sonarr rejected the API key.'), findsOneWidget);
+    expect(find.textContaining("don't work for the API"), findsOneWidget);
   });
 
   testWidgets('cancel resolves to false without calling', (tester) async {

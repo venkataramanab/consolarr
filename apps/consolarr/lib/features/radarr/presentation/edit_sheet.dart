@@ -179,7 +179,7 @@ class _EditMovieFormState extends ConsumerState<EditMovieForm> {
               padding: const EdgeInsets.only(bottom: ConsolarrSpacing.sm),
               child: Text(
                 '${l10n.radarrSaveFailed} '
-                '${connectionErrorMessage(l10n, _error!).message}',
+                '${connectionErrorMessage(l10n, _error!, kind: ServiceKind.radarr).message}',
                 style: TextStyle(color: context.roles.error),
               ),
             ),

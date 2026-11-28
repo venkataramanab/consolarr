@@ -116,7 +116,7 @@ class _DetailBody extends ConsumerWidget {
     } else if (async.hasError) {
       final error = async.error;
       final copy = error is AppError
-          ? connectionErrorMessage(l10n, error)
+          ? connectionErrorMessage(l10n, error, kind: ServiceKind.sonarr)
           : null;
       content = Padding(
         padding: EdgeInsets.only(top: top + ConsolarrSpacing.xxl),
@@ -471,7 +471,7 @@ class _EpisodesError extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final copy = connectionErrorMessage(l10n, error);
+    final copy = connectionErrorMessage(l10n, error, kind: ServiceKind.sonarr);
     return ErrorState(
       headline: l10n.sonarrDetailEpisodesErrorTitle,
       message: copy.message,

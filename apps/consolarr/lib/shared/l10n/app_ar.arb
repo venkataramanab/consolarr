@@ -3,7 +3,7 @@
   "@connErrorAuthFailedMessage": {
     "description": "Plain-language message for a connection problem: wrong or missing credentials."
   },
-  "connErrorAuthFailedHint": "تحقّق من مفتاح API أو من اسم المستخدم وكلمة المرور ثم أعد الاختبار.",
+  "connErrorAuthFailedHint": "تحقّق من بيانات الاعتماد المحفوظة لهذا الخادم ثم أعد الاختبار.",
   "@connErrorAuthFailedHint": {
     "description": "Fix hint shown under the message for a connection problem: wrong or missing credentials."
   },
