@@ -35,6 +35,9 @@ enum _Unit {
 }
 
 /// One limit editor: none or custom with a unit.
+/// Narrowest width at which the field and the unit switch share a row.
+const double _sideBySideMinWidth = 360;
+
 class _LimitDraft {
   _LimitDraft(int bytesPerSecond) : text = TextEditingController() {
     reset(bytesPerSecond);
@@ -134,6 +137,35 @@ class _SpeedLimitsSheetState extends ConsumerState<SpeedLimitsSheet> {
   Widget _editor(String title, _LimitDraft d, bool busy) {
     final l10n = context.l10n;
     final invalid = _submitted && d.bytes == null;
+    final field = TextField(
+      controller: d.text,
+      enabled: !busy,
+      keyboardType: TextInputType.number,
+      inputFormatters: [
+        const AnyDigitsFormatter(),
+        // 7 digits: enough for any limit, never an overflow.
+        LengthLimitingTextInputFormatter(7),
+      ],
+      decoration: InputDecoration(
+        labelText: l10n.torLimitsValue,
+        errorText: invalid ? l10n.torLimitsInvalid : null,
+        errorMaxLines: 2,
+      ),
+    );
+    final units = Semantics(
+      container: true,
+      label: l10n.torLimitsUnit,
+      child: SegmentedButton<_Unit>(
+        segments: [
+          ButtonSegment(value: _Unit.kb, label: Text(l10n.torLimitsUnitKB)),
+          ButtonSegment(value: _Unit.mb, label: Text(l10n.torLimitsUnitMB)),
+        ],
+        selected: {d.unit},
+        onSelectionChanged: busy
+            ? null
+            : (s) => setState(() => d.unit = s.first),
+      ),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -161,50 +193,36 @@ class _SpeedLimitsSheetState extends ConsumerState<SpeedLimitsSheet> {
             ],
           ),
         ),
-        if (d.custom)
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: d.text,
-                  enabled: !busy,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [
-                    const AnyDigitsFormatter(),
-                    // 7 digits: enough for any limit, never an overflow.
-                    LengthLimitingTextInputFormatter(7),
+        if (d.custom) ...[
+          // When the unit switch does not leave the field a usable width (a
+          // narrow screen, large text or a long translation), it goes below
+          // the field instead of squeezing it.
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final stacked =
+                  MediaQuery.textScalerOf(context).scale(1) > 1.3 ||
+                  constraints.maxWidth < _sideBySideMinWidth;
+              if (stacked) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    field,
+                    const SizedBox(height: ConsolarrSpacing.sm),
+                    units,
                   ],
-                  decoration: InputDecoration(
-                    labelText: l10n.torLimitsValue,
-                    errorText: invalid ? l10n.torLimitsInvalid : null,
-                    errorMaxLines: 2,
-                  ),
-                ),
-              ),
-              const SizedBox(width: ConsolarrSpacing.sm),
-              Semantics(
-                container: true,
-                label: l10n.torLimitsUnit,
-                child: SegmentedButton<_Unit>(
-                  segments: [
-                    ButtonSegment(
-                      value: _Unit.kb,
-                      label: Text(l10n.torLimitsUnitKB),
-                    ),
-                    ButtonSegment(
-                      value: _Unit.mb,
-                      label: Text(l10n.torLimitsUnitMB),
-                    ),
-                  ],
-                  selected: {d.unit},
-                  onSelectionChanged: busy
-                      ? null
-                      : (s) => setState(() => d.unit = s.first),
-                ),
-              ),
-            ],
+                );
+              }
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: field),
+                  const SizedBox(width: ConsolarrSpacing.sm),
+                  units,
+                ],
+              );
+            },
           ),
+        ],
       ],
     );
   }

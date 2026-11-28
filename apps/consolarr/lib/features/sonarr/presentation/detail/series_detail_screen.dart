@@ -17,11 +17,19 @@ import 'package:consolarr/shared/errors/connection_error_message.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
+import 'package:flutter/semantics.dart' show OrdinalSortKey;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:observability/observability.dart';
+
+/// Reading order for the floating top bar (Back, edit, menu) and the content
+/// it floats over. The bar is painted last so it sits on top of the artwork,
+/// which would also make TalkBack read it after everything else; the sort
+/// keys put it first.
+const _topBarOrder = OrdinalSortKey(0);
+const _contentOrder = OrdinalSortKey(1);
 
 /// Series detail (SON-08, SON-09, SON-11, SON-16, SON-17): artwork hero,
 /// facts, links and the expandable seasons with their episodes. Child route
@@ -75,7 +83,12 @@ class SeriesNotFoundScreen extends StatelessWidget {
             PositionedDirectional(
               top: top + ConsolarrSpacing.xs,
               start: ConsolarrSpacing.xs,
-              child: const BackButton(),
+              child: Semantics(
+                container: true,
+                explicitChildNodes: true,
+                sortKey: _topBarOrder,
+                child: const BackButton(),
+              ),
             ),
           ],
         ),
@@ -163,17 +176,29 @@ class _DetailBody extends ConsumerWidget {
         : null;
     return Stack(
       children: [
-        Positioned.fill(child: content),
+        Positioned.fill(
+          child: Semantics(
+            container: true,
+            explicitChildNodes: true,
+            sortKey: _contentOrder,
+            child: content,
+          ),
+        ),
         PositionedDirectional(
           top: top + ConsolarrSpacing.xs,
           start: ConsolarrSpacing.xs,
           end: ConsolarrSpacing.xs,
-          child: Row(
-            children: [
-              const BackButton(),
-              const Spacer(),
-              if (data != null) _TopActions(seriesId: seriesId, data: data),
-            ],
+          child: Semantics(
+            container: true,
+            explicitChildNodes: true,
+            sortKey: _topBarOrder,
+            child: Row(
+              children: [
+                const BackButton(),
+                const Spacer(),
+                if (data != null) _TopActions(seriesId: seriesId, data: data),
+              ],
+            ),
           ),
         ),
       ],

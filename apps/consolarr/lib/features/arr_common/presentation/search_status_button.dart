@@ -80,7 +80,6 @@ class ArrSearchButton extends StatelessWidget {
           onPressed: enabled ? onSearch : null,
         );
       case ArrSearchStatus.searching:
-        final reduce = !ConsolarrEffects.of(context).animate;
         return Semantics(
           liveRegion: true,
           label: labels.searching,
@@ -96,13 +95,7 @@ class ArrSearchButton extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    SizedBox.square(
-                      dimension: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        value: reduce ? 0.6 : null,
-                      ),
-                    ),
+                    const BusyIndicator(semanticLabel: null),
                     const SizedBox(width: ConsolarrSpacing.sm),
                     Flexible(child: Text(labels.searching)),
                   ],

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import 'package:design_system/design_system.dart';
+import 'package:l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Download state of one release row.
@@ -209,7 +210,10 @@ class _Details extends StatelessWidget {
           for (final line in lines)
             Padding(
               padding: const EdgeInsets.only(top: ConsolarrSpacing.xxs),
-              child: Text('• $line', style: theme.textTheme.bodySmall),
+              child: Text(
+                context.l10n.sharedBulletLine(line),
+                style: theme.textTheme.bodySmall,
+              ),
             ),
         ],
       ),
@@ -258,7 +262,7 @@ class _DownloadControl extends StatelessWidget {
           child: ExcludeSemantics(
             child: Row(
               children: [
-                const ArrBusyIndicator(),
+                const BusyIndicator(semanticLabel: null),
                 const SizedBox(width: ConsolarrSpacing.sm),
                 Flexible(child: Text(labels.grabbing)),
               ],
@@ -301,18 +305,4 @@ class _DownloadControl extends StatelessWidget {
         );
     }
   }
-}
-
-/// A small busy indicator: a spinner, or a static icon under reduced motion
-/// (the text next to it always states what is happening).
-class ArrBusyIndicator extends StatelessWidget {
-  const ArrBusyIndicator({super.key});
-
-  @override
-  Widget build(BuildContext context) => ConsolarrEffects.of(context).animate
-      ? const SizedBox.square(
-          dimension: 16,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        )
-      : const Icon(Icons.hourglass_top, size: 16);
 }

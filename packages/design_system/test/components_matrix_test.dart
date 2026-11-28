@@ -21,7 +21,11 @@ Widget _host(HarnessVariant v, Widget child) => harnessApp(
 
 /// Public widgets that are deliberately not sampled on their own: the host
 /// wrapper every sample is pumped under.
-const _notSampled = {'ConsolarrEffectsScope', 'TouchTargetsScope'};
+const _notSampled = {
+  'ConsolarrEffectsScope',
+  'TouchTargetsScope',
+  'ConsolarrSeparatorsScope',
+};
 
 void main() {
   test('every public design-system widget has a matrix sample', () {

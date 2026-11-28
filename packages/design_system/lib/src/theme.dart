@@ -97,6 +97,13 @@ abstract final class ConsolarrTheme {
           foregroundColor: c.textPrimary,
         ),
       ),
+      // A floated label sits within the 4dp the contrast guideline samples
+      // around the field's text. In the accent or secondary colour, its
+      // anti-aliased edge reads as the text colour and fall below
+      // 4.5:1; the strongest text colour keeps it above.
+      inputDecorationTheme: InputDecorationTheme(
+        floatingLabelStyle: TextStyle(color: c.textPrimary),
+      ),
       visualDensity: VisualDensity.standard,
       extensions: [ConsolarrRolesExtension(c)],
     );

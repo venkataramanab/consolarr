@@ -3,6 +3,7 @@
 import 'package:arr_api/arr_api.dart';
 import 'package:consolarr/features/sonarr/application/detail_providers.dart';
 import 'package:consolarr/features/sonarr/presentation/formatters.dart';
+import 'package:consolarr/shared/l10n/join_parts.dart';
 import 'package:design_system/design_system.dart';
 import 'package:l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
@@ -56,7 +57,7 @@ class DetailInfo extends StatelessWidget {
         (l10n.sonarrDetailFieldNetwork, series.network!),
       if (detail.path != null) (l10n.sonarrDetailFieldPath, detail.path!),
       if (profile != null) (l10n.sonarrDetailFieldProfile, profile),
-      if (tags.isNotEmpty) (l10n.sonarrDetailFieldTags, tags.join(', ')),
+      if (tags.isNotEmpty) (l10n.sonarrDetailFieldTags, joinList(l10n, tags)),
       if (next != null) (l10n.sonarrDetailFieldNextAiring, next),
       if (detail.airTime != null)
         (l10n.sonarrDetailFieldAirTime, detail.airTime!),
@@ -73,9 +74,9 @@ class DetailInfo extends StatelessWidget {
       if (detail.certification != null)
         (l10n.sonarrDetailFieldCertification, detail.certification!),
       if (detail.genres.isNotEmpty)
-        (l10n.sonarrDetailFieldGenres, detail.genres.join(', ')),
+        (l10n.sonarrDetailFieldGenres, joinList(l10n, detail.genres)),
       if (detail.cast.isNotEmpty)
-        (l10n.sonarrDetailFieldCast, detail.cast.join(', ')),
+        (l10n.sonarrDetailFieldCast, joinList(l10n, detail.cast)),
     ];
     final links = detail.externalLinks;
     return Column(

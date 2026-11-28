@@ -285,6 +285,40 @@ in `EmptyArrLists`.
 * Strings: per-feature ARB files with `@description`; ICU plurals; numbers
   through ARB number-format placeholders (`decimalPattern` /
   `decimalPatternDigits`) so digits localize.
+* **Bidi isolation (ar).** A `String` placeholder in `app_ar.arb` (a title,
+  server name, host, version, file name, unit) is written
+  `\u2068{name}\u2069` (FSI ... PDI), so translators keep control of where the
+  isolate sits and the surrounding punctuation and digits do not reorder. A
+  placeholder inside an already-open LRI/FSI pair needs no second wrap.
+  `bidi_isolation_test` checks every String placeholder from the English
+  metadata. For text composed in Dart use `isolate()` from `package:l10n`.
+  Isolates are display-only: never put them in analytics or log payloads.
+  (`about*` and `privacy*` keys are checked once their owner finishes.)
+* **One numeral system per locale.** `ar` keeps the locale default of the
+  pinned intl data (Western digits; `ar_EG` would be Arabic-Indic), so counts,
+  sizes, speeds, dates and ids all match. Every `int`/`num` placeholder
+  declares a `format` (`placeholder_format_test`); values where grouping would
+  change the meaning (resolution, ports, ids) are String placeholders filled
+  with `plainInt`; years go through `plainInt`; design-system code formats
+  through `MaterialLocalizations.formatDecimal`. Never `'$n'` for display.
+  `numerals_test` fails if a message mixes systems.
+* **Joining parts.** Never hardcode `', '`, `'. '`, `' · '`, `'• '` or a
+  `title (year)` pattern. Use `joinList`, `joinSentences`, `joinParts` and the
+  `sharedBulletLine` / `sharedTitleWithYear` messages (the Arabic comma and
+  the order of the parts then localize). Design-system widgets read
+  `ConsolarrSeparators.of(context)`, which the app fills from the same ARB
+  messages. `no_hardcoded_separators_test` guards presentation code.
+* **Busy indicators.** Use `BusyIndicator` from `design_system`, never a raw
+  indeterminate `CircularProgressIndicator`/`LinearProgressIndicator` (a test
+  bans them): it is a static hourglass under the platform's remove-animations
+  flag or the in-app reduce-motion setting, takes the caller's localized
+  label (or `null` when text beside it already says it) and announces itself
+  once when it first appears.
+* **Contrast is never exempted in tests.** `expectAccessible` and the matrix
+  tests take no label skips. If the guideline fails, fix the colour token or
+  the layout (for example, glass sheets use `ConsolarrBlur.sheetTintOpacity`,
+  floated field labels use the strongest text colour, and the unit switch of
+  the limits sheet stacks under the field on narrow widths).
 * Shared strings (connection errors, common actions) live in
   `lib/shared/l10n`. `reserved_keys.txt` lists keys declared ahead of use: the
   key test tolerates them unused and fails once one is used (remove its line).

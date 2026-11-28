@@ -75,6 +75,23 @@ void main() {
         }
       });
 
+      test('$feature: every key has a @description in every locale', () {
+        for (final locale in sourceLocales) {
+          final arb = readArb(File('${dir.path}/app_$locale.arb'));
+          for (final key in keysOf(arb)) {
+            final meta = arb['@$key'];
+            final description = meta is Map<String, Object?>
+                ? meta['description']
+                : null;
+            expect(
+              description,
+              isA<String>().having((s) => s.trim(), 'trimmed', isNotEmpty),
+              reason: '$feature/app_$locale.arb: @$key needs a description',
+            );
+          }
+        }
+      });
+
       test('$feature: placeholders match across locales', () {
         final en = readArb(File('${dir.path}/app_en.arb'));
         for (final locale in sourceLocales.where((l) => l != 'en')) {

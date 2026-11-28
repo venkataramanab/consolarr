@@ -176,10 +176,7 @@ class _RemovalDialogState extends State<_RemovalDialog> {
                 label: l10n.arrCommonQueueRemoving,
                 child: Row(
                   children: [
-                    const SizedBox.square(
-                      dimension: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
+                    const BusyIndicator(semanticLabel: null),
                     const SizedBox(width: ConsolarrSpacing.sm),
                     Flexible(child: Text(l10n.arrCommonQueueRemoving)),
                   ],

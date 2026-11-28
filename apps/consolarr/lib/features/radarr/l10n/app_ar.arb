@@ -92,7 +92,7 @@
   "@radarrOfflineMessage": {
     "description": "Message of the offline banner above cached Radarr data; explains that writes are disabled."
   },
-  "radarrUpdatedAgo": "حُدّث {age}",
+  "radarrUpdatedAgo": "حُدّث \u2068{age}\u2069",
   "@radarrUpdatedAgo": {
     "description": "Age line of the offline banner, for example \"Updated 5 minutes ago\".",
     "placeholders": {
@@ -112,6 +112,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole minutes."
       }
     }
@@ -122,6 +123,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole hours."
       }
     }
@@ -132,6 +134,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole days."
       }
     }
@@ -226,7 +229,7 @@
   "@radarrClearSearch": {
     "description": "Accessible name of the button that clears the library search."
   },
-  "radarrSortChip": "الترتيب: {key}",
+  "radarrSortChip": "الترتيب: \u2068{key}\u2069",
   "@radarrSortChip": {
     "description": "Label of the sort button above the library; shows the current sort key.",
     "placeholders": {
@@ -236,7 +239,7 @@
       }
     }
   },
-  "radarrSortChipSemantics": "الترتيب حسب {key}، {direction}. يفتح خيارات الترتيب.",
+  "radarrSortChipSemantics": "الترتيب حسب \u2068{key}\u2069، \u2068{direction}\u2069. يفتح خيارات الترتيب.",
   "@radarrSortChipSemantics": {
     "description": "Accessible name of the sort button: current key and direction.",
     "placeholders": {
@@ -256,6 +259,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Number of items."
       }
     }
@@ -266,11 +270,12 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Number of items."
       }
     }
   },
-  "radarrFilterRemoveNamed": "إزالة عامل التصفية {label}",
+  "radarrFilterRemoveNamed": "إزالة عامل التصفية \u2068{label}\u2069",
   "@radarrFilterRemoveNamed": {
     "description": "Accessible name of the remove button of an active filter chip.",
     "placeholders": {
@@ -286,6 +291,7 @@
     "placeholders": {
       "id": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Profile number."
       }
     }
@@ -418,7 +424,7 @@
   "@radarrMissing": {
     "description": "Badge: the movie has no file."
   },
-  "radarrMovieSemantics": "{title}، {details}",
+  "radarrMovieSemantics": "\u2068{title}\u2069، \u2068{details}\u2069",
   "@radarrMovieSemantics": {
     "description": "Screen reader label of a movie tile.",
     "placeholders": {
@@ -452,7 +458,7 @@
   "@radarrAvailabilityPhysical": {
     "description": "Availability: released on physical media."
   },
-  "radarrAvailabilityOn": "{availability}، {date}",
+  "radarrAvailabilityOn": "\u2068{availability}\u2069، {date}",
   "@radarrAvailabilityOn": {
     "description": "Availability banner text with its date.",
     "placeholders": {
@@ -505,6 +511,7 @@
     "placeholders": {
       "minutes": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Minutes."
       }
     }
@@ -562,7 +569,7 @@
   "@radarrGenres": {
     "description": "Label of the genres line."
   },
-  "radarrLabelValue": "{label}: {value}",
+  "radarrLabelValue": "\u2068{label}\u2069: \u2068{value}\u2069",
   "@radarrLabelValue": {
     "description": "A detail line: a label and its value.",
     "placeholders": {
@@ -576,7 +583,7 @@
       }
     }
   },
-  "radarrInCollection": "ضمن المجموعة {collection}",
+  "radarrInCollection": "ضمن المجموعة \u2068{collection}\u2069",
   "@radarrInCollection": {
     "description": "Plain text line naming the collection the movie belongs to.",
     "placeholders": {
@@ -614,7 +621,7 @@
   "@radarrSearchMovie": {
     "description": "Label of the automatic search button."
   },
-  "radarrSearchMovieNamed": "البحث عن {title}",
+  "radarrSearchMovieNamed": "البحث عن \u2068{title}\u2069",
   "@radarrSearchMovieNamed": {
     "description": "Accessible name of the per-row search button.",
     "placeholders": {
@@ -660,7 +667,7 @@
   "@radarrReleaseSearchHint": {
     "description": "Hint of the release filter field."
   },
-  "radarrReleaseSortedBy": "مرتّب حسب {key}",
+  "radarrReleaseSortedBy": "مرتّب حسب \u2068{key}\u2069",
   "@radarrReleaseSortedBy": {
     "description": "Label of the release sort chip.",
     "placeholders": {
@@ -710,12 +717,12 @@
   "@radarrProtocolUsenet": {
     "description": "Release protocol filter."
   },
-  "radarrResolution": "{resolution}p",
+  "radarrResolution": "\u2068{resolution}\u2069p",
   "@radarrResolution": {
     "description": "Resolution filter chip.",
     "placeholders": {
       "resolution": {
-        "type": "int",
+        "type": "String",
         "description": "Vertical resolution."
       }
     }
@@ -812,7 +819,7 @@
   "@radarrReleaseAlreadyQueued": {
     "description": "Snackbar when the queue check found a release that looked unsent."
   },
-  "radarrReasonLine": "• {reason}",
+  "radarrReasonLine": "• \u2068{reason}\u2069",
   "@radarrReasonLine": {
     "description": "One rejection reason as a bullet line. The reason is plain text from the server.",
     "placeholders": {
@@ -822,7 +829,7 @@
       }
     }
   },
-  "radarrReleaseSemantics": "{title}، {details}",
+  "radarrReleaseSemantics": "\u2068{title}\u2069، \u2068{details}\u2069",
   "@radarrReleaseSemantics": {
     "description": "Spoken label of a release row: the release name then its facts and state.",
     "placeholders": {
@@ -846,6 +853,7 @@
     "placeholders": {
       "minutes": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Minutes."
       }
     }
@@ -860,6 +868,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Count."
       }
     }
@@ -882,6 +891,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Seeders."
       }
     }
@@ -892,6 +902,7 @@
     "placeholders": {
       "hours": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Hours."
       }
     }
@@ -902,6 +913,7 @@
     "placeholders": {
       "days": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Days."
       }
     }
@@ -958,11 +970,12 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Number of items."
       }
     }
   },
-  "radarrCalendarGroupSemantics": "أفلام يوم {day}",
+  "radarrCalendarGroupSemantics": "أفلام يوم \u2068{day}\u2069",
   "@radarrCalendarGroupSemantics": {
     "description": "Accessible name of a calendar day group header.",
     "placeholders": {
@@ -972,7 +985,7 @@
       }
     }
   },
-  "radarrCalendarSemantics": "{title}، إصدار {type}",
+  "radarrCalendarSemantics": "\u2068{title}\u2069، إصدار \u2068{type}\u2069",
   "@radarrCalendarSemantics": {
     "description": "Screen reader label of a calendar row.",
     "placeholders": {
@@ -1026,7 +1039,7 @@
   "@radarrUpcomingEmptyMessage": {
     "description": "Hint under the no-upcoming headline."
   },
-  "radarrMissingRowSemantics": "{title}، {details}",
+  "radarrMissingRowSemantics": "\u2068{title}\u2069، \u2068{details}\u2069",
   "@radarrMissingRowSemantics": {
     "description": "Screen reader label of a missing row.",
     "placeholders": {
@@ -1092,7 +1105,7 @@
   "@radarrInLibrary": {
     "description": "Marker on a lookup result already in the library."
   },
-  "radarrAddRowInLibrary": "{title}، موجود في مكتبتك",
+  "radarrAddRowInLibrary": "\u2068{title}\u2069، موجود في مكتبتك",
   "@radarrAddRowInLibrary": {
     "description": "Screen reader label of a lookup result in the library.",
     "placeholders": {
@@ -1102,7 +1115,7 @@
       }
     }
   },
-  "radarrAddRowSemantics": "{title}، المس للإضافة",
+  "radarrAddRowSemantics": "\u2068{title}\u2069، المس للإضافة",
   "@radarrAddRowSemantics": {
     "description": "Screen reader label of a lookup result.",
     "placeholders": {
@@ -1140,7 +1153,7 @@
   "@radarrAddCollection": {
     "description": "Switch: add the other movies of the collection."
   },
-  "radarrAddCollectionHint": "تضيف بقية أفلام {collection} كمتابَعة.",
+  "radarrAddCollectionHint": "تضيف بقية أفلام \u2068{collection}\u2069 كمتابَعة.",
   "@radarrAddCollectionHint": {
     "description": "Hint under the collection switch.",
     "placeholders": {

@@ -8,6 +8,7 @@ import 'package:consolarr/features/radarr/application/radarr_providers.dart';
 import 'package:consolarr/features/radarr/domain/release_query.dart';
 import 'package:consolarr/features/radarr/presentation/common.dart';
 import 'package:consolarr/features/radarr/presentation/screen_view.dart';
+import 'package:consolarr/shared/l10n/join_parts.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -92,11 +93,11 @@ ReleaseRowData releaseRowData(
     ReleaseGrabState.failed => l10n.radarrGrabFailed,
     ReleaseGrabState.maybeSent => l10n.radarrReleaseMaybeSent,
   };
-  final details = [
+  final details = joinList(l10n, [
     ...facts,
     if (r.isRejected) l10n.radarrRejectedChip,
     ?stateText,
-  ].join(', ');
+  ]);
   return ReleaseRowData(
     title: r.title,
     facts: facts,
@@ -246,7 +247,7 @@ class _ReleaseSheetBodyState extends ConsumerState<ReleaseSheetBody> {
         for (final r in const [2160, 1080, 720])
           ReleaseFilterOption(
             id: '$r',
-            label: l10n.radarrResolution(r),
+            label: l10n.radarrResolution(l10n.plainInt(r)),
             selected: _filter.resolution == r,
           ),
       ],

@@ -4,6 +4,7 @@
 library;
 
 export 'src/blur_levels.dart';
+export 'src/busy_indicator.dart';
 export 'src/certificate_trust_sheet.dart';
 export 'src/color_roles.dart';
 export 'src/contrast.dart';
@@ -11,6 +12,7 @@ export 'src/effects.dart';
 export 'src/floating_nav_bar.dart';
 export 'src/glass_bar.dart';
 export 'src/glass_sheet.dart';
+export 'src/label_separators.dart';
 export 'src/media_list_tile.dart';
 export 'src/motion.dart';
 export 'src/motion_preference.dart';

@@ -9,6 +9,7 @@ import 'package:consolarr/features/sonarr/presentation/formatters.dart';
 import 'package:consolarr/features/sonarr/presentation/screen_tracking.dart';
 import 'package:consolarr/features/sonarr/sonarr_routes.dart';
 import 'package:consolarr/shared/errors/connection_error_message.dart';
+import 'package:consolarr/shared/l10n/join_parts.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -204,7 +205,11 @@ class _Results extends StatelessWidget {
         final r = results[index];
         final s = r.series;
         final status = statusText(l10n, s.status);
-        final details = [if (s.year != null) '${s.year}', ?s.network, ?status];
+        final details = [
+          if (s.year case final year?) l10n.plainInt(year),
+          ?s.network,
+          ?status,
+        ];
         return Padding(
           padding: const EdgeInsets.only(bottom: ConsolarrSpacing.sm),
           child: MediaListTile(
@@ -213,7 +218,10 @@ class _Results extends StatelessWidget {
             metadata: details,
             semanticsLabel: l10n.sonarrAddResultSemantics(
               s.title,
-              [...details, if (r.inLibrary) l10n.sonarrAddInLibrary].join(', '),
+              joinList(l10n, [
+                ...details,
+                if (r.inLibrary) l10n.sonarrAddInLibrary,
+              ]),
             ),
             leading: const ArtworkPlaceholder(),
             trailing: r.inLibrary

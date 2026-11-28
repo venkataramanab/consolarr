@@ -266,10 +266,7 @@ class _ServicesCheck extends ConsumerWidget {
               ? null
               : () => ref.read(servicesCheckProvider.notifier).check(),
           icon: checking
-              ? const SizedBox.square(
-                  dimension: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
+              ? const BusyIndicator(semanticLabel: null, size: 18)
               : const Icon(Icons.health_and_safety_outlined),
           label: Text(label),
         ),

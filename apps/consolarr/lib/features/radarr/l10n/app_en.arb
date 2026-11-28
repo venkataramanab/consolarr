@@ -112,6 +112,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole minutes."
       }
     }
@@ -122,6 +123,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole hours."
       }
     }
@@ -132,6 +134,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole days."
       }
     }
@@ -256,6 +259,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Number of items."
       }
     }
@@ -266,6 +270,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Number of items."
       }
     }
@@ -286,6 +291,7 @@
     "placeholders": {
       "id": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Profile number."
       }
     }
@@ -505,6 +511,7 @@
     "placeholders": {
       "minutes": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Minutes."
       }
     }
@@ -715,7 +722,7 @@
     "description": "Resolution filter chip.",
     "placeholders": {
       "resolution": {
-        "type": "int",
+        "type": "String",
         "description": "Vertical resolution."
       }
     }
@@ -846,6 +853,7 @@
     "placeholders": {
       "minutes": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Minutes."
       }
     }
@@ -860,6 +868,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Count."
       }
     }
@@ -882,6 +891,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Seeders."
       }
     }
@@ -892,6 +902,7 @@
     "placeholders": {
       "hours": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Hours."
       }
     }
@@ -902,6 +913,7 @@
     "placeholders": {
       "days": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Days."
       }
     }
@@ -958,6 +970,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Number of items."
       }
     }

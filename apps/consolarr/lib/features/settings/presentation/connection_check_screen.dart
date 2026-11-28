@@ -5,6 +5,7 @@ import 'package:consolarr/features/settings/application/connection_check.dart';
 import 'package:consolarr/features/settings/presentation/settings_page.dart';
 import 'package:consolarr/features/shell/application/shell_providers.dart';
 import 'package:consolarr/shared/errors/connection_error_message.dart';
+import 'package:consolarr/shared/l10n/join_parts.dart';
 import 'package:core/core.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -225,7 +226,7 @@ class _StepRow extends StatelessWidget {
     final stateName = checkStateName(l10n, state);
     return Semantics(
       container: true,
-      label: [name, stateName, ?message, ?hint].join(', '),
+      label: joinList(l10n, [name, stateName, message, hint]),
       excludeSemantics: true,
       child: Padding(
         padding: const EdgeInsets.symmetric(

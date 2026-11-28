@@ -140,7 +140,7 @@ class _AddMovieScreenState extends ConsumerState<AddMovieScreen> {
                         key: ValueKey('${m.tmdbId}-$i'),
                         title: m.title,
                         metadata: [
-                          if (m.year != null) '${m.year}',
+                          if (m.year case final year?) l10n.plainInt(year),
                           if (m.runtime != null) l10n.radarrRuntime(m.runtime!),
                           ?m.studio,
                         ],
@@ -317,7 +317,10 @@ class _AddOptionsFormState extends ConsumerState<AddOptionsForm> {
         Text(
           widget.movie.year == null
               ? widget.movie.title
-              : '${widget.movie.title} (${widget.movie.year})',
+              : l10n.sharedTitleWithYear(
+                  widget.movie.title,
+                  l10n.plainInt(widget.movie.year!),
+                ),
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: ConsolarrSpacing.sm),

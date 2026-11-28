@@ -15,7 +15,10 @@ import 'package:consolarr_lints/src/paths.dart';
 /// the `tooltip`, `semanticsLabel`, `semanticLabel`, `hintText`, `labelText`,
 /// `helperText`, `errorText` and `counterText` named arguments, plus
 /// `SnackBar.content`, `Tooltip.message`, `Semantics.label`/`hint`,
-/// `TextSpan.text` (so `Text.rich`), `Tab.text` and the `label` of
+/// `TextSpan.text` (so `Text.rich`), `Tab.text`, `Semantics.value`,
+/// `prefixText`, `suffixText`, `onTapHint`, `onLongPressHint`,
+/// `DropdownMenuEntry.label`, the message of `SemanticsService.announce` /
+/// `sendAnnouncement` / `tooltip` and the `label` of
 /// `NavigationDestination`, `NavigationRailDestination`, `NavigationRail`,
 /// `NavigationDrawerDestination` and `BottomNavigationBarItem`.
 ///
@@ -72,13 +75,18 @@ const _uiNamedArguments = {
   'helperText',
   'errorText',
   'counterText',
+  'prefixText',
+  'suffixText',
+  'onTapHint',
+  'onLongPressHint',
 };
 
 /// Extra (type name -> parameter names) positions.
 const _typeSpecificArguments = <String, Set<String>>{
   'SnackBar': {'content'},
   'Tooltip': {'message'},
-  'Semantics': {'label', 'hint'},
+  'Semantics': {'label', 'hint', 'value'},
+  'DropdownMenuEntry': {'label'},
   'TextSpan': {'text'},
   'Tab': {'text'},
   'NavigationDestination': {'label'},
@@ -118,6 +126,24 @@ class _Visitor extends SimpleAstVisitor<void> {
 
   @override
   void visitMethodInvocation(MethodInvocation node) {
+    // `SemanticsService.announce(message, ...)` and
+    // `SemanticsService.sendAnnouncement(view, message, ...)` speak the
+    // message to the user.
+    final target = node.target;
+    if (target is SimpleIdentifier && target.name == 'SemanticsService') {
+      final index = switch (node.methodName.name) {
+        'announce' || 'tooltip' => 0,
+        'sendAnnouncement' => 1,
+        _ => -1,
+      };
+      if (index >= 0) {
+        final positional = [
+          for (final arg in node.argumentList.arguments)
+            if (arg is! NamedArgument) arg.argumentExpression,
+        ];
+        if (positional.length > index) _check(positional[index]);
+      }
+    }
     // Covers e.g. `decoration.copyWith(hintText: 'x')`.
     for (final arg in node.argumentList.arguments) {
       if (arg is NamedArgument && _uiNamedArguments.contains(arg.name.lexeme)) {

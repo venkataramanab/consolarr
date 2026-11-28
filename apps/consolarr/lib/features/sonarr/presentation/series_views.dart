@@ -57,7 +57,7 @@ String _monitoredText(AppLocalizations l10n, SonarrSeries s) =>
 /// What a screen reader announces for [s]: status, monitoring, episodes.
 String semanticsLabel(AppLocalizations l10n, SonarrSeries s) {
   final stats = s.statistics;
-  final details = [
+  final details = joinList(l10n, [
     ?statusText(l10n, s.status),
     _monitoredText(l10n, s),
     if (stats.totalEpisodeCount > 0)
@@ -65,7 +65,7 @@ String semanticsLabel(AppLocalizations l10n, SonarrSeries s) {
         stats.episodeFileCount,
         stats.totalEpisodeCount,
       ),
-  ].join(', ');
+  ]);
   return l10n.sonarrSeriesSemantics(s.title, details);
 }
 
@@ -92,7 +92,7 @@ class SeriesPosterTile extends StatelessWidget {
         ? null
         : nextAiringText(l10n, series.nextAiring, now!);
     final subtitle = joinParts(l10n, [
-      if (series.year != null) '${series.year}',
+      if (series.year case final year?) l10n.plainInt(year),
       if (stats.totalEpisodeCount > 0)
         l10n.sonarrEpisodesShort(
           stats.episodeFileCount,
@@ -141,7 +141,7 @@ class SeriesListTile extends StatelessWidget {
     final dpr = MediaQuery.devicePixelRatioOf(context);
     final next = nextAiringText(l10n, series.nextAiring, now);
     final metadata = [
-      if (series.year != null) '${series.year}',
+      if (series.year case final year?) l10n.plainInt(year),
       ?series.network,
       if (stats.seasonCount > 0) l10n.sonarrSeasonCount(stats.seasonCount),
       if (stats.totalEpisodeCount > 0)

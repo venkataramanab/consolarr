@@ -89,6 +89,15 @@ Map<String, Widget Function()> componentSamples() => {
       initiallyExpanded: true,
     ),
   ),
+  'BusyIndicator': () => const Padding(
+    padding: EdgeInsets.all(16),
+    child: Column(
+      children: [
+        BusyIndicator(semanticLabel: 'Loading'),
+        BusyIndicator.linear(semanticLabel: 'Computing'),
+      ],
+    ),
+  ),
   'SkeletonBox': () => const Padding(
     padding: EdgeInsets.all(16),
     child: Column(

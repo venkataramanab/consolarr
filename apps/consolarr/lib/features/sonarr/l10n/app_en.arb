@@ -180,6 +180,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole minutes."
       }
     }
@@ -190,6 +191,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole hours."
       }
     }
@@ -200,6 +202,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole days."
       }
     }
@@ -234,10 +237,12 @@
     "placeholders": {
       "have": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Downloaded episodes."
       },
       "total": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Total episodes."
       }
     }
@@ -248,10 +253,12 @@
     "placeholders": {
       "have": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Downloaded episodes."
       },
       "total": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Total episodes."
       }
     }
@@ -262,6 +269,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Season count."
       }
     }
@@ -322,6 +330,7 @@
     "placeholders": {
       "days": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Days until the episode airs."
       }
     }
@@ -532,11 +541,12 @@
     "placeholders": {
       "minutes": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Minutes."
       }
     }
   },
-  "sonarrDetailRatingValue": "{value} out of 10 ({votes, plural, =1{1 vote} other{{votes} votes}})",
+  "sonarrDetailRatingValue": "{value} out of 10 ({votes, plural, =0{no votes} =1{1 vote} other{{votes} votes}})",
   "@sonarrDetailRatingValue": {
     "description": "Series rating on a ten point scale with the vote count.",
     "placeholders": {
@@ -550,6 +560,7 @@
       },
       "votes": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Number of votes."
       }
     }
@@ -560,6 +571,7 @@
     "placeholders": {
       "number": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Season number."
       }
     }
@@ -614,6 +626,7 @@
     "placeholders": {
       "number": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Episode number."
       },
       "title": {
@@ -628,6 +641,7 @@
     "placeholders": {
       "number": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Episode number."
       }
     }
@@ -920,6 +934,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "A whole number."
       }
     }
@@ -935,6 +950,7 @@
       },
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Episodes on that day."
       }
     }
@@ -1185,6 +1201,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Number of items."
       }
     }
@@ -1195,6 +1212,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Number of items."
       }
     }
@@ -1347,6 +1365,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Number of items."
       }
     }
@@ -1381,6 +1400,7 @@
     "placeholders": {
       "rating": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole rating."
       }
     }
@@ -1543,6 +1563,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole number."
       }
     }
@@ -1587,6 +1608,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole number."
       }
     }
@@ -1597,6 +1619,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole number."
       }
     }
@@ -1607,6 +1630,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole number."
       }
     }
@@ -1617,6 +1641,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole number."
       }
     }

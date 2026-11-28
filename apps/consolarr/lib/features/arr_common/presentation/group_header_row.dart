@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'package:consolarr/shared/l10n/join_parts.dart';
 import 'package:design_system/design_system.dart';
+import 'package:l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Header of an expandable group (a series in a list of episodes): leading
@@ -36,7 +38,7 @@ class ArrGroupHeader extends StatelessWidget {
       container: true,
       button: true,
       expanded: expanded,
-      label: '$semanticsLabel, $countText',
+      label: joinList(context.l10n, [semanticsLabel, countText]),
       excludeSemantics: true,
       onTap: onToggle,
       child: Material(

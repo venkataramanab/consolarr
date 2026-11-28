@@ -434,7 +434,7 @@
   "@diagFilterEmptyTitle": {
     "description": "Headline shown when the level filter hides every entry."
   },
-  "diagCapturing": "Capturing · {count, plural, =1{1 entry} other{{count} entries}}",
+  "diagCapturing": "Capturing · {count, plural, =0{No entries yet} =1{1 entry} other{{count} entries}}",
   "@diagCapturing": {
     "description": "Status of the running log with the number of entries.",
     "placeholders": {

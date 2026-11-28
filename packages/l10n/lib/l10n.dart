@@ -59,3 +59,19 @@ extension AppLocalizationsNumbers on AppLocalizations {
     }
   }
 }
+
+const String _fsi = '\u2068';
+const String _pdi = '\u2069';
+
+/// [text] wrapped in a first-strong isolate (FSI U+2068 ... PDI U+2069), so
+/// Latin or user-supplied text inside an Arabic sentence keeps its own order
+/// and does not reorder the punctuation and digits around it.
+///
+/// Display-only: apply it in the widget layer (or write the isolates around
+/// the placeholder in `app_ar.arb`), never to analytics or log payloads.
+/// Empty and already-isolated text is returned unchanged.
+String isolate(String text) {
+  if (text.isEmpty) return text;
+  if (text.startsWith(_fsi) && text.endsWith(_pdi)) return text;
+  return '$_fsi$text$_pdi';
+}

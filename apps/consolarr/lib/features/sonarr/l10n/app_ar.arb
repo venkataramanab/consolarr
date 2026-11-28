@@ -160,7 +160,7 @@
   "@sonarrOfflineMessage": {
     "description": "Message of the banner above cached series when Sonarr cannot be reached."
   },
-  "sonarrUpdatedAgo": "حُدّث {age}",
+  "sonarrUpdatedAgo": "حُدّث \u2068{age}\u2069",
   "@sonarrUpdatedAgo": {
     "description": "Age line of the offline banner, for example \"Updated 5 minutes ago\".",
     "placeholders": {
@@ -180,6 +180,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole minutes."
       }
     }
@@ -190,6 +191,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole hours."
       }
     }
@@ -200,6 +202,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole days."
       }
     }
@@ -234,10 +237,12 @@
     "placeholders": {
       "have": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Downloaded episodes."
       },
       "total": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Total episodes."
       }
     }
@@ -248,10 +253,12 @@
     "placeholders": {
       "have": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Downloaded episodes."
       },
       "total": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Total episodes."
       }
     }
@@ -262,6 +269,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Season count."
       }
     }
@@ -322,11 +330,12 @@
     "placeholders": {
       "days": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Days until the episode airs."
       }
     }
   },
-  "sonarrSeriesSemantics": "{title}، {details}",
+  "sonarrSeriesSemantics": "\u2068{title}\u2069، \u2068{details}\u2069",
   "@sonarrSeriesSemantics": {
     "description": "Screen reader label of a series card: the title followed by its status details.",
     "placeholders": {
@@ -408,7 +417,7 @@
       }
     }
   },
-  "sonarrQueueEpisodeLabel": "{code} · {title}",
+  "sonarrQueueEpisodeLabel": "\u2068{code}\u2069 · \u2068{title}\u2069",
   "@sonarrQueueEpisodeLabel": {
     "description": "Episode code followed by the episode title in a queue row.",
     "placeholders": {
@@ -532,11 +541,12 @@
     "placeholders": {
       "minutes": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Minutes."
       }
     }
   },
-  "sonarrDetailRatingValue": "{value} من 10 ({votes, plural, =1{صوت واحد} =2{صوتان} few{{votes} أصوات} many{{votes} صوتًا} other{{votes} صوت}})",
+  "sonarrDetailRatingValue": "{value} من 10 ({votes, plural, =0{لا أصوات} =1{صوت واحد} =2{صوتان} few{{votes} أصوات} many{{votes} صوتًا} other{{votes} صوت}})",
   "@sonarrDetailRatingValue": {
     "description": "Series rating on a ten point scale with the vote count.",
     "placeholders": {
@@ -550,6 +560,7 @@
       },
       "votes": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Number of votes."
       }
     }
@@ -560,6 +571,7 @@
     "placeholders": {
       "number": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Season number."
       }
     }
@@ -568,7 +580,7 @@
   "@sonarrDetailSpecials": {
     "description": "Title of the season row that holds special episodes (season zero)."
   },
-  "sonarrDetailMonitorSeason": "مراقبة {season}",
+  "sonarrDetailMonitorSeason": "مراقبة \u2068{season}\u2069",
   "@sonarrDetailMonitorSeason": {
     "description": "Accessible name of the monitor switch of a season.",
     "placeholders": {
@@ -578,7 +590,7 @@
       }
     }
   },
-  "sonarrDetailMonitorEpisode": "مراقبة {episode}",
+  "sonarrDetailMonitorEpisode": "مراقبة \u2068{episode}\u2069",
   "@sonarrDetailMonitorEpisode": {
     "description": "Accessible name of the monitor switch of an episode.",
     "placeholders": {
@@ -588,7 +600,7 @@
       }
     }
   },
-  "sonarrDetailShowEpisodes": "عرض حلقات {season}",
+  "sonarrDetailShowEpisodes": "عرض حلقات \u2068{season}\u2069",
   "@sonarrDetailShowEpisodes": {
     "description": "Tooltip and accessible name of the control that expands a season.",
     "placeholders": {
@@ -598,7 +610,7 @@
       }
     }
   },
-  "sonarrDetailHideEpisodes": "إخفاء حلقات {season}",
+  "sonarrDetailHideEpisodes": "إخفاء حلقات \u2068{season}\u2069",
   "@sonarrDetailHideEpisodes": {
     "description": "Tooltip and accessible name of the control that collapses a season.",
     "placeholders": {
@@ -608,12 +620,13 @@
       }
     }
   },
-  "sonarrDetailEpisodeTitle": "{number}. {title}",
+  "sonarrDetailEpisodeTitle": "{number}. \u2068{title}\u2069",
   "@sonarrDetailEpisodeTitle": {
     "description": "Episode row title: episode number and its name.",
     "placeholders": {
       "number": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Episode number."
       },
       "title": {
@@ -628,6 +641,7 @@
     "placeholders": {
       "number": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Episode number."
       }
     }
@@ -783,7 +797,7 @@
   "@sonarrDetailLinkTvMaze": {
     "description": "Name of the TVmaze link."
   },
-  "sonarrDetailLinkSemantics": "{name}، يفتح في المتصفح",
+  "sonarrDetailLinkSemantics": "\u2068{name}\u2069، يفتح في المتصفح",
   "@sonarrDetailLinkSemantics": {
     "description": "Accessible name of an external link button.",
     "placeholders": {
@@ -920,6 +934,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "A whole number."
       }
     }
@@ -935,6 +950,7 @@
       },
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Episodes on that day."
       }
     }
@@ -1099,7 +1115,7 @@
   "@sonarrWantedLoadMoreFailed": {
     "description": "Message shown when the next page of the missing list failed to load."
   },
-  "sonarrWantedExpandGroup": "عرض حلقات {series}",
+  "sonarrWantedExpandGroup": "عرض حلقات \u2068{series}\u2069",
   "@sonarrWantedExpandGroup": {
     "description": "Accessible label of a series group header in the missing list.",
     "placeholders": {
@@ -1155,7 +1171,7 @@
   "@sonarrLibraryAddTooltip": {
     "description": "Tooltip of the top bar button that opens the add-series flow."
   },
-  "sonarrLibrarySortChip": "الترتيب: {key}",
+  "sonarrLibrarySortChip": "الترتيب: \u2068{key}\u2069",
   "@sonarrLibrarySortChip": {
     "description": "Label of the sort button above the library; shows the current sort key.",
     "placeholders": {
@@ -1165,7 +1181,7 @@
       }
     }
   },
-  "sonarrLibrarySortChipSemantics": "الترتيب حسب {key}، {direction}. يفتح خيارات الترتيب.",
+  "sonarrLibrarySortChipSemantics": "الترتيب حسب \u2068{key}\u2069، \u2068{direction}\u2069. يفتح خيارات الترتيب.",
   "@sonarrLibrarySortChipSemantics": {
     "description": "Accessible name of the sort button: current key and direction.",
     "placeholders": {
@@ -1185,6 +1201,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Number of items."
       }
     }
@@ -1195,6 +1212,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Number of items."
       }
     }
@@ -1295,7 +1313,7 @@
   "@sonarrLibraryTypeAnime": {
     "description": "Series type option."
   },
-  "sonarrLibraryRemoveFilter": "إزالة المرشح: {name}",
+  "sonarrLibraryRemoveFilter": "إزالة المرشح: \u2068{name}\u2069",
   "@sonarrLibraryRemoveFilter": {
     "description": "Accessible name of the remove button on an active filter chip.",
     "placeholders": {
@@ -1317,7 +1335,7 @@
   "@sonarrLibraryFilterEmptyAction": {
     "description": "Action of the filter-empty state."
   },
-  "sonarrLibraryNoMatchHeadline": "لا توجد مسلسلات تطابق «{term}»",
+  "sonarrLibraryNoMatchHeadline": "لا توجد مسلسلات تطابق «\u2068{term}\u2069»",
   "@sonarrLibraryNoMatchHeadline": {
     "description": "Headline when the search text matches nothing in the library.",
     "placeholders": {
@@ -1331,7 +1349,7 @@
   "@sonarrLibraryNoMatchMessage": {
     "description": "Hint under the no-match headline."
   },
-  "sonarrLibraryNoMatchAction": "ابحث لإضافة «{term}»",
+  "sonarrLibraryNoMatchAction": "ابحث لإضافة «\u2068{term}\u2069»",
   "@sonarrLibraryNoMatchAction": {
     "description": "Action of the no-match state: opens the add flow with the typed text.",
     "placeholders": {
@@ -1347,6 +1365,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Number of items."
       }
     }
@@ -1381,6 +1400,7 @@
     "placeholders": {
       "rating": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole rating."
       }
     }
@@ -1401,7 +1421,7 @@
   "@sonarrLibraryComputing": {
     "description": "Accessible label shown while a big list is filtered in the background."
   },
-  "sonarrLibraryGroupHeaderSemantics": "القسم {name}",
+  "sonarrLibraryGroupHeaderSemantics": "القسم \u2068{name}\u2069",
   "@sonarrLibraryGroupHeaderSemantics": {
     "description": "Accessible name of a sticky group header.",
     "placeholders": {
@@ -1499,7 +1519,7 @@
   "@sonarrReleaseLanguagesHeading": {
     "description": "Heading of the languages list of a release."
   },
-  "sonarrReleaseSortButton": "الترتيب: {key}",
+  "sonarrReleaseSortButton": "الترتيب: \u2068{key}\u2069",
   "@sonarrReleaseSortButton": {
     "description": "Name of the sort menu button; says which key is active.",
     "placeholders": {
@@ -1543,6 +1563,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole number."
       }
     }
@@ -1563,7 +1584,7 @@
   "@sonarrReleaseGroupSource": {
     "description": "Filter group name for the quality source."
   },
-  "sonarrReleaseResolution": "{resolution}p",
+  "sonarrReleaseResolution": "\u2068{resolution}\u2069p",
   "@sonarrReleaseResolution": {
     "description": "Resolution filter chip, for example 1080p.",
     "placeholders": {
@@ -1587,6 +1608,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole number."
       }
     }
@@ -1597,6 +1619,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole number."
       }
     }
@@ -1607,6 +1630,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole number."
       }
     }
@@ -1617,11 +1641,12 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Whole number."
       }
     }
   },
-  "sonarrReleaseSemantics": "{title}. {details}",
+  "sonarrReleaseSemantics": "\u2068{title}\u2069. \u2068{details}\u2069",
   "@sonarrReleaseSemantics": {
     "description": "Screen reader label of a release row: its name, then facts and state.",
     "placeholders": {
@@ -1711,7 +1736,7 @@
   "@sonarrAddInLibrary": {
     "description": "Badge on a lookup result that is already in the library."
   },
-  "sonarrAddResultSemantics": "{title}، {details}",
+  "sonarrAddResultSemantics": "\u2068{title}\u2069، \u2068{details}\u2069",
   "@sonarrAddResultSemantics": {
     "description": "Screen reader label of a lookup result.",
     "placeholders": {

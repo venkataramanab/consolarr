@@ -13,11 +13,36 @@ class SelectableText { const SelectableText(String data); }
 class SnackBar { const SnackBar({required Object content}); }
 class Tooltip { const Tooltip({String? message}); }
 class InputDecoration {
-  const InputDecoration({String? hintText, String? labelText});
+  const InputDecoration({
+    String? hintText,
+    String? labelText,
+    String? prefixText,
+    String? suffixText,
+  });
   InputDecoration copyWith({String? hintText}) => this;
 }
 class IconButton { const IconButton({String? tooltip}); }
 class TextSpan { const TextSpan({String? text, List<Object>? children}); }
+class Semantics {
+  const Semantics({
+    String? label,
+    String? hint,
+    String? value,
+    String? onTapHint,
+    String? onLongPressHint,
+  });
+}
+class DropdownMenuEntry { const DropdownMenuEntry({required String label}); }
+enum TextDirection { ltr, rtl }
+class FlutterView {}
+class SemanticsService {
+  static Future<void> announce(String message, TextDirection d) async {}
+  static Future<void> sendAnnouncement(
+    FlutterView view,
+    String message,
+    TextDirection d,
+  ) async {}
+}
 class Tab { const Tab({String? text}); }
 class NavigationDestination { const NavigationDestination({required String label}); }
 class NavigationRailDestination { const NavigationRailDestination({required Object label}); }
@@ -111,6 +136,53 @@ class NoUiStringTest extends AnalysisRuleTest {
     await assertNoDiagnostics(
       "$_widgets\nvoid f(String s) { NavigationDestination(label: s); "
       "Tab(text: s); TextSpan(text: s); }",
+    );
+  }
+
+  Future<void> test_prefix_and_suffix_text() async {
+    final src =
+        "$_widgets\nvoid f() { const InputDecoration(prefixText: 'USD', "
+        "suffixText: 'MB'); }";
+    await assertDiagnostics(src, [
+      lint(src.indexOf("'USD'"), 5),
+      lint(src.indexOf("'MB'"), 4),
+    ]);
+  }
+
+  Future<void> test_semantics_value_and_action_hints() async {
+    final src =
+        "$_widgets\nvoid f() { const Semantics(value: 'Half', "
+        "onTapHint: 'open it', onLongPressHint: 'pick it'); }";
+    await assertDiagnostics(src, [
+      lint(src.indexOf("'Half'"), 6),
+      lint(src.indexOf("'open it'"), 9),
+      lint(src.indexOf("'pick it'"), 9),
+    ]);
+  }
+
+  Future<void> test_dropdown_menu_entry_label() async {
+    final src =
+        "$_widgets\nvoid f() { const DropdownMenuEntry(label: 'Newest'); }";
+    await assertDiagnostics(src, [lint(src.indexOf("'Newest'"), 8)]);
+  }
+
+  Future<void> test_semantics_announcements() async {
+    final src =
+        "$_widgets\nvoid f(FlutterView v) { "
+        "SemanticsService.announce('Saved now', TextDirection.ltr); "
+        "SemanticsService.sendAnnouncement(v, 'Cleared now', TextDirection.ltr); }";
+    await assertDiagnostics(src, [
+      lint(src.indexOf("'Saved now'"), 11),
+      lint(src.indexOf("'Cleared now'"), 13),
+    ]);
+  }
+
+  Future<void> test_semantics_announcement_from_variable_ok() async {
+    await assertNoDiagnostics(
+      "$_widgets\nvoid f(FlutterView v, String s) { "
+      "SemanticsService.announce(s, TextDirection.ltr); "
+      "SemanticsService.sendAnnouncement(v, s, TextDirection.ltr); "
+      "const Semantics(value: '50'); }",
     );
   }
 

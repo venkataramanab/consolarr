@@ -240,7 +240,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage>
               title: entry.movie.title,
               metadata: [
                 releaseTypeText(l10n, entry.type),
-                if (entry.movie.year != null) '${entry.movie.year}',
+                if (entry.movie.year case final year?) l10n.plainInt(year),
               ],
               semanticsLabel: l10n.radarrCalendarSemantics(
                 entry.movie.title,

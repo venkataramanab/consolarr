@@ -371,12 +371,10 @@ class _Toolbar extends ConsumerWidget {
         ),
         if (profiles.hasError || tags.hasError) const ListsFailedRow(),
         if (computing)
-          Semantics(
-            liveRegion: true,
-            label: l10n.radarrLibraryComputing,
-            child: const Padding(
-              padding: EdgeInsets.only(top: ConsolarrSpacing.xs),
-              child: LinearProgressIndicator(minHeight: 2),
+          Padding(
+            padding: const EdgeInsets.only(top: ConsolarrSpacing.xs),
+            child: BusyIndicator.linear(
+              semanticLabel: l10n.radarrLibraryComputing,
             ),
           ),
       ],

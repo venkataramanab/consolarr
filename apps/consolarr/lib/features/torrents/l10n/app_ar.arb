@@ -35,7 +35,7 @@
   "@torSpeedOffline": {
     "description": "Shown in the speed header while the server is unreachable."
   },
-  "torSpeedHeaderSemantics": "التنزيل {down}، الرفع {up}، {count, plural, =0{لا توجد تورنتات} =1{تورنت واحد} =2{تورنتان} few{{count} تورنتات} many{{count} تورنتًا} other{{count} تورنت}}",
+  "torSpeedHeaderSemantics": "التنزيل \u2068{down}\u2069، الرفع \u2068{up}\u2069، {count, plural, =0{لا توجد تورنتات} =1{تورنت واحد} =2{تورنتان} few{{count} تورنتات} many{{count} تورنتًا} other{{count} تورنت}}",
   "@torSpeedHeaderSemantics": {
     "description": "Spoken summary of the speed header for screen readers.",
     "placeholders": {
@@ -104,7 +104,7 @@
       }
     }
   },
-  "torRowSemantics": "{name}، {state}، اكتمل {percent}، {details}",
+  "torRowSemantics": "\u2068{name}\u2069، \u2068{state}\u2069، اكتمل \u2068{percent}\u2069، \u2068{details}\u2069",
   "@torRowSemantics": {
     "description": "Spoken description of a torrent row: name, state and percentage in words.",
     "placeholders": {
@@ -126,7 +126,7 @@
       }
     }
   },
-  "torDetailSize": "{size}",
+  "torDetailSize": "\u2068{size}\u2069",
   "@torDetailSize": {
     "description": "Total size of a torrent in the row metadata.",
     "placeholders": {
@@ -136,7 +136,7 @@
       }
     }
   },
-  "torDetailDown": "تنزيل {speed}",
+  "torDetailDown": "تنزيل \u2068{speed}\u2069",
   "@torDetailDown": {
     "description": "Download speed of one torrent in the row metadata.",
     "placeholders": {
@@ -146,7 +146,7 @@
       }
     }
   },
-  "torDetailUp": "رفع {speed}",
+  "torDetailUp": "رفع \u2068{speed}\u2069",
   "@torDetailUp": {
     "description": "Upload speed of one torrent in the row metadata.",
     "placeholders": {
@@ -156,7 +156,7 @@
       }
     }
   },
-  "torDetailEta": "المتبقي {time}",
+  "torDetailEta": "المتبقي \u2068{time}\u2069",
   "@torDetailEta": {
     "description": "Estimated time remaining in the row metadata.",
     "placeholders": {
@@ -180,7 +180,7 @@
       }
     }
   },
-  "torSpeedPerSecond": "{size}/ث",
+  "torSpeedPerSecond": "\u2068{size}\u2069/ث",
   "@torSpeedPerSecond": {
     "description": "A speed: a formatted size per second.",
     "placeholders": {
@@ -346,7 +346,7 @@
   "@torOfflineMessage": {
     "description": "Banner text while offline with cached torrents."
   },
-  "torOfflineAge": "آخر تحديث قبل {time}",
+  "torOfflineAge": "آخر تحديث قبل \u2068{time}\u2069",
   "@torOfflineAge": {
     "description": "Age of the data shown under the offline banner.",
     "placeholders": {
@@ -547,7 +547,7 @@
   "@torActionRemove": {
     "description": "Action: remove a torrent."
   },
-  "torActionsFor": "إجراءات {name}",
+  "torActionsFor": "إجراءات \u2068{name}\u2069",
   "@torActionsFor": {
     "description": "Title of the row action menu.",
     "placeholders": {
@@ -557,7 +557,7 @@
       }
     }
   },
-  "torActionFailed": "لم تنجح العملية. {reason}",
+  "torActionFailed": "لم تنجح العملية. \u2068{reason}\u2069",
   "@torActionFailed": {
     "description": "Message shown when a torrent action failed.",
     "placeholders": {
@@ -628,7 +628,7 @@
   "@torRemoveTitle": {
     "description": "Title of the remove confirmation."
   },
-  "torRemoveBody": "ستتم إزالة {name} من العميل. تبقى الملفات التي تم تنزيلها على الخادم ما لم تحدد المربع أدناه.",
+  "torRemoveBody": "ستتم إزالة \u2068{name}\u2069 من العميل. تبقى الملفات التي تم تنزيلها على الخادم ما لم تحدد المربع أدناه.",
   "@torRemoveBody": {
     "description": "Body of the remove confirmation.",
     "placeholders": {
@@ -678,7 +678,7 @@
   "@torAddOr": {
     "description": "Separator between the link field and the file picker button."
   },
-  "torAddConfirmName": "هل تريد إضافة «{name}»؟",
+  "torAddConfirmName": "هل تريد إضافة «\u2068{name}\u2069»؟",
   "@torAddConfirmName": {
     "description": "Confirmation of the name parsed from the link.",
     "placeholders": {
@@ -688,7 +688,7 @@
       }
     }
   },
-  "torAddConfirmUrl": "ملف تورنت من {host}",
+  "torAddConfirmUrl": "ملف تورنت من \u2068{host}\u2069",
   "@torAddConfirmUrl": {
     "description": "Confirmation line for a torrent URL; shows the host only.",
     "placeholders": {
@@ -758,7 +758,7 @@
   "@torAddAdded": {
     "description": "Success message after adding a torrent."
   },
-  "torAddFailed": "تعذرت إضافة التورنت. {reason}",
+  "torAddFailed": "تعذرت إضافة التورنت. \u2068{reason}\u2069",
   "@torAddFailed": {
     "description": "Failure message after adding a torrent.",
     "placeholders": {
@@ -796,7 +796,7 @@
       }
     }
   },
-  "torAddFileOk": "{name}: تمت الإضافة",
+  "torAddFileOk": "\u2068{name}\u2069: تمت الإضافة",
   "@torAddFileOk": {
     "description": "Per-file result: added.",
     "placeholders": {
@@ -806,7 +806,7 @@
       }
     }
   },
-  "torAddFileFailed": "{name}: فشلت. {reason}",
+  "torAddFileFailed": "\u2068{name}\u2069: فشلت. \u2068{reason}\u2069",
   "@torAddFileFailed": {
     "description": "Per-file result: failed.",
     "placeholders": {
@@ -994,7 +994,7 @@
   "@torLimitsNoAlt": {
     "description": "Footnote for clients without an alternative limits switch."
   },
-  "torLimitsLoadFailed": "تعذرت قراءة الحدود الحالية. {reason}",
+  "torLimitsLoadFailed": "تعذرت قراءة الحدود الحالية. \u2068{reason}\u2069",
   "@torLimitsLoadFailed": {
     "description": "Error when the limits could not be loaded.",
     "placeholders": {
@@ -1004,7 +1004,7 @@
       }
     }
   },
-  "torLimitsFailed": "تعذر تطبيق الحدود. {reason}",
+  "torLimitsFailed": "تعذر تطبيق الحدود. \u2068{reason}\u2069",
   "@torLimitsFailed": {
     "description": "Error when applying the limits failed.",
     "placeholders": {
@@ -1108,7 +1108,7 @@
   "@torRatioInfiniteSpoken": {
     "description": "Spoken form of the infinite ratio."
   },
-  "torDetailRatioValue": "النسبة {value}",
+  "torDetailRatioValue": "النسبة \u2068{value}\u2069",
   "@torDetailRatioValue": {
     "description": "Row detail for a ratio that is unknown or infinite.",
     "placeholders": {
@@ -1130,7 +1130,7 @@
   "@torGraphTrendSteady": {
     "description": "Trend of the speed graph: speeds are about the same."
   },
-  "torGraphSummary": "رسم بياني لآخر {count} قراءة: ذروة التنزيل {down}، ذروة الرفع {up}، الاتجاه {trend}. الرفع هو الخط المتقطع.",
+  "torGraphSummary": "رسم بياني لآخر {count} قراءة: ذروة التنزيل \u2068{down}\u2069، ذروة الرفع \u2068{up}\u2069، الاتجاه \u2068{trend}\u2069. الرفع هو الخط المتقطع.",
   "@torGraphSummary": {
     "description": "Spoken text alternative of the speed graph.",
     "placeholders": {

@@ -162,10 +162,7 @@ class _ConnectionTestPanelState extends ConsumerState<ConnectionTestPanel> {
           child: FilledButton.tonalIcon(
             onPressed: testing ? null : _run,
             icon: testing
-                ? const SizedBox.square(
-                    dimension: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
+                ? const BusyIndicator(semanticLabel: null, size: 18)
                 : const Icon(Icons.network_check),
             label: Text(
               testing ? l10n.serverTestTesting : l10n.serverTestButton,

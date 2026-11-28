@@ -6,6 +6,7 @@ import 'package:consolarr/features/settings/application/diagnostics_providers.da
 import 'package:consolarr/features/settings/application/settings_providers.dart';
 import 'package:consolarr/features/settings/presentation/settings_page.dart';
 import 'package:consolarr/features/settings/settings_paths.dart';
+import 'package:consolarr/shared/l10n/join_parts.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -292,8 +293,11 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen> {
                         ),
                         child: Semantics(
                           container: true,
-                          label:
-                              '${logLevelLabel(l10n, e.level)}, $time, ${e.message}',
+                          label: joinList(l10n, [
+                            logLevelLabel(l10n, e.level),
+                            time,
+                            e.message,
+                          ]),
                           excludeSemantics: true,
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,

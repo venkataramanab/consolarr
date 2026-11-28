@@ -13,6 +13,7 @@ import 'package:consolarr/features/settings/presentation/diagnostics_preview_scr
 import 'package:core/core.dart';
 import 'package:flutter/rendering.dart' show SemanticsNode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:design_system/design_system.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
@@ -536,7 +537,7 @@ void main() {
         await tapCheck(tester);
         await tester.pump();
         await tester.pump();
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(BusyIndicator), findsOneWidget);
         // Release the probe at the end so the test leaves nothing running.
         addTearDown(() {
           final gate = h.ui.tester.gate;
