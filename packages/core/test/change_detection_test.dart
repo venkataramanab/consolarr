@@ -3,9 +3,9 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:consolarr/shared/polling/change_detection/change_detection.dart';
+import 'package:core/change_detection.dart';
 import 'package:core/core.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:test/test.dart';
 
 TrackedItem item(
   String key,
@@ -396,77 +396,192 @@ void main() {
     );
   });
 
-  test('change_detection imports only pure-Dart libraries', () {
-    // A real headless proof needs the layer outside the Flutter app package
-    // (a larger move). Instead every import is checked against an exact
-    // allowlist, so nothing that needs the engine (package:flutter, dart:ui,
-    // material, riverpod, ...) can enter, directly or by a transitive import
-    // of a sibling.
-    final dir = Directory('lib/shared/polling/change_detection');
-    final files = dir
-        .listSync(recursive: true)
-        .whereType<File>()
-        .where((f) => f.path.endsWith('.dart'));
-    expect(files, isNotEmpty);
-    for (final f in files) {
-      expect(
-        disallowedChangeDetectionImports(f.readAsStringSync()),
-        isEmpty,
-        reason: f.path,
+  group('ChangeLedger documents what it guarantees', () {
+    test('eviction makes it at-least-once, and the doc says so', () {
+      final ledger = ChangeLedger(InMemoryChangeStore(capacity: 2));
+      ChangeEvent e(String key) => ChangeEvent(
+        type: ChangeType.queueItemCompleted,
+        serverId: 's1',
+        itemKey: key,
       );
-    }
+      expect(ledger.admit([e('a')]), hasLength(1));
+      expect(ledger.admit([e('a')]), isEmpty, reason: 'remembered');
+      // Two other items push `a` out of the two-entry store.
+      ledger.admit([e('b'), e('c')]);
+      expect(
+        ledger.admit([e('a')]),
+        hasLength(1),
+        reason: 'evicted: fires again',
+      );
+
+      // The class comment must not promise what the store cannot keep
+      // (docs/patterns.md section 15: "at least once" after eviction).
+      final source = File('lib/src/change_detection/change_ledger.dart')
+          .readAsStringSync();
+      final lines = source
+          .substring(0, source.indexOf('class ChangeLedger'))
+          .trimRight()
+          .split('\n');
+      final doc = <String>[];
+      for (var i = lines.length - 1; i >= 0; i--) {
+        if (!lines[i].startsWith('///')) break;
+        doc.add(lines[i]);
+      }
+      final comment = doc.reversed.join(' ');
+      expect(comment, isNot(contains('at most once')));
+      expect(comment, contains('at least once'));
+      expect(comment, contains('evict'));
+    });
+  });
+
+  group('headless: the core is pure Dart', () {
+    // This suite is the proof: `packages/core` has no Flutter dependency, so
+    // `dart test` runs it with no Flutter binding. These tests keep it so.
+    test('the package declares no Flutter dependency', () {
+      final pubspec = File('pubspec.yaml').readAsStringSync();
+      expect(pubspec, isNot(contains('flutter')));
+    });
+
+    test('change_detection imports only pure-Dart libraries', () {
+      // Every import and export is resolved to a canonical path first, then
+      // checked, so `../` hops and `package:core/...` spellings are judged by
+      // where they point, not how they are written.
+      final dir = Directory('lib/src/change_detection');
+      final files = dir
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.dart'));
+      expect(files, isNotEmpty);
+      for (final f in files) {
+        expect(
+          disallowedChangeDetectionImports(f.path, f.readAsStringSync()),
+          isEmpty,
+          reason: f.path,
+        );
+      }
+    });
+
+    test('the change-detection library exports only that directory', () {
+      final source = File('lib/change_detection.dart').readAsStringSync();
+      expect(
+        disallowedChangeDetectionImports('lib/change_detection.dart', source),
+        isEmpty,
+      );
+    });
   });
 
   group('the import allowlist itself', () {
+    const from = 'lib/src/change_detection/poll_cycle.dart';
+    List<String> bad(String directive) =>
+        disallowedChangeDetectionImports(from, directive);
+
     test('rejects engine, UI and state libraries', () {
-      for (final bad in [
+      for (final directive in [
         "import 'dart:ui';",
         "import 'dart:io';",
+        "import 'dart:isolate';",
         "import 'package:flutter/material.dart';",
         "import 'package:flutter/foundation.dart';",
         "import 'package:flutter_riverpod/flutter_riverpod.dart';",
         "import 'package:riverpod/riverpod.dart';",
-        "import 'package:consolarr/shared/widgets/x.dart';",
         "import 'package:design_system/design_system.dart';",
+        "import 'package:consolarr/shared/widgets/x.dart';",
         "export 'dart:ui';",
       ]) {
-        expect(disallowedChangeDetectionImports(bad), isNotEmpty, reason: bad);
+        expect(bad(directive), isNotEmpty, reason: directive);
       }
     });
 
-    test('accepts the pure libraries the layer uses', () {
-      for (final good in [
+    test('rejects a relative import that leaves the directory', () {
+      for (final directive in [
+        // Every relative import used to be accepted.
+        "import '../../../../apps/consolarr/lib/shared/x.dart';",
+        "import '../../../../design_system/lib/design_system.dart';",
+        "import '../off_isolate.dart';",
+        "import '../cleartext_policy.dart';",
+        "import '../../core.dart';",
+        "import '../../change_detection.dart';",
+        "import './../../../pubspec.yaml';",
+        "export '../off_isolate.dart';",
+        // The same targets spelled as package URIs.
+        "import 'package:core/core.dart';",
+        "import 'package:core/src/off_isolate.dart';",
+        'import "package:core/src/cleartext_policy.dart";',
+      ]) {
+        expect(bad(directive), isNotEmpty, reason: directive);
+      }
+    });
+
+    test('accepts the pure libraries and siblings the layer uses', () {
+      for (final directive in [
         "import 'dart:async';",
         "import 'dart:collection';",
-        "import 'package:core/core.dart';",
-        "import 'package:consolarr/shared/polling/change_detection/diff.dart';",
         "import 'diff.dart';",
+        "import './diff.dart';",
+        "import '../change_detection/diff.dart';",
+        "import '../app_error.dart';",
+        "import '../result.dart';",
+        "import '../server_profile.dart';",
+        "import 'package:core/src/change_detection/diff.dart';",
+        "import 'package:core/src/server_profile.dart';",
+        "export 'tracked_item.dart';",
       ]) {
-        expect(disallowedChangeDetectionImports(good), isEmpty, reason: good);
+        expect(bad(directive), isEmpty, reason: directive);
       }
+    });
+
+    test('ignores directives in comments', () {
+      expect(
+        bad(
+          "// import 'dart:ui';\n/* import 'package:flutter/material.dart'; */\n",
+        ),
+        isEmpty,
+      );
     });
   });
 }
 
-/// The imports of [source] that a pure-Dart change-detection core may not use.
-List<String> disallowedChangeDetectionImports(String source) {
+/// The directives of [source] (a file at [from], relative to `packages/core`)
+/// that a pure-Dart change-detection core may not use, as written.
+///
+/// Each URI is resolved to a canonical path (`lib/...`) first: relative
+/// imports against [from], `package:core/x` to `lib/x`. Allowed are a few
+/// pure `dart:` libraries, files inside `lib/src/change_detection/` and the
+/// three model files the layer builds on.
+List<String> disallowedChangeDetectionImports(String from, String source) {
   const allowedDart = {'async', 'collection', 'convert', 'math', 'typed_data'};
-  const allowedPackages = {'core'};
-  const ownPrefix = 'package:consolarr/shared/polling/change_detection/';
+  const ownDir = 'lib/src/change_detection/';
+  const allowedModels = {
+    'lib/src/app_error.dart',
+    'lib/src/result.dart',
+    'lib/src/server_profile.dart',
+  };
+  final code = source
+      .replaceAll(RegExp(r'/\*[\s\S]*?\*/'), '')
+      .replaceAll(RegExp(r'//[^\n]*'), '');
   final bad = <String>[];
   for (final m in RegExp(
     r'''^\s*(?:import|export)\s+['"]([^'"]+)['"]''',
     multiLine: true,
-  ).allMatches(source)) {
+  ).allMatches(code)) {
     final uri = m.group(1)!;
-    final ok = switch (uri) {
-      _ when uri.startsWith('dart:') => allowedDart.contains(uri.substring(5)),
-      _ when uri.startsWith(ownPrefix) => true,
-      _ when uri.startsWith('package:') => allowedPackages.contains(
-        uri.substring(8).split('/').first,
-      ),
-      _ => !uri.contains(':'), // relative
-    };
+    final bool ok;
+    if (uri.startsWith('dart:')) {
+      ok = allowedDart.contains(uri.substring(5));
+    } else if (uri.startsWith('package:')) {
+      final rest = uri.substring(8);
+      final canonical = rest.startsWith('core/')
+          ? 'lib/${rest.substring(5)}'
+          : null;
+      ok =
+          canonical != null &&
+          (canonical.startsWith(ownDir) || allowedModels.contains(canonical));
+    } else if (uri.contains(':')) {
+      ok = false; // file:, http:, ...
+    } else {
+      final canonical = Uri.parse(from).resolve(uri).path;
+      ok = canonical.startsWith(ownDir) || allowedModels.contains(canonical);
+    }
     if (!ok) bad.add(uri);
   }
   return bad;

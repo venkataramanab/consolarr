@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import 'package:consolarr/shared/polling/change_detection/change_event.dart';
-import 'package:consolarr/shared/polling/change_detection/tracked_item.dart';
+import 'change_event.dart';
+import 'tracked_item.dart';
 
 /// The events between two snapshots of the same server (pure).
 ///

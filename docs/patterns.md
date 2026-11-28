@@ -9,7 +9,9 @@ patterns instead of inventing new ones.
 ```
 packages/core            ServerProfile, AuthMode, AppError/ErrorCategory,
                          kOfflineFallbackCategories, Result, ParsedRows,
-                         off-isolate helper (ParseRunner, parseOffIsolate)
+                         off-isolate helper (ParseRunner, parseOffIsolate),
+                         change detection (`package:core/change_detection.dart`,
+                         section 15)
 packages/security        TLS trust, pins, secret/pin stores, secure Dio factory
 packages/arr_api         ArrClientBase (+ shared models), SonarrClient (hand written, tolerant)
 packages/torrent_clients TorrentClient (+ actions), QBittorrentClient (pure Dart)
@@ -362,7 +364,15 @@ that SET-09 (notifications, later) plugs into.
   and the Sonarr search-progress loop still have their own copy of the rule
   (same behaviour, tested); move them onto `PollScheduler` + `PollVisibility`
   the next time they change, not in a refactor of their own.
-* **`change_detection/`** (pure Dart, no Flutter imports): `TrackedItem`
+* **Change detection** (pure Dart; `packages/core/lib/src/change_detection/`,
+  library `package:core/change_detection.dart`, re-exported from
+  `lib/shared/polling/change_detection/change_detection.dart` so the polling
+  layer keeps its imports). It lives in `packages/core`, which has no Flutter
+  dependency, so `dart test` in that package runs its tests with no Flutter
+  binding (a test keeps the pubspec Flutter-free and checks every resolved
+  import of the directory against an allowlist). It is a separate library from
+  `package:core/core.dart`, so the rest of the app does not get these names by
+  importing the domain models. Contents: `TrackedItem`
   (`arrQueue`|`torrent`, `active|completed|failed|other`), `ServiceSnapshot`
   per server, `diffSnapshots(prev, next)`, a bounded `ChangeLedger` behind the
   `ChangeStore` interface, and `PollCycle.run(targets)`.
