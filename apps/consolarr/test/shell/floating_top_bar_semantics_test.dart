@@ -99,4 +99,51 @@ void main() {
       handle.dispose();
     },
   );
+  testWidgets('the bar is read first even when it is taller than half the '
+      'screen', (tester) async {
+    // The tests above would pass without the scaffold's sort keys: a bar of
+    // normal height has its centre above the body's, so geometry alone reads
+    // it first. With a tall banner on a short screen (large text, landscape)
+    // the bar's centre falls below the body's, geometry reads the body first,
+    // and only the sort keys (bar 0, body 1) keep the bar first.
+    const short = HarnessVariant(
+      size: Size(360, 300),
+      textScale: 1,
+      locale: Locale('en'),
+      brightness: Brightness.dark,
+    );
+    final handle = tester.ensureSemantics();
+    final h = ScreenHarness();
+    applyVariantView(tester, short);
+    await tester.pumpWidget(
+      h.screen(
+        short,
+        Scaffold(
+          body: FloatingTopBarScaffold(
+            title: 'Bar title',
+            banner: const SizedBox(height: 400, child: Text('Banner line')),
+            bodyBuilder: (context, padding) => ListView(
+              padding: padding,
+              children: const [Text('First line'), Text('Second line')],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    // The premise: the bar's box is centred below the body's (half the view).
+    expect(
+      tester.getCenter(find.text('Banner line')).dy,
+      greaterThan(short.size.height / 2),
+      reason: 'geometry alone would put the body before the bar',
+    );
+    expect(_traversal(tester), [
+      'Bar title',
+      'Banner line',
+      'First line',
+      'Second line',
+    ]);
+    handle.dispose();
+  });
 }
