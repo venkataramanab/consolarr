@@ -248,6 +248,14 @@ in `EmptyArrLists`.
   metadata. For text composed in Dart use `isolate()` from `package:l10n`.
   Isolates are display-only: never put them in analytics or log payloads.
   (`about*` and `privacy*` keys are checked once their owner finishes.)
+* **One numeral system per locale.** `ar` keeps the locale default of the
+  pinned intl data (Western digits; `ar_EG` would be Arabic-Indic), so counts,
+  sizes, speeds, dates and ids all match. Every `int`/`num` placeholder
+  declares a `format` (`placeholder_format_test`); values where grouping would
+  change the meaning (resolution, ports, ids) are String placeholders filled
+  with `plainInt`; years go through `plainInt`; design-system code formats
+  through `MaterialLocalizations.formatDecimal`. Never `'$n'` for display.
+  `numerals_test` fails if a message mixes systems.
 * Shared strings (connection errors, common actions) live in
   `lib/shared/l10n`. `reserved_keys.txt` lists keys declared ahead of use: the
   key test tolerates them unused and fails once one is used (remove its line).

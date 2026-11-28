@@ -299,7 +299,7 @@ class _MissingRow extends ConsumerWidget {
     return MediaListTile(
       title: movie.title,
       metadata: [
-        if (movie.year != null) '${movie.year}',
+        if (movie.year case final year?) l10n.plainInt(year),
         availabilityText(l10n, a),
       ],
       semanticsLabel: l10n.radarrMissingRowSemantics(

@@ -204,7 +204,11 @@ class _Results extends StatelessWidget {
         final r = results[index];
         final s = r.series;
         final status = statusText(l10n, s.status);
-        final details = [if (s.year != null) '${s.year}', ?s.network, ?status];
+        final details = [
+          if (s.year case final year?) l10n.plainInt(year),
+          ?s.network,
+          ?status,
+        ];
         return Padding(
           padding: const EdgeInsets.only(bottom: ConsolarrSpacing.sm),
           child: MediaListTile(

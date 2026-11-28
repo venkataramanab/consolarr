@@ -246,7 +246,7 @@ class _ReleaseSheetBodyState extends ConsumerState<ReleaseSheetBody> {
         for (final r in const [2160, 1080, 720])
           ReleaseFilterOption(
             id: '$r',
-            label: l10n.radarrResolution(r),
+            label: l10n.radarrResolution(l10n.plainInt(r)),
             selected: _filter.resolution == r,
           ),
       ],

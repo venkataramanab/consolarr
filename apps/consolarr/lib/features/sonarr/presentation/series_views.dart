@@ -92,7 +92,7 @@ class SeriesPosterTile extends StatelessWidget {
         ? null
         : nextAiringText(l10n, series.nextAiring, now!);
     final subtitle = joinParts(l10n, [
-      if (series.year != null) '${series.year}',
+      if (series.year case final year?) l10n.plainInt(year),
       if (stats.totalEpisodeCount > 0)
         l10n.sonarrEpisodesShort(
           stats.episodeFileCount,
@@ -141,7 +141,7 @@ class SeriesListTile extends StatelessWidget {
     final dpr = MediaQuery.devicePixelRatioOf(context);
     final next = nextAiringText(l10n, series.nextAiring, now);
     final metadata = [
-      if (series.year != null) '${series.year}',
+      if (series.year case final year?) l10n.plainInt(year),
       ?series.network,
       if (stats.seasonCount > 0) l10n.sonarrSeasonCount(stats.seasonCount),
       if (stats.totalEpisodeCount > 0)

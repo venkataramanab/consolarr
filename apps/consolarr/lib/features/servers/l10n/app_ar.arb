@@ -536,10 +536,12 @@
     "placeholders": {
       "current": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Current step number."
       },
       "total": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Number of steps."
       }
     }

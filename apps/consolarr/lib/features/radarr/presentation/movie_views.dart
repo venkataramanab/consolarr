@@ -81,7 +81,7 @@ class MoviePosterTile extends StatelessWidget {
     final l10n = context.l10n;
     final a = availabilityOf(movie, now);
     final subtitle = joinParts(l10n, [
-      if (movie.year != null) '${movie.year}',
+      if (movie.year case final year?) l10n.plainInt(year),
       if (movie.sizeOnDisk > 0) sizeText(l10n, movie.sizeOnDisk),
     ]);
     return PosterCard(
@@ -125,7 +125,7 @@ class MovieListTile extends StatelessWidget {
     return MediaListTile(
       title: movie.title,
       metadata: [
-        if (movie.year != null) '${movie.year}',
+        if (movie.year case final year?) l10n.plainInt(year),
         availabilityText(l10n, a),
         if (movie.sizeOnDisk > 0) sizeText(l10n, movie.sizeOnDisk),
         movie.monitored ? l10n.radarrMonitored : l10n.radarrUnmonitored,

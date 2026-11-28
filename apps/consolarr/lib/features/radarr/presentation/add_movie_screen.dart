@@ -140,7 +140,7 @@ class _AddMovieScreenState extends ConsumerState<AddMovieScreen> {
                         key: ValueKey('${m.tmdbId}-$i'),
                         title: m.title,
                         metadata: [
-                          if (m.year != null) '${m.year}',
+                          if (m.year case final year?) l10n.plainInt(year),
                           if (m.runtime != null) l10n.radarrRuntime(m.runtime!),
                           ?m.studio,
                         ],

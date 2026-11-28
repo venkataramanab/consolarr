@@ -132,6 +132,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "The number of items."
       }
     }
@@ -142,6 +143,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "The number of items."
       }
     }
@@ -152,6 +154,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "The number of items."
       }
     }
@@ -174,6 +177,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "The number of items."
       }
     }
@@ -258,6 +262,7 @@
       },
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "Number of items."
       }
     }
@@ -268,6 +273,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "The number of items."
       }
     }
@@ -278,6 +284,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "The number of items."
       }
     }
@@ -539,6 +546,7 @@
     "placeholders": {
       "count": {
         "type": "int",
+        "format": "decimalPattern",
         "description": "The number of items."
       }
     }

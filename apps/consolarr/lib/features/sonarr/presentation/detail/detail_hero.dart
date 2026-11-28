@@ -42,7 +42,7 @@ class DetailHero extends StatelessWidget {
     final backdrop = artwork?.backdrop(series);
     final poster = artwork?.poster(series);
     final facts = joinParts(l10n, [
-      if (series.year != null) '${series.year}',
+      if (series.year case final year?) l10n.plainInt(year),
       ?series.network,
     ]);
     return SizedBox(

@@ -329,7 +329,9 @@ class _FilterSheetState extends State<FilterSheet> {
     final roles = context.roles;
     final theme = Theme.of(context);
     final touch = TouchTargets.of(context).minimum;
-    final countText = widget.activeCountLabel ?? '${widget.activeCount}';
+    final countText =
+        widget.activeCountLabel ??
+        MaterialLocalizations.of(context).formatDecimal(widget.activeCount);
     return Semantics(
       container: true,
       explicitChildNodes: true,
@@ -358,7 +360,8 @@ class _FilterSheetState extends State<FilterSheet> {
                               vertical: ConsolarrSpacing.xxs,
                             ),
                             child: Text(
-                              '${widget.activeCount}',
+                              MaterialLocalizations.of(context)
+                                  .formatDecimal(widget.activeCount),
                               style: theme.textTheme.labelLarge?.copyWith(
                                 color: roles.onAccent,
                               ),

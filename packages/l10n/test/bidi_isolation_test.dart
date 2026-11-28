@@ -23,7 +23,8 @@ const _openers = {'⁨', '⁦', '⁧'};
 
 /// Keys whose text is owned by another workstream; they are checked once the
 /// owner has finished (see the W6b hand-off in docs/patterns.md).
-bool _exempt(String key) => key.startsWith('about') || key.startsWith('privacy');
+bool _exempt(String key) =>
+    key.startsWith('about') || key.startsWith('privacy');
 
 Set<String> _stringPlaceholders(Object? meta) {
   if (meta is! Map<String, Object?>) return {};

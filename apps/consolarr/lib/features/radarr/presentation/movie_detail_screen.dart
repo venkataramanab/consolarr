@@ -209,7 +209,7 @@ class _Content extends ConsumerWidget {
                 const SizedBox(height: ConsolarrSpacing.xs),
                 Text(
                   joinParts(l10n, [
-                    if (movie.year != null) '${movie.year}',
+                    if (movie.year case final year?) l10n.plainInt(year),
                     if (movie.runtime != null)
                       l10n.radarrRuntime(movie.runtime!),
                     ?movie.certification,
