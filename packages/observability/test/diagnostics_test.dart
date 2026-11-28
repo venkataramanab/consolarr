@@ -431,6 +431,82 @@ void main() {
       }
     });
 
+    test('even with zero log lines the text respects the cap and matches '
+        'the sections', () {
+      for (final max in [400, 800, 1500]) {
+        final b = DiagnosticsBundle.build(
+          info: _info,
+          errorCategories: [for (var i = 0; i < 80; i++) 'category_$i'],
+          entries: entries(30),
+          maxBytes: max,
+        );
+        expect(
+          utf8.encode(b.text).length,
+          lessThanOrEqualTo(max),
+          reason: '$max',
+        );
+        // Preview and share agree: the text is built from the sections.
+        for (final s in b.sections) {
+          expect(b.text, contains(s.body), reason: '$max ${s.id}');
+        }
+        expect(b.bytes, utf8.encode(b.text));
+        expect(b.text, contains('## Log'));
+      }
+    });
+
+    test('a cap smaller than the headings still never exceeds itself', () {
+      for (final max in [0, 1, 20, 60]) {
+        final b = DiagnosticsBundle.build(
+          info: _info,
+          errorCategories: const [],
+          entries: entries(3),
+          maxBytes: max,
+        );
+        expect(utf8.encode(b.text).length, lessThanOrEqualTo(max));
+        expect(b.bytes, utf8.encode(b.text));
+      }
+    });
+
+    test('the kept entries never shrink as the cap grows (the length is not '
+        'monotonic in the number kept)', () {
+      // Short first lines and a note whose digit count changes (9 -> 10
+      // omitted) make "more entries kept" sometimes shorter than "fewer".
+      final mixed = [
+        for (var i = 0; i < 14; i++)
+          LogEntry(
+            time: DateTime.utc(2026, 1, 1, 0, 0, i),
+            level: LogLevel.info,
+            message: i.isEven ? 'e$i' : 'entry $i ${'y' * (40 + i * 7)}',
+          ),
+      ];
+      final full = utf8
+          .encode(
+            DiagnosticsBundle.build(
+              info: _info,
+              errorCategories: const [],
+              entries: mixed,
+            ).text,
+          )
+          .length;
+      var lastKept = -1;
+      for (var max = 330; max <= full; max++) {
+        final b = DiagnosticsBundle.build(
+          info: _info,
+          errorCategories: const [],
+          entries: mixed,
+          maxBytes: max,
+        );
+        expect(utf8.encode(b.text).length, lessThanOrEqualTo(max));
+        final kept = RegExp(
+          r'^\d{4}-',
+          multiLine: true,
+        ).allMatches(b.text).length;
+        expect(kept, greaterThanOrEqualTo(lastKept), reason: 'cap $max');
+        lastKept = kept;
+      }
+      expect(lastKept, mixed.length);
+    });
+
     test('nothing is dropped when it fits, and the boundary is exact', () {
       final all = DiagnosticsBundle.build(
         info: _info,

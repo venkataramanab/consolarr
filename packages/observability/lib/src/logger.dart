@@ -59,7 +59,8 @@ class AppLogger {
     final buffer = StringBuffer(message);
     if (error != null) buffer.write(': $error');
     final text = scrubber.scrub(redactor.redactText(buffer.toString()));
-    diagnostics?.add(level, text);
+    // One scrub, whichever sinks the line reaches.
+    diagnostics?.addScrubbed(level, text);
     if (level.index >= minLevel.index) _sink(level, text);
   }
 }

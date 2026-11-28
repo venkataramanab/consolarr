@@ -21,8 +21,10 @@ class LogEntry {
 
 /// The opt-in in-app log (SET-04): off by default, memory only, a circular
 /// buffer with a cap, cleared on request, when turned off and when the
-/// process ends. Messages are redacted at write time and capped at
-/// [maxMessageLength]; the bundle redacts them again.
+/// process ends. Messages are redacted and scrubbed once at write time (by
+/// [add], or by [AppLogger] before [addScrubbed]) and capped at
+/// [maxMessageLength]; the bundle scrubs them again with the known server
+/// values.
 ///
 /// Reading does not copy: [length], [entryAt] and [view] look straight into the
 /// buffer, and [version] changes on every change so a listener can tell
@@ -98,12 +100,20 @@ class DiagnosticsLog {
 
   /// Records [message] (redacted, capped) when the log is on and [level]
   /// passes the selected level. Never throws.
-  void add(LogLevel level, String message) {
+  void add(LogLevel level, String message) =>
+      _store(level, scrubber.scrub(redactor.redactText(message)));
+
+  /// Records a line that has **already** been through the redactor and the
+  /// scrubber (it is [AppLogger]'s output, which scrubs once for every sink
+  /// it feeds). Anything else must use [add].
+  void addScrubbed(LogLevel level, String scrubbed) => _store(level, scrubbed);
+
+  void _store(LogLevel level, String text) {
     if (!_enabled || level.index < _level.index) return;
     final entry = LogEntry(
       time: _clock().toUtc(),
       level: level,
-      message: _cap(scrubber.scrub(redactor.redactText(message))),
+      message: _cap(text),
     );
     if (_ring.length < capacity) {
       _ring.add(entry);
@@ -421,6 +431,56 @@ class DiagnosticsSection {
   final String body;
 }
 
+/// Marks a section body that was cut to fit the size cap.
+const _cutMarker = ' [cut]';
+
+/// [text] cut to at most [maxBytes] UTF-8 bytes, on a character boundary.
+String _cutBytes(String text, int maxBytes) {
+  if (maxBytes <= 0) return '';
+  var bytes = 0;
+  final out = StringBuffer();
+  for (final rune in text.runes) {
+    final w = rune < 0x80 ? 1 : (rune < 0x800 ? 2 : (rune < 0x10000 ? 3 : 4));
+    if (bytes + w > maxBytes) break;
+    bytes += w;
+    out.writeCharCode(rune);
+  }
+  return out.toString();
+}
+
+/// Cuts the longest section bodies (never a heading) until the text fits.
+List<DiagnosticsSection> _shrinkToFit(
+  List<DiagnosticsSection> sections,
+  String Function(List<DiagnosticsSection>) textOf,
+  int maxBytes,
+) {
+  var current = sections;
+  final marker = utf8.encode(_cutMarker).length;
+  while (true) {
+    final over = utf8.encode(textOf(current)).length - maxBytes;
+    if (over <= 0) return current;
+    var index = -1;
+    var longest = marker;
+    for (var i = 0; i < current.length; i++) {
+      final n = utf8.encode(current[i].body).length;
+      if (n > longest) {
+        longest = n;
+        index = i;
+      }
+    }
+    if (index < 0) return current; // nothing left to cut
+    final cut = _cutBytes(current[index].body, longest - over - marker);
+    final s = current[index];
+    current = [
+      for (var i = 0; i < current.length; i++)
+        if (i == index)
+          DiagnosticsSection(id: s.id, title: s.title, body: '$cut$_cutMarker')
+        else
+          current[i],
+    ];
+  }
+}
+
 /// The redacted diagnostics bundle (SET-04). [text] is what the preview shows,
 /// what the shared file contains byte for byte ([bytes]) and what the GitHub
 /// issue body is built from. Nothing outside the sections is included.
@@ -448,76 +508,97 @@ class DiagnosticsBundle {
             '${e.level.name.toUpperCase()} ${s(e.message)}',
     ];
 
-    List<DiagnosticsSection> sectionsFor(int keep) {
+    int bytesOf(String v) => utf8.encode(v).length;
+
+    String noteFor(int omitted) =>
+        '($omitted older entries left out to keep the text '
+        'within the size limit)';
+
+    String logBody(int keep) {
+      if (lines.isEmpty) return '(empty)';
       final omitted = lines.length - keep;
       return [
-        DiagnosticsSection(
-          id: 'app',
-          title: 'App',
-          body:
-              'version: ${s(info.appVersion)}\nbuild: ${s(info.buildMode)}\n'
-              'flavor: ${info.flavor.name}\n'
-              'crash reports: ${info.crashReportsConsent ? 'on' : 'off'}\n'
-              'usage analytics: ${info.analyticsConsent ? 'on' : 'off'}',
-        ),
-        DiagnosticsSection(
-          id: 'platform',
-          title: 'Platform',
-          body: s(info.platform),
-        ),
-        DiagnosticsSection(id: 'locale', title: 'Locale', body: s(info.locale)),
-        DiagnosticsSection(
-          id: 'services',
-          title: 'Services',
-          body: services.isEmpty
-              ? '(none configured)'
-              : services.map((e) => e.line).join('\n'),
-        ),
-        DiagnosticsSection(
-          id: 'error_categories',
-          title: 'Error categories',
-          body: errorCategories.isEmpty
-              ? '(none)'
-              : errorCategories.map(s).join('\n'),
-        ),
-        DiagnosticsSection(
-          id: 'log',
-          title: 'Log',
-          body: lines.isEmpty
-              ? '(empty)'
-              : [
-                  if (omitted > 0)
-                    '($omitted older entries left out to keep the text '
-                        'within the size limit)',
-                  ...lines.skip(omitted),
-                ].join('\n'),
-        ),
-      ];
+        if (omitted > 0) noteFor(omitted),
+        ...lines.skip(omitted),
+      ].join('\n');
     }
+
+    List<DiagnosticsSection> sectionsWith(String log) => [
+      DiagnosticsSection(
+        id: 'app',
+        title: 'App',
+        body:
+            'version: ${s(info.appVersion)}\nbuild: ${s(info.buildMode)}\n'
+            'flavor: ${info.flavor.name}\n'
+            'crash reports: ${info.crashReportsConsent ? 'on' : 'off'}\n'
+            'usage analytics: ${info.analyticsConsent ? 'on' : 'off'}',
+      ),
+      DiagnosticsSection(
+        id: 'platform',
+        title: 'Platform',
+        body: s(info.platform),
+      ),
+      DiagnosticsSection(id: 'locale', title: 'Locale', body: s(info.locale)),
+      DiagnosticsSection(
+        id: 'services',
+        title: 'Services',
+        body: services.isEmpty
+            ? '(none configured)'
+            : services.map((e) => e.line).join('\n'),
+      ),
+      DiagnosticsSection(
+        id: 'error_categories',
+        title: 'Error categories',
+        body: errorCategories.isEmpty
+            ? '(none)'
+            : errorCategories.map(s).join('\n'),
+      ),
+      DiagnosticsSection(id: 'log', title: 'Log', body: log),
+    ];
 
     String textOf(List<DiagnosticsSection> sections) => [
       'Consolarr diagnostics',
       for (final section in sections) '## ${section.title}\n${section.body}',
     ].join('\n\n');
 
-    var keep = lines.length;
-    var sections = sectionsFor(keep);
+    var sections = sectionsWith(logBody(lines.length));
     var text = textOf(sections);
-    if (maxBytes != null && utf8.encode(text).length > maxBytes) {
-      // The oldest entries go first: the largest suffix that fits.
-      var low = 0;
-      var high = lines.length - 1;
-      while (low < high) {
-        final mid = (low + high + 1) >> 1;
-        if (utf8.encode(textOf(sectionsFor(mid))).length <= maxBytes) {
-          low = mid;
-        } else {
-          high = mid - 1;
-        }
+    if (maxBytes != null && bytesOf(text) > maxBytes) {
+      // The log is the last section, so the text is the same fixed part plus
+      // the log body, and the size of the body for any number of kept lines
+      // is plain arithmetic. It is NOT monotonic in that number (the note of
+      // omitted entries changes width, and a short line can weigh less than
+      // the note), so the largest suffix that fits is found by scanning, not
+      // by bisection.
+      final fixed = bytesOf(textOf(sectionsWith('')));
+      final lineBytes = [for (final l in lines) bytesOf(l)];
+      var suffix = 0; // bytes of the newest `keep` lines
+      var keep = -1;
+      final noteWidth = <int>[];
+      for (var k = 0; k <= lines.length; k++) {
+        noteWidth.add(
+          k == lines.length ? 0 : bytesOf(noteFor(lines.length - k)),
+        );
       }
-      keep = low;
-      sections = sectionsFor(keep);
-      text = textOf(sections);
+      for (var k = 0; k < lines.length; k++) {
+        // k = how many of the newest lines are kept (0..n-1).
+        if (k > 0) suffix += lineBytes[lines.length - k];
+        final items = k + 1; // the note counts as one item
+        final body = suffix + noteWidth[k] + (items - 1);
+        if (fixed + body <= maxBytes) keep = k;
+      }
+      if (keep >= 0) {
+        sections = sectionsWith(logBody(keep));
+        text = textOf(sections);
+      } else {
+        sections = _shrinkToFit(sectionsWith(logBody(0)), textOf, maxBytes);
+        text = textOf(sections);
+      }
+      if (bytesOf(text) > maxBytes) {
+        // The headings alone are over the cap: cut the text itself, so what
+        // is shown and what is shared still cannot exceed it.
+        text = _cutBytes(text, maxBytes);
+      }
     }
     return DiagnosticsBundle._(
       List.unmodifiable(sections),
