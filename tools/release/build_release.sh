@@ -31,10 +31,9 @@ for app in consolarr consolarr_play; do
       --target-platform android-arm64,android-arm \
       --obfuscate "--split-debug-info=${debug_info}/${app}"
 
-    python3 "${root}/tools/ci/check_merged_manifest.py" --release \
-      build/app/intermediates/merged_manifests/release/processReleaseManifest/AndroidManifest.xml
-
     for abi in arm64-v8a armeabi-v7a; do
+      python3 "${root}/tools/ci/check_merged_manifest.py" --release \
+        "build/app/intermediates/merged_manifests/release/processReleaseManifest/${abi}/AndroidManifest.xml"
       apk="build/app/outputs/flutter-apk/app-${abi}-release.apk"
       bash "${root}/tools/ci/check_apk_size.sh" "$apk" 20
       cp "$apk" "${out}/${app}-${tag}-${abi}.apk"
