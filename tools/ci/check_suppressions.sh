@@ -53,6 +53,18 @@ while IFS= read -r hit; do
   status=1
 done <<< "$harness_hits"
 
+# ... and its analysis_options cannot switch a rule off (`errors: <rule>:
+# ignore`, block or flow style, any quoting or case). Stricter severities are
+# fine. Comment lines are skipped.
+option_hits=$(git grep -n -I -i -E '^[^#]*:[[:space:]]*["'"'"']?ignore["'"'"']?[[:space:]]*([,}#].*)?$' \
+  -- 'packages/test_harness/analysis_options.yaml' 'packages/test_harness/**/analysis_options.yaml' || true)
+while IFS= read -r hit; do
+  [ -n "$hit" ] || continue
+  echo "::error file=${hit%%:*}::A rule is switched off in test_harness analysis_options. Fix the code instead; it cannot be allowlisted."
+  echo "  $hit"
+  status=1
+done <<< "$option_hits"
+
 while IFS= read -r hit; do
   [ -n "$hit" ] || continue
   file=${hit%%:*}

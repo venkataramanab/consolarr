@@ -87,6 +87,18 @@ printf '%s\n' '// ignore: unused_local_variable' 'var y = 1;' > "$s/packages/tes
 printf '%s\n' '// ignore: unused_local_variable' 'var y = 1;' > "$s/b.dart"
 git -C "$s" add -A
 bash "$s/tools/ci/check_suppressions.sh" "$s" >/dev/null 2>&1 || fail "harness test and other ignores must still pass"
+# The harness's own analysis_options cannot switch a rule off either.
+ho=packages/test_harness/analysis_options.yaml
+printf 'analyzer:\n  errors:\n    invalid_use_of_visible_for_testing_member: ignore\n' > "$s/$ho"; git -C "$s" add -A
+bash "$s/tools/ci/check_suppressions.sh" "$s" >/dev/null 2>&1 && fail "test_harness analysis_options ignore must fail"
+printf 'analyzer:\n  errors: {unused_import: "ignore"}\n' > "$s/$ho"; git -C "$s" add -A
+bash "$s/tools/ci/check_suppressions.sh" "$s" >/dev/null 2>&1 && fail "test_harness analysis_options flow-style ignore must fail"
+mkdir -p "$s/packages/test_harness/test"
+printf 'analyzer:\n  errors:\n    unused_import: Ignore # no\n' > "$s/packages/test_harness/test/analysis_options.yaml"; rm "$s/$ho"; git -C "$s" add -A
+bash "$s/tools/ci/check_suppressions.sh" "$s" >/dev/null 2>&1 && fail "nested test_harness analysis_options ignore must fail"
+rm "$s/packages/test_harness/test/analysis_options.yaml"
+printf 'analyzer:\n  errors:\n    unused_import: error\n    # dead_code: ignore\n' > "$s/$ho"; git -C "$s" add -A
+bash "$s/tools/ci/check_suppressions.sh" "$s" >/dev/null 2>&1 || fail "test_harness analysis_options with stricter severities must pass"
 rm -r "$s/packages" "$s/b.dart"; git -C "$s" add -A
 rm -f "$s/a.dart"
 printf 'analyzer:\n  errors:\n    consolarr_no_print: ignore\n' > "$s/analysis_options.yaml"; git -C "$s" add -A
