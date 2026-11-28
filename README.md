@@ -137,6 +137,7 @@ download them.
 
 - They are **debug-signed test builds**, not releases, and are kept for
   1 day. They cannot be upgraded to or from a future signed release.
+- Dependabot PRs and pull requests from forks do not publish APKs.
 - Each artifact contains a debug APK, a release arm64 APK, `SHA256SUMS.txt`
   and `README-TEST-BUILD.txt`. Verify the download with
   `sha256sum -c SHA256SUMS.txt` in the folder holding the files.
