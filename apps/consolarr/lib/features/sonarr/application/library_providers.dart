@@ -22,6 +22,9 @@ final libraryRunnerProvider = Provider<LibraryRunner>(
 /// bigger ones go to another isolate.
 const librarySyncLimit = 1500;
 
+/// Longest the library list waits for the saved sort and filter.
+const prefsReadTimeout = Duration(seconds: 2);
+
 const _sortPref = 'library.sort';
 const _filterPref = 'library.filter';
 
@@ -36,12 +39,19 @@ final libraryQueryProvider =
 class LibraryQueryNotifier extends Notifier<LibraryQuery> {
   String? _serverId;
 
+  // What the person changed before the saved default was read: that wins.
+  bool _sortTouched = false;
+  bool _filterTouched = false;
+
   @override
   LibraryQuery build() {
     final session = ref.watch(sonarrSessionProvider).value;
     _serverId = session?.serverId;
-    if (_serverId != null) Future<void>.microtask(_restore);
-    return const LibraryQuery();
+    _sortTouched = _filterTouched = false;
+    if (_serverId == null) return const LibraryQuery();
+    Future<void>.microtask(_restore);
+    // The list waits for the saved default (see `LibraryQuery.restored`).
+    return const LibraryQuery(restored: false);
   }
 
   Future<void> _restore() async {
@@ -49,19 +59,28 @@ class LibraryQueryNotifier extends Notifier<LibraryQuery> {
     if (id == null) return;
     try {
       final store = ref.read(sonarrPrefsStoreProvider);
-      final sort = decodeSort(await store.read(id, _sortPref));
-      final rawFilter = await store.read(id, _filterPref);
+      // A stuck read must not hold the list forever: after the timeout the
+      // built-in defaults apply (the catch below shows the list).
+      final sort = decodeSort(
+        await store.read(id, _sortPref).timeout(prefsReadTimeout),
+      );
+      final rawFilter = await store
+          .read(id, _filterPref)
+          .timeout(prefsReadTimeout);
       if (!ref.mounted || id != _serverId) return;
       var next = state;
-      if (sort != null) {
+      if (sort != null && !_sortTouched) {
         next = next.copyWith(sortKey: sort.$1, ascending: sort.$2);
       }
-      if (rawFilter != null) {
+      if (rawFilter != null && !_filterTouched) {
         next = next.copyWith(filter: _decodeFilter(rawFilter));
       }
-      if (next != state) state = next;
+      state = next.copyWith(restored: true);
     } on Object {
-      // Defaults are optional; keep the built-in ones.
+      // Defaults are optional; keep the built-in ones, and show the list.
+      if (ref.mounted && id == _serverId) {
+        state = state.copyWith(restored: true);
+      }
     }
   }
 
@@ -80,6 +99,7 @@ class LibraryQueryNotifier extends Notifier<LibraryQuery> {
     required bool ascending,
     bool saveAsDefault = false,
   }) async {
+    _sortTouched = true;
     state = state.copyWith(sortKey: key, ascending: ascending);
     if (saveAsDefault) {
       await _save(_sortPref, encodeSort(key, ascending: ascending));
@@ -90,15 +110,21 @@ class LibraryQueryNotifier extends Notifier<LibraryQuery> {
     LibraryFilter filter, {
     bool saveAsDefault = false,
   }) async {
+    _filterTouched = true;
     state = state.copyWith(filter: filter);
     if (saveAsDefault) await _save(_filterPref, encodeFilter(filter));
   }
 
-  void clearFilter() => state = state.copyWith(filter: const LibraryFilter());
+  void clearFilter() {
+    _filterTouched = true;
+    state = state.copyWith(filter: const LibraryFilter());
+  }
 
   /// Clears the search text and the filter (not the sort).
-  void clearAll() =>
-      state = state.copyWith(search: '', filter: const LibraryFilter());
+  void clearAll() {
+    _filterTouched = true;
+    state = state.copyWith(search: '', filter: const LibraryFilter());
+  }
 
   Future<void> _save(String name, String value) async {
     final id = _serverId;
@@ -181,8 +207,9 @@ class VisibleSeriesNotifier extends Notifier<VisibleSeries> {
         const <int, String>{};
     final runner = ref.read(libraryRunnerProvider);
     final generation = ++_generation;
-    // While loading or failed the value belongs to another state or server.
-    if (library.isLoading || library.hasError) {
+    // While loading or failed the value belongs to another state or server;
+    // before the saved default is read nothing is worth sorting yet.
+    if (library.isLoading || library.hasError || !query.restored) {
       return _last = const VisibleSeries();
     }
     final data = library.value;

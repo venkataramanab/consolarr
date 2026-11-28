@@ -74,6 +74,7 @@ void main() {
     final fields = find.byType(TextField);
     await tester.enterText(fields.at(0), 'Example Sonarr');
     await tester.enterText(fields.at(1), 'https://sonarr.example');
+    await tester.enterText(fields.at(3), 'test-key-0000');
     await tester.pumpAndSettle();
     final test = find.byType(FilledButton);
     await tester.ensureVisible(test);

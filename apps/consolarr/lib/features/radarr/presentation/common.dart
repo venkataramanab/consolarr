@@ -113,7 +113,7 @@ Widget radarrErrorView(
   required VoidCallback onRetry,
 }) {
   final l10n = context.l10n;
-  final copy = connectionErrorMessage(l10n, error);
+  final copy = connectionErrorMessage(l10n, error, kind: ServiceKind.radarr);
   final fix = fixedInServerSettings(error);
   return ErrorState(
     headline: error.category == ErrorCategory.unsupportedVersion

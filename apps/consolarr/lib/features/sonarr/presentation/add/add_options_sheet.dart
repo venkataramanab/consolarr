@@ -143,6 +143,7 @@ class _AddOptionsBodyState extends ConsumerState<AddOptionsBody> {
       final message = connectionErrorMessage(
         l10n,
         error is AppError ? error : const AppError(ErrorCategory.parseError),
+        kind: ServiceKind.sonarr,
       );
       return ErrorState(
         headline: l10n.sonarrAddOptionsErrorHeadline,
@@ -281,7 +282,11 @@ class _Failure extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final message = connectionErrorMessage(l10n, error);
+    final message = connectionErrorMessage(
+      l10n,
+      error,
+      kind: ServiceKind.sonarr,
+    );
     return Padding(
       padding: const EdgeInsets.only(bottom: ConsolarrSpacing.md),
       child: Semantics(

@@ -220,7 +220,10 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('Sonarr rejected the sign-in'), findsOneWidget);
-      expect(find.textContaining('API key or password'), findsOneWidget);
+      expect(
+        find.textContaining("A username and password don't work"),
+        findsOneWidget,
+      );
       await tester.tap(find.text('Check server settings'));
       expect(opened, 1);
     });

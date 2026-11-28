@@ -12,3 +12,33 @@ DateTime calendarDayOf(DateTime dateOnly) {
   final u = dateOnly.toUtc();
   return DateTime(u.year, u.month, u.day);
 }
+
+// --- One rule for "today" -----------------------------------------------------
+//
+// A release date is a *date-only* value (midnight UTC naming a day); "today"
+// is the *user's local calendar date*. Both are compared as date values
+// (midnight UTC markers of a year, month and day), never as instants and never
+// on the UTC day, so the calendar, the Upcoming list and the availability
+// badges agree in every zone: a release dated the 10th is "today" for the
+// whole local 10th, from local midnight to local midnight. Real timestamps
+// (`dateAdded`) are instants and keep using `toLocal()`.
+
+/// The user's calendar date at [instant], as a date value (midnight UTC).
+DateTime localDateOf(DateTime instant) {
+  final l = instant.toLocal();
+  return DateTime.utc(l.year, l.month, l.day);
+}
+
+/// The calendar date a date-only [release] value names, as a date value.
+DateTime releaseDateOf(DateTime release) {
+  final u = release.toUtc();
+  return DateTime.utc(u.year, u.month, u.day);
+}
+
+/// Whether the day [release] names is before the user's today at [now].
+bool isReleaseDayBefore(DateTime release, DateTime now) =>
+    releaseDateOf(release).isBefore(localDateOf(now));
+
+/// Whether the day [release] names is today or earlier for the user at [now].
+bool hasReleaseDayArrived(DateTime release, DateTime now) =>
+    !releaseDateOf(release).isAfter(localDateOf(now));

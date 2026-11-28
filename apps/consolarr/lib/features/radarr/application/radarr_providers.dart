@@ -7,10 +7,12 @@ import 'dart:isolate';
 import 'package:arr_api/arr_api.dart';
 import 'package:consolarr/features/radarr/data/radarr_prefs.dart';
 import 'package:consolarr/features/radarr/data/radarr_repository.dart';
+import 'package:consolarr/features/radarr/domain/dates.dart';
 import 'package:consolarr/features/radarr/domain/library_query.dart';
 import 'package:consolarr/features/radarr/domain/wanted.dart';
 import 'package:consolarr/features/servers/application/server_connection.dart';
 import 'package:consolarr/features/settings/application/lock_controller.dart';
+import 'package:consolarr/shared/logging/log_events.dart';
 import 'package:consolarr/src/images/secure_image_provider.dart';
 import 'package:consolarr/src/providers.dart';
 import 'package:core/core.dart';
@@ -179,6 +181,7 @@ abstract class SnapshotNotifier<T> extends AsyncNotifier<RadarrState<T>> {
         previous is RadarrData<T> &&
         kOfflineFallbackCategories.contains(error.category)) {
       recordApiError(ref.read(breadcrumbsProvider), error);
+      logOfflineFallback(ref.read(loggerProvider), 'radarr', error);
       state = AsyncData(RadarrData(previous.snapshot.withOfflineError(error)));
       return;
     }
@@ -260,25 +263,41 @@ final libraryQueryProvider = NotifierProvider<LibraryQueryNotifier, MovieQuery>(
   LibraryQueryNotifier.new,
 );
 
+/// Longest the library list waits for the saved sort and filter.
+const _prefsReadTimeout = Duration(seconds: 2);
+
 class LibraryQueryNotifier extends Notifier<MovieQuery> {
   String? _serverId;
+
+  // What the person changed before the saved default was read: that wins.
+  bool _sortTouched = false;
+  bool _filterTouched = false;
 
   @override
   MovieQuery build() {
     final context = ref.watch(radarrContextProvider).value;
     final id = _serverId = context?.serverId;
-    if (id != null) Future<void>.microtask(() => _restore(id));
-    return const MovieQuery();
+    _sortTouched = _filterTouched = false;
+    if (id == null) return const MovieQuery();
+    Future<void>.microtask(() => _restore(id));
+    // The list waits for the saved default (see `MovieQuery.restored`).
+    return const MovieQuery(restored: false);
   }
 
   Future<void> _restore(String serverId) async {
     try {
       final prefs = ref.read(radarrPrefsProvider);
-      final sort = await prefs.read(RadarrPrefKeys.librarySort(serverId));
-      final filter = await prefs.read(RadarrPrefKeys.libraryFilter(serverId));
+      // A stuck read must not hold the list forever: after the timeout the
+      // built-in defaults apply (the catch below shows the list).
+      final sort = await prefs
+          .read(RadarrPrefKeys.librarySort(serverId))
+          .timeout(_prefsReadTimeout);
+      final filter = await prefs
+          .read(RadarrPrefKeys.libraryFilter(serverId))
+          .timeout(_prefsReadTimeout);
       if (!ref.mounted || _serverId != serverId) return;
       var q = state;
-      if (sort != null) {
+      if (sort != null && !_sortTouched) {
         final m = jsonDecode(sort);
         if (m is Map) {
           final key = MovieSortKey.values.where((k) => k.name == m['key']);
@@ -288,7 +307,7 @@ class LibraryQueryNotifier extends Notifier<MovieQuery> {
           );
         }
       }
-      if (filter != null) {
+      if (filter != null && !_filterTouched) {
         final m = jsonDecode(filter);
         if (m is Map) {
           q = q.copyWith(
@@ -296,9 +315,12 @@ class LibraryQueryNotifier extends Notifier<MovieQuery> {
           );
         }
       }
-      state = q;
+      state = q.copyWith(restored: true);
     } on Object {
-      // Defaults stay.
+      // Defaults stay, and the list is shown.
+      if (ref.mounted && _serverId == serverId) {
+        state = state.copyWith(restored: true);
+      }
     }
   }
 
@@ -309,6 +331,7 @@ class LibraryQueryNotifier extends Notifier<MovieQuery> {
     required bool ascending,
     bool saveAsDefault = false,
   }) async {
+    _sortTouched = true;
     state = state.copyWith(sort: key, ascending: ascending);
     final id = _serverId;
     if (saveAsDefault && id != null) {
@@ -323,6 +346,7 @@ class LibraryQueryNotifier extends Notifier<MovieQuery> {
     MovieFilter filter, {
     bool saveAsDefault = false,
   }) async {
+    _filterTouched = true;
     state = state.copyWith(filter: filter);
     final id = _serverId;
     if (saveAsDefault && id != null) {
@@ -392,6 +416,8 @@ class VisibleMoviesNotifier extends Notifier<VisibleMovies> {
     final runner = ref.read(movieRunnerProvider);
     final generation = ++_generation;
     // While loading or failed the value belongs to another state or server.
+    // (The page holds its first frame until the saved sort is read, so this
+    // is never built before then.)
     if (library.isLoading || library.hasError) {
       return _last = const VisibleMovies();
     }
@@ -504,7 +530,29 @@ class ArtworkSource {
 
   ImageProvider? image(RadarrMovie movie, ArrImageType type) {
     final uri = _api.artworkUri(movie, type);
-    return uri == null ? null : SecureNetworkImage(dio: dio, uri: uri);
+    if (uri == null) return null;
+    return SecureNetworkImage(
+      dio: dio,
+      uri: uri,
+      fallbackUris: type == ArrImageType.poster
+          ? _posterFallbacks(movie, uri)
+          : const [],
+    );
+  }
+
+  /// A poster that answers 404 is retried with its resized variant, then with
+  /// the movie's cover, banner and fanart, in that order.
+  List<Uri> _posterFallbacks(RadarrMovie movie, Uri poster) {
+    final seen = {poster};
+    return [
+      for (final uri in [
+        posterSizeVariantUri(poster, 500),
+        _api.artworkUri(movie, ArrImageType.cover),
+        _api.artworkUri(movie, ArrImageType.banner),
+        _api.artworkUri(movie, ArrImageType.fanart),
+      ])
+        if (uri != null && seen.add(uri)) uri,
+    ];
   }
 
   ImageProvider? poster(RadarrMovie movie) => image(movie, ArrImageType.poster);
@@ -621,7 +669,7 @@ List<CalendarEntry> calendarEntries(
 
 /// The window the calendar loads, around [now].
 (DateTime, DateTime) calendarRange(DateTime now) {
-  final day = DateTime.utc(now.year, now.month, now.day);
+  final day = localDateOf(now);
   return (
     day.subtract(const Duration(days: 14)),
     day.add(const Duration(days: 120)),

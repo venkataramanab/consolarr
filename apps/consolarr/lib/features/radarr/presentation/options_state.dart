@@ -64,7 +64,7 @@ class OptionsError extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final copy = connectionErrorMessage(l10n, error);
+    final copy = connectionErrorMessage(l10n, error, kind: ServiceKind.radarr);
     return ErrorState(
       headline: l10n.radarrOptionsErrorHeadline,
       message: copy.message,
