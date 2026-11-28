@@ -96,6 +96,29 @@ void main() {
         }
       });
 
+      test('tapjacking: the root view ignores touches while obscured', () {
+        final kotlin = read(
+          '$root/android/app/src/main/kotlin/org/consolarr/app/MainActivity.kt',
+        );
+        expect(kotlin, contains('override fun onCreate('));
+        expect(
+          kotlin,
+          contains('window.decorView.filterTouchesWhenObscured = true'),
+        );
+      });
+
+      test('deep links are switched off (the app has none)', () {
+        expect(
+          manifest,
+          matches(
+            RegExp(
+              r'android:name="flutter_deeplinking_enabled"\s+'
+              r'android:value="false"',
+            ),
+          ),
+        );
+      });
+
       test('platform cleartext is denied by default', () {
         expect(manifest, contains('android:usesCleartextTraffic="false"'));
         final nsc = read(

@@ -122,7 +122,7 @@ class AddTorrentController extends Notifier<AddState> {
       ref
           .read(eventTrackerProvider)
           .track(
-            TorrentAddedEvent(
+            TorrentsAddedEvent(
               source: source,
               client: kind,
               outcome: ok

@@ -50,6 +50,27 @@ void main() {
     );
   }
 
+  test(
+    'a refused redirect tells the user to enter the final address',
+    () async {
+      final en = await AppLocalizations.delegate.load(const Locale('en'));
+      final ar = await AppLocalizations.delegate.load(const Locale('ar'));
+      final hint = connectionErrorMessage(
+        en,
+        const AppError(ErrorCategory.redirectRefused),
+      ).hint;
+      expect(hint, contains('final address'));
+      expect(hint, contains('scheme'));
+      expect(hint, contains('port'));
+      final arHint = connectionErrorMessage(
+        ar,
+        const AppError(ErrorCategory.redirectRefused),
+      ).hint;
+      expect(arHint, contains('العنوان النهائي'));
+      expect(arHint, contains('منفذ'));
+    },
+  );
+
   test('needs-credentials and invalid-input get their own copy', () async {
     final l10n = await AppLocalizations.delegate.load(const Locale('en'));
     final plain = connectionErrorMessage(

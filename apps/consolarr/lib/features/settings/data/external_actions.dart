@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'package:core/core.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -94,7 +95,7 @@ class PlatformExternalActions implements ExternalActions {
 
   @override
   Future<bool> openHttps(Uri uri) async {
-    if (uri.scheme != 'https') return false;
+    if (!ExternalHosts.allows(uri)) return false;
     try {
       return await launchUrl(uri, mode: LaunchMode.externalApplication);
     } on Object {

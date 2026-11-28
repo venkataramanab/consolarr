@@ -24,7 +24,7 @@ enums:
     dart: E
     values: [a, b]
 events:
-  thing_happened:
+  a_thing_happened:
     description: Something.
     params:
       kind: {type: e}
@@ -57,7 +57,9 @@ void main() {
     expect(
       () => generateCatalog({
         'a.yaml': _ok,
-        'b.yaml': _ok.split('events:')[1].replaceFirst('', 'events:'),
+        // `a_thing.yaml` also accepts the prefix `a_thing_`, so the same name
+        // is declared twice.
+        'a_thing.yaml': _ok.split('events:')[1].replaceFirst('', 'events:'),
       }),
       throwsA(isA<EventCatalogException>()),
     );
@@ -67,13 +69,71 @@ void main() {
     );
     expect(
       () => generateCatalog({
-        'a.yaml': _ok.replaceFirst('thing_happened', 'Thing'),
+        'a.yaml': _ok.replaceFirst('a_thing_happened', 'A_Thing'),
       }),
       throwsA(isA<EventCatalogException>()),
     );
     expect(
       () => generateCatalog({'a.yaml': _ok.replaceFirst('Something.', '')}),
       throwsA(isA<EventCatalogException>()),
+    );
+  });
+
+  test('an event name must start with its file prefix (P-L1)', () {
+    // `a_thing_happened` in a file that is not `a.yaml`.
+    expect(
+      () => generateCatalog({'other.yaml': _ok}),
+      throwsA(
+        isA<EventCatalogException>().having(
+          (e) => e.message,
+          'message',
+          contains('must start with "other_"'),
+        ),
+      ),
+    );
+    // No prefix at all.
+    expect(
+      () => generateCatalog({
+        'a.yaml': _ok.replaceFirst('a_thing_happened', 'thing_happened'),
+      }),
+      throwsA(isA<EventCatalogException>()),
+    );
+    // The prefix alone, without a name after it, is not enough.
+    expect(
+      () => generateCatalog({
+        'a.yaml': _ok.replaceFirst('a_thing_happened', 'a_'),
+      }),
+      throwsA(isA<EventCatalogException>()),
+    );
+    // polling.yaml uses the established `poll_` prefix.
+    expect(
+      generateCatalog({
+        'polling.yaml': _ok.replaceFirst('a_thing_happened', 'poll_x'),
+      }),
+      contains('PollXEvent'),
+    );
+    expect(
+      () => generateCatalog({
+        'polling.yaml': _ok.replaceFirst('a_thing_happened', 'polling_x'),
+      }),
+      throwsA(isA<EventCatalogException>()),
+    );
+  });
+
+  test('every catalog event carries its area prefix', () {
+    const prefixes = {
+      'dashboard': 'dashboard',
+      'polling': 'poll',
+      'radarr': 'radarr',
+      'servers': 'servers',
+      'settings': 'settings',
+      'sonarr': 'sonarr',
+      'torrents': 'torrents',
+    };
+    final y = _yamls();
+    expect(
+      y.keys.map((k) => k.replaceAll('.yaml', '')).toSet(),
+      prefixes.keys.toSet(),
     );
   });
 
@@ -145,39 +205,41 @@ void main() {
   });
 
   test('MVP events produce the documented parameters', () {
-    expect(const ScreenViewedEvent(screen: ScreenName.serversList).parameters, {
-      'screen': 'servers_list',
-    });
     expect(
-      const ServerAddedEvent(serviceKind: ServiceKindParam.sonarr).parameters,
+      const ServersScreenViewedEvent(screen: ScreenName.serversList).parameters,
+      {'screen': 'servers_list'},
+    );
+    expect(
+      const ServersAddedEvent(serviceKind: ServiceKindParam.sonarr).parameters,
       {'service_kind': 'sonarr'},
     );
     expect(
-      const ConnectionTestResultEvent(serviceKind: ServiceKindParam.sonarr)
-          .parameters,
+      const ServersConnectionTestResultEvent(
+        serviceKind: ServiceKindParam.sonarr,
+      ).parameters,
       {'service_kind': 'sonarr'},
     );
     expect(
-      const ConnectionTestResultEvent(
+      const ServersConnectionTestResultEvent(
         serviceKind: ServiceKindParam.qbittorrent,
         errorCategory: ErrorCategoryParam.timeout,
-        majorVersion: 4,
+        majorVersion: MajorVersionParam.v4,
       ).parameters,
       {
         'service_kind': 'qbittorrent',
         'error_category': 'timeout',
-        'major_version': 4,
+        'major_version': 'v4',
       },
     );
     expect(
-      const CertificateDecisionEvent(
+      const ServersCertificateDecisionEvent(
         decision: CertificateDecisionParam.mismatch,
       ).parameters,
       {'decision': 'mismatch'},
     );
     expect(
-      const ScreenViewedEvent(screen: ScreenName.shell).name,
-      'screen_viewed',
+      const ServersScreenViewedEvent(screen: ScreenName.shell).name,
+      'servers_screen_viewed',
     );
   });
 }

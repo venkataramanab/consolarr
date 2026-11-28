@@ -173,11 +173,11 @@ class SearchProgressNotifier extends Notifier<SearchProgress> {
     bool stale() => !ref.mounted || generation != _generation;
     state = const SearchRunning();
     final tracker = ref.read(eventTrackerProvider)
-      ..track(SearchStartedEvent(scope: target.scope));
+      ..track(SonarrSearchStartedEvent(scope: target.scope));
 
     SearchProgress failed(AppError error) {
       tracker.track(
-        SearchFinishedEvent(
+        SonarrSearchFinishedEvent(
           scope: target.scope,
           outcome: SonarrSearchOutcomeParam.failed,
         ),
@@ -202,7 +202,7 @@ class SearchProgressNotifier extends Notifier<SearchProgress> {
     if (stale()) return;
     state = result;
     tracker.track(
-      SearchFinishedEvent(
+      SonarrSearchFinishedEvent(
         scope: target.scope,
         outcome: switch (result) {
           SearchGrabbed() => SonarrSearchOutcomeParam.grabbed,

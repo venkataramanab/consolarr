@@ -26,25 +26,31 @@ enums:
       - redirect_refused
       - response_too_large
       - request_too_large
+  count_bucket_param:
+    dart: CountBucketParam
+    values: [zero, one, two, three_to_five, six_plus]
+  major_version_param:
+    dart: MajorVersionParam
+    values: [v1, v2, v3, v4, v5, v6, v7_or_later]
   certificate_decision_param:
     dart: CertificateDecisionParam
     values: [accepted, rejected, mismatch]
 events:
-  screen_viewed:
+  servers_screen_viewed:
     description: A screen became visible.
     params:
       screen: {type: screen_name}
-  server_added:
+  servers_added:
     description: A server profile was saved. Carries the service kind only.
     params:
       service_kind: {type: service_kind_param}
-  connection_test_result:
+  servers_connection_test_result:
     description: A connection test finished; error_category is absent on success.
     params:
       service_kind: {type: service_kind_param}
       error_category: {type: error_category_param, optional: true}
-      major_version: {type: int, optional: true}
-  certificate_decision:
+      major_version: {type: major_version_param, optional: true}
+  servers_certificate_decision:
     description: The user decided on a certificate, or a pinned certificate changed.
     params:
       decision: {type: certificate_decision_param}

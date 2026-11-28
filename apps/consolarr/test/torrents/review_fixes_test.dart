@@ -24,6 +24,7 @@ import 'package:test_harness/test_harness.dart';
 import 'package:torrent_clients/torrent_clients.dart';
 
 import 'support.dart';
+import '../support/fake_hex.dart';
 
 const _ar = HarnessVariant(
   size: Size(360, 800),
@@ -392,7 +393,7 @@ void main() {
       );
       await tester.enterText(
         find.byType(TextField).first,
-        'magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567&dn=Example',
+        'magnet:?xt=urn:btih:${fakeHex(40)}&dn=Example',
       );
       await tester.pump();
       await tester.tap(find.widgetWithText(FilledButton, 'Add'));
@@ -424,8 +425,7 @@ void main() {
     ) async {
       final handle = tester.ensureSemantics();
       await pump(tester);
-      const magnet =
-          'magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567&dn=';
+      final magnet = 'magnet:?xt=urn:btih:${fakeHex(40)}&dn=';
       // Keystrokes in quick succession: nothing is announced.
       for (final name in ['E', 'Ex', 'Exa', 'Exam']) {
         await tester.enterText(find.byType(TextField).first, '$magnet$name');

@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:consolarr/features/settings/application/lock_controller.dart';
 import 'package:consolarr/features/settings/application/settings_providers.dart';
 import 'package:consolarr/features/settings/data/device_authenticator.dart';
+import 'package:consolarr/features/settings/data/settings_store.dart';
 import 'package:consolarr/features/settings/domain/app_settings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -151,7 +152,7 @@ void main() {
       expect(st(c).phase, LockPhase.locked);
       expect(st(c).failedAttempts, 1);
       expect(st(c).lastAttemptFailed, isTrue);
-      expect(st(c).coolingDown(h.clock.now), isFalse);
+      expect(st(c).coolingDown(h.clock.monotonic()), isFalse);
       await ctl(c).authenticate(reason: 'x');
       expect(st(c).failedAttempts, 2);
     });
@@ -166,13 +167,13 @@ void main() {
       for (var i = 0; i < lockMaxAttempts; i++) {
         await ctl(c).authenticate(reason: 'x');
       }
-      expect(st(c).coolingDown(h.clock.now), isTrue);
+      expect(st(c).coolingDown(h.clock.monotonic()), isTrue);
       final prompts = h.auth.reasons.length;
       await ctl(c).authenticate(reason: 'x');
       expect(h.auth.reasons.length, prompts, reason: 'no prompt while cooling');
 
       h.clock.advance(lockCoolDown + const Duration(seconds: 1));
-      expect(st(c).coolingDown(h.clock.now), isFalse);
+      expect(st(c).coolingDown(h.clock.monotonic()), isFalse);
       await ctl(c).authenticate(reason: 'x');
       expect(h.auth.reasons.length, prompts + 1);
     });
@@ -184,7 +185,7 @@ void main() {
       );
       final c = await start(h);
       await ctl(c).authenticate(reason: 'x');
-      expect(st(c).coolingDown(h.clock.now), isTrue);
+      expect(st(c).coolingDown(h.clock.monotonic()), isTrue);
     });
 
     test('dismissing the prompt is not a failed attempt', () async {
@@ -439,6 +440,90 @@ void main() {
       final c = await start(h);
       expect(await ctl(c).enable(reason: 'x'), EnableLockResult.notConfirmed);
       expect(c.read(settingsProvider).lockEnabled, isFalse);
+    });
+  });
+
+  group('cool-down on the monotonic clock (S-L1)', () {
+    Future<ProviderContainer> failThrice(SettingsHarness harness) async {
+      final c = await start(harness);
+      for (var i = 0; i < lockMaxAttempts; i++) {
+        await ctl(c).authenticate(reason: 'x');
+      }
+      return c;
+    }
+
+    SettingsHarness failing([InMemorySettingsStore? store]) => SettingsHarness(
+      stored: lockOn(),
+      store: store,
+      auth: FakeDeviceAuthenticator(results: [DeviceAuthResult.failed]),
+    );
+
+    test('moving the wall clock forward does not end the cool-down', () async {
+      h = failing();
+      final c = await failThrice(h);
+      expect(st(c).coolingDown(h.clock.monotonic()), isTrue);
+      h.clock.setWallClock(h.clock.now.add(const Duration(days: 1)));
+      final prompts = h.auth.reasons.length;
+      await ctl(c).authenticate(reason: 'x');
+      expect(h.auth.reasons.length, prompts, reason: 'still cooling down');
+      expect(st(c).coolingDown(h.clock.monotonic()), isTrue);
+    });
+
+    test('moving the wall clock back does not extend it', () async {
+      h = failing();
+      final c = await failThrice(h);
+      h.clock.setWallClock(DateTime.utc(2000));
+      h.clock.elapsed += lockCoolDown + const Duration(seconds: 1);
+      expect(st(c).coolingDown(h.clock.monotonic()), isFalse);
+      final prompts = h.auth.reasons.length;
+      await ctl(c).authenticate(reason: 'x');
+      expect(h.auth.reasons.length, prompts + 1);
+    });
+
+    test('failed attempts survive an app restart', () async {
+      final store = InMemorySettingsStore(lockOn());
+      h = failing(store);
+      final c = await start(h);
+      await ctl(c).authenticate(reason: 'x');
+      await ctl(c).authenticate(reason: 'x');
+      expect(st(c).failedAttempts, 2);
+      c.dispose();
+
+      // A new process reads the same store.
+      h = failing(store);
+      final again = await start(h);
+      expect(st(again).failedAttempts, 2);
+      await ctl(again).authenticate(reason: 'x');
+      expect(st(again).coolingDown(h.clock.monotonic()), isTrue);
+    });
+
+    test('killing the app during a cool-down starts it again', () async {
+      final store = InMemorySettingsStore(lockOn());
+      h = failing(store);
+      await failThrice(h);
+
+      h = failing(store);
+      final again = await start(h);
+      expect(st(again).coolingDown(h.clock.monotonic()), isTrue);
+      final prompts = h.auth.reasons.length;
+      await ctl(again).authenticate(reason: 'x');
+      expect(h.auth.reasons.length, prompts);
+    });
+
+    test('a successful unlock resets the stored counter', () async {
+      final store = InMemorySettingsStore(lockOn());
+      h = SettingsHarness(
+        stored: lockOn(),
+        store: store,
+        auth: FakeDeviceAuthenticator(
+          results: [DeviceAuthResult.failed, DeviceAuthResult.success],
+        ),
+      );
+      final c = await start(h);
+      await ctl(c).authenticate(reason: 'x');
+      await ctl(c).authenticate(reason: 'x');
+      await h.settle(c);
+      expect(store.values[AppLockController.failedAttemptsKey], '0');
     });
   });
 

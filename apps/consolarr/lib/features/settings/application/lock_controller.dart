@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+import 'dart:async';
+
 import 'package:consolarr/features/settings/application/settings_providers.dart';
 import 'package:consolarr/features/settings/data/device_authenticator.dart';
 import 'package:consolarr/features/settings/domain/app_settings.dart';
@@ -59,8 +61,10 @@ class AppLockState {
   /// Failed attempts since the last success or since the app locked.
   final int failedAttempts;
 
-  /// While in the future, the unlock prompt is paused.
-  final DateTime? coolDownUntil;
+  /// While in the future **on the monotonic clock** (`monotonicClockProvider`),
+  /// the unlock prompt is paused. A monotonic value, so changing the device
+  /// clock can neither end nor extend the cool-down.
+  final Duration? coolDownUntil;
   final LockProblem? problem;
   final bool authenticating;
 
@@ -76,8 +80,9 @@ class AppLockState {
   bool get contentVisible =>
       phase == LockPhase.disabled || phase == LockPhase.unlocked;
 
-  bool coolingDown(DateTime now) =>
-      coolDownUntil != null && now.isBefore(coolDownUntil!);
+  /// [now] is the monotonic time.
+  bool coolingDown(Duration now) =>
+      coolDownUntil != null && now < coolDownUntil!;
 
   AppLockState copyWith({
     LockPhase? phase,
@@ -92,7 +97,7 @@ class AppLockState {
     failedAttempts: failedAttempts ?? this.failedAttempts,
     coolDownUntil: identical(coolDownUntil, _keep)
         ? this.coolDownUntil
-        : coolDownUntil as DateTime?,
+        : coolDownUntil as Duration?,
     problem: identical(problem, _keep) ? this.problem : problem as LockProblem?,
     authenticating: authenticating ?? this.authenticating,
     biometricsAvailable: biometricsAvailable ?? this.biometricsAvailable,
@@ -109,6 +114,34 @@ class AppLockController extends Notifier<AppLockState> {
   Duration? _backgroundedElapsed;
 
   DateTime Function() get _now => ref.read(clockProvider);
+  Duration Function() get _mono => ref.read(monotonicClockProvider);
+
+  /// Failed attempts survive a restart (non-secret, settings table). A stored
+  /// count at the limit means a cool-down was running: it starts again, so
+  /// killing the app is no shortcut.
+  static const failedAttemptsKey = 'settings.lock_failed_attempts';
+
+  AppLockState _restoreAttempts(AppLockState s) {
+    if (s.phase != LockPhase.locked) return s;
+    final stored = int.tryParse(
+      ref.read(storedRowsProvider).value?[failedAttemptsKey] ?? '',
+    );
+    if (stored == null || stored <= 0) return s;
+    if (stored >= lockMaxAttempts) {
+      return s.copyWith(coolDownUntil: _mono() + lockCoolDown);
+    }
+    return s.copyWith(failedAttempts: stored);
+  }
+
+  void _persistAttempts(int value) {
+    // Best effort: a failed write only loses the counter across a restart.
+    unawaited(
+      ref
+          .read(settingsStoreProvider)
+          .write(failedAttemptsKey, '$value')
+          .catchError((Object _) {}),
+    );
+  }
 
   @override
   AppLockState build() {
@@ -125,7 +158,9 @@ class AppLockController extends Notifier<AppLockState> {
     // Settings already applied (this provider is first read later): resolve
     // straight away.
     final settings = ref.read(settingsProvider);
-    if (settings.loaded) return AppLockState(phase: _phaseFor(settings));
+    if (settings.loaded) {
+      return _restoreAttempts(AppLockState(phase: _phaseFor(settings)));
+    }
     return const AppLockState();
   }
 
@@ -136,7 +171,9 @@ class AppLockController extends Notifier<AppLockState> {
       : LockPhase.disabled;
 
   void _resolve() {
-    state = state.copyWith(phase: _phaseFor(ref.read(settingsProvider)));
+    state = _restoreAttempts(
+      state.copyWith(phase: _phaseFor(ref.read(settingsProvider))),
+    );
   }
 
   /// "Try again" on the fail-closed screen: reads the settings again. The
@@ -187,7 +224,7 @@ class AppLockController extends Notifier<AppLockState> {
   /// is open, while cooling down and when not locked.
   Future<void> authenticate({required String reason}) async {
     if (state.phase != LockPhase.locked || state.authenticating) return;
-    if (state.coolingDown(_now())) return;
+    if (state.coolingDown(_mono())) return;
     final auth = ref.read(deviceAuthenticatorProvider);
     state = state.copyWith(authenticating: true, lastAttemptFailed: false);
     try {
@@ -219,6 +256,8 @@ class AppLockController extends Notifier<AppLockState> {
   }
 
   void _apply(DeviceAuthResult result, {required bool biometrics}) {
+    final failedBefore =
+        state.failedAttempts + (state.coolDownUntil == null ? 0 : 1);
     switch (result) {
       case DeviceAuthResult.success:
         state = state.copyWith(
@@ -230,6 +269,7 @@ class AppLockController extends Notifier<AppLockState> {
           biometricsAvailable: biometrics,
           lastAttemptFailed: false,
         );
+        if (failedBefore > 0) _persistAttempts(0);
       case DeviceAuthResult.canceled:
         state = state.copyWith(
           authenticating: false,
@@ -243,10 +283,11 @@ class AppLockController extends Notifier<AppLockState> {
         state = state.copyWith(
           authenticating: false,
           failedAttempts: coolDown ? 0 : failures,
-          coolDownUntil: coolDown ? _now().add(lockCoolDown) : null,
+          coolDownUntil: coolDown ? _mono() + lockCoolDown : null,
           biometricsAvailable: biometrics,
           lastAttemptFailed: true,
         );
+        _persistAttempts(coolDown ? lockMaxAttempts : failures);
       case DeviceAuthResult.noCredential:
         state = state.copyWith(
           authenticating: false,
@@ -338,7 +379,7 @@ class AppLockController extends Notifier<AppLockState> {
 
   Future<void> _track({required bool enabled}) => ref
       .read(eventTrackerProvider)
-      .track(AppLockToggledEvent(enabled: enabled));
+      .track(SettingsAppLockToggledEvent(enabled: enabled));
 }
 
 enum EnableLockResult { enabled, noSecureLock, notConfirmed }

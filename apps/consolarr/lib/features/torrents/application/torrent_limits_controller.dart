@@ -76,7 +76,7 @@ class TorrentLimitsController extends AsyncNotifier<LimitsView> {
       ref
           .read(eventTrackerProvider)
           .track(
-            SpeedLimitsChangedEvent(
+            TorrentsSpeedLimitsChangedEvent(
               client: kind,
               outcome: r.isOk
                   ? TorrentOutcomeParam.success

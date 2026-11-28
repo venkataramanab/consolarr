@@ -13,7 +13,12 @@ import 'package:flutter_test/flutter_test.dart';
 final _gatedOverride = RegExp(
   r'(?<![A-Za-z0-9_])'
   r'(analyticsProvider|crashReporterProvider|'
-  r'consentManagerProvider|consentStoreProvider)'
+  r'consentManagerProvider|consentStoreProvider|'
+  // Everything that feeds, records or shares telemetry or diagnostics must
+  // stay the app's own: a replaced tracker, logger, breadcrumb trail or log
+  // would be a second, ungated way to collect.
+  r'eventTrackerProvider|loggerProvider|breadcrumbsProvider|'
+  r'diagnosticsLogProvider)'
   r'\s*\.\s*(overrideWith\w*|override\w*)',
 );
 
@@ -27,6 +32,27 @@ List<String> gatedOverrides(String source) {
           '${m.group(0)!.replaceAll(RegExp(r'\s+'), ' ')}',
   ];
 }
+
+/// Any use of the raw sinks. Only the files below may mention them.
+final rawSinkReference = RegExp(r'raw(Analytics|CrashReporter)Provider');
+
+/// The complete list of shipped files (under `apps/*/lib/`) that may name a
+/// raw sink, with how many **lines** may do so. Keep it this short:
+///  * `providers.dart`: the two definitions and the consent manager that
+///    wraps them;
+///  * `settings_providers.dart`: "is a reporting service plugged in" (the
+///    privacy screen's wording), a read only;
+///  * the Play entry point: the documented place to plug an SDK in (today
+///    only its doc comment names them).
+const rawSinkAllowlist = {
+  'apps/consolarr/lib/src/providers.dart': 4,
+  'apps/consolarr/lib/features/settings/application/settings_providers.dart': 2,
+  'apps/consolarr_play/lib/main.dart': 1,
+};
+
+/// Lines of [source] that name a raw sink.
+int rawSinkLines(String source) =>
+    source.split('\n').where(rawSinkReference.hasMatch).length;
 
 Directory _repoRoot() {
   var dir = Directory.current.absolute;
@@ -89,6 +115,61 @@ void main() {
     }
     expect(gatedOverrides('ref.read(consentManagerProvider)'), isEmpty);
     expect(gatedOverrides('myconsentStoreProvider.overrideWith(x)'), isEmpty);
+  });
+
+  test('the guard covers the tracker, logger, breadcrumbs and log', () {
+    for (final name in [
+      'eventTrackerProvider',
+      'loggerProvider',
+      'breadcrumbsProvider',
+      'diagnosticsLogProvider',
+    ]) {
+      expect(
+        gatedOverrides('$name.overrideWithValue(x)'),
+        hasLength(1),
+        reason: name,
+      );
+      expect(gatedOverrides('$name\n  .overrideWith((r) => x)'), hasLength(1));
+      expect(gatedOverrides('ref.watch($name)'), isEmpty);
+    }
+  });
+
+  test('the raw-sink pattern finds every spelling', () {
+    expect(rawSinkLines('rawAnalyticsProvider'), 1);
+    expect(
+      rawSinkLines('a(rawCrashReporterProvider)\nb\nrawAnalyticsProvider'),
+      2,
+    );
+    expect(rawSinkLines('analyticsProvider and crashReporterProvider'), 0);
+  });
+
+  test('only the allow-listed files name a raw sink, within their limits', () {
+    final root = _repoRoot();
+    final seen = <String, int>{};
+    final apps = Directory('${root.path}/apps');
+    for (final f in apps.listSync(recursive: true, followLinks: false)) {
+      if (f is! File || !f.path.endsWith('.dart')) continue;
+      final rel = f.path.substring(root.path.length + 1);
+      final segments = rel.split('/');
+      // apps/<app>/lib/...: shipped code only.
+      if (segments.length < 4 || segments[2] != 'lib') continue;
+      final n = rawSinkLines(f.readAsStringSync());
+      if (n > 0) seen[rel] = n;
+    }
+    for (final entry in seen.entries) {
+      expect(
+        rawSinkAllowlist,
+        contains(entry.key),
+        reason:
+            '${entry.key} names a raw sink; plug sinks in only through the '
+            'Play entry point',
+      );
+      expect(
+        entry.value,
+        lessThanOrEqualTo(rawSinkAllowlist[entry.key]!),
+        reason: '${entry.key} uses a raw sink more than allowed',
+      );
+    }
   });
 
   test('no non-test code overrides the consent-gated providers', () {

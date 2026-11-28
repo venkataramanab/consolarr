@@ -224,7 +224,7 @@ class QueueNotifier extends AsyncNotifier<QueueState> {
       ref
           .read(eventTrackerProvider)
           .track(
-            QueueItemRemovedEvent(
+            SonarrQueueItemRemovedEvent(
               blocklist: switch (choice.blocklist) {
                 ArrBlocklistChoice.none => SonarrBlocklistChoiceParam.none,
                 ArrBlocklistChoice.blocklistAndSearch =>

@@ -77,6 +77,7 @@ void main() {
         moviesResult: const Result.err(AppError(ErrorCategory.timeout)),
       );
       final c = _container(api);
+      c.read(breadcrumbsProvider).recordingAllowed = () => true;
       await c.read(movieLibraryProvider.future);
       final crumbs = c.read(breadcrumbsProvider).entries.map((e) => e.line);
       expect(crumbs, contains('api_error timeout radarr'));
@@ -299,10 +300,12 @@ void main() {
         moviesResult: Result.ok([fakeMovie(1, title: 'Secret Title')]),
       );
       final c = _container(api);
+      c.read(breadcrumbsProvider).recordingAllowed = () => true;
       await c.read(movieLibraryProvider.future);
       api.moviesResult = const Result.err(AppError(ErrorCategory.serverError));
       await c.read(movieLibraryProvider.notifier).refresh();
-      for (final b in c.read(breadcrumbsProvider).entries) {
+      final crumbs = c.read(breadcrumbsProvider).entries;
+      for (final b in crumbs) {
         expect(b.line, isNot(contains('Secret')));
       }
     });

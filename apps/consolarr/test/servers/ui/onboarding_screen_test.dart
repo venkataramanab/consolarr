@@ -163,7 +163,7 @@ void main() {
   testWidgets('the welcome step reports screen_viewed', (tester) async {
     final h = UiHarness();
     await _pump(tester, h);
-    expect(h.analytics.events, contains('screen_viewed'));
+    expect(h.analytics.events, contains('servers_screen_viewed'));
   });
 
   group('matrix', () {

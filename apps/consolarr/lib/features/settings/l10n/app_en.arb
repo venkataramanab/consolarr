@@ -254,7 +254,7 @@
   "@privacyCrashTitle": {
     "description": "Title of the crash reports consent switch."
   },
-  "privacyCrashWhat": "When the app crashes, sends the kind of error, the app and Android version, and the last screens you opened (screen names only). Never addresses, keys, names or titles.",
+  "privacyCrashWhat": "When the app crashes, sends the name of the error type, a general error category when there is one, the code locations of the crash (file names and line numbers), the app and Android version, and the last screens you opened and the kinds of server errors just before (names from a fixed list). Never the error message, addresses, keys, names or titles.",
   "@privacyCrashWhat": {
     "description": "Explains exactly what the crash reports switch sends."
   },
@@ -298,9 +298,77 @@
   "@privacyEventDiagnostics": {
     "description": "Payload list item for the diagnostics shared event."
   },
-  "privacyEventOther": "Other feature actions, as counts of closed choices only",
-  "@privacyEventOther": {
-    "description": "Payload list item covering events of other features."
+  "privacyEventSonarrSeriesAdded": "That a series was added, and whether a search was started",
+  "@privacyEventSonarrSeriesAdded": {
+    "description": "Payload list item for the series added event."
+  },
+  "privacyEventSonarrReleaseGrabbed": "Whether a series release you picked was sent to the download client, failed or was rejected",
+  "@privacyEventSonarrReleaseGrabbed": {
+    "description": "Payload list item for the Sonarr release grabbed event."
+  },
+  "privacyEventSonarrSearchStarted": "That a series search was started, and its scope (episode, season, series or all missing)",
+  "@privacyEventSonarrSearchStarted": {
+    "description": "Payload list item for the Sonarr search started event."
+  },
+  "privacyEventSonarrSearchFinished": "How a series search ended (found, nothing found, failed or timed out)",
+  "@privacyEventSonarrSearchFinished": {
+    "description": "Payload list item for the Sonarr search finished event."
+  },
+  "privacyEventSonarrQueueItemRemoved": "That a series download was removed from the queue, and the blocklist choice",
+  "@privacyEventSonarrQueueItemRemoved": {
+    "description": "Payload list item for the Sonarr queue item removed event."
+  },
+  "privacyEventSonarrMonitorChanged": "That monitoring of a series, season or episode was switched on or off",
+  "@privacyEventSonarrMonitorChanged": {
+    "description": "Payload list item for the series monitor changed event."
+  },
+  "privacyEventRadarrMovieAdded": "That a movie was added, and whether a search and a collection were chosen",
+  "@privacyEventRadarrMovieAdded": {
+    "description": "Payload list item for the movie added event."
+  },
+  "privacyEventRadarrReleaseGrabbed": "Whether a movie release you picked was sent to the download client, and whether it had been rejected",
+  "@privacyEventRadarrReleaseGrabbed": {
+    "description": "Payload list item for the Radarr release grabbed event."
+  },
+  "privacyEventRadarrSearchStarted": "That a movie search was started (one movie or all missing)",
+  "@privacyEventRadarrSearchStarted": {
+    "description": "Payload list item for the Radarr search started event."
+  },
+  "privacyEventRadarrQueueItemRemoved": "That a movie download was removed from the queue, and the removal choice",
+  "@privacyEventRadarrQueueItemRemoved": {
+    "description": "Payload list item for the Radarr queue item removed event."
+  },
+  "privacyEventTorrentsAdded": "That a torrent was added, how (magnet link, address or file), for which client kind, and whether it worked",
+  "@privacyEventTorrentsAdded": {
+    "description": "Payload list item for the torrent added event."
+  },
+  "privacyEventTorrentsAction": "That you paused, resumed or removed torrents, and whether it worked",
+  "@privacyEventTorrentsAction": {
+    "description": "Payload list item for the torrent action event."
+  },
+  "privacyEventTorrentsSpeedLimits": "That speed limits were changed, for which client kind, and whether it worked",
+  "@privacyEventTorrentsSpeedLimits": {
+    "description": "Payload list item for the speed limits changed event."
+  },
+  "privacyEventDashboardRefreshed": "That the dashboard was refreshed (at most once per session), what triggered it and rough counts of servers and failures (0, 1, 2, 3 to 5, 6 or more)",
+  "@privacyEventDashboardRefreshed": {
+    "description": "Payload list item for the dashboard refreshed event."
+  },
+  "privacyEventDashboardCardOpened": "That you opened an item from a dashboard card, and what kind of screen it led to",
+  "@privacyEventDashboardCardOpened": {
+    "description": "Payload list item for the dashboard card opened event."
+  },
+  "privacyEventDashboardCardRetried": "That you tapped retry on a dashboard card, and the kind of failure",
+  "@privacyEventDashboardCardRetried": {
+    "description": "Payload list item for the dashboard card retried event."
+  },
+  "privacyEventPollCycleFinished": "That a background check of your servers finished, with rough counts of servers, failures and changes (0, 1, 2, 3 to 5, 6 or more)",
+  "@privacyEventPollCycleFinished": {
+    "description": "Payload list item for the poll cycle finished event."
+  },
+  "privacyEventPollChangeDetected": "That a finished or failed download was noticed, and which kind",
+  "@privacyEventPollChangeDetected": {
+    "description": "Payload list item for the poll change detected event."
   },
   "privacyWithdrawHint": "Turning a switch off stops collection at once and clears anything waiting to be sent.",
   "@privacyWithdrawHint": {
@@ -631,7 +699,7 @@
   "@aboutPrivacyHeading": {
     "description": "Heading of the privacy statement on the About screen."
   },
-  "aboutPrivacyBody": "Consolarr talks only to the servers you add. On its own it contacts no other host. It reaches others only if you choose: if you switch on crash reports or anonymous usage in a build that includes a reporting service, or if you tap “Open a GitHub issue” or “Source code”, which opens github.com in your browser. No account or identity is collected.",
+  "aboutPrivacyBody": "Consolarr talks only to the servers you add. On its own it contacts no other host. It reaches others only if you choose: if you switch on crash reports or anonymous usage in a build that includes a reporting service, or when you tap a link. Links open only when you tap them, in your browser or the site's app, and each one tells that site which title you opened. “Source code” and “Open a GitHub issue” open github.com. A series can open www.imdb.com, thetvdb.com, www.themoviedb.org or www.tvmaze.com. A movie trailer opens www.youtube.com. No account or identity is collected.",
   "@aboutPrivacyBody": {
     "description": "Privacy statement on the About screen listing every non-user host the app can contact."
   },
@@ -778,5 +846,45 @@
         "format": "decimalPattern"
       }
     }
+  },
+  "resetStorageRowTitle": "Reset secure storage",
+  "@resetStorageRowTitle": {
+    "description": "Title of the settings row that opens the confirmation for deleting every saved key, password and certificate pin."
+  },
+  "resetStorageRowSubtitle": "Delete saved keys, passwords and certificate pins",
+  "@resetStorageRowSubtitle": {
+    "description": "Subtitle of the reset secure storage row."
+  },
+  "resetStorageConfirmTitle": "Reset secure storage?",
+  "@resetStorageConfirmTitle": {
+    "description": "Title of the confirmation dialog for deleting all secrets."
+  },
+  "resetStorageConfirmBody": "This deletes every saved API key, password and certificate pin on this device. Your servers stay in the list, but you must enter their credentials again and trust their certificates again. This cannot be undone.",
+  "@resetStorageConfirmBody": {
+    "description": "Body of the confirmation dialog for deleting all secrets; says what is deleted and that it must be re-entered."
+  },
+  "resetStorageConfirmAction": "Delete and reset",
+  "@resetStorageConfirmAction": {
+    "description": "Destructive confirm button that deletes all saved secrets."
+  },
+  "resetStorageDone": "Secure storage was reset. Enter your servers' credentials again.",
+  "@resetStorageDone": {
+    "description": "Message shown after secure storage was reset."
+  },
+  "resetStorageFailed": "Secure storage could not be reset. Try again, or restart the app.",
+  "@resetStorageFailed": {
+    "description": "Message shown when resetting secure storage failed."
+  },
+  "resetStorageBannerTitle": "Secure storage can't be read",
+  "@resetStorageBannerTitle": {
+    "description": "Headline of the notice shown when the device keystore cannot be read."
+  },
+  "resetStorageBannerMessage": "Saved keys, passwords and certificate pins are locked and servers can't be reached. If this keeps happening you can reset secure storage and enter them again.",
+  "@resetStorageBannerMessage": {
+    "description": "Explanation in the notice shown when the device keystore cannot be read."
+  },
+  "resetStorageBannerAction": "Reset secure storage…",
+  "@resetStorageBannerAction": {
+    "description": "Button in the notice that opens the reset confirmation."
   }
 }

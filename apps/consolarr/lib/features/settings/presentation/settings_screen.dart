@@ -2,6 +2,7 @@
 
 import 'package:consolarr/features/settings/application/settings_providers.dart';
 import 'package:consolarr/features/settings/domain/language_names.dart';
+import 'package:consolarr/features/settings/presentation/reset_secure_storage.dart';
 import 'package:consolarr/features/settings/presentation/settings_page.dart';
 import 'package:consolarr/features/settings/settings_paths.dart';
 import 'package:consolarr/features/shell/presentation/floating_top_bar_scaffold.dart';
@@ -85,6 +86,12 @@ class SettingsScreen extends ConsumerWidget {
             onChanged: settings.lockEnabled
                 ? null
                 : notifier.setBlockScreenshots,
+          ),
+          SettingsRow(
+            title: l10n.resetStorageRowTitle,
+            subtitle: l10n.resetStorageRowSubtitle,
+            icon: Icons.delete_forever_outlined,
+            onTap: () => confirmAndResetSecureStorage(context, ref),
           ),
         ],
       ),

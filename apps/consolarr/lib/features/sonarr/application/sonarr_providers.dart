@@ -119,7 +119,7 @@ class SeriesLibraryNotifier extends AsyncNotifier<LibraryState> {
     if (error != null &&
         previous is LibraryData &&
         kOfflineFallbackCategories.contains(error.category)) {
-      logOfflineFallback(ref.read(loggerProvider), 'sonarr', error);
+      logOfflineFallback(ref.read(loggerProvider), OfflineArea.sonarr, error);
       state = AsyncData(LibraryData(previous.snapshot.withOfflineError(error)));
       return;
     }

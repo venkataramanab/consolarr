@@ -254,7 +254,7 @@
   "@privacyCrashTitle": {
     "description": "Title of the crash reports consent switch."
   },
-  "privacyCrashWhat": "عند تعطل التطبيق يرسل نوع الخطأ وإصدار التطبيق وأندرويد وآخر الشاشات التي فتحتها (أسماء الشاشات فقط). لا يرسل أبدًا العناوين أو المفاتيح أو الأسماء أو العناوين الفنية.",
+  "privacyCrashWhat": "عند تعطل التطبيق يرسل اسم نوع الخطأ وتصنيفًا عامًّا للخطأ إن وُجد ومواضع الشيفرة في العطل (أسماء الملفات وأرقام الأسطر) وإصدار التطبيق وأندرويد وآخر الشاشات التي فتحتها وأنواع أخطاء الخوادم قبل العطل مباشرة (أسماء من قائمة ثابتة). لا يرسل أبدًا نص رسالة الخطأ أو العناوين أو المفاتيح أو الأسماء أو العناوين الفنية.",
   "@privacyCrashWhat": {
     "description": "Explains exactly what the crash reports switch sends."
   },
@@ -298,9 +298,77 @@
   "@privacyEventDiagnostics": {
     "description": "Payload list item for the diagnostics shared event."
   },
-  "privacyEventOther": "إجراءات ميزات أخرى كأعداد لخيارات محددة فقط",
-  "@privacyEventOther": {
-    "description": "Payload list item covering events of other features."
+  "privacyEventSonarrSeriesAdded": "أنه أُضيف مسلسل، وهل بدأ بحث",
+  "@privacyEventSonarrSeriesAdded": {
+    "description": "Payload list item for the series added event."
+  },
+  "privacyEventSonarrReleaseGrabbed": "هل أُرسل إصدار مسلسل اخترته إلى عميل التنزيل أم فشل أم رُفض",
+  "@privacyEventSonarrReleaseGrabbed": {
+    "description": "Payload list item for the Sonarr release grabbed event."
+  },
+  "privacyEventSonarrSearchStarted": "أنه بدأ بحث عن مسلسل، ونطاقه (حلقة أو موسم أو مسلسل أو كل الناقص)",
+  "@privacyEventSonarrSearchStarted": {
+    "description": "Payload list item for the Sonarr search started event."
+  },
+  "privacyEventSonarrSearchFinished": "كيف انتهى بحث المسلسل (وُجد أو لم يوجد شيء أو فشل أو انتهت المهلة)",
+  "@privacyEventSonarrSearchFinished": {
+    "description": "Payload list item for the Sonarr search finished event."
+  },
+  "privacyEventSonarrQueueItemRemoved": "أنه أُزيل تنزيل مسلسل من الطابور، وخيار القائمة المحظورة",
+  "@privacyEventSonarrQueueItemRemoved": {
+    "description": "Payload list item for the Sonarr queue item removed event."
+  },
+  "privacyEventSonarrMonitorChanged": "أنه جرى تشغيل أو إيقاف متابعة مسلسل أو موسم أو حلقة",
+  "@privacyEventSonarrMonitorChanged": {
+    "description": "Payload list item for the series monitor changed event."
+  },
+  "privacyEventRadarrMovieAdded": "أنه أُضيف فيلم، وهل اخترت البحث والمجموعة",
+  "@privacyEventRadarrMovieAdded": {
+    "description": "Payload list item for the movie added event."
+  },
+  "privacyEventRadarrReleaseGrabbed": "هل أُرسل إصدار فيلم اخترته إلى عميل التنزيل، وهل كان مرفوضًا",
+  "@privacyEventRadarrReleaseGrabbed": {
+    "description": "Payload list item for the Radarr release grabbed event."
+  },
+  "privacyEventRadarrSearchStarted": "أنه بدأ بحث عن فيلم (فيلم واحد أو كل الناقص)",
+  "@privacyEventRadarrSearchStarted": {
+    "description": "Payload list item for the Radarr search started event."
+  },
+  "privacyEventRadarrQueueItemRemoved": "أنه أُزيل تنزيل فيلم من الطابور، وخيار الإزالة",
+  "@privacyEventRadarrQueueItemRemoved": {
+    "description": "Payload list item for the Radarr queue item removed event."
+  },
+  "privacyEventTorrentsAdded": "أنه أُضيف تورنت، وبأي طريقة (رابط ماغنت أو عنوان أو ملف)، ولأي نوع من العملاء، وهل نجح",
+  "@privacyEventTorrentsAdded": {
+    "description": "Payload list item for the torrent added event."
+  },
+  "privacyEventTorrentsAction": "أنك أوقفت تورنتات مؤقتًا أو استأنفتها أو أزلتها، وهل نجح ذلك",
+  "@privacyEventTorrentsAction": {
+    "description": "Payload list item for the torrent action event."
+  },
+  "privacyEventTorrentsSpeedLimits": "أنه جرى تغيير حدود السرعة، ولأي نوع من العملاء، وهل نجح",
+  "@privacyEventTorrentsSpeedLimits": {
+    "description": "Payload list item for the speed limits changed event."
+  },
+  "privacyEventDashboardRefreshed": "أنه جرى تحديث لوحة المعلومات (مرة واحدة في الجلسة على الأكثر)، وما الذي أطلقه، وأعداد تقريبية للخوادم والإخفاقات (0 أو 1 أو 2 أو 3 إلى 5 أو 6 فأكثر)",
+  "@privacyEventDashboardRefreshed": {
+    "description": "Payload list item for the dashboard refreshed event."
+  },
+  "privacyEventDashboardCardOpened": "أنك فتحت عنصرًا من بطاقة في لوحة المعلومات، ونوع الشاشة التي أدى إليها",
+  "@privacyEventDashboardCardOpened": {
+    "description": "Payload list item for the dashboard card opened event."
+  },
+  "privacyEventDashboardCardRetried": "أنك ضغطت إعادة المحاولة على بطاقة في لوحة المعلومات، ونوع الإخفاق",
+  "@privacyEventDashboardCardRetried": {
+    "description": "Payload list item for the dashboard card retried event."
+  },
+  "privacyEventPollCycleFinished": "أنه انتهى فحص خوادمك في الخلفية، مع أعداد تقريبية للخوادم والإخفاقات والتغييرات (0 أو 1 أو 2 أو 3 إلى 5 أو 6 فأكثر)",
+  "@privacyEventPollCycleFinished": {
+    "description": "Payload list item for the poll cycle finished event."
+  },
+  "privacyEventPollChangeDetected": "أنه لوحظ تنزيل مكتمل أو فاشل، ونوعه",
+  "@privacyEventPollChangeDetected": {
+    "description": "Payload list item for the poll change detected event."
   },
   "privacyWithdrawHint": "إيقاف المفتاح يوقف الجمع فورًا ويمسح كل ما ينتظر الإرسال.",
   "@privacyWithdrawHint": {
@@ -631,7 +699,7 @@
   "@aboutPrivacyHeading": {
     "description": "Heading of the privacy statement on the About screen."
   },
-  "aboutPrivacyBody": "يتحدث كونسولار مع الخوادم التي تضيفها فقط. ولا يتصل بأي مضيف آخر من تلقاء نفسه. لا يصل إلى غيرها إلا باختيارك: إذا فعّلت تقارير الأعطال أو الاستخدام المجهول في إصدار يتضمن خدمة إبلاغ، أو إذا ضغطت «فتح مشكلة على GitHub» أو «الشيفرة المصدرية» فيُفتح github.com في المتصفح. لا يُجمع أي حساب أو هوية.",
+  "aboutPrivacyBody": "يتحدث كونسولار مع الخوادم التي تضيفها فقط. ولا يتصل بأي مضيف آخر من تلقاء نفسه. لا يصل إلى غيرها إلا باختيارك: إذا فعّلت تقارير الأعطال أو الاستخدام المجهول في إصدار يتضمن خدمة إبلاغ، أو عند الضغط على رابط. لا تُفتح الروابط إلا عند الضغط عليها، في المتصفح أو في تطبيق الموقع، وكل رابط يُعلم ذلك الموقع بالعنوان الذي فتحته. «الشيفرة المصدرية» و«فتح مشكلة على ⁨GitHub⁩» يفتحان ⁨github.com⁩. وقد يفتح المسلسل ⁨www.imdb.com⁩ أو ⁨thetvdb.com⁩ أو ⁨www.themoviedb.org⁩ أو ⁨www.tvmaze.com⁩. ويفتح مقطع الإعلان عن الفيلم ⁨www.youtube.com⁩. لا يُجمع أي حساب أو هوية.",
   "@aboutPrivacyBody": {
     "description": "Privacy statement on the About screen listing every non-user host the app can contact."
   },
@@ -778,5 +846,45 @@
         "format": "decimalPattern"
       }
     }
+  },
+  "resetStorageRowTitle": "إعادة تعيين التخزين الآمن",
+  "@resetStorageRowTitle": {
+    "description": "Title of the settings row that opens the confirmation for deleting every saved key, password and certificate pin."
+  },
+  "resetStorageRowSubtitle": "حذف المفاتيح وكلمات المرور وبصمات الشهادات المحفوظة",
+  "@resetStorageRowSubtitle": {
+    "description": "Subtitle of the reset secure storage row."
+  },
+  "resetStorageConfirmTitle": "إعادة تعيين التخزين الآمن؟",
+  "@resetStorageConfirmTitle": {
+    "description": "Title of the confirmation dialog for deleting all secrets."
+  },
+  "resetStorageConfirmBody": "سيحذف هذا كل مفتاح API وكلمة مرور وبصمة شهادة محفوظة على هذا الجهاز. ستبقى الخوادم في القائمة، لكن عليك إدخال بيانات الاعتماد من جديد والوثوق بشهاداتها من جديد. لا يمكن التراجع عن ذلك.",
+  "@resetStorageConfirmBody": {
+    "description": "Body of the confirmation dialog for deleting all secrets; says what is deleted and that it must be re-entered."
+  },
+  "resetStorageConfirmAction": "حذف وإعادة تعيين",
+  "@resetStorageConfirmAction": {
+    "description": "Destructive confirm button that deletes all saved secrets."
+  },
+  "resetStorageDone": "تمت إعادة تعيين التخزين الآمن. أدخل بيانات اعتماد خوادمك من جديد.",
+  "@resetStorageDone": {
+    "description": "Message shown after secure storage was reset."
+  },
+  "resetStorageFailed": "تعذرت إعادة تعيين التخزين الآمن. حاول مرة أخرى أو أعد تشغيل التطبيق.",
+  "@resetStorageFailed": {
+    "description": "Message shown when resetting secure storage failed."
+  },
+  "resetStorageBannerTitle": "تعذرت قراءة التخزين الآمن",
+  "@resetStorageBannerTitle": {
+    "description": "Headline of the notice shown when the device keystore cannot be read."
+  },
+  "resetStorageBannerMessage": "المفاتيح وكلمات المرور وبصمات الشهادات المحفوظة مقفلة وتعذر الوصول إلى الخوادم. إذا تكرر ذلك يمكنك إعادة تعيين التخزين الآمن وإدخالها من جديد.",
+  "@resetStorageBannerMessage": {
+    "description": "Explanation in the notice shown when the device keystore cannot be read."
+  },
+  "resetStorageBannerAction": "إعادة تعيين التخزين الآمن…",
+  "@resetStorageBannerAction": {
+    "description": "Button in the notice that opens the reset confirmation."
   }
 }

@@ -23,6 +23,19 @@ const _header = '''
 final _snake = RegExp(r'^[a-z][a-z0-9]*(_[a-z0-9]+)*$');
 final _pascal = RegExp(r'^[A-Z][A-Za-z0-9]*$');
 
+/// The prefix every event name of a YAML file must start with: the file stem,
+/// except where a shorter established word is used. A new area registers its
+/// prefix here; an unregistered file defaults to its stem.
+const _prefixOverrides = {'polling': 'poll'};
+
+String _prefixFor(String file) {
+  final base = file.split('/').last;
+  final stem = base.endsWith('.yaml')
+      ? base.substring(0, base.length - '.yaml'.length)
+      : base;
+  return _prefixOverrides[stem] ?? stem;
+}
+
 String _camel(String snake) {
   final parts = snake.split('_');
   return parts.first +
@@ -149,6 +162,13 @@ void _readEvent(
 ) {
   if (key is! String || !_snake.hasMatch(key)) {
     throw EventCatalogException('$file: bad event name "$key"');
+  }
+  final prefix = _prefixFor(file);
+  if (!key.startsWith('${prefix}_')) {
+    throw EventCatalogException(
+      '$file: event "$key" must start with "${prefix}_" (the feature prefix '
+      'of this file)',
+    );
   }
   if (events.containsKey(key)) {
     throw EventCatalogException('$file: duplicate event "$key"');

@@ -13,18 +13,18 @@ enums:
     dart: TorrentOutcomeParam
     values: [success, failed, unsupported]
 events:
-  torrent_added:
+  torrents_added:
     description: A torrent was added; carries the source type and client kind only.
     params:
       source: {type: torrent_source_param}
       client: {type: service_kind_param}
       outcome: {type: torrent_outcome_param}
-  torrent_action:
+  torrents_action:
     description: A pause, resume or remove action finished.
     params:
       action: {type: torrent_action_param}
       outcome: {type: torrent_outcome_param}
-  speed_limits_changed:
+  torrents_speed_limits_changed:
     description: Global speed limits or the alternative-limits switch were applied.
     params:
       client: {type: service_kind_param}

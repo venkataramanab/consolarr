@@ -181,7 +181,7 @@ abstract class SnapshotNotifier<T> extends AsyncNotifier<RadarrState<T>> {
         previous is RadarrData<T> &&
         kOfflineFallbackCategories.contains(error.category)) {
       recordApiError(ref.read(breadcrumbsProvider), error);
-      logOfflineFallback(ref.read(loggerProvider), 'radarr', error);
+      logOfflineFallback(ref.read(loggerProvider), OfflineArea.radarr, error);
       state = AsyncData(RadarrData(previous.snapshot.withOfflineError(error)));
       return;
     }

@@ -31,19 +31,14 @@ Set<String> _events(String path) {
 void main() {
   const events = '../../packages/observability/events';
 
-  test('the payload description covers exactly the events of the areas this '
-      'screen describes (servers, settings), so it cannot drift', () {
-    final declared = {
-      ..._events('$events/servers.yaml'),
-      ..._events('$events/settings.yaml'),
+  test('every catalog event has a description, and no description is '
+      'stale (all areas)', () {
+    final declared = <String>{
+      for (final f in Directory(events).listSync())
+        if (f is File && f.path.endsWith('.yaml')) ..._events(f.path),
     };
-    expect(declared, isNotEmpty);
+    expect(declared, hasLength(greaterThanOrEqualTo(25)));
     expect(privacyPayloadItems.keys.toSet(), declared);
-  });
-
-  test('other areas are covered by the catch-all line', () async {
-    final l10n = await AppLocalizations.delegate.load(const Locale('en'));
-    expect(l10n.privacyEventOther, isNotEmpty);
   });
 
   test('every item has distinct copy in every shipped locale', () async {

@@ -28,7 +28,7 @@ class _State extends ConsumerState<RadarrScreenView> {
       if (!mounted) return;
       ref
           .read(eventTrackerProvider)
-          .track(ScreenViewedEvent(screen: widget.screen));
+          .track(ServersScreenViewedEvent(screen: widget.screen));
     });
   }
 

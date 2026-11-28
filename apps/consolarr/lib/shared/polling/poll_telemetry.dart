@@ -17,9 +17,9 @@ PollCycle trackedPollCycle(EventTracker tracker, {ChangeLedger? ledger}) =>
       ledger: ledger,
       onCycleFinished: (servers, failed, changes) => tracker.track(
         PollCycleFinishedEvent(
-          servers: servers,
-          failed: failed,
-          changes: changes,
+          servers: countBucket(servers),
+          failed: countBucket(failed),
+          changes: countBucket(changes),
         ),
       ),
       onChange: (type) =>

@@ -5,6 +5,7 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.view.WindowManager
 import android.os.Build
+import android.os.Bundle
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -16,6 +17,12 @@ class MainActivity : FlutterFragmentActivity() {
         // Must equal `shareTextMaxBytes` in Dart (a test compares them). The
         // text travels in a Binder transaction (about 1 MB for the process).
         const val MAX_SHARE_TEXT_BYTES = 150 * 1024
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // Tapjacking: ignore touches while another window obscures this one.
+        window.decorView.filterTouchesWhenObscured = true
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {

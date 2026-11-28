@@ -40,7 +40,9 @@ class _AppShellState extends ConsumerState<AppShell> {
     _trackedIndex = index;
     final screen = appDestinations[index].screen;
     if (screen != null) {
-      ref.read(eventTrackerProvider).track(ScreenViewedEvent(screen: screen));
+      ref
+          .read(eventTrackerProvider)
+          .track(ServersScreenViewedEvent(screen: screen));
     }
   }
 

@@ -242,9 +242,15 @@ class DriftServerRepository implements ServerRepository {
     for (final uri in addresses) {
       if (uri == null) continue;
       try {
-        await _secrets.delete(
-          PinKey(profileId: id, host: uri.host, port: uri.port).storageKey,
-        );
+        final storageKey = PinKey(
+          profileId: id,
+          host: uri.host,
+          port: uri.port,
+        ).storageKey;
+        await _secrets.delete(storageKey);
+        await (_db.delete(
+          _db.pinnedMarkerRows,
+        )..where((r) => r.pinKey.equals(storageKey))).go();
       } on ArgumentError {
         // An address that cannot form a pin key has no pin to remove.
       }
@@ -260,7 +266,10 @@ class DriftServerRepository implements ServerRepository {
     }
   }
 
-  static String _revisionKey(String id) => 'rev/$id';
+  /// The app-state key holding a server's connection revision.
+  static String revisionKey(String id) => 'rev/$id';
+
+  static String _revisionKey(String id) => revisionKey(id);
 
   Future<int> _revision(String id) async {
     final row = await (_db.select(

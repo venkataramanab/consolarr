@@ -44,7 +44,7 @@ Future<CertificateOutcome?> handleCertificateError(
       error is TlsPinMismatch ||
       error is CertificateExpired) {
     await tracker.track(
-      const ScreenViewedEvent(screen: ScreenName.certificateSheet),
+      const ServersScreenViewedEvent(screen: ScreenName.certificateSheet),
     );
   }
 
@@ -74,7 +74,7 @@ Future<CertificateOutcome?> handleCertificateError(
       );
       if (!accepted) {
         await tracker.track(
-          const CertificateDecisionEvent(
+          const ServersCertificateDecisionEvent(
             decision: CertificateDecisionParam.rejected,
           ),
         );
@@ -91,7 +91,7 @@ Future<CertificateOutcome?> handleCertificateError(
         ),
       );
       await tracker.track(
-        const CertificateDecisionEvent(
+        const ServersCertificateDecisionEvent(
           decision: CertificateDecisionParam.accepted,
         ),
       );
@@ -99,7 +99,7 @@ Future<CertificateOutcome?> handleCertificateError(
 
     case TlsPinMismatch(:final key, :final pinned, :final presented):
       await tracker.track(
-        const CertificateDecisionEvent(
+        const ServersCertificateDecisionEvent(
           decision: CertificateDecisionParam.mismatch,
         ),
       );

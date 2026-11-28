@@ -3,6 +3,7 @@
 import 'package:consolarr/features/servers/application/servers_providers.dart';
 import 'package:consolarr/features/servers/application/servers_ui_providers.dart';
 import 'package:consolarr/features/servers/domain/server_models.dart';
+import 'package:consolarr/features/settings/presentation/reset_secure_storage.dart';
 import 'package:consolarr/features/servers/presentation/screen_tracking.dart';
 import 'package:consolarr/features/servers/presentation/servers_routes.dart';
 import 'package:consolarr/features/servers/presentation/service_kind_info.dart';
@@ -125,6 +126,7 @@ class _ServerList extends ConsumerWidget {
       child: ReorderableListView.builder(
         buildDefaultDragHandles: false,
         padding: padding,
+        header: const SecureStorageUnavailableBanner(),
         itemCount: entries.length,
         onReorderItem: (from, to) => _move(ref, from, to),
         itemBuilder: (context, index) {

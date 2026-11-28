@@ -65,7 +65,7 @@ class TorrentActionsController extends Notifier<TorrentActionsState> {
     unawaited(
       ref
           .read(eventTrackerProvider)
-          .track(TorrentActionEvent(action: action, outcome: outcome)),
+          .track(TorrentsActionEvent(action: action, outcome: outcome)),
     );
     if (r case Err<void>(:final error)) {
       final category = ErrorCategoryParam.fromCode(error.category.code);

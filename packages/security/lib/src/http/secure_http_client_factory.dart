@@ -415,7 +415,7 @@ class _SecureAdapter implements HttpClientAdapter {
       headers: response.headers,
       statusMessage: response.statusMessage,
       isRedirect: response.isRedirect,
-    );
+    )..extra = {finalUriExtraKey: options.uri};
   }
 
   @override
