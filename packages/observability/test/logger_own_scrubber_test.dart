@@ -29,11 +29,10 @@ void main() {
     ['nas', 'canary', 'example'].join('.'),
   ];
 
-  DiagnosticsLog newLog({List<String> known = const []}) => DiagnosticsLog(
-    scrubber: DiagnosticsScrubber(knownValues: known),
-  )
-    ..enabled = true
-    ..level = LogLevel.debug;
+  DiagnosticsLog newLog({List<String> known = const []}) =>
+      DiagnosticsLog(scrubber: DiagnosticsScrubber(knownValues: known))
+        ..enabled = true
+        ..level = LogLevel.debug;
 
   test('a no-op scrubber and redactor on the logger cannot bypass the log', () {
     final log = newLog();
