@@ -187,6 +187,51 @@ void main() {
     expect(c.addedLinks, hasLength(1));
   });
 
+  testWidgets('L2: files picked after the sheet closed are discarded unread', (
+    tester,
+  ) async {
+    final picker = Completer<List<PickedTorrentFile>>();
+    final c = FakeTorrentClient();
+    final overrides = [
+      torrentFilePickerProvider.overrideWithValue(() => picker.future),
+    ];
+    applyVariantView(tester, baseVariant);
+    await tester.pumpWidget(
+      sheetApp(
+        baseVariant,
+        const AddTorrentSheet(),
+        client: c,
+        overrides: overrides,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Choose .torrent files'));
+    await tester.pump();
+    // The sheet is closed while the system picker is still open.
+    await tester.pumpWidget(
+      sheetApp(baseVariant, const SizedBox(), client: c, overrides: overrides),
+    );
+    await tester.pumpAndSettle();
+    var discarded = 0;
+    var read = 0;
+    picker.complete([
+      for (final n in ['a.torrent', 'b.torrent'])
+        PickedTorrentFile(
+          name: n,
+          length: () async => 10,
+          readBytes: () async {
+            read++;
+            return Uint8List.fromList(_torrentBytes());
+          },
+          discard: () async => discarded++,
+        ),
+    ]);
+    await tester.pumpAndSettle();
+    expect(discarded, 2);
+    expect(read, 0);
+    expect(c.calls, isNot(contains('addFile')));
+  });
+
   testWidgets('files: a per-file summary with reasons', (tester) async {
     final c = await _pump(
       tester,

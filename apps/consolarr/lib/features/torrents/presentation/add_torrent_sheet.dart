@@ -119,7 +119,20 @@ class _AddTorrentSheetState extends ConsumerState<AddTorrentSheet> {
 
   Future<void> _pickFiles(TorrentCapabilities caps) async {
     final files = await ref.read(torrentFilePickerProvider)();
-    if (!mounted || files.isEmpty) return;
+    if (files.isEmpty) return;
+    if (!mounted) {
+      // The sheet was closed while the system picker was open. Nobody will
+      // use these files, and each copy (it may hold a tracker passkey) sits
+      // in the app cache until deleted.
+      for (final f in files) {
+        try {
+          await f.discard?.call();
+        } on Object {
+          // Best effort: the system also clears the cache.
+        }
+      }
+      return;
+    }
     await ref.read(addTorrentProvider.notifier).addFiles(files, _options(caps));
   }
 

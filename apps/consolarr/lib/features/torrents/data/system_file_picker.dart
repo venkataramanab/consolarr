@@ -38,6 +38,18 @@ Future<List<PickedTorrentFile>> pickTorrentFilesFromSystem() async {
   ];
 }
 
+/// [path] with every symbolic link resolved. A file that is already gone is
+/// resolved through its directory, so the empty directories it left can still
+/// be tidied. Throws when nothing along the way exists.
+String _resolve(String path) {
+  if (FileSystemEntity.typeSync(path, followLinks: false) ==
+      FileSystemEntityType.notFound) {
+    final dir = Directory(p.dirname(path)).resolveSymbolicLinksSync();
+    return p.join(dir, p.basename(path));
+  }
+  return File(path).resolveSymbolicLinksSync();
+}
+
 /// Deletes the picker's private copy of a document: the file itself, then
 /// its directories (`<cache>/<uuid>/`) from the inside out, each only when it
 /// is empty. Nothing else in a directory is ever deleted (no recursive
@@ -48,8 +60,13 @@ Future<List<PickedTorrentFile>> pickTorrentFilesFromSystem() async {
 Future<bool> deleteCachedPickerCopy(String path, String cacheDir) async {
   try {
     if (path.isEmpty) return false;
-    final cache = p.normalize(p.absolute(cacheDir));
-    final file = p.normalize(p.absolute(path));
+    // Resolve symbolic links on both sides first: a link inside the cache
+    // that points elsewhere must not let the check pass for a file outside.
+    // A path that cannot be resolved (it is gone) has nothing to delete.
+    final cache = p.normalize(
+      p.absolute(Directory(cacheDir).resolveSymbolicLinksSync()),
+    );
+    final file = p.normalize(p.absolute(_resolve(path)));
     if (!p.isWithin(cache, file)) return false;
     var deleted = false;
     final f = File(file);

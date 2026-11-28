@@ -23,6 +23,45 @@ void main() {
     setUp(() => cache = Directory.systemTemp.createTempSync('picker_cache'));
     tearDown(() => cache.deleteSync(recursive: true));
 
+    test(
+      'L2: a symlink inside the cache that points outside is not followed',
+      () async {
+        final outside = Directory.systemTemp.createTempSync('picker_outside');
+        addTearDown(() => outside.deleteSync(recursive: true));
+        final real = File(p.join(outside.path, 'precious.torrent'))
+          ..writeAsStringSync('keep me');
+        final dir = Directory(p.join(cache.path, 'uuid-link'))..createSync();
+        final link = Link(p.join(dir.path, 'a.torrent'))..createSync(real.path);
+        expect(await deleteCachedPickerCopy(link.path, cache.path), isFalse);
+        expect(real.existsSync(), isTrue);
+        expect(real.readAsStringSync(), 'keep me');
+        expect(link.existsSync(), isTrue);
+      },
+    );
+
+    test('L2: a symlinked directory in the cache is not followed', () async {
+      final outside = Directory.systemTemp.createTempSync('picker_outside');
+      addTearDown(() => outside.deleteSync(recursive: true));
+      final real = File(p.join(outside.path, 'x.torrent'))
+        ..writeAsStringSync('keep me');
+      final linkDir = Link(p.join(cache.path, 'uuid-dir'))
+        ..createSync(outside.path);
+      final viaLink = p.join(linkDir.path, 'x.torrent');
+      expect(await deleteCachedPickerCopy(viaLink, cache.path), isFalse);
+      expect(real.existsSync(), isTrue);
+    });
+
+    test('L2: a cache that is itself a symlink still works', () async {
+      final holder = Directory.systemTemp.createTempSync('picker_holder');
+      addTearDown(() => holder.deleteSync(recursive: true));
+      final alias = Link(p.join(holder.path, 'cache-alias'))
+        ..createSync(cache.path);
+      final dir = Directory(p.join(cache.path, 'uuid-alias'))..createSync();
+      final file = File(p.join(dir.path, 'a.torrent'))..writeAsStringSync('x');
+      expect(await deleteCachedPickerCopy(file.path, alias.path), isTrue);
+      expect(file.existsSync(), isFalse);
+    });
+
     test('removes the picker uuid directory inside the cache', () async {
       final dir = Directory(p.join(cache.path, 'uuid-1'))..createSync();
       final file = File(p.join(dir.path, 'a.torrent'))..writeAsStringSync('x');
