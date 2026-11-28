@@ -68,13 +68,38 @@ void main() {
     final payload = error as CrashPayload;
     expect(payload.typeName, '_Boom');
     expect(payload.category, ErrorCategoryParam.timeout);
-    expect(payload.frames, ['package:consolarr/src/a_b.dart:12', 'c.dart:3']);
+    expect(payload.frames, ['package:consolarr/src/a_b.dart:12', '<other>:3']);
 
     final everything = '$error ${payload.frames} $stack';
     for (final canary in [host, key, title, user, 'apikey']) {
       expect(everything, isNot(contains(canary)), reason: canary);
     }
   });
+
+  test(
+    'a forged trace cannot smuggle identifier-shaped text into a frame',
+    () async {
+      final canary = ['Zq', 'Canary', 'Tkn'].join();
+      final trace = StackTrace.fromString(
+        [
+          '#0      f (package:${canary}pkg/${canary}file.dart:1:1)',
+          '#1      g (package:flutter/src/widgets/framework.dart:5:2)',
+          '#2      h (package:core/src/${canary}x.dart:7:2)',
+          '#3      i (dart:async/future.dart:9:1)',
+          '#4      j (file:///x/${canary}y.dart:4:1)',
+        ].join('\n'),
+      );
+      await manager.crashReporter.recordError(_Boom('x'), trace);
+      final payload = sink.calls.single.$1 as CrashPayload;
+      expect(payload.frames[0], 'package:<other>/<other>:1');
+      expect(payload.frames[1], 'package:flutter/src/widgets/framework.dart:5');
+      expect(payload.frames[2], 'package:core/<other>:7');
+      expect(payload.frames[3], 'future.dart:9');
+      expect(payload.frames[4], '<other>:4');
+      expect(payload.frames.join(), isNot(contains('Canary')));
+      expect('${payload.stackTrace}', isNot(contains('Canary')));
+    },
+  );
 
   test('without a trace or a category the payload is just the type', () async {
     await manager.crashReporter.recordError(StateError('x $host'), null);
